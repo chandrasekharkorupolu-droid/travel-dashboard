@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+    .login-container { display: flex; width: 900px; height: 500px; background: #ffffff; border-radius: 15px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); overflow: hidden; transition: opacity 0.5s ease-out; }
+    .left-panel { flex: 1; background: linear-gradient(135deg, #475569, #1e293b); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; text-align: center; padding: 30px; }
+    .left-panel h1 { font-size: 30px; margin: 0 0 10px 0; z-index: 2; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
+    .left-panel p { font-size: 18px; margin: 0; color: #cbd5e1; z-index: 2; font-weight: 500; letter-spacing: 2px; }
+    .falling-icon { position: absolute; font-size: 60px; color: rgba(255, 255, 255, 0.1); animation: dropDown linear infinite; z-index: 1; }
+    .icon-train { left: 15%; animation-duration: 8s; animation-delay: 0s; }
+    .icon-bus { left: 50%; animation-duration: 10s; animation-delay: 3s; font-size: 70px; }
+    .icon-flight { left: 80%; animation-duration: 7s; animation-delay: 1s; font-size: 50px; }
+    @keyframes dropDown { 0% { top: -100px; transform: rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 600px; transform: rotate(20deg); opacity: 0; } }
+    .right-panel { flex: 1; padding: 50px; display: flex; flex-direction: column; justify-content: center; }
+    .right-panel-header { text-align: center; margin-bottom: 25px; }
+    .right-panel-header h2 { color: #334155; margin: 0 0 5px 0; font-size: 28px; font-weight: 800; }
+    .right-panel-header p.sub-text { color: #64748b; margin: 0; font-size: 14px; font-weight: 600; }
+    .input-group { margin-bottom: 20px; text-align: left; }
+    .input-group label { display: block; color: #475569; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
+    .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; background-color: #f8fafc; transition: all 0.3s ease; }
+    .input-group input:focus { outline: none; border-color: #475569; box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1); }
+    .login-btn { width: 100%; padding: 14px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+    .login-btn:hover { background-color: #1e293b; }
+    .extras { display: flex; justify-content: space-between; margin-top: 20px; font-size: 13px; }
+    .extras a { color: #475569; text-decoration: none; font-weight: 600; cursor: pointer; }
+    .extras a:hover { text-decoration: underline; }
+    .message { margin-top: 15px; font-size: 14px; text-align: center; min-height: 20px; font-weight: 600; }
+    .custom-loader-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+    .travel-icons-loader { display: flex; gap: 30px; font-size: 60px; margin-bottom: 20px; }
+    .travel-icons-loader span { display: inline-block; animation: bounce 1.5s infinite ease-in-out; }
+    .icon-1 { animation-delay: 0s; } .icon-2 { animation-delay: 0.2s; } .icon-3 { animation-delay: 0.4s; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-25px); } }
+    .loader-text { color: #334155; font-size: 18px; font-weight: 800; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+
+  <div class="login-container" id="loginBox">
+    <div class="left-panel">
+      <div class="falling-icon icon-train">🚆</div>
+      <div class="falling-icon icon-bus">🚌</div>
+      <div class="falling-icon icon-flight">✈️</div>
+      <h1>CSC TOUR & TRAVELS</h1>
+      <p>Andhra Pradesh</p>
+    </div>
+
+    <div class="right-panel">
+      <div class="right-panel-header">
+        <h2>Welcome Back</h2>
+        <p class="sub-text">Please login to your account</p>
+      </div>
+      
+      <div class="input-group">
+        <label for="userId">User ID</label>
+        <input type="text" id="userId" placeholder="Enter User ID" autofocus required>
+      </div>
+      
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter Password" required>
+      </div>
+      
+      <button class="login-btn" id="loginBtn" onclick="submitLogin()">Secure Login</button>
+      
+      <div class="extras">
+        <a onclick="alert('దీని ఫంక్షనాలిటీ త్వరలో అందుబాటులోకి వస్తుంది.')">Forgot Password?</a>
+        <a onclick="alert('హెల్ప్‌డెస్క్ ఫీచర్ త్వరలో యాడ్ చేయబడుతుంది.')">Contact Helpdesk</a>
+      </div>
+
+      <div class="message" id="msg"></div>
+    </div>
+  </div>
+
+  <div class="custom-loader-screen" id="travelLoader">
+    <div class="travel-icons-loader">
+      <span class="icon-1">🚆</span>
+      <span class="icon-2">🚌</span>
+      <span class="icon-3">✈️</span>
+    </div>
+    <div class="loader-text">Preparing Dashboard Data...</div>
+  </div>
+
+  <script>
+    // 🌟🌟🌟 కింద ఉన్న డబుల్ కోట్స్ లోపల మీ గూగుల్ వెబ్ యాప్ లింక్ ఖచ్చితంగా పేస్ట్ చేయండి 🌟🌟🌟
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAevLoiZZG_ZO2gG0aeHsqpRmlK5l0c__tE6jZe6iFRgTyG-Jn20s5XRze8pa0fSrZ/exec";
+
+    document.getElementById('userId').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') document.getElementById('password').focus();
+    });
+
+    document.getElementById('password').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') submitLogin();
+    });
+
+    function submitLogin() {
+      var uId = document.getElementById('userId').value;
+      var pwd = document.getElementById('password').value;
+      var msgDiv = document.getElementById('msg');
+      var btn = document.getElementById('loginBtn');
+
+      if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
+        msgDiv.style.color = "#dc2626";
+        msgDiv.innerHTML = "దయచేసి కోడ్‌లో మీ Google Web App URL ని అప్‌డేట్ చేయండి.";
+        return;
+      }
+
+      if(uId === "" || pwd === "") {
+        msgDiv.style.color = "#dc2626";
+        msgDiv.innerHTML = "దయచేసి User ID మరియు Password ఎంటర్ చేయండి.";
+        return;
+      }
+
+      btn.innerHTML = "Checking credentials...";
+      btn.disabled = true;
+      msgDiv.innerHTML = ""; 
+
+      var callbackName = 'loginCallback_' + new Date().getTime();
+      
+      window[callbackName] = function(data) {
+        if(data.success) {
+          btn.innerHTML = "Login Successful!"; 
+          document.getElementById('loginBox').style.opacity = '0';
+          
+          setTimeout(function() {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('travelLoader').style.display = 'flex';
+            
+            localStorage.setItem("userName", data.name);
+            localStorage.setItem("userDesignation", data.designation);
+            
+            // 🌟🌟 BINGO! ఈ లైన్ లోనే ఎర్రర్ ఉండేది, దాన్ని కరెక్ట్ గా సెట్ చేశాను 🌟🌟
+            localStorage.setItem("userId", uId); 
+
+            setTimeout(function() {
+              window.location.href = "Dashboard.html"; 
+            }, 4000); 
+            
+          }, 500);
+        } else {
+          btn.innerHTML = "Secure Login";
+          btn.disabled = false;
+          msgDiv.style.color = "#dc2626";
+          msgDiv.innerHTML = data.message;
+        }
+        delete window[callbackName];
+      };
+
+      var script = document.createElement('script');
+      script.src = SCRIPT_URL + "?userId=" + encodeURIComponent(uId) + "&password=" + encodeURIComponent(pwd) + "&callback=" + callbackName;
+      
+      script.onerror = function() {
+        btn.innerHTML = "Secure Login";
+        btn.disabled = false;
+        msgDiv.style.color = "#dc2626";
+        msgDiv.innerHTML = "సర్వర్ కనెక్షన్ ఎర్రర్. లింక్ లేదా ఇంటర్నెట్ చెక్ చేయండి.";
+      };
+
+      document.body.appendChild(script);
+    }    
+  </script>
+
+</body>
+</html>

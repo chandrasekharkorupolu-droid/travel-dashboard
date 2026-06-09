@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Bootstrap CSS for Mobile Responsive & Clean UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background-color: #f4f0fc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+      .card { border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #6f42c1; }
+      .text-purple { color: #6f42c1; }
+      .btn-purple { background-color: #6f42c1; color: white; font-weight: bold; }
+      .btn-purple:hover { background-color: #59339d; color: white; }
+      .hidden { display: none !important; }
+      .dynamic-row { background-color: #ffffff; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4 mb-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="card p-4">
+            <h3 class="text-center text-purple mb-4">📝 VLE E-Stamping Portal</h3>
+            
+            <!-- Step 1: CSC ID Verification -->
+            <div id="step1">
+              <label class="form-label fw-bold">Enter your 12-digit CSC ID</label>
+              <input type="text" id="cscId" class="form-control form-control-lg" placeholder="Ex: 123456789012" maxlength="12">
+              <button id="verifyBtn" class="btn btn-purple w-100 mt-3" onclick="verifyCSC()">Verify ID</button>
+            </div>
+
+            <!-- Step 2: Main Menu (Hidden initially) -->
+            <div id="step2" class="hidden mt-4">
+              <div class="alert alert-success text-center">
+                <strong>Welcome: </strong> <span id="vleName" class="fs-5 text-uppercase text-primary fw-bold"></span>
+              </div>
+              
+              <label class="form-label fw-bold mt-3">Select Action:</label>
+              <select id="actionType" class="form-select mb-4" onchange="showActionDiv()">
+                <option value="">-- Choose Option --</option>
+                <option value="request">📦 Request New Stock</option>
+                <option value="sales">📊 Submit Daily Sales / Usage</option>
+                <option value="spoil">⚠️ Report Spoiled Stamp</option>
+              </select>
+
+              <!-- Request Stock Div -->
+              <div id="divRequest" class="hidden">
+                <label class="form-label">How many papers do you need?</label>
+                <input type="number" id="reqQty" class="form-control" placeholder="Ex: 100">
+                <button class="btn btn-primary w-100 mt-3">Submit Request</button>
+              </div>
+
+              <!-- Daily Sales Div -->
+              <div id="divSales" class="hidden">
+                <h5 class="text-purple border-bottom pb-2">Enter Sales Details</h5>
+                
+                <div class="dynamic-row">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-5">
+                      <label class="form-label" style="font-size: 14px;">Serial Number</label>
+                      <input type="text" id="serialNo" class="form-control" placeholder="AP-A0001">
+                    </div>
+                    <div class="col-8 col-md-5">
+                      <label class="form-label" style="font-size: 14px;">Amount (₹)</label>
+                      <select id="stampAmount" class="form-select" onchange="checkCustomAmount()">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="custom">Other</option>
+                      </select>
+                      <!-- ఈ కింద ఉన్నదే మీరు అడిగిన కస్టమ్ అమౌంట్ బాక్స్ -->
+                      <input type="number" id="customAmount" class="form-control mt-2 hidden" placeholder="Enter Amount (₹)">
+                    </div>
+                    <div class="col-4 col-md-2">
+                      <button class="btn btn-success w-100" onclick="addSaleRow()">➕</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sales Cart Table -->
+                <div class="table-responsive mt-3">
+                  <table class="table table-bordered text-center" id="salesTable">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Serial No</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="salesBody">
+                      <!-- Rows will be added here automatically -->
+                    </tbody>
+                  </table>
+                </div>
+                <button class="btn btn-purple w-100 mt-2">Submit Sales Report</button>
+              </div>
+              
+              <!-- Spoiled Stamps Div -->
+              <div id="divSpoil" class="hidden">
+                <label class="form-label">Spoiled Serial Number</label>
+                <input type="text" id="spoilSerial" class="form-control" placeholder="AP-A0001">
+                <label class="form-label mt-2">Reason</label>
+                <input type="text" id="spoilReason" class="form-control" placeholder="Printer jam, torn, etc.">
+                <button class="btn btn-danger w-100 mt-3">Report Damage</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Logic Script -->
+    <script>
+      // 🌟 గూగుల్ షీట్ ద్వారా ఒరిజినల్ పేరు చెక్ చేసే ఫంక్షన్ 🌟
+      function verifyCSC() {
+        var id = document.getElementById('cscId').value;
+        if(id.length === 12) {
+          
+          document.getElementById('verifyBtn').innerText = "Verifying...";
+          document.getElementById('verifyBtn').disabled = true;
+
+          // ఈ కోడ్ బ్యాకెండ్ Code.gs లోని ఫంక్షన్ ని కాల్ చేస్తుంది
+          google.script.run.withSuccessHandler(function(response) {
+            document.getElementById('verifyBtn').innerText = "Verify ID";
+            document.getElementById('verifyBtn').disabled = false;
+
+            if(response.success) {
+              document.getElementById('vleName').innerText = response.vleName;
+              document.getElementById('step1').classList.add('hidden');
+              document.getElementById('step2').classList.remove('hidden');
+            } else {
+              alert(response.message);
+            }
+          }).verifyVleIdBackend(id);
+
+        } else {
+          alert("Please enter a valid 12-digit CSC ID");
+        }
+      }
+
+      function showActionDiv() {
+        var type = document.getElementById('actionType').value;
+        document.getElementById('divRequest').classList.add('hidden');
+        document.getElementById('divSales').classList.add('hidden');
+        document.getElementById('divSpoil').classList.add('hidden');
+
+        if(type === 'request') document.getElementById('divRequest').classList.remove('hidden');
+        if(type === 'sales') document.getElementById('divSales').classList.remove('hidden');
+        if(type === 'spoil') document.getElementById('divSpoil').classList.remove('hidden');
+      }
+
+      // 🌟 డ్రాప్‌డౌన్ లో Other పెడితే కస్టమ్ బాక్స్ చూపించే ఫంక్షన్ 🌟
+      function checkCustomAmount() {
+        var val = document.getElementById('stampAmount').value;
+        if(val === 'custom') {
+           document.getElementById('customAmount').classList.remove('hidden');
+        } else {
+           document.getElementById('customAmount').classList.add('hidden');
+        }
+      }
+
+      function addSaleRow() {
+        var serial = document.getElementById('serialNo').value;
+        var amt = document.getElementById('stampAmount').value;
+        
+        // కస్టమ్ అమౌంట్ లాజిక్
+        if(amt === 'custom') {
+           amt = document.getElementById('customAmount').value;
+           if(!amt) { alert("Please enter the custom amount!"); return; }
+        }
+        
+        if(!serial) { alert("Please enter Serial Number!"); return; }
+        
+        var tbody = document.getElementById('salesBody');
+        var tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${serial.toUpperCase()}</td>
+          <td>₹ ${amt}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="this.parentElement.parentElement.remove()">❌</button></td>
+        `;
+        tbody.appendChild(tr);
+        
+        // Clear input for next entry
+        document.getElementById('serialNo').value = '';
+        document.getElementById('stampAmount').value = '10';
+        document.getElementById('customAmount').classList.add('hidden');
+        document.getElementById('customAmount').value = '';
+      }
+    </script>
+  </body>
+</html>

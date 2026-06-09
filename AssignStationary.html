@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
+    .card-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: white; font-weight: bold; border-radius: 8px 8px 0 0 !important; }
+    .table-hover tbody tr:hover { background-color: #f5f3ff; cursor: pointer; }
+    .score-box { background-color: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 10px; text-align: center; }
+    .score-val { font-size: 18px; font-weight: 900; color: #6d28d9; }
+    .score-label { font-size: 10px; color: #7c3aed; font-weight: bold; text-transform: uppercase; margin-top: 2px; }
+    .btn-purple { background-color: #6d28d9; color: white; font-weight: bold; border: none; }
+    .btn-purple:hover { background-color: #5b21b6; color: white; }
+    .btn-purple-outline { color: #6d28d9; border-color: #6d28d9; background: transparent; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 4px; }
+    .btn-purple-outline:hover { background: #6d28d9; color: white; }
+    .text-purple { color: #6d28d9 !important; }
+    .eligibility-badge { background-color: #dbeafe; color: #1e40af; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; border: 1px dashed #93c5fd; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-7">
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <span>📥 Pending Stock Requests Panel</span>
+            <button class="btn-purple-outline" style="color:white; border-color:white;" onclick="refreshLiveRequests()">🔄 Refresh List</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 500px;">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light sticky-top"><tr><th>Date</th><th>CSC ID</th><th>VLE Name</th><th>District</th><th>Qty</th><th>Action</th></tr></thead>
+                <tbody id="pendingTableBody"><tr><td colspan="6" class="text-center py-4 text-muted">Loading requests...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-5" id="approvalPanel" style="display: none;">
+        <div class="card shadow-sm border-0 border-top border-4 border-violet" style="border-top-color: #6d28d9 !important;">
+          <div class="card-body">
+            <h5 class="fw-bold text-purple mb-3" id="approvalPanelTitle">💜 Review & Verify Request</h5>
+            <div class="p-3 rounded mb-3 border text-purple" style="background-color: #f5f3ff;">
+              <span class="fw-bold" style="font-size: 16px;" id="lblVleName">Name</span> (<span class="fw-bold" id="lblVleId">ID</span>)<br>
+              <span class="badge bg-purple mt-1" style="background-color:#7c3aed;" id="lblVleDistrict">District</span>
+              <h4 class="mt-2 mb-0 text-danger fw-bold">Quantity: <span id="lblReqQty">0</span> Papers</h4>
+            </div>
+            
+            <h6 class="fw-bold text-secondary mb-2" style="font-size:12px;">📊 VLE Transaction Counts (Eligibility Data)</h6>
+            <div class="row g-1 mb-2 text-center">
+              <div class="col"><div class="score-box"><div class="score-val" id="scDigipay">-</div><div class="score-label">Digipay</div></div></div>
+              <div class="col"><div class="score-box"><div class="score-val" id="scIrctc">-</div><div class="score-label">IRCTC</div></div></div>
+              <div class="col"><div class="score-box"><div class="score-val" id="scIns">-</div><div class="score-label">DSP</div></div></div>
+              <div class="col"><div class="score-box"><div class="score-val" id="scNps">-</div><div class="score-label">NPS</div></div></div>
+              <div class="col"><div class="score-box"><div class="score-val" id="scAadhar">-</div><div class="score-label">Aadhaar</div></div></div>
+            </div>
+            
+            <div class="eligibility-badge mb-4" id="lblEligibility">Loading Eligibility...</div>
+
+            <form id="dispatchForm" onsubmit="approveRequest(event)">
+              <div class="row g-3">
+                <div class="col-12" id="divAppQty">
+                  <label class="form-label fw-bold text-secondary">Approved Quantity <span class="text-danger">*</span></label>
+                  <input type="number" id="appQty" class="form-control fw-bold text-success" required>
+                </div>
+                <div class="col-6" id="divStartSerial" style="display:none;">
+                  <label class="form-label fw-bold text-secondary">Start Serial No <span class="text-danger">*</span></label>
+                  <input type="text" id="startSerial" class="form-control text-uppercase" placeholder="AP-A0001">
+                </div>
+                <div class="col-6" id="divEndSerial" style="display:none;">
+                  <label class="form-label fw-bold text-secondary">End Serial No <span class="text-danger">*</span></label>
+                  <input type="text" id="endSerial" class="form-control text-uppercase" placeholder="AP-A0100">
+                </div>
+              </div>
+              <button type="submit" id="btnApprove" class="btn btn-purple w-100 mt-4 py-2">Confirm Action</button>
+              <button type="button" class="btn btn-light border w-100 mt-2 text-muted" onclick="hideApprovalPanel()">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAevLoiZZG_ZO2gG0aeHsqpRmlK5l0c__tE6jZe6iFRgTyG-Jn20s5XRze8pa0fSrZ/exec";
+    let activeRowIdx = null;
+    let currentStep = 1; 
+    let loggedInUser = localStorage.getItem("userName") || "Admin";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || "";
+
+    window.onload = function() { 
+       checkCacheAndLoadRequests(); 
+    };
+
+    // ⚡ Smart Cache Logic for Instant Loading ⚡
+    function checkCacheAndLoadRequests() {
+       let cachedData = localStorage.getItem("pendingRequestsCache");
+       let cacheTime = localStorage.getItem("pendingRequestsTime");
+       let now = new Date().getTime();
+
+       if (cachedData && cacheTime && (now - cacheTime < 120000)) { // 2 Minutes Cache
+          renderRequestsTable(JSON.parse(cachedData));
+       } else {
+          fetchPendingRequests();
+       }
+    }
+
+    function refreshLiveRequests() {
+       localStorage.removeItem("pendingRequestsCache");
+       document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Refreshing live data...</td></tr>`;
+       fetchPendingRequests();
+    }
+
+    function fetchPendingRequests() {
+      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", role: loggedInDesig, userId: loggedInUserId }) })
+      .then(res => res.json()).then(res => {
+         if(res.data) {
+            localStorage.setItem("pendingRequestsCache", JSON.stringify(res.data));
+            localStorage.setItem("pendingRequestsTime", new Date().getTime().toString());
+            renderRequestsTable(res.data);
+         } else {
+            renderRequestsTable([]);
+         }
+      }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data.</td></tr>`; });
+    }
+
+    function renderRequestsTable(data) {
+       const tbody = document.getElementById("pendingTableBody");
+       tbody.innerHTML = "";
+       if(data && data.length > 0) {
+          data.forEach(req => {
+             let btnHtml = "";
+             let rUpper = loggedInDesig.toUpperCase();
+             let isDM = (rUpper === "DM" || rUpper.indexOf("DISTRICT MANAGER") !== -1);
+             let currentStatus = req.status ? req.status.trim() : "";
+             
+             if (isDM && currentStatus === "Pending") {
+                 btnHtml = `<button class="btn btn-sm btn-purple" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1)">Recommend</button>`;
+             } else if (!isDM && currentStatus === "Pending with SPOC") {
+                 btnHtml = `<button class="btn btn-sm btn-warning text-dark fw-bold" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 2)">Approve</button>`;
+               } else if (isDM && currentStatus === "Approved by SPOC") {
+                 btnHtml = `<button class="btn btn-sm btn-success fw-bold" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 3)">Dispatch</button>`;
+             } else {
+                 btnHtml = `<span class="badge bg-secondary">${currentStatus}</span>`;
+             }
+
+             tbody.innerHTML += `<tr><td style="font-size:12px; color:#64748b;">${req.date}</td><td class="fw-bold text-purple">${req.cscId}</td><td class="fw-bold">${req.vleName}</td><td><span class="badge bg-purple" style="background-color:#7c3aed;">${req.district}</span></td><td class="fw-bold text-danger">${req.reqQty}</td><td>${btnHtml}</td></tr>`;
+          });
+       } else { 
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-success fw-bold">🎉 No pending stock requests found!</td></tr>`; 
+       }
+    }
+
+    function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
+       activeRowIdx = rowIdx; currentStep = stepType;
+       document.getElementById("approvalPanel").style.display = "block";
+       document.getElementById("lblVleName").innerText = vleName;
+       document.getElementById("lblVleId").innerText = cscId;
+       document.getElementById("lblVleDistrict").innerText = district;
+       document.getElementById("lblReqQty").innerText = reqQty;
+       
+       let qtyInput = document.getElementById("appQty");
+       let startBox = document.getElementById("divStartSerial");
+       let endBox = document.getElementById("divEndSerial");
+       let btnApprove = document.getElementById("btnApprove");
+       let title = document.getElementById("approvalPanelTitle");
+
+       if (stepType === 1) { 
+           title.innerText = "📝 Recommend to SPOC"; qtyInput.value = reqQty; qtyInput.readOnly = false; startBox.style.display = "none"; endBox.style.display = "none"; document.getElementById("startSerial").removeAttribute("required"); document.getElementById("endSerial").removeAttribute("required"); btnApprove.innerText = "Recommend Quantity"; btnApprove.className = "btn btn-purple w-100 mt-4 py-2";
+       } else if (stepType === 2) { 
+           title.innerText = "⭐ Final Approval (SPOC)"; qtyInput.value = reqQty; qtyInput.readOnly = false; startBox.style.display = "none"; endBox.style.display = "none"; document.getElementById("startSerial").removeAttribute("required"); document.getElementById("endSerial").removeAttribute("required"); btnApprove.innerText = "Approve Quantity"; btnApprove.className = "btn btn-warning w-100 mt-4 py-2 fw-bold text-dark";
+       } else if (stepType === 3) { 
+           title.innerText = "📦 Dispatch Physical Stock"; qtyInput.value = reqQty; qtyInput.readOnly = true; startBox.style.display = "block"; endBox.style.display = "block"; document.getElementById("startSerial").setAttribute("required", "true"); document.getElementById("endSerial").setAttribute("required", "true"); btnApprove.innerText = "Dispatch Stock (Submit Serials)"; btnApprove.className = "btn btn-success w-100 mt-4 py-2 fw-bold";
+       }
+
+       document.querySelectorAll('[id^="sc"]').forEach(el => el.innerText = "⏳");
+       document.getElementById("lblEligibility").innerText = "Calculating Eligibility...";
+
+       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId }) }).then(res => res.json()).then(res => {
+          if(res.success && res.performance) {
+             let d = parseInt(res.performance.digipay) || 0;
+             let i = parseInt(res.performance.irctc) || 0;
+             let ins = parseInt(res.performance.insurance) || 0; 
+             let n = parseInt(res.performance.nps) || 0;
+             let a = parseInt(res.performance.aadhaar) || 0;
+             
+             document.getElementById("scDigipay").innerText = d;
+             document.getElementById("scIrctc").innerText = i;
+             document.getElementById("scIns").innerText = ins; 
+             document.getElementById("scNps").innerText = n;
+             document.getElementById("scAadhar").innerText = a;
+
+             let totalScore = d + i + ins + n + a;
+             let eligibleQty = 10; 
+             
+             if(totalScore >= 500) eligibleQty = 200;
+             else if(totalScore >= 200) eligibleQty = 100;
+             else if(totalScore >= 100) eligibleQty = 50;
+             else if(totalScore >= 50) eligibleQty = 25;
+
+             document.getElementById("lblEligibility").innerHTML = `⭐ <b>VLE Total Score:</b> ${totalScore} Txns <br> 📦 <b>System Recommended Eligibility:</b> ~${eligibleQty} Papers`;
+          }
+       });
+    }
+
+    function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }
+
+    function approveRequest(e) {
+       e.preventDefault(); if(!activeRowIdx) return;
+       let start = document.getElementById("startSerial").value.toUpperCase(); let end = document.getElementById("endSerial").value.toUpperCase();
+       if (currentStep === 3 && (!start || !end)) { alert("Please enter Start and End Serial Numbers!"); return; }
+
+       var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: document.getElementById("lblVleId").innerText, appQty: document.getElementById("appQty").value, startSerial: start, endSerial: end, approvedBy: loggedInUser };
+       var btn = document.getElementById("btnApprove"); btn.disabled = true; btn.innerText = "Processing...";
+       
+       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+          btn.disabled = false;
+          if(res.success) { 
+             alert("✅ " + res.message); 
+             localStorage.removeItem("pendingRequestsCache"); // Clear cache after success
+             hideApprovalPanel(); 
+             fetchPendingRequests(); 
+          }
+       }).catch(e => { btn.disabled = false; alert("Network error!"); });
+    }
+  </script>
+</body>
+</html>

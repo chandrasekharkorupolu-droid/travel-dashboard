@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- 🌟 ఇమేజ్ డౌన్‌లోడ్ చేయడానికి లైబ్రరీ 🌟 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
+    .stats-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-top: 4px solid #6d28d9; }
+    .stats-card h6 { color: #64748b; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+    .stats-card h2 { color: #1e293b; font-size: 26px; font-weight: 900; margin: 0; }
+    .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: hidden; margin-top: 25px; border: 1px solid #e2e8f0; }
+    .table-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: white; padding: 15px 20px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .table-hover tbody tr:hover { background-color: #f5f3ff; }
+    .text-purple { color: #6d28d9 !important; }
+    .btn-purple-outline { color: #6d28d9; border-color: #6d28d9; background: transparent; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 4px; }
+    .btn-purple-outline:hover { background: #6d28d9; color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- 🌟 ఈ కంటైనర్ లోపల ఉన్నదంతా ఇమేజ్ లాగా డౌన్‌లోడ్ అవుతుంది 🌟 -->
+  <div class="container-fluid" id="captureArea">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="fw-bold text-purple mb-0">💜 E-Stamping Stationary Report</h5>
+      
+      <!-- 🌟 బటన్స్ (వీటిని ఇమేజ్ లో రాకుండా దాచడానికి క్లాస్ వాడతాం) 🌟 -->
+      <div data-html2canvas-ignore="true">
+        <button class="btn btn-sm btn-outline-primary fw-bold me-2" onclick="downloadImage()">📸 Download Image</button>
+        <button class="btn-purple-outline" onclick="refreshLiveReport()">🔄 Refresh Live</button>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-2">
+      <div class="col-md-4"><div class="stats-card"><h6>Total Master Inward</h6><h2 id="totInward" class="text-purple">0</h2></div></div>
+      <div class="col-md-4"><div class="stats-card" style="border-top-color: #ef4444;"><h6>Total Dispatched to VLEs</h6><h2 id="totOutward" class="text-danger">0</h2></div></div>
+      <div class="col-md-4"><div class="stats-card" style="border-top-color: #10b981;"><h6>Available Stock Balance</h6><h2 id="totBalance" class="text-success">0</h2></div></div>
+    </div>
+
+    <div class="table-container">
+      <div class="table-header"><span>📍 Districtwise Inventory Summary Matrix</span><span class="badge bg-light text-dark" id="lblScope">-</span></div>
+      <div class="table-responsive" style="background:white;">
+        <table class="table table-hover align-middle text-center mb-0">
+          <thead class="table-light"><tr><th class="text-start ps-4">District Name</th><th>Inward Master Stock</th><th>Dispatched Stock (VLEs)</th><th>Available Balance</th></tr></thead>
+          <tbody id="summaryBody"><tr><td colspan="4" class="text-muted py-4">Loading Statement Matrix...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAevLoiZZG_ZO2gG0aeHsqpRmlK5l0c__tE6jZe6iFRgTyG-Jn20s5XRze8pa0fSrZ/exec";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    let loggedInDistrict = localStorage.getItem("userDistrict") || "Your District";
+
+    document.getElementById("lblScope").innerText = isDM ? "District Filter Active: " + loggedInDistrict.toUpperCase() : "Full State Access Level";
+
+    window.onload = function() { checkCacheAndLoad(); };
+
+    function checkCacheAndLoad() {
+       let cachedData = localStorage.getItem("eStampSummaryCache"); let cacheTime = localStorage.getItem("eStampSummaryTime"); let now = new Date().getTime();
+       if (cachedData && cacheTime && (now - cacheTime < 300000)) { renderData(JSON.parse(cachedData)); } else { fetchLiveReport(); }
+    }
+
+    function refreshLiveReport() { localStorage.removeItem("eStampSummaryCache"); document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="text-muted py-4">Refreshing Statement Matrix...</td></tr>`; fetchLiveReport(); }
+
+    function fetchLiveReport() {
+       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDistrictStockSummary", role: loggedInDesig, userId: loggedInUserId }) })
+       .then(res => res.json()).then(res => {
+          if(res.success && res.summary) { localStorage.setItem("eStampSummaryCache", JSON.stringify(res.summary)); localStorage.setItem("eStampSummaryTime", new Date().getTime().toString()); renderData(res.summary); }
+       }).catch(e => { document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="text-danger py-3">Network error. Click Refresh Live.</td></tr>`; });
+    }
+
+    function renderData(summary) {
+       const sbody = document.getElementById("summaryBody"); sbody.innerHTML = ""; let tIn = 0, tOut = 0;
+       const AP_DISTRICTS = ["ANANTAPUR", "CHITTOOR", "EAST GODAVARI", "GUNTUR", "KRISHNA", "KURNOOL", "PRAKASAM", "SPSR NELLORE", "SRIKAKULAM", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"];
+       
+       AP_DISTRICTS.forEach(dist => {
+          if (isDM && dist.toUpperCase() !== loggedInDistrict.toUpperCase()) return; 
+          let dIn = (summary[dist] && summary[dist].inward) ? summary[dist].inward : 0; let dOut = (summary[dist] && summary[dist].outward) ? summary[dist].outward : 0; let avail = dIn - dOut;
+          tIn += dIn; tOut += dOut;
+          sbody.innerHTML += `<tr><td class="fw-bold text-start ps-4 text-purple">${dist}</td><td class="fw-bold text-secondary">${dIn}</td><td class="text-danger fw-bold">${dOut}</td><td class="text-success fw-bold">${avail}</td></tr>`;
+       });
+       document.getElementById("totInward").innerText = tIn; document.getElementById("totOutward").innerText = tOut; document.getElementById("totBalance").innerText = tIn - tOut;
+       if(sbody.innerHTML === "") { sbody.innerHTML = `<tr><td colspan="4" class="text-danger py-4">No data found.</td></tr>`; }
+    }
+
+    // 🌟 ఇమేజ్ డౌన్‌లోడ్ ఫంక్షన్ 🌟
+    function downloadImage() {
+       const captureElement = document.getElementById('captureArea');
+       
+       // బ్యాక్‌గ్రౌండ్ కలర్ తెల్లగా ఉండి, క్వాలిటీ పెరగడానికి ఆప్షన్స్
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f8fafc' }).then(canvas => {
+          let link = document.createElement('a');
+          link.download = 'E-Stamping_Stock_Summary.png';
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+       });
+    }
+  </script>
+</body>
+</html>
