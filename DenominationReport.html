@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
+    
+    /* Clickable Summary Cards Styles */
+    .stat-card { background: white; border-radius: 8px; padding: 15px 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; border-top: 4px solid #ccc; height: 100%; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .stat-card.active { background-color: #f8faff; border-color: #6d28d9 !important; box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+    .stat-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+    .stat-value { font-size: 22px; font-weight: 900; color: #1e293b; margin: 0; }
+    
+    /* Card Top Colors */
+    .border-vles { border-top-color: #f97316; } .active.border-vles { border-color: #f97316 !important; background-color: #fff7ed; }
+    .border-10 { border-top-color: #22c55e; } .active.border-10 { border-color: #22c55e !important; background-color: #f0fdf4; }
+    .border-20 { border-top-color: #0ea5e9; } .active.border-20 { border-color: #0ea5e9 !important; background-color: #f0f9ff; }
+    .border-50 { border-top-color: #eab308; } .active.border-50 { border-color: #eab308 !important; background-color: #fefce8; }
+    .border-100 { border-top-color: #a855f7; } .active.border-100 { border-color: #a855f7 !important; background-color: #faf5ff; }
+    .border-oth { border-top-color: #64748b; } .active.border-oth { border-color: #64748b !important; background-color: #f8fafc; }
+
+    /* Controls & Table Styles */
+    .controls-bar { background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .view-btn { border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: bold; padding: 6px 15px; font-size: 13px; transition: 0.2s; }
+    .view-btn.active { background: #6d28d9; color: white; border-color: #6d28d9; }
+    .view-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
+    .view-btn:last-child { border-radius: 0 6px 6px 0; }
+    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; width: 250px; outline: none; }
+    
+    .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+    .table-header { background: #f8fafc; padding: 12px 20px; font-weight: bold; font-size: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; color: #334155; }
+    .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #a7f3d0; }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid" id="captureArea">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="fw-bold text-dark mb-1">📊 E-Stamping Denomination Sales</h5>
+        <span class="badge bg-light text-secondary border" id="lblScope">Access Level: Loading...</span>
+      </div>
+      <div class="d-flex align-items-center" data-html2canvas-ignore="true">
+        <!-- 🌟 Financial Year Categories List 🌟 -->
+        <select id="dateFilter" class="form-select form-select-sm fw-bold me-3" style="width:200px; cursor:pointer;" onchange="fetchReportData()">
+          <option value="ALL">All Time (Overall)</option>
+          <optgroup label="Monthly (Current FY)">
+            <option value="APR">April</option>
+            <option value="MAY">May</option>
+            <option value="JUN">June</option>
+            <option value="JUL">July</option>
+            <option value="AUG">August</option>
+            <option value="SEP">September</option>
+            <option value="OCT">October</option>
+            <option value="NOV">November</option>
+            <option value="DEC">December</option>
+            <option value="JAN">January</option>
+            <option value="FEB">February</option>
+            <option value="MAR">March</option>
+          </optgroup>
+          <optgroup label="Quarters & Half-Yearly">
+            <option value="Q1">Q1 (Apr - Jun)</option>
+            <option value="Q2">Q2 (Jul - Sep)</option>
+            <option value="Q3">Q3 (Oct - Dec)</option>
+            <option value="Q4">Q4 (Jan - Mar)</option>
+            <option value="H1">H1 (Apr - Sep)</option>
+            <option value="H2">H2 (Oct - Mar)</option>
+          </optgroup>
+          <optgroup label="Yearly">
+            <option value="FY">Current Financial Year</option>
+          </optgroup>
+        </select>
+        <button class="btn btn-sm btn-outline-primary fw-bold" onclick="downloadImage()">📸 Download</button>
+      </div>
+    </div>
+
+    <!-- Clickable Summary Cards -->
+    <div class="row g-2 mb-3">
+      <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title text-orange" style="color:#ea580c;">Total VLEs</div><div class="stat-value text-orange" style="color:#ea580c;" id="totVles">0</div></div></div>
+      <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title text-success" style="color:#16a34a;">₹ 10 Papers</div><div class="stat-value text-success" style="color:#16a34a;" id="tot10">0</div></div></div>
+      <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title text-info" style="color:#0284c7;">₹ 20 Papers</div><div class="stat-value text-info" style="color:#0284c7;" id="tot20">0</div></div></div>
+      <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title text-warning" style="color:#ca8a04;">₹ 50 Papers</div><div class="stat-value text-warning" style="color:#ca8a04;" id="tot50">0</div></div></div>
+      <div class="col"><div class="stat-card border-100" id="card-D100" onclick="filterVles('D100')"><div class="stat-title text-purple" style="color:#9333ea;">₹ 100 Papers</div><div class="stat-value text-purple" style="color:#9333ea;" id="tot100">0</div></div></div>
+      <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title text-secondary">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
+    </div>
+
+    <!-- Controls: Toggle Buttons & Search -->
+    <div class="controls-bar" data-html2canvas-ignore="true">
+      <div>
+        <button id="btnDistView" class="view-btn" onclick="switchView('DIST')">🏢 District Summary</button>
+        <button id="btnVleView" class="view-btn active" onclick="switchView('VLE')">🧑‍💻 VLE Breakdown</button>
+      </div>
+      <div>
+        <input type="text" id="searchBox" class="search-box" placeholder="Search Name, CSC ID or District..." onkeyup="searchTable()">
+      </div>
+    </div>
+
+    <!-- Table Area -->
+    <div class="table-container">
+      <div class="table-header">
+        <span id="tableTitle">🧑‍💻 Active VLEs Breakdown</span>
+        <span id="lblFilterText" class="badge bg-purple" style="background:#6d28d9;">Loading...</span>
+      </div>
+      <div class="table-responsive" style="max-height: 400px; background:white;">
+        <table class="table table-hover align-middle text-center mb-0">
+          <thead class="table-light sticky-top" id="theadDist" style="display:none;">
+            <tr><th class="text-start ps-4">District Name</th><th>₹ 10 Papers</th><th>₹ 20 Papers</th><th>₹ 50 Papers</th><th>₹ 100 Papers</th><th>Others</th></tr>
+          </thead>
+          <thead class="table-light sticky-top" id="theadVle">
+            <tr><th class="text-start ps-4">VLE Details</th><th>District</th><th>₹ 10 Papers</th><th>₹ 20 Papers</th><th>₹ 50 Papers</th><th>₹ 100 Papers</th><th>Others</th></tr>
+          </thead>
+          <tbody id="reportTbody">
+            <tr><td colspan="7" class="text-muted py-4">Loading Data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAevLoiZZG_ZO2gG0aeHsqpRmlK5l0c__tE6jZe6iFRgTyG-Jn20s5XRze8pa0fSrZ/exec";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let loggedInDistrict = localStorage.getItem("userDistrict") || "Your District";
+
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    document.getElementById("lblScope").innerText = isDM ? "🔒 District Filter: " + loggedInDistrict.toUpperCase() : "🌐 Access Level: Full State Data";
+
+    // Global Data Variables
+    let masterVleData = [];
+    let masterDistData = [];
+    let currentView = 'VLE'; 
+    let currentFilter = 'ALL';
+
+    window.onload = function() { 
+       // 🌟 ఆటోమేటిక్ గా ఏ నెల నడుస్తుంటే ఆ నెల సెలెక్ట్ అవుతుంది 🌟
+       let d = new Date();
+       let monthMap = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+       document.getElementById("dateFilter").value = monthMap[d.getMonth()];
+       
+       fetchReportData(); 
+    };
+
+    function fetchReportData() {
+       let filterVal = document.getElementById("dateFilter").value;
+       let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
+       document.getElementById("lblFilterText").innerText = filterText;
+
+       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="7" class="text-muted py-4">Fetching live sales data...</td></tr>`;
+
+       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
+       .then(res => res.json()).then(res => {
+          if(res.success) {
+             masterVleData = res.vleSummary;
+             masterDistData = res.distSummary;
+             calculateTotals(masterVleData);
+             renderCurrentView();
+          }
+       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="7" class="text-danger py-4">Network Error.</td></tr>`; });
+    }
+
+    function calculateTotals(data) {
+       let d10=0, d20=0, d50=0, d100=0, oth=0;
+       data.forEach(item => {
+          d10 += item.data.d10; d20 += item.data.d20; d50 += item.data.d50;
+          d100 += item.data.d100; oth += item.data.other;
+       });
+       document.getElementById("totVles").innerText = data.length;
+       document.getElementById("tot10").innerText = d10;
+       document.getElementById("tot20").innerText = d20;
+       document.getElementById("tot50").innerText = d50;
+       document.getElementById("tot100").innerText = d100;
+       document.getElementById("totOth").innerText = oth;
+    }
+
+    function switchView(view) {
+       currentView = view;
+       document.getElementById("btnDistView").classList.remove("active");
+       document.getElementById("btnVleView").classList.remove("active");
+       document.getElementById("theadDist").style.display = "none";
+       document.getElementById("theadVle").style.display = "none";
+       
+       if(view === 'DIST') {
+          document.getElementById("btnDistView").classList.add("active");
+          document.getElementById("theadDist").style.display = "table-header-group";
+          document.getElementById("tableTitle").innerText = "🏢 District-Wise Overall Summary";
+          document.getElementById("searchBox").placeholder = "Search District...";
+       } else {
+          document.getElementById("btnVleView").classList.add("active");
+          document.getElementById("theadVle").style.display = "table-header-group";
+          document.getElementById("tableTitle").innerText = "🧑‍💻 Active VLEs Breakdown";
+          document.getElementById("searchBox").placeholder = "Search Name, CSC ID or District...";
+       }
+       renderCurrentView();
+    }
+
+    function filterVles(filterType) {
+       currentFilter = filterType;
+       document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
+       document.getElementById('card-' + filterType).classList.add('active');
+
+       if(currentView !== 'VLE') switchView('VLE');
+       else renderCurrentView();
+    }
+
+    function renderCurrentView() {
+       const tbody = document.getElementById("reportTbody"); tbody.innerHTML = "";
+       let dataToRender = [];
+
+       if (currentView === 'DIST') {
+          dataToRender = masterDistData;
+          if(dataToRender.length > 0) {
+             dataToRender.forEach(item => {
+                tbody.innerHTML += `<tr class="data-row"><td class="text-start ps-4 fw-bold text-dark search-target">${item.district}</td><td><span class="badge-qty">${item.data.d10}</span></td><td><span class="badge-qty">${item.data.d20}</span></td><td><span class="badge-qty">${item.data.d50}</span></td><td><span class="badge-qty">${item.data.d100}</span></td><td class="text-muted fw-bold">${item.data.other}</td></tr>`;
+             });
+          } else { tbody.innerHTML = `<tr><td colspan="6" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
+       } 
+       else {
+          if(currentFilter === 'ALL') dataToRender = masterVleData;
+          else if(currentFilter === 'D10') dataToRender = masterVleData.filter(v => v.data.d10 > 0);
+          else if(currentFilter === 'D20') dataToRender = masterVleData.filter(v => v.data.d20 > 0);
+          else if(currentFilter === 'D50') dataToRender = masterVleData.filter(v => v.data.d50 > 0);
+          else if(currentFilter === 'D100') dataToRender = masterVleData.filter(v => v.data.d100 > 0);
+          else if(currentFilter === 'OTH') dataToRender = masterVleData.filter(v => v.data.other > 0);
+
+          if(dataToRender.length > 0) {
+             dataToRender.forEach(item => {
+                tbody.innerHTML += `<tr class="data-row"><td class="text-start ps-4 fw-bold search-target">${item.data.name} <br><span class="text-primary" style="font-size:11px;">${item.id}</span></td><td class="search-target"><span class="badge bg-secondary">${item.data.district}</span></td><td><span class="badge-qty">${item.data.d10}</span></td><td><span class="badge-qty">${item.data.d20}</span></td><td><span class="badge-qty">${item.data.d50}</span></td><td><span class="badge-qty">${item.data.d100}</span></td><td class="text-muted fw-bold">${item.data.other}</td></tr>`;
+             });
+          } else { tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
+       }
+       searchTable(); 
+    }
+
+    function searchTable() {
+       let input = document.getElementById("searchBox").value.toUpperCase();
+       let rows = document.querySelectorAll(".data-row");
+       rows.forEach(row => {
+          let targets = row.querySelectorAll(".search-target");
+          let match = false;
+          targets.forEach(cell => { if (cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
+          row.style.display = match ? "" : "none";
+       });
+    }
+
+    function downloadImage() {
+       const captureElement = document.getElementById('captureArea');
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f4f6f9' }).then(canvas => {
+          let link = document.createElement('a');
+          link.download = 'Sales_Report.png'; link.href = canvas.toDataURL("image/png"); link.click();
+       });
+    }
+  </script>
+</body>
+</html>
