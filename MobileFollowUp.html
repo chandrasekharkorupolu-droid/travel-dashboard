@@ -59,27 +59,26 @@
         .c-inact { color: #f87171; } 
         .c-pend { color: #60a5fa; } 
 
-        /* 🌟 FIX: CONTINUOUS SCROLL CONTAINER 🌟 */
+        /* 🌟 FIX: CARDS HIDDEN COMPLETELY (200%) 🌟 */
         .card-stack { 
             flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; 
-            padding: 20px; overflow: hidden; /* పక్కకు వెళ్ళినవి కనపడకుండా */
+            padding: 20px; overflow: hidden; 
         }
         
         .vle-card { 
             background-color: #ffffff; width: calc(100% - 40px); height: calc(100% - 40px); max-height: 520px; 
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; 
             position: absolute; 
-            /* స్మూత్ గా వెళ్ళడానికి ట్రాన్సిషన్ */
             transition: transform 1s cubic-bezier(0.25, 0.8, 0.25, 1);
-            transform: translateY(120%); /* డీఫాల్ట్ గా అన్నీ కింద దాక్కుని ఉంటాయి */
+            /* ఇక్కడ 120% బదులు 200% పెట్టాను, కాబట్టి కింద కనిపించదు */
+            transform: translateY(200%); 
             z-index: 2;
         }
         
-        /* యాక్టివ్ కార్డ్ స్క్రీన్ మధ్యలో ఉంటుంది */
         .card-active { transform: translateY(0) !important; z-index: 5;}
         
-        /* పాత కార్డ్ పైకి వెళ్ళిపోతుంది */
-        .card-done { transform: translateY(-120%) !important; z-index: 1;}
+        /* పైకి వెళ్ళే కార్డ్ కూడా 200% పైకి వెళ్ళి మాయం అవుతుంది */
+        .card-done { transform: translateY(-200%) !important; z-index: 1;}
         
         .service-banner { text-align: center; padding: 12px; font-size: 20px; font-weight: 900; color: white; letter-spacing: 1px; border-radius: 20px 20px 0 0;}
         .bg-irctc { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
@@ -181,8 +180,7 @@
     </div>
 
     <script>
-        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-
+        const apiURL = "https://script.google.com/macros/s/AKfycbxSTlb1mapJ_eEBB0EP7nTDVY1Qs25fzgYAJibt3GC9OTjlQv6O75djg-pbN4CdYs-1xg/exec";
         
         let pendingQueue = [];
         let currentIndex = 0;
@@ -427,20 +425,18 @@
                 document.getElementById("gStatInact").innerText = totalDmInactive;
                 document.getElementById("gStatPend").innerText = pendingQueue.length;
                 
-                // Render all cards immediately for continuous scroll
                 renderAllCardsInStack();
                 updateStatsBar();
             }
         }
 
-        // 🌟 ALL CARDS RENDERED ONCE (REELS STYLE) 🌟
         function renderAllCardsInStack() {
             let html = "";
             for(let i = 0; i < pendingQueue.length; i++) {
                 html += generateCardHtml(i);
             }
             document.getElementById("cardStack").innerHTML = html;
-            updateCardStyles(); // Position them
+            updateCardStyles(); 
         }
 
         function generateCardHtml(index) {
@@ -486,7 +482,6 @@
             `;
         }
 
-        // 🌟 NEW: CONTINUOUS SCROLL POSITIONING 🌟
         function updateCardStyles() {
             for(let i = 0; i < pendingQueue.length; i++) {
                 let card = document.getElementById(`card-${i}`);
@@ -496,17 +491,14 @@
                 if(!card) continue;
 
                 if (i < currentIndex) {
-                    // Past Cards (moved up and away)
                     card.classList.add("card-done");
                     card.classList.remove("card-active");
                 } else if (i === currentIndex) {
-                    // Current Active Card
                     card.classList.add("card-active");
                     card.classList.remove("card-done");
                     if(callBtn) callBtn.disabled = false;
                     if(remarkSel) remarkSel.disabled = false;
                 } else {
-                    // Future Cards (waiting below screen)
                     card.classList.remove("card-active");
                     card.classList.remove("card-done");
                     if(callBtn) callBtn.disabled = true;
@@ -568,15 +560,14 @@
             fetch(apiURL, { method: 'POST', body: JSON.stringify(payload) })
             .then(r => console.log("Saved")).catch(e => console.error("Save Error", e));
 
-            // Move to Next Card Instantly (CSS handles the smooth scroll)
             currentIndex++;
             
             if (currentIndex < pendingQueue.length) {
                 updateStatsBar(); 
-                updateCardStyles(); // This triggers the continuous scroll effect!
+                updateCardStyles(); 
             } else {
-                updateCardStyles(); // Move the last card away
-                setTimeout(() => { showDoneScreen(); }, 1000); // Wait for animation to finish
+                updateCardStyles(); 
+                setTimeout(() => { showDoneScreen(); }, 1000); 
             }
         }
 
