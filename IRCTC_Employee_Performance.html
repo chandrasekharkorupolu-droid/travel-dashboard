@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRCTC Employee Performance - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel Form structure */
+        .top-controls {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
+        }
+        .page-heading { font-size: 18px; color: #003366; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        
+        .filter-group { display: flex; gap: 12px; align-items: center; }
+        .search-box { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 220px; background-color: #f8fafc; font-weight: 600; color: #1e293b; transition: 0.2s;}
+        .search-box:focus { border-color: #3b82f6; background-color: #ffffff; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 Image Export Panels */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        
+        .capture-compact { 
+            width: max-content !important; min-width: 1000px !important; margin: 0; 
+            background-color: #ffffff !important; padding: 30px !important; 
+            display: inline-block !important; height: auto !important; overflow: visible !important; 
+        }
+        .capture-compact .table-container { 
+            height: auto !important; overflow: visible !important; display: block !important; 
+            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+        }
+        .capture-compact table { width: 100% !important; }
+        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
+
+        /* Report Header */
+        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        .report-header h1 { font-size: 22px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 0; }
+
+        /* KPI Cards */
+        .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;}
+        .kpi-card { 
+            background-color: #ffffff; border-radius: 6px; padding: 12px 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06); border-left: 5px solid; 
+            cursor: pointer; transition: 0.2s; min-width: 200px;
+            display: flex; align-items: center; justify-content: space-between; 
+            border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+        }
+        .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin: 0; }
+        .kpi-value { font-size: 24px; font-weight: 900; margin: 0; }
+
+        .kpi-total { border-left-color: #1e293b; } .kpi-total .kpi-value { color: #0f172a; }
+        .kpi-yday { border-left-color: #2563eb; } .kpi-yday .kpi-value { color: #1d4ed8; }
+        .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #047857; }
+        .kpi-inactive { border-left-color: #0ea5e9; } .kpi-inactive .kpi-value { color: #0369a1; }
+
+        /* Table Settings */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        thead tr:nth-child(1) th { position: sticky; top: 0; z-index: 21; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        thead tr:nth-child(2) th { position: sticky; top: 41px; z-index: 20; border-bottom: 2px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+
+        th { font-size: 11px; text-transform: uppercase; padding: 12px 8px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); letter-spacing: 0.5px;}
+        td { padding: 10px 10px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; font-weight: 600; vertical-align: middle; }
+        
+        /* 🌟 Corporate Header Colors 🌟 */
+        .th-emp { background-color: #0f172a; min-width: 180px; position: sticky; left: 0; z-index: 95 !important; border-right: 2px solid #cbd5e1 !important;} 
+        .th-ids { background-color: #334155; } 
+        .th-act25 { background-color: #475569; } 
+        .th-tot26 { background-color: #2563eb; } 
+        .th-pend { background-color: #e11d48; } 
+        .th-inact { background-color: #64748b; } 
+        .th-yday { background-color: #0d9488; } 
+
+        .th-sub-tot26 { background-color: #eff6ff; color: #1e3a8a; border-right: 1px solid #bfdbfe; font-size: 11px; border-bottom: 3px solid #3b82f6 !important;}
+        .th-sub-yday { background-color: #f0fdfa; color: #115e59; border-right: 1px solid #ccfbf1; font-size: 11px; border-bottom: 3px solid #14b8a6 !important;}
+
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        tr:hover td { background-color: #eff6ff; }
+        
+        /* Corporate Data Colors & Effects */
+        .td-emp { 
+            text-align: left; padding-left: 15px; color: #1e293b; font-weight: 800; 
+            position: sticky; left: 0; background-color: #ffffff; z-index: 5; 
+            border-right: 2px solid #cbd5e1 !important; cursor: pointer; transition: 0.2s; user-select: none;
+        }
+        tr:nth-child(even) .td-emp { background-color: #f8fafc; }
+        .td-emp:hover { color: #2563eb; background-color: #e0f2fe !important; }
+        
+        .td-ids { color: #334155; font-weight: 700; }
+        .td-act25 { color: #059669; font-weight: 700; }
+        .td-tot26-old { color: #2563eb; font-weight: 700; background-color: #f8fafc;}
+        .td-tot26-new { color: #0ea5e9; font-weight: 700; background-color: #f8fafc;}
+        .td-tot26-all { color: #1e3a8a; font-weight: 800; background-color: #eff6ff; }
+        .td-pend { color: #e11d48; font-weight: 700; }
+        .td-inact { color: #64748b; font-weight: 700; }
+        .td-yday-old { color: #0f766e; font-weight: 800; background-color: #f8fafc;}
+        .td-yday-new { color: #115e59; font-weight: 800; background-color: #f8fafc;}
+
+        /* 🌟 Zero Highlight Class (Warning Red) 🌟 */
+        .zero-val { color: #dc2626 !important; background-color: #fef2f2 !important; font-weight: 800 !important; }
+
+        /* Total Row Design */
+        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
+        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+
+        /* Loaders */
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%;}
+        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="top-controls">
+        <div class="page-heading">👤 IRCTC Employee Daily Performance</div>
+        <div class="filter-group">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search Employee Name..." onkeyup="renderTable()">
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="report-header">
+            <h1>CSC AP – IRCTC Employee Performance Dashboard</h1>
+            <p id="reportDate">Report Generated on: </p>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-total">
+                <span class="kpi-title">TOTAL EMPLOYEES</span>
+                <span class="kpi-value" id="kpi-total-emp">0</span>
+            </div>
+            <div class="kpi-card kpi-yday">
+                <span class="kpi-title">Y'DAY TOTAL ACT.</span>
+                <span class="kpi-value" id="kpi-yday-act">0</span>
+            </div>
+            <div class="kpi-card kpi-active">
+                <span class="kpi-title">Y'DAY OLD ACT.</span>
+                <span class="kpi-value" id="kpi-yday-old">0</span>
+            </div>
+            <div class="kpi-card kpi-inactive">
+                <span class="kpi-title">Y'DAY NEW ACT.</span>
+                <span class="kpi-value" id="kpi-yday-new">0</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="th-emp">EMPLOYEE NAME ⇅</th>
+                        <th rowspan="2" class="th-ids">TOTAL IRCTC IDs</th>
+                        <th rowspan="2" class="th-act25">ACTIVE<br><small>(FY 25-26)</small></th>
+                        <th colspan="3" class="th-tot26">TOTAL ACTIVE (FY 26-27)</th>
+                        <th rowspan="2" class="th-pend">PENDING<br><small>(FY 25-26)</small></th>
+                        <th rowspan="2" class="th-inact">INACTIVE TILL NOW</th>
+                        <th colspan="2" class="th-yday">Y'DAY ACTIVATIONS</th>
+                    </tr>
+                    <tr>
+                        <th class="th-sub-tot26">OLD</th>
+                        <th class="th-sub-tot26">NEW</th>
+                        <th class="th-sub-tot26">TOTAL ACTIVE</th>
+                        <th class="th-sub-yday">OLD</th>
+                        <th class="th-sub-yday">NEW</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="10">
+                        <div class="loader"><div class="spinner"></div> Loading Employee Performance Data... Please wait.</div>
+                    </td></tr>
+                </tbody>
+                <tfoot id="tableFooter"></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let globalEmpData = [];
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
+
+            fetchSheetData(); 
+        };
+
+        async function fetchSheetData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                if (cachedData) {
+                    processEmployeeData(JSON.parse(cachedData));
+                    return;
+                }
+
+                let response = await fetch(apiURL);
+                let rawData = await response.json();
+                
+                sessionStorage.setItem("cscTravelData", JSON.stringify(rawData));
+                processEmployeeData(rawData);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='10' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processEmployeeData(rawData) {
+            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
+            
+            let idxYdayTxns = cleanHeaders.findIndex(h => h.includes('yesterday') || h.includes('yday'));
+            if(idxYdayTxns === -1) idxYdayTxns = 32; 
+
+            let mIndices = [];
+            let idx27 = -1;
+            
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+            }
+
+            globalEmpData = [];
+
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i];
+                let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                let empName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+                if(!cscId || cscId === '-' || empName === '' || empName === '-') continue;
+
+                if (userDesignation === "District Manager" && empName.toLowerCase() !== loggedInUser.toLowerCase().trim()) {
+                    continue; 
+                }
+
+                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+                let isAct25_26 = fy26 > 0;
+
+                let monthSum = 0;
+                mIndices.forEach(colIdx => {
+                    if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
+                });
+                let fy27Total = monthSum;
+                if (fy27Total === 0 && idx27 > -1) {
+                    fy27Total = parseInt(row[idx27]) || 0;
+                }
+                let isAct26_27 = fy27Total > 0;
+
+                let ydayTxnVal = idxYdayTxns > -1 && idxYdayTxns < row.length ? (parseInt(row[idxYdayTxns]) || 0) : 0;
+                
+                // 🌟 Y'Day Activation Logic
+                let isYdayActivation = (ydayTxnVal > 0) && (fy27Total === ydayTxnVal);
+
+                globalEmpData.push({
+                    empName: empName,
+                    hasIrctc: (row[idxirctc] && row[idxirctc] !== '-') ? 1 : 0,
+                    isAct25_26: isAct25_26,
+                    isAct26_27: isAct26_27,
+                    isYdayActivation: isYdayActivation
+                });
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            
+            let empMap = {};
+            let gt = { emps: 0, ids: 0, act25: 0, activeOld: 0, activeNew: 0, totalActive26: 0, pending: 0, inactive: 0, ydayOld: 0, ydayNew: 0 };
+
+            globalEmpData.forEach(row => {
+                let name = row.empName;
+                if(searchQuery !== "" && !name.toLowerCase().includes(searchQuery)) return;
+
+                if(!empMap[name]) {
+                    empMap[name] = { ids: 0, act25: 0, activeOld: 0, activeNew: 0, pending: 0, ydayOld: 0, ydayNew: 0 };
+                }
+
+                let e = empMap[name];
+                e.ids += row.hasIrctc;
+
+                if (row.isAct25_26) { e.act25++; }
+
+                if (row.isAct26_27) {
+                    if (row.isAct25_26) { e.activeOld++; } 
+                    else { e.activeNew++; }
+                } else {
+                    if (row.isAct25_26) { e.pending++; } 
+                }
+
+                if (row.isYdayActivation) {
+                    if (row.isAct25_26) { e.ydayOld++; } 
+                    else { e.ydayNew++; }
+                }
+            });
+
+            let sortedEmployees = Object.keys(empMap).sort();
+            let tbodyHtml = "";
+
+            sortedEmployees.forEach(name => {
+                let e = empMap[name];
+                
+                let totalActive26 = e.activeOld + e.activeNew;
+                let inactiveCount = e.ids - totalActive26;
+                if(inactiveCount < 0) inactiveCount = 0; 
+                
+                let oldZeroClass = e.ydayOld === 0 ? "zero-val" : "";
+                let newZeroClass = e.ydayNew === 0 ? "zero-val" : "";
+                
+                tbodyHtml += `<tr>
+                    <td class="td-emp" ondblclick="filterByEmployee('${name.replace(/'/g, "\\'")}')" title="Double click to filter">${name}</td>
+                    <td class="td-ids">${e.ids}</td>
+                    <td class="td-act25">${e.act25}</td>
+                    <td class="td-tot26-old">${e.activeOld}</td>
+                    <td class="td-tot26-new">${e.activeNew}</td>
+                    <td class="td-tot26-all">${totalActive26}</td>
+                    <td class="td-pend">${e.pending}</td>
+                    <td class="td-inact">${inactiveCount}</td>
+                    <td class="td-yday-old ${oldZeroClass}">${e.ydayOld}</td>
+                    <td class="td-yday-new ${newZeroClass}">${e.ydayNew}</td>
+                </tr>`;
+
+                gt.ids += e.ids;
+                gt.act25 += e.act25;
+                gt.activeOld += e.activeOld;
+                gt.activeNew += e.activeNew;
+                gt.totalActive26 += totalActive26;
+                gt.pending += e.pending;
+                gt.inactive += inactiveCount;
+                gt.ydayOld += e.ydayOld;
+                gt.ydayNew += e.ydayNew;
+            });
+
+            gt.emps = sortedEmployees.length;
+
+            if(gt.emps === 0) {
+                tbodyHtml = `<tr><td colspan="10" style="padding: 30px; color: #d9534f; font-weight: bold;">No Employee Record Found!</td></tr>`;
+                document.getElementById("tableFooter").innerHTML = "";
+            } else {
+                document.getElementById("tableFooter").innerHTML = `<tr class="total-row">
+                    <td>GRAND TOTAL</td>
+                    <td class="td-ids">${gt.ids}</td>
+                    <td class="td-act25">${gt.act25}</td>
+                    <td class="td-tot26-old">${gt.activeOld}</td>
+                    <td class="td-tot26-new">${gt.activeNew}</td>
+                    <td class="td-tot26-all">${gt.totalActive26}</td>
+                    <td class="td-pend">${gt.pending}</td>
+                    <td class="td-inact">${gt.inactive}</td>
+                    <td class="td-yday-old">${gt.ydayOld}</td>
+                    <td class="td-yday-new">${gt.ydayNew}</td>
+                </tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml;
+            
+            document.getElementById("kpi-total-emp").innerText = gt.emps;
+            document.getElementById("kpi-yday-act").innerText = (gt.ydayOld + gt.ydayNew);
+            document.getElementById("kpi-yday-old").innerText = gt.ydayOld;
+            document.getElementById("kpi-yday-new").innerText = gt.ydayNew;
+        }
+
+        function filterByEmployee(empName) {
+            let searchBox = document.getElementById("searchInput");
+            if (searchBox.value.toLowerCase() === empName.toLowerCase()) {
+                searchBox.value = ""; 
+            } else {
+                searchBox.value = empName; 
+            }
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById("searchInput").value = "";
+            renderTable();
+        }
+
+        /* 🌟 Full Screen API Fix 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        /* 🌟 Image Download Fix 🌟 */
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-container");
+            
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.height = "auto";
+            
+            const stickyEls = captureArea.querySelectorAll('th, td.td-emp, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    link.download = `IRCTC_Employee_Performance_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500);
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

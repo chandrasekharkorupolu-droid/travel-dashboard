@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Registrations (FY 26-27)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* బేసిక్ సెట్టింగ్స్ */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* 🌟 Iframe కి తగ్గట్టుగా బాడీని అడ్జస్ట్ చేశాను 🌟 */
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 12px 15px; gap: 10px; transition: all 0.3s ease; }
+
+        /* టాప్ కంట్రోల్స్ */
+        .top-controls {
+            display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; 
+            padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #dcdcdc;
+            flex-shrink: 0;
+        }
+        .page-heading { font-size: 20px; color: #003366; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        
+        .filter-group { display: flex; gap: 12px; align-items: center; }
+        .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
+        
+        .btn-action { background-color: #f0f0f0; color: #333; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #ccc; }
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 0 0 #ccc; }
+        .btn-action:hover { background-color: #e0e0e0; }
+
+        /* ఫుల్ స్క్రీన్ మోడ్ */
+        body.fullscreen-mode { padding: 10px; }
+
+        /* క్యాప్చర్ ఏరియా */
+        #captureArea { background-color: #f8f9fc; padding: 0 5px 5px 5px; border-radius: 8px; display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+        /* రిపోర్ట్ టైటిల్ & డేట్ */
+        .report-header { text-align: center; padding: 5px 0 10px 0; flex-shrink: 0; }
+        .report-header h1 { font-size: 20px; color: #002244; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .report-header p { font-size: 12px; color: #666; font-weight: 600; margin-top: 0; }
+
+        /* 🌟 సింగిల్ లైన్ కాంపాక్ట్ KPI కార్డ్స్ 🌟 */
+        .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 12px; }
+        .kpi-card { 
+            background-color: #ffffff; border-radius: 6px; padding: 8px 20px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid; 
+            cursor: pointer; transition: 0.2s; min-width: 220px;
+            display: flex; align-items: center; justify-content: space-between; 
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
+        .kpi-value { font-size: 22px; font-weight: 800; margin: 0; }
+
+        .kpi-total { border-left-color: #ea580c; } .kpi-total .kpi-value { color: #ea580c; }
+        .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #10b981; }
+        .kpi-inactive { border-left-color: #ef4444; } .kpi-inactive .kpi-value { color: #ef4444; }
+        .kpi-card.selected-filter { border: 2px solid #333; }
+
+        /* స్ప్లిట్ లేఅవుట్ (District Summary & Detailed Table) */
+        .dashboard-body { display: flex; gap: 15px; flex: 1; overflow: hidden; }
+        .summary-panel, .details-panel { 
+            background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            border: 1px solid #dcdcdc; display: flex; flex-direction: column; overflow: hidden; 
+        }
+        .summary-panel { flex: 0 0 380px; } /* ఫిక్సెడ్ విడ్త్ ఫర్ సమ్మరీ */
+        .details-panel { flex: 1; }
+        
+        .panel-header { 
+            background-color: #f1f5f9; padding: 10px 15px; font-size: 13px; font-weight: 800; 
+            color: #1e293b; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .table-wrap { flex: 1; overflow: auto; position: relative; }
+
+        /* టేబుల్ లేఅవుట్ & కాలమ్స్ సెట్టింగ్స్ */
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        
+        th { font-size: 11px; text-transform: uppercase; padding: 12px 8px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
+        td { padding: 8px; font-size: 12px; color: #333; border-bottom: 1px solid #eee; border-right: 1px solid #eee; font-weight: 600; vertical-align: middle; }
+        
+        /* 🌟 కస్టమ్ హెడర్ కలర్స్ (మన ఇమేజ్ థీమ్ లాగా) 🌟 */
+        .th-c1 { background-color: #111c24 !important; border-right: 1px solid #2d3748 !important; } /* Dark Navy */
+        .th-c2 { background-color: #ea580c !important; } /* Orange */
+        .th-c3 { background-color: #64748b !important; } /* Gray */
+        .th-c4 { background-color: #06b6d4 !important; } /* Cyan */
+        .th-c5 { background-color: #3b82f6 !important; } /* Blue */
+        .th-c6 { background-color: #8b5cf6 !important; } /* Purple */
+        .th-c7 { background-color: #f59e0b !important; } /* Yellow/Amber */
+        .th-c8 { background-color: #10b981 !important; } /* Emerald Green */
+        .th-red { background-color: #ef4444 !important; } /* Red */
+        .th-c9 { background-color: #0f172a !important; } /* Almost Black/Navy */
+
+        tr:hover td { background-color: #f0f8ff; }
+        
+        /* సమ్మరీ టేబుల్ క్లిక్ యానిమేషన్ */
+        .col-district { cursor: pointer; transition: 0.2s; }
+        .col-district:hover { background-color: #e0f2fe !important; }
+        .active-row td { background-color: #bae6fd !important; } /* Selected district highlight */
+        
+        /* టోటల్ రో డిజైన్ */
+        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 800; color: #111827; border-top: 2px solid #cbd5e1; font-size: 13px; position: sticky; bottom: 0; z-index: 10; }
+        tfoot tr.total-row td:first-child { text-align: right; padding-right: 15px; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1px solid; text-transform: uppercase; letter-spacing: 0.5px;}
+        .badge-active { color: #15803d; border-color: #15803d; background-color: #f0fdf4;}
+        .badge-inactive { color: #b91c1c; border-color: #b91c1c; background-color: #fef2f2;}
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .loader { text-align: center; padding: 40px; font-size: 14px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 10px;}
+        .spinner { width: 24px; height: 24px; border: 3px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ఇమేజ్ డౌన్‌లోడ్ అయ్యేటప్పుడు శ్రింక్ చేయడానికి క్లాస్ */
+        .capture-compact { padding: 15px !important; display: block !important; height: auto !important; overflow: visible !important; background-color: #ffffff !important; }
+        .capture-compact .dashboard-body { height: auto !important; overflow: visible !important; display: flex !important; }
+        .capture-compact .summary-panel, .capture-compact .details-panel { height: auto !important; overflow: visible !important; }
+        .capture-compact .table-wrap { height: auto !important; overflow: visible !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-controls">
+        <div class="page-heading">🆕 IRCTC New Registrations (FY 26-27)</div>
+        <div class="filter-group">
+            <span style="font-size: 12px; font-weight: 700; color: #555;">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" style="display:none;" onchange="renderTable()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        
+        <div class="report-header">
+            <h1>CSC AP – IRCTC New Registrations (FY 26-27)</h1>
+            <p id="reportDate">Report Generated on: </p>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-total selected-filter" id="kpi-all" onclick="setKpiFilter('all')">
+                <span class="kpi-title">TOTAL NEW VLEs</span>
+                <span class="kpi-value" id="val-total">0</span>
+            </div>
+            <div class="kpi-card kpi-active" id="kpi-active" onclick="setKpiFilter('active')">
+                <span class="kpi-title">ACTIVE VLEs</span>
+                <span class="kpi-value" id="val-active">0</span>
+            </div>
+            <div class="kpi-card kpi-inactive" id="kpi-inactive" onclick="setKpiFilter('notstarted')">
+                <span class="kpi-title">NOT STARTED</span>
+                <span class="kpi-value" id="val-notstarted">0</span>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            
+            <div class="summary-panel">
+                <div class="panel-header">📊 District-wise Summary</div>
+                <div class="table-wrap">
+                    <table id="summaryTable">
+                        <thead>
+                            <tr>
+                                <th class="th-c1" style="text-align: left; padding-left: 15px;">DISTRICT</th>
+                                <th class="th-c2">TOTAL</th>
+                                <th class="th-c8">ACTIVE</th>
+                                <th class="th-red">NOT STARTED</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryBody">
+                            <tr><td colspan="4"><div class="loader"><div class="spinner"></div> Loading Summary...</div></td></tr>
+                        </tbody>
+                        <tfoot id="summaryFooter"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="details-panel">
+                <div class="panel-header" id="detailsPanelTitle">📋 VLE Detailed List (All Districts)</div>
+                <div class="table-wrap">
+                    <table id="dataTable" style="min-width: 900px;">
+                        <thead>
+                            <tr>
+                                <th class="th-c1">DISTRICT</th>
+                                <th class="th-c2">VLE NAME</th>
+                                <th class="th-c3">CSC ID</th>
+                                <th class="th-c4">IRCTC ID</th>
+                                <th class="th-c5">MOBILE</th>
+                                <th class="th-c6">VLE MOBILE NO</th>
+                                <th class="th-c7">CREATION DATE</th>
+                                <th class="th-c8">TXNS (26-27)</th>
+                                <th class="th-c9">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="9">
+                                <div class="loader"><div class="spinner"></div> Loading New Registrations Data... Please wait.</div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div> 
+    </div>
+
+    <script>
+        let globalNewVles = [];
+        let oldDistrictsSet = new Set();
+        let newDistrictsSet = new Set();
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+        let currentKpiFilter = 'all';
+
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
+
+            fetchSheetData(); 
+        };
+
+        // 🌟 2. Fast Loading using sessionStorage
+        async function fetchSheetData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                if (cachedData) {
+                    processNewVleData(JSON.parse(cachedData));
+                    return;
+                }
+
+                let response = await fetch(apiURL);
+                let rawData = await response.json();
+                
+                sessionStorage.setItem("cscTravelData", JSON.stringify(rawData));
+                processNewVleData(rawData);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Data.</td></tr>";
+                document.getElementById("summaryBody").innerHTML = "<tr><td colspan='4' style='color:red; text-align:center;'>❌ Error</td></tr>";
+            }
+        }
+
+        function processNewVleData(rawData) {
+            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
+            let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
+            let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+            
+            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
+            
+            let mIndices = [];
+            let idx27 = -1;
+            
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+            }
+
+            globalNewVles = [];
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
+            dmMappedOldDistricts.clear();
+            dmMappedNewDistricts.clear();
+
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i];
+                let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                if(!cscId || cscId === '-') continue;
+
+                let dateStr = idxDate > -1 ? row[idxDate].toString().trim() : '';
+                let isFY26_27 = false;
+                let formattedDate = '-';
+
+                // 🌟 1. ఒకవేళ డేట్ ముందు సింగిల్ కోట్ (') ఉంటే దాన్ని తొలగించడం 🌟
+                if (dateStr.startsWith("'")) {
+                    dateStr = dateStr.substring(1);
+                }
+
+                // 🌟 2. డేట్ ద్వారా FY 26-27 ని లెక్కించడం 🌟
+                if (dateStr && dateStr !== '-') {
+                    let d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) {
+                        let year = d.getFullYear();
+                        let month = d.getMonth() + 1; // 1-12
+                        
+                        let fyStartYear = month >= 4 ? year : year - 1;
+                        if (fyStartYear === 2026) {
+                            isFY26_27 = true;
+                        }
+                        
+                        formattedDate = ("0" + d.getDate()).slice(-2) + "-" + ("0" + month).slice(-2) + "-" + year;
+                    } else {
+                        formattedDate = dateStr; // డేట్ కన్వర్ట్ అవ్వకపోతే ఉన్నది ఉన్నట్టుగా చూపించడం
+                    }
+                }
+
+                // 🌟 3. బ్రహ్మాస్త్రం: ఆ లైన్ లో ఎక్కడైనా "FY 26-27" అని ఉంటే కచ్చితంగా రిపోర్ట్ లోకి తీసుకోవాలి 🌟
+                let hasFYTag = row.some(cell => cell && cell.toString().trim() === "FY 26-27");
+                if (hasFYTag) {
+                    isFY26_27 = true;
+                }
+
+                // ఫిల్టర్: FY 26-27 వాళ్ళని మాత్రమే తీసుకుంటున్నాం
+                if(isFY26_27) {
+                    let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
+                    let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
+                    let dmName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+
+                    if(oldDist !== 'Unknown' && oldDist !== '-') oldDistrictsSet.add(oldDist);
+                    if(newDist !== 'Unknown' && newDist !== '-') newDistrictsSet.add(newDist);
+
+                    // DM Mapped Districts లాజిక్
+                    if (userDesignation === "District Manager" && dmName.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                        if(oldDist !== 'Unknown' && oldDist !== '-') dmMappedOldDistricts.add(oldDist);
+                        if(newDist !== 'Unknown' && newDist !== '-') dmMappedNewDistricts.add(newDist);
+                    }
+
+                    let monthSum = 0;
+                    mIndices.forEach(colIdx => {
+                        if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
+                    });
+
+                    let fy27Total = monthSum;
+                    if (fy27Total === 0 && idx27 > -1) {
+                        fy27Total = parseInt(row[idx27]) || 0;
+                    }
+
+                    let mob1 = idxmob > -1 && row[idxmob] ? row[idxmob].toString().trim() : '-';
+                    let mob2 = idxvlemob > -1 && row[idxvlemob] ? row[idxvlemob].toString().trim() : '-';
+
+                    globalNewVles.push({
+                        district_old: oldDist,
+                        district_new: newDist,
+                        dmname: dmName,
+                        vlename: idxvlename > -1 ? row[idxvlename] : '-',
+                        cscid: cscId,
+                        irctc: idxirctc > -1 ? row[idxirctc] : '-',
+                        mobile: mob1,
+                        vlemob: mob2,
+                        creation_date: formattedDate,
+                        txns_26_27: fy27Total,
+                        isActive: fy27Total > 0
+                    });
+                }
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            
+            // 🌟 4. Dropdown ని DM కోసం ఫిల్టర్ చేయడం
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 arr = arr.filter(dist => mappedSet.has(dist));
+            }
+
+            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            
+            if(globalNewVles.length >= 0) {
+                renderSummaryTable();
+                renderTable(); 
+            }
+        }
+
+        // ఎడమ వైపు (Left Panel) Summary Table రెండరింగ్
+        function renderSummaryTable() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value; 
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            let summaryMap = {};
+            let gt = { total: 0, active: 0, notstarted: 0 };
+
+            globalNewVles.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown') return;
+
+                // 🌟 5. Summary Table లో DM ఫిల్టరింగ్ లాజిక్
+                if (userDesignation === "District Manager") {
+                    if (distType === 'old') {
+                        // పాత జిల్లాలు అయితే, మొత్తం కౌంట్ వస్తుంది (కానీ వాళ్ళకి మ్యాప్ అయిన జిల్లాలే వస్తాయి)
+                        if (!dmMappedOldDistricts.has(dist)) return; 
+                    } else {
+                        // కొత్త జిల్లాలు అయితే, వాళ్ళ పేరు మీద ఉన్నవి మాత్రమే కౌంట్ అవుతాయి
+                        if (row.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                    }
+                }
+
+                if (!summaryMap[dist]) {
+                    summaryMap[dist] = { total: 0, active: 0, notstarted: 0 };
+                }
+
+                summaryMap[dist].total++;
+                gt.total++;
+
+                if (row.isActive) {
+                    summaryMap[dist].active++;
+                    gt.active++;
+                } else {
+                    summaryMap[dist].notstarted++;
+                    gt.notstarted++;
+                }
+            });
+
+            let sortedDistricts = Object.keys(summaryMap).sort();
+            let tbody = "";
+
+            sortedDistricts.forEach(dist => {
+                let d = summaryMap[dist];
+                let rowClass = dist === selectedDist ? "col-district active-row" : "col-district";
+                
+                tbody += `<tr class="${rowClass}" onclick="filterByDistrict('${dist}')" title="Click to view detailed list">
+                    <td style="text-align:left; padding-left:15px; font-weight:700;">${dist}</td>
+                    <td style="font-weight: 800; color: #1e3a8a;">${d.total}</td>
+                    <td style="font-weight: 700; color: #10b981;">${d.active}</td>
+                    <td style="font-weight: 700; color: #ef4444;">${d.notstarted}</td>
+                </tr>`;
+            });
+
+            document.getElementById("summaryBody").innerHTML = tbody;
+            document.getElementById("summaryFooter").innerHTML = `<tr class="total-row">
+                <td>GRAND TOTAL</td>
+                <td style="color: #1e3a8a;">${gt.total}</td>
+                <td style="color: #10b981;">${gt.active}</td>
+                <td style="color: #ef4444;">${gt.notstarted}</td>
+            </tr>`;
+        }
+
+        // కుడి వైపు (Right Panel) Detailed Table రెండరింగ్
+        function renderTable() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            let tbodyHtml = "";
+            let counts = { total: 0, active: 0, notstarted: 0 };
+
+            globalNewVles.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown') return;
+
+                // 🌟 6. Detailed Table లో DM ఫిల్టరింగ్ లాజిక్
+                if (userDesignation === "District Manager") {
+                    if (distType === 'old') {
+                        if (!dmMappedOldDistricts.has(dist)) return; 
+                    } else {
+                        if (row.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                    }
+                }
+                
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                
+                counts.total++;
+                if(row.isActive) counts.active++;
+                else counts.notstarted++;
+
+                if(currentKpiFilter === 'active' && !row.isActive) return;
+                if(currentKpiFilter === 'notstarted' && row.isActive) return;
+
+                let statusBadge = row.isActive 
+                    ? `<span class="badge badge-active">ACTIVE</span>` 
+                    : `<span class="badge badge-inactive">NOT STARTED</span>`;
+
+                tbodyHtml += `<tr>
+                    <td style="font-weight:700;">${dist}</td>
+                    <td style="text-align:left;">${row.vlename}</td>
+                    <td style="color: #2563eb; font-weight: 700;">${row.cscid}</td>
+                    <td style="color: #8b5cf6; font-weight: 700;">${row.irctc}</td>
+                    <td>${row.mobile}</td>
+                    <td>${row.vlemob}</td>
+                    <td style="color: #0ea5e9; font-weight: 700;">${row.creation_date}</td>
+                    <td style="font-size: 14px; font-weight: 800; color: #10b981;">${row.txns_26_27}</td>
+                    <td>${statusBadge}</td>
+                </tr>`;
+            });
+
+            if(counts.total === 0) {
+                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No New Registrations Found!</td></tr>`;
+            } else if (tbodyHtml === "") {
+                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No Records match your filter!</td></tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml;
+            
+            document.getElementById("val-total").innerText = counts.total;
+            document.getElementById("val-active").innerText = counts.active;
+            document.getElementById("val-notstarted").innerText = counts.notstarted;
+        }
+
+        // సమ్మరీ టేబుల్ లో ఏదైనా జిల్లా క్లిక్ చేస్తే...
+        function filterByDistrict(distName) {
+            document.getElementById("districtName").value = distName;
+            document.getElementById("detailsPanelTitle").innerText = distName === "All" ? "📋 VLE Detailed List (All Districts)" : `📋 VLE Detailed List (${distName})`;
+            
+            renderSummaryTable(); 
+            renderTable(); 
+        }
+
+        function setKpiFilter(status) {
+            currentKpiFilter = status;
+            document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
+            
+            if(status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
+            else if(status === 'active') document.getElementById('kpi-active').classList.add('selected-filter');
+            else if(status === 'notstarted') document.getElementById('kpi-inactive').classList.add('selected-filter');
+            
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            document.getElementById("districtName").value = "All";
+            document.getElementById("detailsPanelTitle").innerText = "📋 VLE Detailed List (All Districts)";
+            setKpiFilter('all');
+            updateDistrictsDropdown();
+        }
+
+        /* 🌟 ఆరెంజ్ కలర్ ఫుల్ స్క్రీన్ బటన్ (Real Full Screen API) 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; 
+                    btn.style.color = "white"; 
+                    btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            } catch (e) {
+                console.log("Fullscreen not supported");
+            }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f0f0f0"; 
+                btn.style.color = "#333"; 
+                btn.style.borderColor = "#ccc";
+            }
+        });
+
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            captureArea.classList.add("capture-compact");
+            
+            html2canvas(captureArea, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                let d = new Date();
+                let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                
+                let typeSelect = document.getElementById("districtType");
+                let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                
+                link.download = `IRCTC_New_Registrations_${typeText}_${dateStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                captureArea.classList.remove("capture-compact");
+                btn.innerHTML = "✅ Downloaded";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+            }).catch(err => {
+                console.error("Error capturing image:", err);
+                captureArea.classList.remove("capture-compact");
+                btn.innerHTML = "❌ Failed";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

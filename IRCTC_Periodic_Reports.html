@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periodic Performance Report - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel Form structure */
+        .target-control-panel {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
+        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .period-select { background-color: #eff6ff !important; border-color: #3b82f6 !important; color: #1e40af !important; font-weight: 800 !important; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 Image Export Panels */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        
+        .capture-compact { 
+            width: max-content !important; min-width: 1000px !important; margin: 0; 
+            background-color: #ffffff !important; padding: 30px !important; 
+            display: inline-block !important; height: auto !important; overflow: visible !important; 
+        }
+        .capture-compact .table-container { 
+            height: auto !important; overflow: visible !important; display: block !important; 
+            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+        }
+        .capture-compact table { width: 100% !important; }
+        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
+        .capture-compact .td-district { position: static !important; }
+
+        /* Flat Clean KPI Badges */
+        .kpi-display-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-shrink: 0; flex-wrap: nowrap;}
+        .kpi-box-clean { 
+            background-color: #ffffff; border-radius: 8px; padding: 12px 20px; border: 1px solid #cbd5e1; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: max-content; 
+        }
+        .kpi-box-clean.t-color { border-left: 5px solid #1e3a8a; }
+        .kpi-box-clean.a-color { border-left: 5px solid #10b981; }
+        .kpi-box-clean.b-color { border-left: 5px solid #ef4444; }
+        .kpi-box-clean.p-color { border-left: 5px solid #f59e0b; }
+        
+        .kpi-box-clean .lbl { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; white-space: nowrap;}
+        .kpi-box-clean .val { font-size: 22px; font-weight: 800; color: #1e293b; margin: 0; line-height: 1; white-space: nowrap;}
+
+        /* Data table container */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        th, td { white-space: nowrap; }
+
+        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
+        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; }
+        
+        /* Corporate Style Colors */
+        .th-dist { background-color: #0f172a; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;}
+        .th-ids { background-color: #334155; }
+        .th-act { background-color: #475569; }
+        .th-act26 { background-color: #0ea5e9; } 
+        .th-tar { background-color: #1e3a8a; }
+        .th-ach { background-color: #10b981; }
+        .th-bal { background-color: #be123c; }
+        .th-per { background-color: #d97706; }
+
+        tr:hover td { background-color: #f8fafc; }
+        
+        .td-district { 
+            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
+            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .td-district:hover { background-color: #e0f2fe; color: #2563eb; }
+        tbody tr:nth-child(even) .td-district { background-color: #f8fafc; }
+
+        .td-ids { color: #334155; font-weight: 700; }
+        .td-act { color: #0f766e; font-weight: 800; }
+        .td-act26 { color: #0284c7; font-weight: 800; } 
+        .td-tar { color: #1e3a8a; font-weight: 800; background-color: #eff6ff;}
+        .td-ach { color: #047857; font-weight: 800; background-color: #f0fdf4;}
+        .td-bal { color: #be123c; font-weight: 800; background-color: #fff1f2;}
+        
+        .pct-high { color: #15803d; font-weight: 900; }
+        .pct-med { color: #b45309; font-weight: 900; }
+        .pct-low { color: #b91c1c; font-weight: 900; }
+
+        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
+        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+
+        .header-title-bar { font-size: 20px; font-weight: 800; color: #1e293b; text-transform: uppercase; text-align: center; padding: 8px 0; letter-spacing: 0.5px; flex-shrink: 0;}
+
+        .loader { text-align: center; padding: 50px; font-size: 16px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        .spinner { width: 30px; height: 30px; border: 4px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="target-control-panel">
+        <div class="filter-group-custom">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
+            <select id="reportType" onchange="calculatePeriodicData()" style="border-color: #e65c00; color: #e65c00; font-weight: 800; background-color: #fffaf7;">
+                <option value="txns" selected>🎫 Transactions</option>
+                <option value="txn_rev">💰 Transaction Revenue</option>
+                <option value="regs">📋 Registrations</option>
+                <option value="reg_rev">💵 Registration Revenue</option>
+            </select>
+        </div>
+        
+        <div class="filter-group-custom" style="margin-left: 15px;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Period:</span>
+            <select id="periodSelect" class="period-select" onchange="calculatePeriodicData()">
+                <optgroup label="Quarterly & Yearly">
+                    <option value="yearly" selected>Yearly (FY 26-27)</option>
+                    <option value="q1">Q1 (Apr - Jun)</option>
+                    <option value="q2">Q2 (Jul - Sep)</option>
+                    <option value="h1">Half Yearly (Apr - Sep)</option>
+                    <option value="q3">Q3 (Oct - Dec)</option>
+                    <option value="q4">Q4 (Jan - Mar)</option>
+                </optgroup>
+                <optgroup label="Monthly">
+                    <option value="apr">April 2026</option>
+                    <option value="may">May 2026</option>
+                    <option value="jun">June 2026</option>
+                    <option value="jul">July 2026</option>
+                    <option value="aug">August 2026</option>
+                    <option value="sep">September 2026</option>
+                    <option value="oct">October 2026</option>
+                    <option value="nov">November 2026</option>
+                    <option value="dec">December 2026</option>
+                    <option value="jan">January 2027</option>
+                    <option value="feb">February 2027</option>
+                    <option value="mar">March 2027</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="filter-group-custom" style="margin-left: auto;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="calculatePeriodicData()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="header-title-bar" id="dynamicTitle">IRCTC PERIODIC PERFORMANCE REPORT</div>
+        <div style="font-size: 12px; color: #64748b; text-align: center; margin-top: -5px; margin-bottom: 25px; font-weight: bold;" id="reportDate">Loading Date...</div>
+
+        <div class="kpi-display-row">
+            <div class="kpi-box-clean t-color">
+                <span class="lbl" id="lbl-target">TOTAL TARGET:</span>
+                <span class="val" id="dispTotalTarget">0</span>
+            </div>
+            <div class="kpi-box-clean a-color">
+                <span class="lbl" id="lbl-achieved">TOTAL ACHIEVED:</span>
+                <span class="val" id="dispTotalAchieved">0</span>
+            </div>
+            <div class="kpi-box-clean b-color">
+                <span class="lbl" id="lbl-balance">BALANCE TO REACH:</span>
+                <span class="val" id="dispTotalBalance">0</span>
+            </div>
+            <div class="kpi-box-clean p-color">
+                <span class="lbl">% ACHIEVED:</span>
+                <span class="val" id="dispTotalPercent">0%</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="periodicTable">
+                <thead>
+                    <tr>
+                        <th class="th-dist">DISTRICT ⇅</th>
+                        <th class="th-ids">TOTAL IRCTC IDs</th>
+                        <th class="th-act" id="th-act25">FY 25-26 ACTIVE VLEs</th>
+                        <th class="th-act26" id="th-act26">FY 26-27 ACTIVE VLEs</th> 
+                        <th class="th-tar" id="th-target">TARGET</th>
+                        <th class="th-ach" id="th-achieved">ACHIEVED</th>
+                        <th class="th-bal" id="th-balance">BALANCE</th>
+                        <th class="th-per">% ACHIEVED</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="8"><div class="loader"><div class="spinner"></div> Fetching Periodic Data... Please wait.</div></td></tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row" id="tableFooter">
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let globalVleData = []; 
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+        
+        let oldDistrictsList = [
+            "Anantapur", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", 
+            "Prakasam", "SPSR Nellore", "Srikakulam", "Visakhapatnam", "Vizianagaram", 
+            "West Godavari", "YSR Kadapa"
+        ];
+        let newDistrictsList = [
+            "Anantapur", "Annamayya", "Anakapalle", "Alluri Sitharama Raju", "Bapatla", 
+            "Chittoor", "East Godavari", "Eluru", "Guntur", "Kakinada", "Konaseema", 
+            "Krishna", "Kurnool", "Nandyal", "NTR", "Palnadu", "Parvathipuram Manyam", 
+            "Prakasam", "SPSR Nellore", "Sri Sathya Sai", "Srikakulam", "Tirupati", 
+            "Visakhapatnam", "Vizianagaram", "West Godavari", "YSR Kadapa"
+        ];
+
+        let targetTxns = 181654;
+        let targetTxnRev = 6437065;
+        let targetRegs = 809;
+        let targetRegRev = 851257; 
+
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        function normalizeStr(str) {
+            return str ? str.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+        }
+
+        window.onload = function() {
+            let d = new Date();
+            let dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + d.toLocaleDateString('en-US', dateOptions);
+            
+            fetchData();
+        };
+
+        async function fetchData() {
+            try {
+                let cachedConfig = sessionStorage.getItem("cscTargetConfig");
+                let cachedVles = sessionStorage.getItem("cscTravelData");
+
+                let confData = cachedConfig ? JSON.parse(cachedConfig) : null;
+                let vlesData = cachedVles ? JSON.parse(cachedVles) : null;
+
+                let promises = [];
+                let timestamp = new Date().getTime();
+
+                if (!confData) {
+                    promises.push(fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).then(d => {
+                        confData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTargetConfig", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+                
+                if (!vlesData) {
+                    promises.push(fetch(apiURL + "?t=" + timestamp).then(r => r.json()).then(d => {
+                        vlesData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+
+                if (promises.length > 0) await Promise.all(promises);
+
+                if (confData && confData.length > 0) {
+                    for(let i=1; i<confData.length; i++) {
+                        if(confData[i][0] === "IRCTC_BOOKING") {
+                            targetTxns = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 181654;
+                            targetTxnRev = parseInt(confData[i][5]) || parseInt(confData[i][3]) || 6437065;
+                        }
+                        if(confData[i][0] === "IRCTC_REG") {
+                            targetRegs = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 809;
+                            targetRegRev = parseInt(confData[i][5]) || parseInt(confData[i][3]) || 851257;
+                        }
+                    }
+                }
+
+                if (vlesData && vlesData.length > 0) {
+                    let cleanHeaders = vlesData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+                    let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+                    let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+                    let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
+                    let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                    let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+                    let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526'));
+                    let idx27 = cleanHeaders.findIndex(h => h.includes('202627') || h.includes('2627')); 
+                    
+                    let mIndices = [];
+                    if (idx26 > -1) {
+                        for (let k = 1; k <= 12; k++) {
+                            if (idx26 + k < vlesData[0].length) mIndices.push(idx26 + k);
+                        }
+                    }
+
+                    globalVleData = [];
+                    dmMappedOldDistricts.clear();
+                    dmMappedNewDistricts.clear();
+
+                    let userDesignation = localStorage.getItem("userDesignation") || "Admin";
+                    let loggedInUser = localStorage.getItem("userName") || "";
+
+                    for(let i=1; i<vlesData.length; i++) {
+                        let row = vlesData[i];
+                        let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                        if(!cscId || cscId === '-') continue;
+
+                        let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : 'Unknown';
+                        let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : 'Unknown';
+                        let dmName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+
+                        if (userDesignation === "District Manager" && dmName.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                            if(oldD !== 'Unknown' && oldD !== '-') dmMappedOldDistricts.add(oldD);
+                            if(newD !== 'Unknown' && newD !== '-') dmMappedNewDistricts.add(newD);
+                        }
+
+                        let hasIrctc = (idxirctc > -1 && row[idxirctc] && row[idxirctc] !== '-') ? 1 : 0;
+                        let isAct25 = idx26 > -1 && (parseInt(row[idx26]) || 0) > 0 ? 1 : 0;
+
+                        let mVals = [];
+                        let act26Sum = 0; 
+                        for(let m=0; m<12; m++) {
+                            let colIdx = mIndices[m];
+                            let val = (colIdx !== undefined && colIdx > -1) ? (parseInt(row[colIdx]) || 0) : 0;
+                            mVals.push(val);
+                            act26Sum += val;
+                        }
+
+                        let isAct26 = 0;
+                        if (act26Sum > 0) {
+                            isAct26 = 1;
+                        } else if (idx27 > -1 && (parseInt(row[idx27]) || 0) > 0) {
+                            isAct26 = 1;
+                        }
+
+                        let dateStr = idxDate > -1 ? row[idxDate] : '';
+                        let regMonthIdx = -1;
+                        let isReg25 = 0;
+                        let isReg26 = 0;
+
+                        if (dateStr && dateStr !== '-') {
+                            let dObj = new Date(dateStr);
+                            if (!isNaN(dObj.getTime())) {
+                                let year = dObj.getFullYear();
+                                let month = dObj.getMonth() + 1; 
+                                let fyStartYear = month >= 4 ? year : year - 1;
+                                
+                                if (fyStartYear === 2025) isReg25 = 1;
+                                if (fyStartYear === 2026) {
+                                    isReg26 = 1;
+                                    regMonthIdx = month >= 4 ? month - 4 : month + 8;
+                                }
+                            }
+                        }
+
+                        globalVleData.push({
+                            olddist: oldD,
+                            newdist: newD,
+                            dmname: dmName,
+                            hasIrctc: hasIrctc,
+                            isAct25: isAct25,
+                            isAct26: isAct26, 
+                            isReg25: isReg25, 
+                            isReg26: isReg26, 
+                            mVals: mVals,
+                            regMonthIdx: regMonthIdx
+                        });
+                    }
+                }
+            } catch(e) { console.warn("Error processing data", e); }
+            
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const dropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+            dropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let list = type === 'old' ? [...oldDistrictsList] : [...newDistrictsList];
+            
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 list = list.filter(dist => mappedSet.has(dist));
+            }
+
+            list.sort().forEach(dist => {
+                dropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+            calculatePeriodicData();
+        }
+
+        function getPeriodInfo(period) {
+            let info = { title: "", months: [], isMonth: false, isYearly: false };
+            
+            if (period === 'yearly') { info.title = "ANNUAL"; info.months = [0,1,2,3,4,5,6,7,8,9,10,11]; info.isYearly = true; }
+            else if (period === 'h1') { info.title = "HALF YEARLY"; info.months = [0,1,2,3,4,5]; }
+            else if (period === 'q1') { info.title = "Q1"; info.months = [0,1,2]; }
+            else if (period === 'q2') { info.title = "Q2"; info.months = [3,4,5]; }
+            else if (period === 'q3') { info.title = "Q3"; info.months = [6,7,8]; }
+            else if (period === 'q4') { info.title = "Q4"; info.months = [9,10,11]; }
+            
+            else if (period === 'apr') { info.title = "APRIL"; info.months = [0]; info.isMonth = true; }
+            else if (period === 'may') { info.title = "MAY"; info.months = [1]; info.isMonth = true; }
+            else if (period === 'jun') { info.title = "JUNE"; info.months = [2]; info.isMonth = true; }
+            else if (period === 'jul') { info.title = "JULY"; info.months = [3]; info.isMonth = true; }
+            else if (period === 'aug') { info.title = "AUGUST"; info.months = [4]; info.isMonth = true; }
+            else if (period === 'sep') { info.title = "SEPTEMBER"; info.months = [5]; info.isMonth = true; }
+            else if (period === 'oct') { info.title = "OCTOBER"; info.months = [6]; info.isMonth = true; }
+            else if (period === 'nov') { info.title = "NOVEMBER"; info.months = [7]; info.isMonth = true; }
+            else if (period === 'dec') { info.title = "DECEMBER"; info.months = [8]; info.isMonth = true; }
+            else if (period === 'jan') { info.title = "JANUARY"; info.months = [9]; info.isMonth = true; }
+            else if (period === 'feb') { info.title = "FEBRUARY"; info.months = [10]; info.isMonth = true; }
+            else if (period === 'mar') { info.title = "MARCH"; info.months = [11]; info.isMonth = true; }
+            
+            return info;
+        }
+
+        const formatVal = (val, isRev) => {
+            return isRev ? "₹" + Math.round(val).toLocaleString('en-IN') : Math.round(val).toLocaleString('en-IN');
+        };
+
+        function calculatePeriodicData() {
+            const reportType = document.getElementById("reportType").value;
+            const type = document.getElementById("districtType").value;
+            const selectedDist = document.getElementById("districtName").value;
+            const period = document.getElementById("periodSelect").value;
+            const distKey = type === 'old' ? 'olddist' : 'newdist'; 
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            const isTxns = reportType === 'txns';
+            const isTxnRev = reportType === 'txn_rev';
+            const isRegs = reportType === 'regs';
+            const isRegRev = reportType === 'reg_rev';
+            const isRevFormat = isTxnRev || isRegRev;
+
+            const txnRevMultiplier = targetTxns > 0 ? (targetTxnRev / targetTxns) : 0;
+            const regRevMultiplier = targetRegs > 0 ? (targetRegRev / targetRegs) : 0;
+
+            let typeName = '';
+            if(isTxns) typeName = 'TRANSACTIONS';
+            else if(isTxnRev) typeName = 'TRANSACTION REVENUE';
+            else if(isRegs) typeName = 'NEW REGISTRATIONS';
+            else if(isRegRev) typeName = 'REGISTRATION REVENUE';
+
+            let periodInfo = getPeriodInfo(period);
+            
+            let thLabel25 = (isTxns || isTxnRev) ? "FY 25-26<br>ACTIVE VLEs" : "FY 25-26<br>REGISTERED";
+            let thLabel26 = (isTxns || isTxnRev) ? "FY 26-27<br>ACTIVE VLEs" : "FY 26-27<br>REGISTERED";
+            
+            document.getElementById("th-act25").innerHTML = thLabel25;
+            document.getElementById("th-act26").innerHTML = thLabel26;
+
+            document.getElementById("dynamicTitle").innerText = `IRCTC ${typeName} ${periodInfo.title} REPORT : FY 26-27`;
+            document.getElementById("lbl-target").innerText = `${periodInfo.title} TARGET:`;
+            document.getElementById("lbl-achieved").innerText = `${periodInfo.title} ACHIEVED:`;
+            
+            document.getElementById("th-target").innerText = `${periodInfo.title} TARGET`;
+            document.getElementById("th-achieved").innerText = `${periodInfo.title} ACHIEVED`;
+            document.getElementById("th-balance").innerText = `BALANCE`;
+
+            let activeNames = type === 'old' ? [...oldDistrictsList] : [...newDistrictsList];
+            activeNames.sort();
+            let totalDistricts = activeNames.length > 0 ? activeNames.length : 1; 
+
+            let currentDistrictsData = [];
+            let stateTotalVles = 0; 
+
+            activeNames.forEach(distName => {
+                let distTotalAct25 = 0;
+                let distTotalAct26 = 0; 
+                let distTotalReg25 = 0;
+                let distTotalReg26 = 0;
+                let distTotalIds = 0;
+                let fullTxnMonths = Array(12).fill(0);
+                let fullRegMonths = Array(12).fill(0);
+
+                globalVleData.forEach(row => {
+                    if (row[distKey].toLowerCase() === distName.toLowerCase()) {
+                        distTotalAct25 += row.isAct25;
+                        distTotalAct26 += row.isAct26; 
+                        distTotalReg25 += row.isReg25;
+                        distTotalReg26 += row.isReg26;
+                        distTotalIds += row.hasIrctc;
+                        for(let m=0; m<12; m++) fullTxnMonths[m] += row.mVals[m];
+                        if(row.regMonthIdx > -1) fullRegMonths[row.regMonthIdx]++;
+                    }
+                });
+
+                let effectiveStateVle = distTotalAct25;
+                if(effectiveStateVle === 0 && selectedDist === "All" && userDesignation !== "District Manager") effectiveStateVle = 150;
+                stateTotalVles += effectiveStateVle;
+
+                if (userDesignation === "District Manager") {
+                    let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                    if (mappedSet.has(distName)) {
+                        currentDistrictsData.push({ name: distName, ids: distTotalIds, act25: distTotalAct25, act26: distTotalAct26, reg25: distTotalReg25, reg26: distTotalReg26, txnMonths: fullTxnMonths, regMonths: fullRegMonths });
+                    }
+                } else {
+                    currentDistrictsData.push({ name: distName, ids: distTotalIds, act25: distTotalAct25, act26: distTotalAct26, reg25: distTotalReg25, reg26: distTotalReg26, txnMonths: fullTxnMonths, regMonths: fullRegMonths });
+                }
+            });
+
+            if(stateTotalVles === 0) stateTotalVles = 1; 
+
+            let bodyHtml = "";
+            let grandTotals = { ids: 0, val25: 0, val26: 0, target: 0, achieved: 0, balance: 0 }; 
+
+            currentDistrictsData.forEach(d => {
+                if (selectedDist !== "All" && d.name !== selectedDist) return;
+                
+                let originalIdx = activeNames.indexOf(d.name);
+
+                let yearlyTargetDist = 0;
+                let vRatio = d.act25 / stateTotalVles;
+                let txYearly = Math.round(targetTxns * vRatio);
+
+                if(isTxns) {
+                    yearlyTargetDist = txYearly;
+                } else if(isTxnRev) {
+                    yearlyTargetDist = Math.round(txYearly * txnRevMultiplier);
+                } else if(isRegs || isRegRev) {
+                    let baseRegs = Math.floor(targetRegs / totalDistricts);
+                    if (originalIdx < (targetRegs % totalDistricts)) baseRegs += 1;
+                    if(isRegs) yearlyTargetDist = baseRegs;
+                    else yearlyTargetDist = Math.round(baseRegs * regRevMultiplier);
+                }
+
+                let currentTarget = 0;
+                if (periodInfo.isYearly) {
+                    currentTarget = yearlyTargetDist;
+                } else if (periodInfo.isMonth) {
+                    currentTarget = Math.round(yearlyTargetDist / 12);
+                } else {
+                    if (isRegs || isRegRev) {
+                        let q1 = Math.floor(yearlyTargetDist * 0.25);
+                        let q2 = Math.floor(yearlyTargetDist * 0.25);
+                        let q3 = Math.floor(yearlyTargetDist * 0.25);
+                        let q4 = yearlyTargetDist - (q1 + q2 + q3);
+                        if (period === 'q1') currentTarget = q1;
+                        else if (period === 'q2') currentTarget = q2;
+                        else if (period === 'q3') currentTarget = q3;
+                        else if (period === 'q4') currentTarget = q4;
+                        else if (period === 'h1') currentTarget = q1 + q2;
+                    } else {
+                        let q1 = Math.round(yearlyTargetDist * 0.20);
+                        let q2 = Math.round(yearlyTargetDist * 0.25);
+                        let q3 = Math.round(yearlyTargetDist * 0.35);
+                        let q4 = yearlyTargetDist - (q1 + q2 + q3);
+                        if (period === 'q1') currentTarget = q1;
+                        else if (period === 'q2') currentTarget = q2;
+                        else if (period === 'q3') currentTarget = q3;
+                        else if (period === 'q4') currentTarget = q4;
+                        else if (period === 'h1') currentTarget = q1 + q2;
+                    }
+                }
+
+                let achieved = 0;
+                periodInfo.months.forEach(mIdx => {
+                    if (isRegs) achieved += d.regMonths[mIdx];
+                    else if (isRegRev) achieved += (d.regMonths[mIdx] * regRevMultiplier);
+                    else if (isTxnRev) achieved += (d.txnMonths[mIdx] * txnRevMultiplier);
+                    else achieved += d.txnMonths[mIdx];
+                });
+
+                let balance = currentTarget - achieved;
+                if(balance < 0) balance = 0;
+
+                let pct = currentTarget > 0 ? ((achieved / currentTarget) * 100).toFixed(1) : 0;
+                
+                let pctClass = "pct-low";
+                if (pct >= 80) pctClass = "pct-high";
+                else if (pct >= 50) pctClass = "pct-med";
+
+                let val25 = (isTxns || isTxnRev) ? d.act25 : d.reg25;
+                let val26 = (isTxns || isTxnRev) ? d.act26 : d.reg26;
+
+                grandTotals.ids += d.ids;
+                grandTotals.val25 += val25;
+                grandTotals.val26 += val26; 
+                grandTotals.target += currentTarget;
+                grandTotals.achieved += achieved;
+                
+                bodyHtml += `<tr>
+                    <td class="td-district" onclick="filterByDistrict('${d.name}')" title="Click to filter">${d.name}</td>
+                    <td class="td-ids">${d.ids.toLocaleString('en-IN')}</td>
+                    <td class="td-act">${val25.toLocaleString('en-IN')}</td>
+                    <td class="td-act26 text-blue" style="font-weight: 800;">${val26.toLocaleString('en-IN')}</td>
+                    <td class="td-tar">${formatVal(currentTarget, isRevFormat)}</td>
+                    <td class="td-ach">${formatVal(achieved, isRevFormat)}</td>
+                    <td class="td-bal">${formatVal(balance, isRevFormat)}</td>
+                    <td class="${pctClass}">${pct}%</td>
+                </tr>`;
+            });
+
+            if (currentDistrictsData.length === 0) {
+                bodyHtml = `<tr><td colspan="8" style="padding: 30px; color: #d9534f; font-weight: bold;">No data found in sheet!</td></tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = bodyHtml;
+
+            if (selectedDist === "All" && userDesignation !== "District Manager") {
+                let globalYearly = 0;
+                if(isTxns) globalYearly = targetTxns;
+                else if(isTxnRev) globalYearly = targetTxnRev;
+                else if(isRegs) globalYearly = targetRegs;
+                else if(isRegRev) globalYearly = targetRegRev;
+                
+                if(periodInfo.isYearly) grandTotals.target = globalYearly;
+                else if(periodInfo.isMonth) grandTotals.target = Math.round(globalYearly / 12);
+                else {
+                    if(isRegs || isRegRev) {
+                        let q1 = Math.floor(globalYearly * 0.25);
+                        let q2 = Math.floor(globalYearly * 0.25);
+                        let q3 = Math.floor(globalYearly * 0.25);
+                        let q4 = globalYearly - (q1 + q2 + q3);
+                        if(period === 'q1') grandTotals.target = q1;
+                        else if(period === 'q2') grandTotals.target = q2;
+                        else if(period === 'q3') grandTotals.target = q3;
+                        else if(period === 'q4') grandTotals.target = q4;
+                        else if(period === 'h1') grandTotals.target = q1 + q2;
+                    } else {
+                        let q1 = Math.round(globalYearly * 0.20);
+                        let q2 = Math.round(globalYearly * 0.25);
+                        let q3 = Math.round(globalYearly * 0.35);
+                        let q4 = globalYearly - (q1 + q2 + q3);
+                        if(period === 'q1') grandTotals.target = q1;
+                        else if(period === 'q2') grandTotals.target = q2;
+                        else if(period === 'q3') grandTotals.target = q3;
+                        else if(period === 'q4') grandTotals.target = q4;
+                        else if(period === 'h1') grandTotals.target = q1 + q2;
+                    }
+                }
+            }
+
+            grandTotals.balance = grandTotals.target - grandTotals.achieved;
+            if(grandTotals.balance < 0) grandTotals.balance = 0;
+            
+            let gtPct = grandTotals.target > 0 ? ((grandTotals.achieved / grandTotals.target) * 100).toFixed(1) : 0;
+            let gtPctClass = "pct-low";
+            if (gtPct >= 80) gtPctClass = "pct-high";
+            else if (gtPct >= 50) gtPctClass = "pct-med";
+
+            document.getElementById("tableFooter").innerHTML = `
+                <td class="col-dist">GRAND TOTAL</td>
+                <td>${grandTotals.ids.toLocaleString('en-IN')}</td>
+                <td class="text-green">${grandTotals.val25.toLocaleString('en-IN')}</td>
+                <td class="td-act26" style="color: #0284c7;">${grandTotals.val26.toLocaleString('en-IN')}</td>
+                <td class="td-tar">${formatVal(grandTotals.target, isRevFormat)}</td>
+                <td class="td-ach">${formatVal(grandTotals.achieved, isRevFormat)}</td>
+                <td class="td-bal">${formatVal(grandTotals.balance, isRevFormat)}</td>
+                <td class="${gtPctClass}">${gtPct}%</td>
+            `;
+
+            document.getElementById("dispTotalTarget").innerText = formatVal(grandTotals.target, isRevFormat);
+            document.getElementById("dispTotalAchieved").innerText = formatVal(grandTotals.achieved, isRevFormat);
+            document.getElementById("dispTotalBalance").innerText = formatVal(grandTotals.balance, isRevFormat);
+            document.getElementById("dispTotalPercent").innerText = `${gtPct}%`;
+            document.getElementById("dispTotalPercent").className = `val ${gtPctClass}`;
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
+            else { distDropdown.value = distName; }
+            calculatePeriodicData();
+        }
+
+        /* 🌟 Real Full Screen Fix 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        /* 🌟 Image Download Bug Fix 🌟 */
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-container");
+            
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            const origWrapperHeight = tableWrapper.style.height;
+            const origWrapperMaxHeight = tableWrapper.style.maxHeight;
+
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.height = "auto";
+            tableWrapper.style.maxHeight = "none";
+            
+            const stickyEls = captureArea.querySelectorAll('th, td.col-dist, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+
+            setTimeout(() => { 
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    logging: false,
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    let typeSelect = document.getElementById("districtType");
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    let periodText = document.getElementById("periodSelect").options[document.getElementById("periodSelect").selectedIndex].text;
+                    let safePeriodText = periodText.replace(/[^a-zA-Z0-9]/g, '_');
+                    let reportType = document.getElementById("reportType").value;
+                    let reportTypeName = reportType === 'regs' ? 'Registrations' : 
+                                         (reportType === 'reg_rev' ? 'Registration_Revenue' : 
+                                         (reportType === 'txn_rev' ? 'Transaction_Revenue' : 'Transactions'));
+                    
+                    link.download = `IRCTC_Periodic_${reportTypeName}_${safePeriodText}_${typeText}_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500); 
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                tableWrapper.style.height = origWrapperHeight;
+                tableWrapper.style.maxHeight = origWrapperMaxHeight;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

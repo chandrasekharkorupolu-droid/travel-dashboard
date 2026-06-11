@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMC Summary Report - CSC TravelCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel Form structure */
+        .target-control-panel {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
+        }
+        .page-heading { font-size: 18px; color: #003366; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .filter-group select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group select#fyFilter { background-color: #eff6ff; border-color: #3b82f6; color: #1e40af; font-weight: 800; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 Image Export Panels 🌟 */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #ffffff; padding: 20px 10px 10px 10px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;}
+        
+        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        .report-header h1 { font-size: 24px; color: #002244; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 5px;}
+        .report-header p { font-size: 13px; color: #666; font-weight: 600; margin-top: 0; }
+
+        /* KPI Cards */
+        .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; flex-shrink: 0; justify-content: center; margin-bottom: 15px; }
+        .kpi-card { 
+            background-color: #ffffff; border-radius: 6px; padding: 10px 15px; 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05); border-left: 4px solid; 
+            flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
+        .kpi-value { font-size: 20px; font-weight: 800; margin: 0; }
+
+        .kpi-eligible { border-left-color: #1e3a8a; } .kpi-eligible .kpi-value { color: #1e3a8a; }
+        .kpi-premium { border-left-color: #8b5cf6; } .kpi-premium .kpi-value { color: #8b5cf6; }
+        .kpi-maxgain { border-left-color: #10b981; } .kpi-maxgain .kpi-value { color: #10b981; }
+        .kpi-revenue { border-left-color: #0b1120; } .kpi-revenue .kpi-value { color: #0b1120; }
+        .kpi-pending { border-left-color: #dc2626; } .kpi-pending .kpi-value { color: #dc2626; }
+
+        /* Table Settings */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #dcdcdc; position: relative; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        th, td { white-space: nowrap; }
+
+        th { font-size: 11px; text-transform: uppercase; padding: 14px 10px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 90; letter-spacing: 0.5px;}
+        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #eee; border-right: 1px solid #eee; font-weight: 700; }
+        
+        /* Custom Header Colors */
+        .th-dist { background-color: #0b1120; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;} 
+        .th-elig { background-color: #1e3a8a; } 
+        .th-prem { background-color: #8b5cf6; } 
+        .th-max { background-color: #10b981; } 
+        .th-rev { background-color: #0b1120; } 
+        .th-pend { background-color: #dc2626; } 
+        .th-comp { background-color: #475569; min-width: 140px; } 
+
+        tr:hover td { background-color: #f5f7f9; }
+        
+        .col-district { 
+            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
+            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05); user-select: none;
+        }
+        .col-district:hover { color: #0056b3; background-color: #f0f8ff !important; }
+        tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
+        
+        /* Data formatting colors */
+        .td-elig { color: #1e3a8a; }
+        .td-prem { color: #8b5cf6; }
+        .td-max { color: #10b981; }
+        .td-rev { color: #0b1120; font-size: 14px;}
+        .td-pend { color: #dc2626; }
+
+        tfoot tr.total-row td { background-color: #f1f5f9; font-weight: 800; color: #111827; border-top: 3px solid #cbd5e1; font-size: 15px; position: sticky; bottom: 0; z-index: 20; }
+        tfoot tr.total-row td:first-child { text-align: right; padding-right: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+
+        /* Loaders */
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%;}
+        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="target-control-panel">
+        <div class="page-heading">📊 AMC Registration Summary</div>
+        <div class="filter-group">
+            <span style="font-size: 12px; font-weight: 700; color: #555;">Filter by FY:</span>
+            <select id="fyFilter" onchange="renderTable()">
+                <option value="All">All Financial Years</option>
+                <option value="25-26">FY 25-26</option>
+                <option value="26-27" selected>FY 26-27</option>
+            </select>
+            <span style="font-size: 12px; font-weight: 700; color: #555; margin-left: 10px;">District:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="renderTable()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="report-header">
+            <h1>CSC AP – AMC Summary Report (District Wise)</h1>
+            <p id="reportDate">Report Generated on: </p>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-eligible">
+                <span class="kpi-title">TOTAL ELIGIBLE</span>
+                <span class="kpi-value" id="kpi-tot-elig">0</span>
+            </div>
+            <div class="kpi-card kpi-premium">
+                <span class="kpi-title">PREMIUM (₹1000)</span>
+                <span class="kpi-value" id="kpi-tot-prem">0</span>
+            </div>
+            <div class="kpi-card kpi-maxgain">
+                <span class="kpi-title">MAX GAIN (₹2000)</span>
+                <span class="kpi-value" id="kpi-tot-max">0</span>
+            </div>
+            <div class="kpi-card kpi-revenue">
+                <span class="kpi-title">TOTAL REVENUE</span>
+                <span class="kpi-value" id="kpi-tot-rev">₹0</span>
+            </div>
+            <div class="kpi-card kpi-pending">
+                <span class="kpi-title">PENDING ❌</span>
+                <span class="kpi-value" id="kpi-tot-pend">0</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th class="th-dist">DISTRICT NAME ⇅</th>
+                        <th class="th-elig">TOTAL ELIGIBLE</th>
+                        <th class="th-prem">PREMIUM (₹1000)</th>
+                        <th class="th-max">MAX GAIN (₹2000)</th>
+                        <th class="th-rev">TOTAL REVENUE</th>
+                        <th class="th-pend">PENDING ❌</th>
+                        <th class="th-comp">COMPLETION %</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="7">
+                        <div class="loader"><div class="spinner"></div> Fetching AMC Records... Please wait.</div>
+                    </td></tr>
+                </tbody>
+                <tfoot id="tableFooter">
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let globalData = [];
+        let oldDistrictsSet = new Set();
+        let newDistrictsSet = new Set();
+        
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+        
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
+
+            fetchSheetData(); 
+        };
+
+        async function fetchSheetData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData_IRCTC");
+                if (cachedData) {
+                    processSheetData(JSON.parse(cachedData));
+                    return;
+                }
+
+                let response = await fetch(apiURL);
+                let rawData = await response.json();
+                sessionStorage.setItem("cscTravelData_IRCTC", JSON.stringify(rawData));
+                processSheetData(rawData);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='7' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processSheetData(rawData) {
+            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526'));
+            let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
+            let idxAmcStart = cleanHeaders.findIndex(h => h.includes('amcstartdate') || h.includes('amcstart'));
+            
+            let mIndices = [];
+            let idx27 = -1;
+            
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+            }
+
+            globalData = [];
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
+            dmMappedOldDistricts.clear();
+            dmMappedNewDistricts.clear();
+
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i];
+                let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                if(!cscId || cscId === '-') continue;
+
+                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+                
+                let monthSum = 0;
+                mIndices.forEach(colIdx => {
+                    if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
+                });
+
+                let fy27Total = monthSum;
+                if (fy27Total === 0 && idx27 > -1) {
+                    fy27Total = parseInt(row[idx27]) || 0;
+                }
+
+                let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
+                let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
+                let dmName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+
+                if(oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
+                if(newDist !== 'Unknown') newDistrictsSet.add(newDist);
+
+                if (userDesignation === "District Manager" && dmName.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                    if(oldDist !== 'Unknown' && oldDist !== '-') dmMappedOldDistricts.add(oldDist);
+                    if(newDist !== 'Unknown' && newDist !== '-') dmMappedNewDistricts.add(newDist);
+                }
+
+                let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString().toLowerCase() : '';
+                let amcStartStr = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
+
+                let isPremium = amcStatus.includes('premium');
+                let isMaxGain = amcStatus.includes('max gain') || amcStatus.includes('maxgain');
+
+                let amcFy = '';
+                if (amcStartStr && amcStartStr !== '-') {
+                    let d = new Date(amcStartStr);
+                    if (!isNaN(d.getTime())) {
+                        let fyStartYear = (d.getMonth() + 1 >= 4) ? d.getFullYear() : d.getFullYear() - 1;
+                        if (fyStartYear === 2025) amcFy = '25-26';
+                        else if (fyStartYear === 2026) amcFy = '26-27';
+                    }
+                }
+
+                globalData.push({
+                    cscid: cscId,
+                    olddist: oldDist,
+                    newdist: newDist,
+                    dmname: dmName,
+                    fy26_txns: fy26,         
+                    fy27_txns: fy27Total,    
+                    isPremium: isPremium,
+                    isMaxGain: isMaxGain,
+                    amcFy: amcFy
+                });
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 arr = arr.filter(dist => mappedSet.has(dist));
+            }
+
+            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            
+            if(globalData.length > 0) renderTable(); 
+        }
+
+        function renderTable() {
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let fyFilter = document.getElementById('fyFilter').value;
+            
+            let distKey = distType === 'old' ? 'olddist' : 'newdist';
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+            
+            let reportMap = {};
+            let gt = { eligible: 0, premium: 0, maxgain: 0, revenue: 0 };
+
+            globalData.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === "Unknown") return;
+                
+                if (userDesignation === "District Manager") {
+                    if (distType === 'old') {
+                        if (!dmMappedOldDistricts.has(dist)) return; 
+                    } else {
+                        if (row.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                    }
+                }
+                
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                
+                let isEligible = (row.fy26_txns >= 100 || row.fy27_txns >= 100 || row.isPremium || row.isMaxGain);
+                let isPrem = false;
+                let isMax = false;
+
+                if (fyFilter === 'All') {
+                    isPrem = row.isPremium;
+                    isMax = row.isMaxGain;
+                } else {
+                    isPrem = (row.isPremium && row.amcFy === fyFilter);
+                    isMax = (row.isMaxGain && row.amcFy === fyFilter);
+                }
+
+                if (isEligible) {
+                    if (!reportMap[dist]) reportMap[dist] = { eligible: 0, premium: 0, maxgain: 0, revenue: 0 };
+                    reportMap[dist].eligible++;
+                    gt.eligible++;
+
+                    if (isPrem) { reportMap[dist].premium++; gt.premium++; }
+                    if (isMax) { reportMap[dist].maxgain++; gt.maxgain++; }
+                    
+                    let rev = (isPrem ? 1000 : 0) + (isMax ? 2000 : 0);
+                    reportMap[dist].revenue += rev;
+                    gt.revenue += rev;
+                }
+            });
+
+            let sortedDistricts = Object.keys(reportMap).sort();
+            let tbodyHtml = "";
+            const formatCurrency = (amount) => "₹" + new Intl.NumberFormat('en-IN').format(amount);
+            
+            sortedDistricts.forEach(dist => {
+                let d = reportMap[dist];
+                let pending = d.eligible - (d.premium + d.maxgain);
+                if (pending < 0) pending = 0;
+                let compPercent = d.eligible > 0 ? Math.round(((d.premium + d.maxgain) / d.eligible) * 100) : 0;
+
+                let barColor = compPercent >= 75 ? "#10b981" : (compPercent >= 40 ? "#f59e0b" : "#ef4444");
+                let compBarHtml = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        <span style="font-weight: 800; min-width: 35px; text-align: right; color: ${barColor};">${compPercent}%</span>
+                        <div style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex; justify-content: flex-start;">
+                            <div style="height: 100%; width: ${compPercent}%; background-color: ${barColor}; border-radius: 3px;"></div>
+                        </div>
+                    </div>`;
+
+                tbodyHtml += `<tr>
+                    <td class="col-district" ondblclick="filterByDistrict('${dist}')" title="Double click to filter">${dist}</td>
+                    <td class="td-elig">${d.eligible}</td>
+                    <td class="td-prem">${d.premium}</td>
+                    <td class="td-max">${d.maxgain}</td>
+                    <td class="td-rev">${formatCurrency(d.revenue)}</td>
+                    <td class="td-pend">${pending}</td>
+                    <td class="td-comp" style="padding: 0;">${compBarHtml}</td>
+                </tr>`;
+            });
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml || "<tr><td colspan='7' style='padding: 30px; color: #d9534f; font-weight: bold;'>No Data Found</td></tr>";
+            
+            let gtPending = gt.eligible - (gt.premium + gt.maxgain);
+            if (gtPending < 0) gtPending = 0;
+            let gtCompPercent = gt.eligible > 0 ? Math.round(((gt.premium + gt.maxgain) / gt.eligible) * 100) : 0;
+
+            let gtBarColor = gtCompPercent >= 75 ? "#10b981" : (gtCompPercent >= 40 ? "#f59e0b" : "#ef4444");
+            let gtCompBarHtml = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                    <span style="font-weight: 900; min-width: 35px; text-align: right; color: ${gtBarColor};">${gtCompPercent}%</span>
+                    <div style="width: 70px; height: 8px; background-color: #cbd5e1; border-radius: 4px; overflow: hidden; display: flex; justify-content: flex-start;">
+                        <div style="height: 100%; width: ${gtCompPercent}%; background-color: ${gtBarColor}; border-radius: 4px;"></div>
+                    </div>
+                </div>`;
+
+            document.getElementById("tableFooter").innerHTML = `<tr class="total-row">
+                <td>GRAND TOTAL</td>
+                <td class="td-elig">${gt.eligible}</td>
+                <td class="td-prem">${gt.premium}</td>
+                <td class="td-max">${gt.maxgain}</td>
+                <td class="td-rev">${formatCurrency(gt.revenue)}</td>
+                <td class="td-pend">${gtPending}</td>
+                <td class="td-comp" style="padding: 0;">${gtCompBarHtml}</td>
+            </tr>`;
+
+            document.getElementById("kpi-tot-elig").innerText = gt.eligible;
+            document.getElementById("kpi-tot-prem").innerText = gt.premium;
+            document.getElementById("kpi-tot-max").innerText = gt.maxgain;
+            document.getElementById("kpi-tot-rev").innerText = formatCurrency(gt.revenue);
+            document.getElementById("kpi-tot-pend").innerText = gtPending;
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            distDropdown.value = (distDropdown.value === distName) ? "All" : distName;
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById("fyFilter").value = "26-27";
+            document.getElementById("districtType").value = "old";
+            updateDistrictsDropdown();
+        }
+
+        /* 🌟 Full Screen Fix 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        /* 🌟 Image Download Fix 🌟 */
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-container");
+            
+            // Backups
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            
+            // Adjust styles for screenshot
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.height = "auto";
+            
+            const stickyEls = captureArea.querySelectorAll('th, td.col-district, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    let typeSelect = document.getElementById("districtType");
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    let fyText = document.getElementById("fyFilter").value;
+                    
+                    link.download = `IRCTC_AMC_Summary_${fyText}_${typeText}_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500);
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

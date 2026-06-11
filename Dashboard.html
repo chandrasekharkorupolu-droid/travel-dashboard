@@ -171,13 +171,12 @@
 
   <script>
     // 🌟 మీ వెబ్ యాప్ URL ఇక్కడ పెట్టుకోండి 🌟
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAevLoiZZG_ZO2gG0aeHsqpRmlK5l0c__tE6jZe6iFRgTyG-Jn20s5XRze8pa0fSrZ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     let loggedInUser = localStorage.getItem("userName") || "User";
     let loggedInDesig = localStorage.getItem("userDesignation") || "";
-    let loggedInId = localStorage.getItem("userId") || "Unknown ID"; // 🌟 VLE ID కోసం యాడ్ చేశాను
+    let loggedInId = localStorage.getItem("userId") || "Unknown ID"; 
 
-    // మీ పాత ఒరిజినల్ 18 రిపోర్ట్స్ లిస్ట్! (ఏదీ కట్ చేయలేదు)
     const reportMenus = {
       "IRCTC": [
         "VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations",
@@ -235,25 +234,23 @@
       if(mainUserNameEl) mainUserNameEl.innerText = loggedInUser;
       updateGreeting();
       
-      // ఒకవేళ లాగిన్ అయింది VLE అయితే...
       if (loggedInDesig && loggedInDesig.toUpperCase() === "VLE") {
-          document.querySelector('.nav-menu').style.display = 'none'; // మెనూ హైడ్
-          document.getElementById('sidebar').style.display = 'none'; // సైడ్ బార్ హైడ్
-          sessionStorage.setItem('syncPopupShown', 'true'); // పాపప్ హైడ్
+          document.querySelector('.nav-menu').style.display = 'none'; 
+          document.getElementById('sidebar').style.display = 'none'; 
+          sessionStorage.setItem('syncPopupShown', 'true'); 
           
           document.getElementById('reportViewer').style.justifyContent = 'flex-start';
           document.getElementById('reportViewer').style.alignItems = 'stretch';
           
-          loadVLEDashboard(); // VLE ఫారమ్ చూపిస్తుంది
+          loadVLEDashboard(); 
       } else {
-          // SPOC / DM / State Head అయితే పాత కోడ్ అంతా రన్ అవుతుంది
           preLoadAllData(); 
           checkAndShowPopup();
       }
     };
 
     function loadHome() {
-      if (loggedInDesig && loggedInDesig.toUpperCase() === "VLE") return; // VLE కి ఇది బ్లాక్
+      if (loggedInDesig && loggedInDesig.toUpperCase() === "VLE") return; 
 
       document.getElementById('sidebar').style.display = 'none';
       document.getElementById('reportViewer').style.justifyContent = 'center';
@@ -268,7 +265,7 @@
     }
 
     // =========================================================
-    // 🌟🌟🌟 VLE పర్పుల్ ఫారమ్ లాజిక్ (UI + బ్యాకెండ్ సబ్మిట్) 🌟🌟🌟
+    // 🌟🌟🌟 VLE పర్పుల్ ఫారమ్ లాజిక్ 🌟🌟🌟
     // =========================================================
     window.vleSalesCart = [];
 
@@ -288,6 +285,7 @@
             <option value="request">📦 Request New Stock</option>
             <option value="sales">📊 Submit Daily Sales / Usage</option>
             <option value="spoil">⚠️ Report Spoiled Stamp</option>
+            <option value="track">🔍 Track Request Status</option>
           </select>
 
           <div id="divVleRequest" style="display: none;">
@@ -344,6 +342,13 @@
             <input type="text" id="spoilReason" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Printer jam, torn, etc.">
             <button id="btnReportSpoil" onclick="window.submitVleSpoil()" style="width: 100%; padding: 12px; background-color: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Report Damage</button>
           </div>
+
+          <div id="divVleTrack" style="display: none;">
+             <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Track Request Status</h5>
+             <button id="btnFetchTrack" onclick="window.fetchMyStatus()" style="width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Check Status Now</button>
+             <div id="trackResultArea" style="margin-top:20px;"></div>
+          </div>
+
         </div>
       </div>
       `;
@@ -355,9 +360,12 @@
         document.getElementById('divVleRequest').style.display = 'none';
         document.getElementById('divVleSales').style.display = 'none';
         document.getElementById('divVleSpoil').style.display = 'none';
+        document.getElementById('divVleTrack').style.display = 'none';
+        
         if(type === 'request') document.getElementById('divVleRequest').style.display = 'block';
         if(type === 'sales') document.getElementById('divVleSales').style.display = 'block';
         if(type === 'spoil') document.getElementById('divVleSpoil').style.display = 'block';
+        if(type === 'track') document.getElementById('divVleTrack').style.display = 'block';
       };
 
       window.checkVleCustomAmount = function() {
@@ -425,6 +433,50 @@
         .then(res => res.json()).then(res => { btn.innerText = "Report Damage"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); document.getElementById('spoilSerial').value = ''; document.getElementById('spoilReason').value = ''; } else alert("❌ Error: " + res.message); })
         .catch(err => { btn.innerText = "Report Damage"; btn.disabled = false; alert("Network Error!"); });
       };
+
+      // 🌟🌟 లాగిన్ అయిన VLE ఐడీ తోనే డైరెక్ట్ ట్రాకింగ్ లాజిక్ 🌟🌟
+      window.fetchMyStatus = function() {
+         let btn = document.getElementById('btnFetchTrack');
+         let resultArea = document.getElementById('trackResultArea');
+         
+         btn.disabled = true; btn.innerText = "⏳ Fetching...";
+         resultArea.innerHTML = "";
+
+         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "checkVleStatus", vleId: loggedInId }) })
+         .then(res => res.json()).then(res => {
+            btn.disabled = false; btn.innerText = "Check Status Now";
+
+            if(res.success && res.data.length > 0) {
+               let html = `<h6 style="color:#059669; font-weight:bold; margin-bottom:15px;">Recent Requests for ${loggedInId}:</h6>`;
+               
+               res.data.forEach(req => {
+                  let bg = "#f8fafc", col = "#475569";
+                  let st = req.status;
+                  if(st.includes("Pending with SPOC")) { bg = "#e0f2fe"; col = "#0369a1"; }
+                  else if(st === "Pending") { bg = "#fef9c3"; col = "#854d0e"; }
+                  else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; }
+                  else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; }
+
+                  html += `
+                    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:10px; background:white; text-align:left;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:12px; color:#64748b; font-weight:bold;">📅 ${req.date}</span>
+                        <span style="background:${bg}; color:${col}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; border:1px solid ${col}40;">${st}</span>
+                      </div>
+                      <div style="font-size:14px;"><span style="color:#64748b;">Req Qty:</span> <strong style="font-size:16px;">${req.qty} Papers</strong></div>
+                      <div style="font-size:12px; margin-top:8px; background:#f1f5f9; padding:8px; border-radius:4px;">📝 <b>Remarks:</b> ${req.remarks}</div>
+                    </div>
+                  `;
+               });
+               resultArea.innerHTML = html;
+            } else {
+               resultArea.innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:8px; font-weight:bold; text-align:center;">❌ No stock requests found.</div>`;
+            }
+         }).catch(e => {
+            btn.disabled = false; btn.innerText = "Check Status Now";
+            resultArea.innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:8px; font-weight:bold; text-align:center;">⚠️ Network Error.</div>`;
+         });
+      };
     }
 
     // =========================================================
@@ -470,8 +522,7 @@
         let li1 = document.createElement('li'); li1.innerHTML = '<span>📦</span> Assign Stationary';
         li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="AssignStationary.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li1);
 
-
-let li3 = document.createElement('li');
+        let li3 = document.createElement('li');
         li3.innerHTML = '<span>📈</span> Stock Summary Report';
         li3.onclick = function() {
             document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
@@ -482,8 +533,7 @@ let li3 = document.createElement('li');
         };
         list.appendChild(li3);
 
-
-let li4 = document.createElement('li');
+        let li4 = document.createElement('li');
         li4.innerHTML = '<span>🚚</span> VLE Dispatch History';
         li4.onclick = function() {
             document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
@@ -492,7 +542,7 @@ let li4 = document.createElement('li');
         };
         list.appendChild(li4);
 
-let li5 = document.createElement('li');
+        let li5 = document.createElement('li');
         li5.innerHTML = '<span>📊</span> Denomination Sales Report';
         li5.onclick = function() {
             document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
@@ -521,7 +571,6 @@ let li5 = document.createElement('li');
       document.getElementById('reportViewer').innerHTML = `<div class="access-denied-box"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have the required permissions to upload or sync data.<br><br><b>Only "SPOC" or "STATE HEAD" can perform this action.</b></p></div>`;
     }
 
-    // మీ ఒరిజినల్ ఐఫ్రేమ్ లోడ్ ఫంక్షన్ 
     function loadReport(moduleName, reportName) {
       if (moduleName === "IRCTC" && reportName === "VLE Performance") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
@@ -537,8 +586,70 @@ let li5 = document.createElement('li');
       }
       else if (moduleName === "IRCTC" && reportName === "Monthly Activations") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
-          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthwise_Activations.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`;
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Activations.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`;
       }
+
+else if (moduleName === "IRCTC" && (reportName === "Daily Transactions")) {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; 
+          document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Daily_Achievements.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+       else if (moduleName === "IRCTC" && reportName === "New Registrations (FY 26-27)") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          // ఇక్కడ మీ రిపోర్ట్ ఫైల్ పేరును కరెక్ట్ గా ఇవ్వాలి 
+         document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_New_Registrations.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Daily Achievements") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Progress.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Periodic Reports") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Periodic_Reports.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Priority Follow Up Report") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Priority_FollowUp.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "AMC Eligible Agents") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "AMC Summary Report") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC_Summary.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Top 5 Performance") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Poster_Maker.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Employee Performance") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Employee_Performance.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "MoM Growth Matrix") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_MoM_Growth_Matrix.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "Monthly Closure Report") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Closure_Report.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
+else if (moduleName === "IRCTC" && reportName === "VLE Details Editor") {
+          document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_VLE_Details_Editor.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      }
+
       else {
           document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center';
           document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h2 style="color:#1e3a8a; margin-bottom: 5px;">${moduleName}</h2><h3 style="color:#475569; margin-top: 0;">${reportName}</h3><p style="color:#ea580c; font-weight:bold; margin-top: 20px;">డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</p></div>`;
@@ -575,5 +686,6 @@ let li5 = document.createElement('li');
       document.body.appendChild(script);
     }
   </script>
+
 </body>
 </html>

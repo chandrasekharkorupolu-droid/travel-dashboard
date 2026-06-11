@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Progress - CSC TravelCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 12px 15px; gap: 12px; }
+
+        /* Control Box Panel */
+        .target-control-panel {
+            background-color: #fff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
+        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        body.fullscreen-mode { padding: 10px; }
+
+        /* 🌟 Report Capture Area 🌟 */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+
+        /* Report Header */
+        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        .report-header h1 { font-size: 22px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .report-header span { font-size: 12px; color: #64748b; font-weight: 600; }
+
+        /* SINGLE LINE KPI CARDS */
+        .summary-cards-container {
+            display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;
+            margin: 0 auto 20px auto; width: 100%; flex-shrink: 0;
+        }
+        .card { 
+            background-color: #ffffff; border-radius: 6px; padding: 12px 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06); 
+            display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
+            border: 1px solid #e2e8f0; border-left: 6px solid; min-width: 220px;
+        }
+        .card-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+        .card-value { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0; }
+        
+        .card-target { border-left-color: #1e3a8a; } 
+        .card-achieved { border-left-color: #10b981; } 
+        .card-yday { border-left-color: #f59e0b; } 
+        .card-balance { border-left-color: #ef4444; } 
+
+        /* COMPACT Table Styling */
+        .table-wrapper { flex: 1; border-radius: 8px; overflow: auto; border: 1px solid #cbd5e1; position: relative; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
+
+        th { color: #ffffff; font-size: 10px; text-transform: uppercase; padding: 10px 6px; text-align: center; font-weight: 800; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); line-height: 1.3; }
+        
+        th.col-1 { background-color: #0f172a; left: 0; z-index: 20; border-right: none; } 
+        th.col-2 { background-color: #334155; } 
+        th.col-3 { background-color: #475569; } 
+        th.col-4 { background-color: #1e3a8a; } 
+        th.col-5 { background-color: #2563eb; } 
+        th.col-6 { background-color: #ef4444; } 
+        th.col-7 { background-color: #6d28d9; } 
+        th.col-8 { background-color: #10b981; } 
+        th.col-9 { background-color: #d97706; } 
+        th.col-10 { background-color: #f59e0b; } 
+        th.col-11 { background-color: #be185d; } 
+        th.col-12 { background-color: #8b5cf6; border-right: none; } 
+
+        td { padding: 8px 6px; font-size: 12px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; vertical-align: middle; text-align: center; font-weight: 700; white-space: nowrap; color: #475569; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        tr:hover td { background-color: #eff6ff; }
+
+        td.col-dist { text-align: left; padding-left: 15px; color: #0f172a; font-weight: 800; position: sticky; left: 0; background-color: white; z-index: 5; border-right: 1px solid #cbd5e1; box-shadow: 2px 0 5px rgba(0,0,0,0.05); cursor: pointer;}
+        tr:nth-child(even) td.col-dist { background-color: #f8fafc; }
+        tr:hover td.col-dist { background-color: #eff6ff; color: #2563eb; }
+
+        .text-green { color: #059669; }
+        .text-blue { color: #2563eb; }
+        .text-purple { color: #6d28d9; }
+        .text-orange { color: #ea580c; }
+        .text-darkred { color: #be185d; }
+
+        .td-prev-pending { background-color: #fff1f2 !important; color: #be123c !important; font-weight: 800; border-right: 1px solid #fecdd3 !important;}
+
+        tfoot tr td { background-color: #f1f5f9; color: #0f172a; font-weight: 900; font-size: 13px; padding: 12px 6px; border-top: 2px solid #cbd5e1; position: sticky; bottom: 0; z-index: 10; }
+        tfoot td.col-dist { background-color: #e2e8f0; z-index: 15; text-align: left; padding-left: 15px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important;}
+
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; height: 100%;}
+        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="target-control-panel">
+        <div class="filter-group-custom">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
+            <select id="reportType" onchange="processRawDataToReport()" style="border-color: #10b981; color: #047857; font-weight: 800; background-color: #f0fdf4;">
+                <option value="txns" selected>🎫 Transactions</option>
+                <option value="regs">📋 New Registrations</option>
+            </select>
+        </div>
+        
+        <div class="filter-group-custom" style="margin-left: 15px;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Month:</span>
+            <select id="monthFilter" onchange="processRawDataToReport()" style="border-color: #3b82f6; color: #1e3a8a; font-weight: 800; background-color: #eff6ff;">
+                <option value="current" selected>Current Month</option>
+                <option value="0">April</option>
+                <option value="1">May</option>
+                <option value="2">June</option>
+                <option value="3">July</option>
+                <option value="4">August</option>
+                <option value="5">September</option>
+                <option value="6">October</option>
+                <option value="7">November</option>
+                <option value="8">December</option>
+                <option value="9">January</option>
+                <option value="10">February</option>
+                <option value="11">March</option>
+            </select>
+        </div>
+
+        <div class="filter-group-custom" style="margin-left: auto;">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="processRawDataToReport()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <header class="report-header">
+            <h1 id="dynamicTitle">IRCTC DAILY & MONTHLY PROGRESS REPORT (TRANSACTIONS)</h1>
+            <span>Report based on data from: <span id="reportDate" style="color:#0f172a; font-weight:800;">Loading...</span></span>
+        </header>
+
+        <div class="summary-cards-container">
+            <div class="card card-target"><div class="card-label">MONTH ADJ. TARGET</div><div class="card-value" id="val-card-target">0</div></div>
+            <div class="card card-achieved"><div class="card-label">MONTH ACHIEVED</div><div class="card-value" id="val-card-achieved">0</div></div>
+            <div class="card card-yday"><div class="card-label" id="lbl-card-yday">Y'DAY ACHIEVED</div><div class="card-value" id="val-card-yday">0</div></div>
+            <div class="card card-balance"><div class="card-label">BALANCE TO REACH</div><div class="card-value" id="val-card-balance">0</div></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th class="col-1">DISTRICT ⇅</th>
+                        <th class="col-2">TOTAL<br>IRCTC IDS</th>
+                        <th class="col-3">ACTIVE<br>(FY 25-26)</th>
+                        <th class="col-4">ANNUAL<br>TARGET</th>
+                        <th class="col-5">MONTH<br>TARGET</th>
+                        <th class="col-6">PREV.<br>PENDING</th>
+                        <th class="col-7">ADJUSTED<br>TARGET</th>
+                        <th class="col-8">MONTH<br>ACHIEVED</th>
+                        <th class="col-9">Y'DAY<br>PARTICIPANTS</th>
+                        <th class="col-10">Y'DAY<br>ACHIEVED</th>
+                        <th class="col-11">BALANCE<br>TO REACH</th>
+                        <th class="col-12">% ACHIEVED</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <tr><td colspan="12"><div class="loader"><div class="spinner"></div> Fetching Data... Please wait.</div></td></tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row" id="grandTotalRow">
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        window.globalRawData = [];
+        let targetTxns = 181654;
+        let targetRegs = 809;
+
+        // 🌟 FIX: Updated API URL 🌟
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        function normalizeStr(str) {
+            return str ? str.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+        }
+
+        window.onload = function() {
+            document.getElementById("districtType").value = "old";
+
+            let d = new Date();
+            let yday = new Date(d);
+            yday.setDate(yday.getDate() - 1);
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = yday.toLocaleDateString('en-US', dateOptions);
+
+            fetchData();
+        };
+
+        // 🌟 FIX: Parallel fetching to avoid timeouts 🌟
+        async function fetchData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                let cachedConfig = sessionStorage.getItem("cscTargetConfig");
+
+                let confData = cachedConfig ? JSON.parse(cachedConfig) : null;
+                let rawData = cachedData ? JSON.parse(cachedData) : null;
+
+                let promises = [];
+                let timestamp = new Date().getTime();
+
+                if (!confData) {
+                    promises.push(fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).then(d => {
+                        confData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTargetConfig", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+                
+                if (!rawData) {
+                    promises.push(fetch(apiURL + "?t=" + timestamp).then(r => r.json()).then(d => {
+                        rawData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+
+                if (promises.length > 0) await Promise.all(promises);
+
+                if (confData) processConfigData(confData);
+                if (rawData) {
+                    window.globalRawData = rawData;
+                    populateDistrictsDropdown();
+                    processRawDataToReport();
+                } else {
+                    throw new Error("Data not fetched");
+                }
+            } catch(e) { 
+                console.warn("Error processing data", e); 
+                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processConfigData(confData) {
+            if(confData && confData.length > 0) {
+                for(let i=1; i<confData.length; i++) {
+                    if(confData[i][0] === "IRCTC_BOOKING") targetTxns = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 181654;
+                    if(confData[i][0] === "IRCTC_REG") targetRegs = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 809;
+                }
+            }
+        }
+
+        function populateDistrictsDropdown() {
+            if(!window.globalRawData || window.globalRawData.length < 2) return;
+            
+            let headers = window.globalRawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            let distType = document.getElementById("districtType").value; 
+            let distKeyName = distType === 'old' ? 'olddistrict' : 'newdistrict';
+            
+            let idxDist = headers.findIndex(h => h.includes(distKeyName));
+            if(idxDist === -1) idxDist = 4;
+            
+            let idxEmp = headers.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('districtmanager') || h.includes('dmname'));
+
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let cleanLoggedInUser = normalizeStr(localStorage.getItem("userName") || "");
+
+            let distSet = new Set();
+            for(let i = 1; i < window.globalRawData.length; i++) {
+                let dName = window.globalRawData[i][idxDist];
+                let dmNameStr = idxEmp > -1 ? window.globalRawData[i][idxEmp] : '';
+
+                if(dName && dName !== '-' && dName !== 'Unknown') {
+                    if (userDesignation === "District Manager") {
+                        if (normalizeStr(dmNameStr) === cleanLoggedInUser && cleanLoggedInUser !== "") {
+                            distSet.add(dName.trim());
+                        }
+                    } else {
+                        distSet.add(dName.trim());
+                    }
+                }
+            }
+
+            let distDropdown = document.getElementById("districtName");
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            Array.from(distSet).sort().forEach(dist => {
+                distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+        }
+
+        function updateDistrictsDropdown() {
+            populateDistrictsDropdown();
+            processRawDataToReport();
+        }
+
+        function resetFilters() {
+            document.getElementById("reportType").value = "txns";
+            document.getElementById("districtType").value = "old";
+            document.getElementById("monthFilter").value = "current";
+            populateDistrictsDropdown();
+            document.getElementById("districtName").value = "All";
+            processRawDataToReport();
+        }
+
+        function processRawDataToReport() {
+            let rawData = window.globalRawData;
+            if (!rawData || rawData.length < 2) {
+                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='text-align:center; padding:20px; color:red; font-weight:bold;'>No Data Found.</td></tr>";
+                return;
+            }
+
+            let d = new Date();
+            let currMonth = d.getMonth(); 
+            let systemMIdx = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+
+            let monthVal = document.getElementById("monthFilter").value;
+            let mIdx = (monthVal === "current") ? systemMIdx : parseInt(monthVal);
+            let isCurrentMonth = (mIdx === systemMIdx);
+
+            let isTxns = document.getElementById("reportType").value === 'txns';
+            
+            let monthText = document.getElementById("monthFilter").options[document.getElementById("monthFilter").selectedIndex].text;
+            document.getElementById("dynamicTitle").innerText = `IRCTC MONTHLY PROGRESS REPORT (${isTxns ? 'TRANSACTIONS' : 'NEW REGISTRATIONS'}) - ${monthText.toUpperCase()} - 26`;
+
+            let headers = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            let distType = document.getElementById("districtType").value;
+            let distKeyName = distType === 'old' ? 'olddistrict' : 'newdistrict';
+            let idxDist = headers.findIndex(h => h.includes(distKeyName));
+            if (idxDist === -1) idxDist = 4;
+            
+            let idxEmp = headers.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('districtmanager') || h.includes('dmname'));
+            let idxTxns25 = headers.findIndex(h => h.includes('txns25') || h.includes('fy25') || h.includes('2526'));
+            if (idxTxns25 === -1) idxTxns25 = 15; 
+            let idxDate = headers.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+
+            let mIndices = [];
+            let idx26 = headers.findIndex(h => h.includes('202526') || h.includes('2526'));
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+            }
+
+            let idxYest = headers.findIndex(h => h.includes('yesttxn') || h.includes('yesterday') || h.includes('yest'));
+
+            let selectedDist = document.getElementById("districtName").value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let cleanLoggedInUser = normalizeStr(localStorage.getItem("userName") || "");
+
+            let today = new Date();
+            let ydayDateObj = new Date(today);
+            ydayDateObj.setDate(ydayDateObj.getDate() - 1);
+
+            let stateActive25 = 0; 
+            let uniqueDistricts = new Set();
+            let distStats = {};
+            
+            let allowedDistsForDM = new Set();
+            for (let i = 1; i < rawData.length; i++) {
+                let dName = rawData[i][idxDist] ? rawData[i][idxDist].toString().trim() : '';
+                let dmNameStr = idxEmp > -1 ? (rawData[i][idxEmp] || '').toString().trim() : '';
+                if (userDesignation === "District Manager") {
+                    if (normalizeStr(dmNameStr) === cleanLoggedInUser && cleanLoggedInUser !== "") allowedDistsForDM.add(dName);
+                } else {
+                    allowedDistsForDM.add(dName); 
+                }
+            }
+
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                let dName = row[idxDist] ? row[idxDist].toString().trim() : '';
+                if(!dName || dName === '-' || dName === 'Unknown') continue;
+                uniqueDistricts.add(dName);
+
+                if(!distStats[dName]) {
+                    distStats[dName] = { ids: 0, active25: 0, cumAchieved: 0, monthAchieved: 0, ydayPart: 0, ydayAchieved: 0 };
+                }
+                distStats[dName].ids++;
+
+                let t25 = parseInt(row[idxTxns25]) || 0;
+                if (t25 > 0) { distStats[dName].active25++; stateActive25++; }
+
+                let yestAch = 0, monthAch = 0, cumAch = 0;
+                if (isTxns) {
+                    if (isCurrentMonth) yestAch = (idxYest > -1) ? (parseInt(row[idxYest]) || 0) : 0;
+                    monthAch = mIndices[mIdx] !== undefined ? (parseInt(row[mIndices[mIdx]]) || 0) : 0;
+                    for(let k=0; k<mIdx; k++) cumAch += mIndices[k] !== undefined ? (parseInt(row[mIndices[k]]) || 0) : 0;
+                } else {
+                    let dateStr = idxDate > -1 ? row[idxDate] : '';
+                    if (dateStr && dateStr !== '-') {
+                        let rowDate = new Date(dateStr);
+                        if (!isNaN(rowDate.getTime())) {
+                            let m = rowDate.getMonth() + 1; let rowFyMIdx = m >= 4 ? m - 4 : m + 8;
+                            let fyStartYear = m >= 4 ? rowDate.getFullYear() : rowDate.getFullYear() - 1;
+                            if (fyStartYear === 2026) {
+                                if (rowFyMIdx < mIdx) cumAch = 1;
+                                if (rowFyMIdx === mIdx) monthAch = 1;
+                            }
+                            if(isCurrentMonth && rowDate.getFullYear() === ydayDateObj.getFullYear() && rowDate.getMonth() === ydayDateObj.getMonth() && rowDate.getDate() === ydayDateObj.getDate()) yestAch = 1;
+                        }
+                    }
+                }
+                distStats[dName].cumAchieved += cumAch;
+                distStats[dName].monthAchieved += monthAch;
+                distStats[dName].ydayAchieved += yestAch;
+                if (yestAch > 0) distStats[dName].ydayPart++;
+            }
+
+            if (stateActive25 === 0) stateActive25 = 1; 
+            let totalDistsCount = uniqueDistricts.size || 1;
+
+            let totals = { ids: 0, active: 0, annualTarget: 0, monthTarget: 0, prevPending: 0, adjTarget: 0, monthAchieved: 0, ydayPart: 0, ydayAchieved: 0, balance: 0 };
+            let rowHtml = "";
+
+            Array.from(uniqueDistricts).sort().forEach((dist, idx) => {
+                let s = distStats[dist];
+                let annualTarget = isTxns ? Math.round(targetTxns * (s.active25 / stateActive25)) : Math.floor(targetRegs / totalDistsCount) + (idx < (targetRegs % totalDistsCount) ? 1 : 0);
+                let monthTarget = Math.round(annualTarget / 12);
+                let prevPending = Math.max(0, (monthTarget * mIdx) - s.cumAchieved);
+                let adjustedTarget = monthTarget + prevPending;
+                let balance = Math.max(0, adjustedTarget - s.monthAchieved);
+                let pct = adjustedTarget > 0 ? (s.monthAchieved / adjustedTarget) * 100 : (s.monthAchieved > 0 ? 100 : 0);
+                
+                if (!allowedDistsForDM.has(dist)) return;
+                if(selectedDist !== "All" && dist !== selectedDist) return;
+
+                totals.ids += s.ids; totals.active += s.active25; totals.annualTarget += annualTarget; totals.monthTarget += monthTarget; totals.prevPending += prevPending; totals.adjTarget += adjustedTarget; 
+                totals.monthAchieved += s.monthAchieved; totals.ydayPart += s.ydayPart; totals.ydayAchieved += s.ydayAchieved; totals.balance += balance;
+
+                let pctColor = pct >= 100 ? "#059669" : (pct >= 50 ? "#ea580c" : "#dc2626");
+
+                rowHtml += `<tr>
+                    <td class="col-dist" onclick="filterByDistrict('${dist}')">${dist}</td>
+                    <td>${s.ids.toLocaleString('en-IN')}</td>
+                    <td class="text-green">${s.active25.toLocaleString('en-IN')}</td>
+                    <td>${annualTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-blue">${monthTarget.toLocaleString('en-IN')}</td>
+                    <td class="td-prev-pending">${prevPending.toLocaleString('en-IN')}</td>
+                    <td class="text-purple">${adjustedTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-green">${s.monthAchieved.toLocaleString('en-IN')}</td>
+                    <td class="text-orange">${isCurrentMonth ? s.ydayPart.toLocaleString('en-IN') : '-'}</td>
+                    <td class="text-orange">${isCurrentMonth ? s.ydayAchieved.toLocaleString('en-IN') : '-'}</td>
+                    <td class="text-darkred">${balance.toLocaleString('en-IN')}</td>
+                    <td style="color: ${pctColor}; font-weight:800;">${pct.toFixed(1)}%</td>
+                </tr>`;
+            });
+
+            document.getElementById("dataTableBody").innerHTML = rowHtml || "<tr><td colspan='12' style='text-align:center; padding:20px;'>No Data Matches Filter.</td></tr>";
+            
+            processTotals(totals, selectedDist, userDesignation, isTxns, mIdx, isCurrentMonth);
+        }
+
+        function processTotals(totals, selectedDist, userDesignation, isTxns, mIdx, isCurrentMonth) {
+            if (selectedDist === "All" && userDesignation !== "District Manager") {
+                totals.annualTarget = isTxns ? targetTxns : targetRegs;
+                totals.monthTarget = Math.round(totals.annualTarget / 12);
+                
+                let stateCumAch = 0;
+                let rawData = window.globalRawData;
+                let headers = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+                let mIndices = [];
+                let idx26 = headers.findIndex(h => h.includes('202526') || h.includes('2526'));
+                if (idx26 > -1) {
+                    for (let k = 1; k <= 12; k++) {
+                        if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                    }
+                }
+                let idxDate = headers.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+
+                for (let i = 1; i < rawData.length; i++) {
+                    if (isTxns) {
+                        for(let k=0; k<mIdx; k++) stateCumAch += mIndices[k] !== undefined ? (parseInt(rawData[i][mIndices[k]]) || 0) : 0;
+                    } else {
+                        let dateStr = idxDate > -1 ? rawData[i][idxDate] : '';
+                        if (dateStr && dateStr !== '-') {
+                            let rowDate = new Date(dateStr);
+                            if (!isNaN(rowDate.getTime())) {
+                                let y = rowDate.getFullYear();
+                                let m = rowDate.getMonth() + 1; 
+                                let rowFyMIdx = m >= 4 ? m - 4 : m + 8;
+                                let fyStartYear = m >= 4 ? y : y - 1;
+                                if (fyStartYear === 2026 && rowFyMIdx < mIdx) stateCumAch += 1;
+                            }
+                        }
+                    }
+                }
+                
+                let stateExpected = totals.monthTarget * mIdx;
+                let exactPending = stateExpected - stateCumAch;
+                totals.prevPending = exactPending > 0 ? exactPending : 0;
+                totals.adjTarget = totals.monthTarget + totals.prevPending;
+                totals.balance = Math.max(0, totals.adjTarget - totals.monthAchieved);
+            }
+
+            let grandPct = totals.adjTarget > 0 ? (totals.monthAchieved / totals.adjTarget) * 100 : 0;
+            
+            document.getElementById("val-card-target").innerText = totals.adjTarget.toLocaleString('en-IN');
+            document.getElementById("val-card-achieved").innerText = totals.monthAchieved.toLocaleString('en-IN');
+            document.getElementById("lbl-card-yday").innerText = isCurrentMonth ? "Y'DAY ACHIEVED" : "N/A";
+            document.getElementById("val-card-yday").innerText = isCurrentMonth ? totals.ydayAchieved.toLocaleString('en-IN') : "-";
+            document.getElementById("val-card-balance").innerText = totals.balance.toLocaleString('en-IN');
+
+            let grandPctColor = grandPct >= 100 ? "#059669" : (grandPct >= 50 ? "#ea580c" : "#dc2626");
+
+            let tfootHtml = `
+                <td class="col-dist">GRAND TOTAL</td>
+                <td>${totals.ids.toLocaleString('en-IN')}</td>
+                <td class="text-green">${totals.active.toLocaleString('en-IN')}</td>
+                <td>${totals.annualTarget.toLocaleString('en-IN')}</td>
+                <td class="text-blue">${totals.monthTarget.toLocaleString('en-IN')}</td>
+                <td class="td-prev-pending">${totals.prevPending.toLocaleString('en-IN')}</td>
+                <td class="text-purple">${totals.adjTarget.toLocaleString('en-IN')}</td>
+                <td class="text-green">${totals.monthAchieved.toLocaleString('en-IN')}</td>
+                <td class="text-orange">${isCurrentMonth ? totals.ydayPart.toLocaleString('en-IN') : '-'}</td>
+                <td class="text-orange">${isCurrentMonth ? totals.ydayAchieved.toLocaleString('en-IN') : '-'}</td>
+                <td class="text-darkred">${totals.balance.toLocaleString('en-IN')}</td>
+                <td style="color: ${grandPctColor}; font-weight:900;">${grandPct.toFixed(1)}%</td>
+            `;
+            document.getElementById("grandTotalRow").innerHTML = tfootHtml;
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
+            else { distDropdown.value = distName; }
+            processRawDataToReport();
+        }
+
+        function toggleFullScreen() {
+            let body = document.body; 
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        // 🌟 DOWNLOAD IMAGE LOGIC 🌟
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-wrapper");
+            
+            // Backup styles
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            const origWrapperHeight = tableWrapper.style.height;
+
+            // Prepare for capture
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.height = "auto";
+            
+            // Remove Sticky elements temporarily
+            const stickyEls = captureArea.querySelectorAll('th, td.col-dist, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+
+            setTimeout(() => { 
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    let mSelect = document.getElementById("monthFilter");
+                    let mText = mSelect.options[mSelect.selectedIndex].text;
+                    let reportType = document.getElementById("reportType").value;
+                    let reportTypeName = reportType === 'regs' ? 'New_Registrations' : 'Transactions';
+                    
+                    link.download = `IRCTC_Monthly_${reportTypeName}_Report_${mText}_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500); 
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                tableWrapper.style.height = origWrapperHeight;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

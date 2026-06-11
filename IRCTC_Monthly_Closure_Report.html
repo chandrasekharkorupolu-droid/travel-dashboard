@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closure Report Card - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* టాప్ కంట్రోల్స్ (Two-Row Layout) */
+        .top-controls-wrapper {
+            background-color: #ffffff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            border: 1px solid #dcdcdc; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;
+        }
+        
+        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .page-heading { font-size: 20px; color: #003366; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        
+        .top-controls-filters { display: flex; gap: 20px; align-items: center; background-color: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
+        
+        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
+        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #ffffff; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group-custom select:focus { border-color: #3b82f6; }
+        .period-select { background-color: #eff6ff !important; border-color: #3b82f6 !important; color: #1e40af !important; font-weight: 800 !important; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action:active { transform: translateY(1px); }
+
+        /* 🌟 Image Export Area 🌟 */
+        #captureArea { 
+            display: flex; flex-direction: column; overflow: hidden; 
+            background-color: #ffffff; padding: 30px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 900px; margin: 0 auto; flex-shrink: 0; border: 1px solid #e2e8f0;
+        }
+
+        .capture-compact { margin: 0 auto !important; border-radius: 0 !important; box-shadow: none !important; border: none !important;}
+
+        /* Header Style */
+        .report-header { text-align: center; margin-bottom: 25px; }
+        .report-header h1 { font-size: 32px; color: #1e293b; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .report-header h3 { font-size: 16px; color: #2563eb; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;}
+        .team-badge { display: inline-flex; align-items: center; gap: 8px; background-color: #f1f5f9; padding: 6px 20px; border-radius: 20px; border: 1px solid #cbd5e1; font-size: 14px; font-weight: 700; color: #334155;}
+        
+        /* Top 3 Metric Cards */
+        .metric-cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;}
+        
+        .m-card { background: #ffffff; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .m-card-blue { border: 2px solid #bfdbfe; background-color: #f8fafc;}
+        .m-card-purple { border: 2px solid #e9d5ff; background-color: #faf5ff;}
+        .m-card-green { border: 2px solid #bbf7d0; background-color: #f0fdf4;}
+        
+        .m-title { text-align: center; font-size: 15px; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 6px;}
+        .m-card-blue .m-title { color: #1d4ed8; }
+        .m-card-purple .m-title { color: #6d28d9; }
+        .m-card-green .m-title { color: #047857; }
+        
+        .m-stats { display: flex; justify-content: space-between; margin-bottom: 8px;}
+        .m-stats div { font-size: 14px; font-weight: 600; color: #64748b;}
+        .m-stats span { font-size: 16px; font-weight: 900; color: #1e293b;}
+        .m-ach-val { color: #059669 !important;}
+
+        .m-pct-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .m-pct-lbl { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; margin-bottom: 3px;}
+        .m-pct-val { font-size: 26px; font-weight: 900;}
+
+        /* Middle Row */
+        .middle-cards-row { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .mid-box { background: #ffffff; border-radius: 12px; padding: 15px; text-align: center; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center;}
+        
+        .mid-box-grey { background-color: #f8fafc; }
+        .mid-box-blue { background-color: #f0f9ff; border-color: #bae6fd;}
+        .mid-box-red { background-color: #fef2f2; border-color: #fecaca;}
+
+        .mid-lbl { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;}
+        .mid-box-grey .mid-lbl { color: #475569; }
+        .mid-box-blue .mid-lbl { color: #1d4ed8; }
+        .mid-box-red .mid-lbl { color: #be123c; }
+
+        .mid-val { font-size: 28px; font-weight: 900; line-height: 1;}
+        .mid-box-grey .mid-val { color: #1e293b; }
+        .mid-box-blue .mid-val { color: #1e3a8a; }
+        .mid-box-red .mid-val { color: #9f1239; }
+
+        /* Bottom Row */
+        .bottom-cards-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 20px;}
+        
+        .bot-box { border-radius: 12px; padding: 15px 20px; text-align: center; background: #ffffff; position: relative;}
+        .bot-box-green { border: 2px solid #34d399; }
+        .bot-box-red { border: 2px solid #fb7185; }
+
+        .bot-header { position: absolute; top: 0; left: 0; right: 0; padding: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: white; border-radius: 8px 8px 0 0; letter-spacing: 0.5px;}
+        .bot-box-green .bot-header { background-color: #10b981; display: none;} 
+        .bot-box-red .bot-header { background-color: #f43f5e; display: block;}
+        
+        .bot-lbl { font-size: 13px; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;}
+        .bot-box-red .bot-lbl { color: #be123c; margin-top: 25px;}
+
+        .bot-val { font-size: 38px; font-weight: 900; line-height: 1; margin-bottom: 10px;}
+        .bot-box-green .bot-val { color: #047857; }
+        .bot-box-red .bot-val { color: #be123c; }
+
+        .split-stats { display: flex; justify-content: center; gap: 15px;}
+        .split-stats span { background: #d1fae5; color: #065f46; padding: 4px 15px; border-radius: 20px; font-size: 13px; font-weight: 800;}
+        .bot-subtext { font-size: 12px; font-weight: 700; color: #9f1239;}
+
+        /* Insights Box */
+        .insights-box { background-color: #fefce8; border: 1px solid #fde047; border-radius: 12px; padding: 20px 25px; position: relative; margin-top: 10px;}
+        .insights-badge { position: absolute; top: -12px; left: 25px; background-color: #fbbf24; color: #92400e; padding: 4px 15px; border-radius: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 5px; border: 1px solid #f59e0b;}
+        
+        .insights-list { list-style: none; padding-top: 5px; padding-left: 15px; margin: 0; }
+        .insights-list li { font-size: 15px; font-weight: 600; color: #78350f; margin-bottom: 12px; line-height: 1.5; position: relative; display: block; }
+        .insights-list li::before { content: '•'; font-size: 20px; color: #b45309; position: absolute; left: -18px; top: -2px; }
+        .insights-list li:last-child { margin-bottom: 0;}
+        
+        .hl-red { color: #dc2626; font-weight: 800; font-size: 16px; display: inline;}
+        .hl-green { color: #059669; font-weight: 800; font-size: 16px; display: inline;}
+        .alert-badge { background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; display: inline-block; vertical-align: middle;}
+
+        /* Footer */
+        .poster-footer { text-align: center; margin-top: 25px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* Loaders */
+        .loader { text-align: center; padding: 50px; font-size: 16px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        .spinner { width: 30px; height: 30px; border: 4px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Full Screen Modifiers */
+        body.fullscreen-mode { padding: 0; gap: 0;}
+        body.fullscreen-mode .top-controls-wrapper { border-radius: 0; }
+        body.fullscreen-mode #captureArea { border-radius: 0; border: none; box-shadow: none; height: 100vh; overflow-y: auto;}
+    </style>
+</head>
+<body>
+
+    <div class="top-controls-wrapper">
+        <div class="top-controls-header">
+            <div class="page-heading">🎓 Closure Report Card</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+                <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Poster</button>
+                <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+            </div>
+        </div>
+
+        <div class="top-controls-filters">
+            <div class="filter-group-custom">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">District:</span>
+                <select id="districtType" onchange="updateDistrictsDropdown()">
+                    <option value="old" selected>Old Districts</option>
+                    <option value="new">New Districts</option>
+                </select>
+                <select id="districtName" onchange="calculateProgressData()" style="font-weight: 800; border-color:#e65c00; color:#e65c00;">
+                </select>
+            </div>
+
+            <div class="filter-group-custom">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">Assess Period:</span>
+                <select id="dataMonth" class="period-select" onchange="calculateProgressData()">
+                    <optgroup label="Quarterly & Yearly">
+                        <option value="yearly">Yearly (FY 26-27)</option>
+                        <option value="q1">Q1 (Apr - Jun)</option>
+                        <option value="q2">Q2 (Jul - Sep)</option>
+                        <option value="h1">Half Yearly (Apr - Sep)</option>
+                        <option value="q3">Q3 (Oct - Dec)</option>
+                        <option value="q4">Q4 (Jan - Mar)</option>
+                    </optgroup>
+                    <optgroup label="Monthly">
+                        <option value="0">April 2026</option>
+                        <option value="1">May 2026</option>
+                        <option value="2">June 2026</option>
+                        <option value="3">July 2026</option>
+                        <option value="4">August 2026</option>
+                        <option value="5">September 2026</option>
+                        <option value="6">October 2026</option>
+                        <option value="7">November 2026</option>
+                        <option value="8">December 2026</option>
+                        <option value="9">January 2027</option>
+                        <option value="10">February 2027</option>
+                        <option value="11">March 2027</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="loaderArea" style="display:none; padding: 50px;">
+        <div class="loader"><div class="spinner"></div> Fetching District Data... Please wait.</div>
+    </div>
+
+    <div id="captureArea" style="display:none;">
+        <div class="report-header">
+            <h1 id="dynamicTitle">ANANTAPUR</h1>
+            <h3 id="sd-month">CLOSURE REPORT : APRIL 2026</h3>
+            <div class="team-badge" id="sd-team">👥 Team: District Team</div>
+        </div>
+
+        <div class="metric-cards-row">
+            <div class="m-card m-card-blue">
+                <div class="m-title">🚆 Ticket Bookings</div>
+                <div class="m-stats"><div>Target:</div><span id="t-txn-target">0</span></div>
+                <div class="m-stats"><div>Achieved:</div><span class="m-ach-val" id="t-txn-achieved">0</span></div>
+                <div class="m-pct-box">
+                    <div class="m-pct-lbl">ACHIEVEMENT</div>
+                    <div class="m-pct-val" id="t-txn-pct">0%</div>
+                </div>
+            </div>
+            <div class="m-card m-card-purple">
+                <div class="m-title">💳 New IRCTC IDs</div>
+                <div class="m-stats"><div>Target:</div><span id="t-reg-target">0</span></div>
+                <div class="m-stats"><div>Achieved:</div><span class="m-ach-val" id="t-reg-achieved">0</span></div>
+                <div class="m-pct-box">
+                    <div class="m-pct-lbl">ACHIEVEMENT</div>
+                    <div class="m-pct-val" id="t-reg-pct">0%</div>
+                </div>
+            </div>
+            <div class="m-card m-card-green">
+                <div class="m-title">👑 AMC (MaxGain)</div>
+                <div class="m-stats"><div>Target:</div><span id="t-amc-target">0</span></div>
+                <div class="m-stats"><div>Achieved:</div><span class="m-ach-val" id="t-amc-achieved">0</span></div>
+                <div class="m-pct-box">
+                    <div class="m-pct-lbl">ACHIEVEMENT</div>
+                    <div class="m-pct-val" id="t-amc-pct">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="middle-cards-row">
+            <div class="mid-box mid-box-grey">
+                <div class="mid-lbl">TOTAL VLES</div>
+                <div class="mid-val" id="m-tot-vles">0</div>
+            </div>
+            <div class="mid-box mid-box-blue">
+                <div class="mid-lbl">ACTIVE (FY 25-26)</div>
+                <div class="mid-val" id="m-act-25">0</div>
+            </div>
+            <div class="mid-box mid-box-red">
+                <div class="mid-lbl">TOTAL INACTIVE</div>
+                <div class="mid-val" id="m-tot-inact">0</div>
+            </div>
+        </div>
+
+        <div class="bottom-cards-row">
+            <div class="bot-box bot-box-green">
+                <div class="bot-lbl" id="lbl-transacting">TRANSACTING VLES (TILL DATE)</div>
+                <div class="bot-val" id="b-transacting">0</div>
+                <div class="split-stats">
+                    <span id="b-old-trans">Old: 0</span>
+                    <span id="b-new-trans">New: 0</span>
+                </div>
+            </div>
+            
+            <div class="bot-box bot-box-red">
+                <div class="bot-header">🎯 TARGET GROUP</div>
+                <div class="bot-lbl">YET TO ACTIVATE</div>
+                <div class="bot-val" id="b-yet-to-act">0</div>
+                <div class="bot-subtext">(Pending from FY 25-26)</div>
+            </div>
+        </div>
+
+        <div class="insights-box">
+            <div class="insights-badge">💡 INSIGHTS & ACTIONS</div>
+            <ul class="insights-list" id="insightsList">
+                <li>Loading insights...</li>
+            </ul>
+        </div>
+
+        <div class="poster-footer">GENERATED FROM CSC AP TRAVEL PORTAL</div>
+    </div>
+
+    <script>
+        let globalVles = []; 
+        let targetTxnsAnnual = 181654;
+        let targetRegsAnnual = 809;
+        
+        let oldDistrictsList = [];
+        let newDistrictsList = [];
+
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+
+        const monthNames = ["APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"];
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            let d = new Date();
+            let currMonth = d.getMonth(); 
+            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+            document.getElementById("dataMonth").value = fyMonthIndex.toString();
+
+            document.getElementById("loaderArea").style.display = "block";
+            fetchData();
+        };
+
+        async function fetchData() {
+            try {
+                let cachedConfig = sessionStorage.getItem("cscTargetConfig");
+                let cachedVles = sessionStorage.getItem("cscTravelData");
+
+                let confData = cachedConfig ? JSON.parse(cachedConfig) : null;
+                let vlesData = cachedVles ? JSON.parse(cachedVles) : null;
+
+                let promises = [];
+                let timestamp = new Date().getTime();
+
+                if (!confData) {
+                    promises.push(fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).then(d => {
+                        confData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTargetConfig", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+                
+                if (!vlesData) {
+                    promises.push(fetch(apiURL + "?t=" + timestamp).then(r => r.json()).then(d => {
+                        vlesData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+
+                if (promises.length > 0) await Promise.all(promises);
+                
+                if (confData && confData.length > 0) {
+                    for(let i=1; i<confData.length; i++) {
+                        if(confData[i][0] === "IRCTC_BOOKING") targetTxnsAnnual = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 181654;
+                        if(confData[i][0] === "IRCTC_REG") targetRegsAnnual = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 809;
+                    }
+                }
+
+                if (vlesData && vlesData.length > 0) {
+                    let cleanHeaders = vlesData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+                    let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+                    let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+                    let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                    let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+                    let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
+                    let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
+                    
+                    let mIndices = [];
+                    if (idx26 > -1) {
+                        for (let k = 1; k <= 12; k++) {
+                            if (idx26 + k < vlesData[0].length) mIndices.push(idx26 + k);
+                        }
+                    }
+
+                    globalVles = [];
+                    let oldSet = new Set();
+                    let newSet = new Set();
+                    dmMappedOldDistricts.clear();
+                    dmMappedNewDistricts.clear();
+
+                    let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+                    let loggedInUser = localStorage.getItem("userName") || "";
+
+                    for(let i=1; i<vlesData.length; i++) {
+                        let row = vlesData[i];
+                        let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                        if(!cscId || cscId === '-') continue;
+
+                        let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '';
+                        let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '';
+                        let dmNameStr = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+
+                        if(oldD && oldD !== '-' && oldD.toLowerCase() !== 'unknown') oldSet.add(oldD);
+                        if(newD && newD !== '-' && newD.toLowerCase() !== 'unknown') newSet.add(newD);
+
+                        if (userDesignation === "District Manager" && dmNameStr.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                            if(oldD && oldD !== '-' && oldD.toLowerCase() !== 'unknown') dmMappedOldDistricts.add(oldD);
+                            if(newD && newD !== '-' && newD.toLowerCase() !== 'unknown') dmMappedNewDistricts.add(newD);
+                        }
+
+                        let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0; 
+                        let isAct25 = fy26 > 0;
+
+                        let dateStr = idxDate > -1 ? row[idxDate] : '';
+                        let regMonthIdx = -1;
+                        if (dateStr && dateStr !== '-') {
+                            let rowDate = new Date(dateStr);
+                            if (!isNaN(rowDate.getTime())) {
+                                let y = rowDate.getFullYear();
+                                let m = rowDate.getMonth() + 1; 
+                                let fyStartYear = m >= 4 ? y : y - 1;
+                                if (fyStartYear === 2026) {
+                                    regMonthIdx = m >= 4 ? m - 4 : m + 8;
+                                }
+                            }
+                        }
+
+                        let mTxnsArr = [];
+                        for(let m=0; m<12; m++) {
+                            let colIdx = mIndices[m];
+                            mTxnsArr.push((colIdx !== undefined && colIdx > -1) ? (parseInt(row[colIdx]) || 0) : 0);
+                        }
+                        
+                        let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString().toLowerCase() : '';
+                        let hasAmcPaid = amcStatus.includes('paid');
+
+                        globalVles.push({
+                            cscid: cscId,
+                            olddist: oldD,
+                            newdist: newD,
+                            dmname: dmNameStr,
+                            isAct25: isAct25,
+                            fy26_txns: fy26,
+                            monthsTxn: mTxnsArr,
+                            regMonthIdx: regMonthIdx,
+                            hasAmcPaid: hasAmcPaid
+                        });
+                    }
+                    oldDistrictsList = Array.from(oldSet).sort();
+                    newDistrictsList = Array.from(newSet).sort();
+                }
+            } catch(e) { console.warn("Error processing data", e); }
+            
+            document.getElementById("loaderArea").style.display = "none";
+            document.getElementById("captureArea").style.display = "block";
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            distDropdown.innerHTML = '<option value="All">ANDHRA PRADESH (ALL)</option>';
+            
+            let list = type === "old" ? oldDistrictsList : newDistrictsList;
+            
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 list = list.filter(dist => mappedSet.has(dist));
+            }
+
+            list.forEach(dist => { distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            
+            let anantapurExists = Array.from(distDropdown.options).find(opt => opt.value.toLowerCase().includes('anantapur'));
+            if(anantapurExists) distDropdown.value = anantapurExists.value;
+            else if (distDropdown.options.length > 1) distDropdown.value = distDropdown.options[1].value;
+
+            calculateProgressData();
+        }
+
+        function getPercentage(achieved, target) {
+            if(target <= 0) return achieved > 0 ? 100 : 0;
+            let pct = (achieved / target) * 100;
+            return pct > 100 ? 100 : Math.round(pct); 
+        }
+
+        function getPeriodInfo(period) {
+            let info = { title: "", months: [], isMonth: false, isYearly: false };
+            
+            if (!isNaN(period)) {
+                let m = parseInt(period);
+                info.title = monthNames[m];
+                info.months = [m];
+                info.isMonth = true;
+            } else if (period === 'yearly') { info.title = "ANNUAL"; info.months = [0,1,2,3,4,5,6,7,8,9,10,11]; info.isYearly = true; }
+            else if (period === 'h1') { info.title = "HALF YEARLY"; info.months = [0,1,2,3,4,5]; }
+            else if (period === 'q1') { info.title = "Q1"; info.months = [0,1,2]; }
+            else if (period === 'q2') { info.title = "Q2"; info.months = [3,4,5]; }
+            else if (period === 'q3') { info.title = "Q3"; info.months = [6,7,8]; }
+            else if (period === 'q4') { info.title = "Q4"; info.months = [9,10,11]; }
+            
+            return info;
+        }
+
+        function getPeriodTarget(annualTarget, isTxns, periodInfo, periodVal) {
+            if (periodInfo.isYearly) return annualTarget;
+            if (periodInfo.isMonth) return Math.round(annualTarget / 12);
+            
+            let q1 = isTxns ? Math.round(annualTarget * 0.20) : Math.floor(annualTarget * 0.25);
+            let q2 = isTxns ? Math.round(annualTarget * 0.25) : Math.floor(annualTarget * 0.25);
+            let q3 = isTxns ? Math.round(annualTarget * 0.35) : Math.floor(annualTarget * 0.25);
+            let q4 = annualTarget - (q1 + q2 + q3);
+            
+            if (periodVal === 'q1') return q1;
+            if (periodVal === 'q2') return q2;
+            if (periodVal === 'q3') return q3;
+            if (periodVal === 'q4') return q4;
+            if (periodVal === 'h1') return q1 + q2;
+            return 0;
+        }
+
+        function calculateProgressData() {
+            const type = document.getElementById("districtType").value;
+            const distKey = type === 'old' ? 'olddist' : 'newdist';
+            const selectedDist = document.getElementById("districtName").value;
+            const periodVal = document.getElementById("dataMonth").value;
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            let periodInfo = getPeriodInfo(periodVal);
+            let maxMonthIdx = Math.max(...periodInfo.months);
+            const yearStr = (maxMonthIdx >= 9) ? "2027" : "2026";
+            
+            let reportPeriodText = periodInfo.isMonth ? `${periodInfo.title} ${yearStr}` : `${periodInfo.title} (FY 26-27)`;
+
+            document.getElementById("dynamicTitle").innerText = selectedDist === "All" ? "ANDHRA PRADESH" : selectedDist.toUpperCase();
+            document.getElementById("sd-month").innerText = `CLOSURE REPORT : ${reportPeriodText}`;
+            document.getElementById("lbl-transacting").innerText = `TRANSACTING VLES (TILL ${reportPeriodText})`;
+
+            let dmNameDisplay = "District Team";
+            if (selectedDist === "All") {
+                dmNameDisplay = (userDesignation === "District Manager") ? loggedInUser : "Andhra Pradesh Team";
+            } else if (type === "old") {
+                dmNameDisplay = "District Team";
+            } else {
+                let sampleVle = globalVles.find(v => v[distKey] === selectedDist && v.dmname && v.dmname !== '-' && v.dmname.toLowerCase() !== 'unknown');
+                dmNameDisplay = (sampleVle && sampleVle.dmname) ? sampleVle.dmname : "District Team";
+            }
+            document.getElementById("sd-team").innerText = `👥 Team: ${dmNameDisplay}`;
+
+            let stateTotalAct25 = 0;
+            let validDistricts = type === 'old' ? oldDistrictsList : newDistrictsList;
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 validDistricts = validDistricts.filter(dist => mappedSet.has(dist));
+            }
+            let distCount = validDistricts.length;
+            if(distCount === 0) distCount = 1;
+
+            globalVles.forEach(v => {
+                if (userDesignation === "District Manager" && v.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                if(v[distKey] && v[distKey] !== '-' && v[distKey].toLowerCase() !== 'unknown') {
+                    if(v.isAct25) stateTotalAct25++;
+                }
+            });
+            if(stateTotalAct25 === 0) stateTotalAct25 = 1;
+
+            let act25 = 0;
+            let totalVles = 0;
+            let txnAchieved = 0;
+            let regAchieved = 0;
+            let cumulativeOldActive = 0;
+            let cumulativeNewActive = 0;
+            let amcEligible = 0;
+            let amcAchieved = 0;
+
+            globalVles.forEach(v => {
+                if (userDesignation === "District Manager" && v.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                let dName = v[distKey];
+                if (selectedDist !== "All" && dName !== selectedDist) return;
+                
+                totalVles++;
+                if(v.isAct25) act25++;
+
+                periodInfo.months.forEach(m => {
+                    txnAchieved += v.monthsTxn[m];
+                    if (v.regMonthIdx === m) regAchieved++;
+                });
+
+                let hasTransactedTillMonth = false;
+                let cumulativeTxns = 0;
+                for(let i=0; i<=maxMonthIdx; i++) {
+                    if (v.monthsTxn[i] > 0) hasTransactedTillMonth = true;
+                    cumulativeTxns += v.monthsTxn[i];
+                }
+
+                if (hasTransactedTillMonth) {
+                    if (v.isAct25) cumulativeOldActive++;
+                    else cumulativeNewActive++;
+                }
+
+                if (v.fy26_txns >= 100 || cumulativeTxns >= 100 || v.hasAmcPaid) {
+                    amcEligible++;
+                    if (v.hasAmcPaid) amcAchieved++;
+                }
+            });
+
+            let txnTargetAnnualDist = 0;
+            let regTargetAnnualDist = 0;
+
+            if (selectedDist === "All") {
+                if (userDesignation === "District Manager") {
+                    let vRatio = act25 / stateTotalAct25; 
+                    txnTargetAnnualDist = Math.round(targetTxnsAnnual * (act25 / 4514)); 
+                    regTargetAnnualDist = Math.floor(targetRegsAnnual * (distCount / 26)); 
+                } else {
+                    txnTargetAnnualDist = targetTxnsAnnual;
+                    regTargetAnnualDist = targetRegsAnnual;
+                }
+            } else {
+                let stateWideDenominator = (userDesignation === "District Manager") ? stateTotalAct25 : 4514; 
+                if (userDesignation !== "District Manager") stateWideDenominator = stateTotalAct25; 
+
+                let vRatio = act25 / stateWideDenominator;
+                txnTargetAnnualDist = Math.round(targetTxnsAnnual * vRatio);
+                
+                let distIndex = validDistricts.indexOf(selectedDist);
+                let safeDistCount = (userDesignation === "District Manager") ? 26 : distCount; 
+
+                regTargetAnnualDist = Math.floor(targetRegsAnnual / safeDistCount);
+                if (distIndex > -1 && distIndex < (targetRegsAnnual % safeDistCount)) regTargetAnnualDist += 1;
+            }
+
+            let txnTarget = getPeriodTarget(txnTargetAnnualDist, true, periodInfo, periodVal);
+            let regTarget = getPeriodTarget(regTargetAnnualDist, false, periodInfo, periodVal);
+            
+            let tPct = getPercentage(txnAchieved, txnTarget);
+            let rPct = getPercentage(regAchieved, regTarget);
+            let aPct = getPercentage(amcAchieved, amcEligible);
+
+            let totalTransacting = cumulativeOldActive + cumulativeNewActive;
+            let totalInactive = totalVles - totalTransacting;
+            let yetToAct = act25 - cumulativeOldActive;
+            if(yetToAct < 0) yetToAct = 0;
+
+            document.getElementById("t-txn-target").innerText = txnTarget.toLocaleString('en-IN');
+            document.getElementById("t-txn-achieved").innerText = txnAchieved.toLocaleString('en-IN');
+            document.getElementById("t-txn-pct").innerText = tPct + "%";
+
+            document.getElementById("t-reg-target").innerText = regTarget.toLocaleString('en-IN');
+            document.getElementById("t-reg-achieved").innerText = regAchieved.toLocaleString('en-IN');
+            document.getElementById("t-reg-pct").innerText = rPct + "%";
+
+            document.getElementById("t-amc-target").innerText = amcEligible.toLocaleString('en-IN');
+            document.getElementById("t-amc-achieved").innerText = amcAchieved.toLocaleString('en-IN');
+            document.getElementById("t-amc-pct").innerText = aPct + "%";
+
+            document.getElementById("t-txn-pct").style.color = tPct >= 100 ? '#059669' : (tPct >= 50 ? '#d97706' : '#ef4444');
+            document.getElementById("t-reg-pct").style.color = rPct >= 100 ? '#059669' : (rPct >= 50 ? '#d97706' : '#ef4444');
+            document.getElementById("t-amc-pct").style.color = aPct >= 100 ? '#059669' : (aPct >= 50 ? '#d97706' : '#ef4444');
+
+            document.getElementById("m-tot-vles").innerText = totalVles.toLocaleString('en-IN');
+            document.getElementById("m-act-25").innerText = act25.toLocaleString('en-IN');
+            document.getElementById("m-tot-inact").innerText = totalInactive.toLocaleString('en-IN');
+
+            document.getElementById("b-transacting").innerText = totalTransacting.toLocaleString('en-IN');
+            document.getElementById("b-old-trans").innerText = `Old: ${cumulativeOldActive}`;
+            document.getElementById("b-new-trans").innerText = `New: ${cumulativeNewActive}`;
+
+            document.getElementById("b-yet-to-act").innerText = yetToAct.toLocaleString('en-IN');
+
+            let insightsHtml = "";
+
+            if (txnAchieved < txnTarget) {
+                insightsHtml += `<li>Target missed on bookings. Focus immediately on the <span class="hl-red">${yetToAct}</span> pending VLEs who worked last year but haven't started this year.</li>`;
+            } else {
+                insightsHtml += `<li>Great job! Booking target achieved. Push the remaining <span class="hl-red">${yetToAct}</span> pending VLEs to maximize growth.</li>`;
+            }
+
+            let regDiff = regTarget - regAchieved;
+            if (regDiff > 0) {
+                insightsHtml += `<li>Need <span class="hl-red">${regDiff}</span> more registrations to hit the target. Drive local campaigns.</li>`;
+            } else {
+                insightsHtml += `<li>Registration target hit! Keep up the excellent momentum.</li>`;
+            }
+
+            let amcPending = amcEligible - amcAchieved;
+            if (amcPending > 0) {
+                insightsHtml += `<li><span class="alert-badge">ALERT</span> There are <span class="hl-red">${amcPending}</span> eligible VLEs who haven't taken AMC. Activating them will bring massive extra profit to VLEs!</li>`;
+            } else if (amcEligible > 0) {
+                insightsHtml += `<li>All eligible VLEs have taken AMC. <span class="hl-green">Excellent work!</span></li>`;
+            } else {
+                insightsHtml += `<li>Drive more transactions to make VLEs eligible for the AMC MaxGain package.</li>`;
+            }
+
+            document.getElementById("insightsList").innerHTML = insightsHtml;
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            
+            const d = new Date();
+            let currMonth = d.getMonth(); 
+            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+            document.getElementById("dataMonth").value = fyMonthIndex.toString();
+
+            updateDistrictsDropdown();
+        }
+
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            captureArea.classList.add("capture-compact");
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let dist = document.getElementById("districtName").value.replace(/ /g, '_');
+                    
+                    let periodText = document.getElementById("dataMonth").options[document.getElementById("dataMonth").selectedIndex].text.split(" ")[0];
+                    let safePeriodText = periodText.replace(/[^a-zA-Z0-9]/g, '_');
+
+                    link.download = `IRCTC_Closure_Report_${safePeriodText}_${dist}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    captureArea.classList.remove("capture-compact");
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    captureArea.classList.remove("capture-compact");
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500); 
+        }
+    </script>
+</body>
+</html>

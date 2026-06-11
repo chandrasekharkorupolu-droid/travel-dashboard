@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLE Details Editor - CSC TravelCloud</title>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Top Controls */
+        .top-controls {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 12px 20px;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+        }
+        .page-heading { font-size: 20px; color: #003366; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #cbd5e1; }
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 0 0 #cbd5e1; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a;}
+
+        body.fullscreen-mode { padding: 10px; }
+
+        /* Editor Container Layout */
+        .editor-container {
+            max-width: 800px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;
+        }
+
+        /* Search Card */
+        .search-card {
+            background-color: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #cbd5e1; text-align: center;
+        }
+        .search-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .search-input-group { display: flex; gap: 12px; justify-content: center; }
+        .search-input { flex: 1; max-width: 450px; padding: 12px 20px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; outline: none; font-weight: 600; background-color: #f8fafc; transition: 0.2s;}
+        .search-input:focus { border-color: #3b82f6; background-color: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .search-input:disabled { background-color: #e2e8f0; cursor: not-allowed; }
+        
+        .btn-find { background-color: #3b82f6; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #1d4ed8; transition: 0.2s;}
+        .btn-find:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; }
+        .btn-find:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+        .btn-find:hover:not(:disabled) { background-color: #2563eb; }
+
+        /* Editor Form Card */
+        .editor-card {
+            background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #cbd5e1; overflow: hidden; display: none; margin-bottom: 20px;
+        }
+        .card-header { background-color: #0f172a; color: white; padding: 15px 25px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .status-active { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .status-inactive { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-never { background-color: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+        .status-blocked { background-color: #f3f4f6; color: #1f2937; border: 1px solid #e5e7eb; }
+
+        .form-grid { padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full-width { grid-column: span 2; }
+        
+        .form-group label { font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; font-weight: 600; outline: none; background-color: #f8fafc; transition: 0.2s; color: #0f172a;}
+        .form-control:focus { border-color: #3b82f6; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-readonly { background-color: #e2e8f0; color: #64748b; border-color: #cbd5e1; cursor: not-allowed; }
+
+        /* Save Button Area */
+        .form-actions { background-color: #f8fafc; padding: 20px 30px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 15px; }
+        .btn-save { background-color: #10b981; color: white; border: none; padding: 12px 35px; border-radius: 6px; font-size: 15px; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #047857; text-transform: uppercase; letter-spacing: 0.5px;}
+        .btn-save:active { transform: translateY(4px); box-shadow: 0 0 0 #047857; }
+        .btn-save:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+        .btn-save:hover:not(:disabled) { background-color: #059669; }
+
+        /* Toast Notification */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background-color: #10b981; color: white; padding: 12px 25px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+        /* Access Denied Container */
+        #accessDeniedMsg { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; padding: 50px;}
+        #accessDeniedMsg h1 { color: #dc2626; font-size: 40px; margin-bottom: 10px; font-weight: 900;}
+        #accessDeniedMsg p { font-size: 18px; color: #334155; font-weight: 700; }
+        #accessDeniedMsg span { font-size: 14px; color: #64748b; margin-top: 5px; font-weight: 600;}
+    </style>
+</head>
+<body>
+
+    <div class="top-controls" id="topControlsSection">
+        <div class="page-heading">🛠️ VLE Information Editor & Corrector</div>
+        <div class="filter-group">
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div class="editor-container" id="editorMainSection">
+        
+        <!-- Search Card -->
+        <div class="search-card">
+            <div class="search-title">🔍 Search VLE to Update Details</div>
+            <div class="search-input-group">
+                <input type="text" id="vleSearchInput" class="search-input" placeholder="⏳ Loading Database... Please wait" disabled onkeypress="handleKeyPress(event)">
+                <button class="btn-find" id="btnSearch" onclick="searchVLE()" disabled>Loading...</button>
+            </div>
+        </div>
+
+        <!-- Editor Form Card -->
+        <div class="editor-card" id="editorFormCard">
+            <div class="card-header">
+                <span>📝 Edit Information</span>
+                <span id="vleStatusBadge" class="status-badge">Active</span>
+            </div>
+            
+            <div class="form-grid">
+                
+                <div class="form-group">
+                    <label>CSC ID (Fixed Key)</label>
+                    <input type="text" id="editCscId" class="form-control form-readonly" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label>VLE Name</label>
+                    <input type="text" id="editVleName" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>IRCTC ID</label>
+                    <input type="text" id="editIrctcId" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Old District</label>
+                    <input type="text" id="editOldDist" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>New District</label>
+                    <input type="text" id="editNewDist" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="text" id="editMob" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>VLE Mobile Number</label>
+                    <input type="text" id="editVleMob" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>District Manager Name</label>
+                    <input type="text" id="editDmName" class="form-control form-readonly" readonly>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>HO Remarks <span style="color:#ef4444; font-size:10px;">(Type suspend/block to disable VLE)</span></label>
+                    <input type="text" id="editHoRemarks" class="form-control" placeholder="E.g. Suspend VLE ID due to inactivity">
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-save" id="btnSaveChanges" onclick="saveVLEChanges()">Save Changes</button>
+            </div>
+        </div>
+
+    </div> 
+    
+    <!-- Access Denied View -->
+    <div id="accessDeniedMsg">
+        <h1>🚫 Access Denied</h1>
+        <p>You do not have permission to view or edit VLE details.</p>
+        <span>Only State Head / SPOC can access this page.</span>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">✅ Details Updated Successfully!</div>
+
+    <script>
+        let globalVlesList = [];
+        let selectedVleIndex = -1;
+        let isDataReady = false; 
+        
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            // --- SECURITY CHECK FOR DISTRICT MANAGER ---
+            if (userDesignation === "District Manager") {
+                document.getElementById("topControlsSection").style.display = "none";
+                document.getElementById("editorMainSection").style.display = "none";
+                document.getElementById("accessDeniedMsg").style.display = "flex";
+                return; 
+            }
+            
+            fetchSheetData();
+        };
+
+        async function fetchSheetData() {
+            try {
+                // 🌟 FIX: Fetching from session storage if exists to speed up load time 🌟
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                let rawData;
+                
+                if (cachedData) {
+                    rawData = JSON.parse(cachedData);
+                } else {
+                    let response = await fetch(apiURL);
+                    rawData = await response.json();
+                    sessionStorage.setItem("cscTravelData", JSON.stringify(rawData));
+                }
+                
+                processVleData(rawData);
+                
+                document.getElementById("vleSearchInput").placeholder = "Enter CSC ID or IRCTC ID...";
+                document.getElementById("vleSearchInput").disabled = false;
+                document.getElementById("btnSearch").disabled = false;
+                document.getElementById("btnSearch").innerText = "Fetch Details";
+                isDataReady = true;
+
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("btnSearch").innerText = "❌ Error Loading Data";
+                showToast("❌ Failed to connect with Google Sheet!");
+            }
+        }
+
+        function processVleData(rawData) {
+            if(!rawData || rawData.length === 0) return;
+            
+            let cleanHeaders = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
+            let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename') || h === 'name');
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxmob = cleanHeaders.findIndex(h => h === 'mobile' || h.includes('mobileno'));
+            let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
+            let idxho = cleanHeaders.findIndex(h => h.includes('horemarks'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526'));
+            
+            let mIndices = [];
+            let idx27 = -1;
+            
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+            }
+
+            globalVlesList = [];
+
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i];
+                let cscId = idxcscid > -1 ? (row[idxcscid] || '').toString().trim() : '';
+                if(!cscId || cscId === '-') continue;
+
+                let fy23 = cleanHeaders.findIndex(h => h.includes('2223')) > -1 ? (parseInt(row[cleanHeaders.findIndex(h => h.includes('2223'))]) || 0) : 0;
+                let fy24 = cleanHeaders.findIndex(h => h.includes('2324')) > -1 ? (parseInt(row[cleanHeaders.findIndex(h => h.includes('2324'))]) || 0) : 0;
+                let fy25 = cleanHeaders.findIndex(h => h.includes('2425')) > -1 ? (parseInt(row[cleanHeaders.findIndex(h => h.includes('2425'))]) || 0) : 0;
+                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+
+                let monthSum = 0;
+                mIndices.forEach(colIdx => {
+                    if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
+                });
+                let fy27Total = monthSum;
+                if (fy27Total === 0 && idx27 > -1) {
+                    fy27Total = parseInt(row[idx27]) || 0;
+                }
+
+                let hoRemarks = idxho > -1 ? (row[idxho] || '').toString() : '';
+                let hoLower = hoRemarks.toLowerCase().trim();
+                let status = 'active';
+
+                let lifetimeTxns = fy23 + fy24 + fy25 + fy26 + fy27Total;
+
+                if (hoLower.includes('suspend') || hoLower.includes('blacklist') || hoLower.includes('block')) {
+                    status = 'blocked';
+                } else if (lifetimeTxns === 0) {
+                    status = 'never';
+                } else if (fy27Total === 0) {
+                    status = 'inactive';
+                }
+
+                globalVlesList.push({
+                    cscid: cscId,
+                    irctc: idxirctc > -1 ? (row[idxirctc] || '').toString().trim() : '-',
+                    vlename: idxvlename > -1 ? (row[idxvlename] || '').toString().trim() : '-',
+                    olddist: idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '-',
+                    newdist: idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '-',
+                    mob: idxmob > -1 ? (row[idxmob] || '').toString().trim() : '-',
+                    vlemob: idxvlemob > -1 ? (row[idxvlemob] || '').toString().trim() : '-',
+                    dmname: idxempname > -1 ? (row[idxempname] || '').toString().trim() : '-',
+                    hoRemark: hoRemarks,
+                    status: status,
+                    lifetimeTxns: lifetimeTxns,
+                    fy27: fy27Total
+                });
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                searchVLE();
+            }
+        }
+
+        function searchVLE() {
+            if (!isDataReady) return; 
+
+            let query = document.getElementById("vleSearchInput").value.trim().toLowerCase();
+            let formCard = document.getElementById("editorFormCard");
+            let btn = document.getElementById("btnSearch");
+
+            formCard.style.display = "none";
+            
+            if (query === "") {
+                showToast("⚠️ Enter CSC ID or IRCTC ID first!");
+                return;
+            }
+
+            btn.innerText = "Searching...";
+
+            setTimeout(() => {
+                let foundIndex = globalVlesList.findIndex(v => 
+                    v.cscid.toLowerCase() === query || 
+                    v.irctc.toLowerCase() === query
+                );
+
+                btn.innerText = "Fetch Details";
+
+                if (foundIndex > -1) {
+                    selectedVleIndex = foundIndex;
+                    let v = globalVlesList[foundIndex];
+
+                    document.getElementById("editCscId").value = v.cscid;
+                    document.getElementById("editVleName").value = v.vlename;
+                    document.getElementById("editIrctcId").value = v.irctc;
+                    document.getElementById("editOldDist").value = v.olddist;
+                    document.getElementById("editNewDist").value = v.newdist;
+                    document.getElementById("editMob").value = v.mob;
+                    document.getElementById("editVleMob").value = v.vlemob;
+                    document.getElementById("editDmName").value = v.dmname;
+                    document.getElementById("editHoRemarks").value = v.hoRemark;
+
+                    let badge = document.getElementById("vleStatusBadge");
+                    badge.className = "status-badge";
+                    
+                    if (v.status === 'blocked') {
+                        badge.innerText = "HO Blocked 🚫";
+                        badge.classList.add("status-blocked");
+                    } else if (v.status === 'never') {
+                        badge.innerText = "Never Active ⚠️";
+                        badge.classList.add("status-never");
+                    } else if (v.status === 'inactive') {
+                        badge.innerText = "Inactive ❌";
+                        badge.classList.add("status-inactive");
+                    } else {
+                        badge.innerText = "Active ✅";
+                        badge.classList.add("status-active");
+                    }
+
+                    formCard.style.display = "block";
+                    showToast("🔍 VLE Details Found & Loaded!");
+                } else {
+                    selectedVleIndex = -1;
+                    showToast("❌ VLE Record Not Found! Check the ID.");
+                }
+            }, 300); 
+        }
+
+        async function saveVLEChanges() {
+            if (selectedVleIndex === -1) return;
+
+            let cscId = document.getElementById("editCscId").value;
+            let vleName = document.getElementById("editVleName").value.trim();
+            let irctcId = document.getElementById("editIrctcId").value.trim();
+            let oldDist = document.getElementById("editOldDist").value.trim();
+            let newDist = document.getElementById("editNewDist").value.trim();
+            let mob = document.getElementById("editMob").value.trim();
+            let vleMob = document.getElementById("editVleMob").value.trim();
+            let hoRemarks = document.getElementById("editHoRemarks").value.trim();
+
+            if(vleName === "" || mob === "") {
+                showToast("⚠️ VLE Name and Mobile can't be empty!");
+                return;
+            }
+
+            let btn = document.getElementById("btnSaveChanges");
+            let originalText = btn.innerText;
+            btn.innerText = "⏳ SAVING TO GOOGLE SHEET...";
+            btn.disabled = true;
+
+            let payload = {
+                action: "updateVleDetails", 
+                cscid: cscId,
+                vlename: vleName,
+                irctcid: irctcId,
+                olddistrict: oldDist,
+                newdistrict: newDist,
+                mobile: mob,
+                vlemob: vleMob,
+                horemarks: hoRemarks
+            };
+
+            try {
+                let response = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                
+                let result = await response.text();
+
+                if (result.includes("Success") || result.includes("success")) {
+                    
+                    // Update Local
+                    let v = globalVlesList[selectedVleIndex];
+                    v.vlename = vleName;
+                    v.irctc = irctcId;
+                    v.olddist = oldDist;
+                    v.newdist = newDist;
+                    v.mob = mob;
+                    v.vlemob = vleMob;
+                    v.hoRemark = hoRemarks;
+
+                    let hoLower = hoRemarks.toLowerCase();
+                    if(hoLower.includes('suspend') || hoLower.includes('blacklist') || hoLower.includes('block')) {
+                        v.status = 'blocked';
+                    } else if(v.lifetimeTxns === 0) {
+                        v.status = 'never';
+                    } else if(v.fy27 === 0) {
+                        v.status = 'inactive';
+                    } else {
+                        v.status = 'active';
+                    }
+
+                    // 🌟 FIX: Force clear session storage so data updates everywhere on next load
+                    sessionStorage.removeItem("cscTravelData");
+
+                    showToast("🎉 Details Updated in Google Sheet Successfully!");
+
+                    setTimeout(() => {
+                        document.getElementById("editorFormCard").style.display = "none";
+                        document.getElementById("vleSearchInput").value = "";
+                        selectedVleIndex = -1;
+                    }, 1200);
+
+                } else {
+                    showToast("❌ Server Error: " + result);
+                }
+
+            } catch (error) {
+                console.error("Error saving data:", error);
+                showToast("❌ Network error. Failed to save to Sheet!");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function showToast(msg) {
+            let toast = document.getElementById("toast");
+            if(toast) {
+                if(msg.includes("❌") || msg.includes("⚠️")) {
+                    toast.style.backgroundColor = "#dc2626"; 
+                } else {
+                    toast.style.backgroundColor = "#10b981"; 
+                }
+                toast.innerText = msg;
+                toast.style.display = "block";
+                setTimeout(() => { toast.style.display = "none"; }, 3000);
+            }
+        }
+
+        /* 🌟 Full Screen API Fix 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+    </script>
+</body>
+</html>

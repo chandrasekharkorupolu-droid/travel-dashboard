@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Achievements - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel Form structure */
+        .target-control-panel {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
+        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 Image Export Panels */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        
+        .capture-compact { 
+            width: max-content !important; min-width: 1000px !important; margin: 0; 
+            background-color: #ffffff !important; padding: 30px !important; 
+            display: inline-block !important; height: auto !important; overflow: visible !important; 
+        }
+        .capture-compact .table-container { 
+            height: auto !important; overflow: visible !important; display: block !important; 
+            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+        }
+        .capture-compact table { width: 100% !important; }
+        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
+        .capture-compact .td-district { position: static !important; }
+
+        /* Flat Clean KPI Badges */
+        .kpi-display-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-shrink: 0; flex-wrap: nowrap;}
+        .kpi-box-clean { 
+            background-color: #ffffff; border-radius: 8px; padding: 12px 20px; border: 1px solid #cbd5e1; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: max-content; 
+        }
+        .kpi-box-clean.t-color { border-left: 5px solid #1e3a8a; }
+        .kpi-box-clean.a-color { border-left: 5px solid #10b981; }
+        .kpi-box-clean.b-color { border-left: 5px solid #ef4444; }
+        .kpi-box-clean.p-color { border-left: 5px solid #f59e0b; }
+        
+        .kpi-box-clean .lbl { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; white-space: nowrap;}
+        .kpi-box-clean .val { font-size: 22px; font-weight: 800; color: #1e293b; margin: 0; line-height: 1; white-space: nowrap;}
+
+        /* Data table container styling structures */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        th, td { white-space: nowrap; }
+
+        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
+        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; }
+        
+        .th-dist { background-color: #0f172a; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;}
+        .th-ids { background-color: #334155; }
+        .th-act { background-color: #475569; }
+        .th-act-new { background-color: #6366f1; } 
+        .th-part { background-color: #8b5cf6; }     
+        .th-tar { background-color: #1e3a8a; }
+        .th-ach { background-color: #10b981; }
+        .th-bal { background-color: #be123c; }
+        .th-per { background-color: #d97706; }
+
+        tr:hover td { background-color: #f8fafc; }
+        
+        .td-district { 
+            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
+            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .td-district:hover { background-color: #e0f2fe; color: #2563eb; }
+
+        tbody tr:nth-child(even) .td-district { background-color: #f8fafc; }
+
+        .td-ids { color: #334155; font-weight: 700; }
+        .td-act { color: #0f766e; font-weight: 800; }
+        .td-act-new { color: #4338ca; font-weight: 800; background-color: #eef2ff;}  
+        .td-part { color: #6d28d9; font-weight: 800; background-color: #f5f3ff;}     
+        .td-tar { color: #1e3a8a; font-weight: 800; background-color: #eff6ff;}
+        .td-ach { color: #047857; font-weight: 800; background-color: #f0fdf4;}
+        .td-bal { color: #be123c; font-weight: 800; background-color: #fff1f2;}
+        
+        .pct-high { color: #15803d; font-weight: 900; }
+        .pct-med { color: #b45309; font-weight: 900; }
+        .pct-low { color: #b91c1c; font-weight: 900; }
+
+        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
+        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+
+        .header-title-bar { font-size: 20px; font-weight: 800; color: #1e293b; text-transform: uppercase; text-align: center; padding: 8px 0; letter-spacing: 0.5px; flex-shrink: 0;}
+
+        .loader { text-align: center; padding: 50px; font-size: 16px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        .spinner { width: 30px; height: 30px; border: 4px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Full Screen Modifiers */
+        body.fullscreen-mode { padding: 0; gap: 0;}
+        body.fullscreen-mode .target-control-panel { border-radius: 0; border-left: none; border-right: none; border-top: none;}
+    </style>
+</head>
+<body>
+
+    <div class="target-control-panel">
+        <div class="filter-group-custom">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
+            <select id="reportType" onchange="processMainData()" style="border-color: #10b981; color: #047857; font-weight: 800; background-color: #f0fdf4;">
+                <option value="txns" selected>🎫 Daily Transactions</option>
+                <option value="regs">📋 Daily Registrations</option>
+            </select>
+        </div>
+
+        <div class="filter-group-custom">
+            <span style="font-size: 13px; font-weight: 700; color: #ea580c;">Select Y'Day Col:</span>
+            <select id="ydayColSelect" onchange="processMainData()" style="border-color: #f59e0b; color: #d97706; font-weight: 800; background-color: #fffbeb; max-width: 180px;">
+                <option value="32" selected>AG (Loading...)</option>
+            </select>
+        </div>
+
+        <div class="filter-group-custom">
+            <span style="font-size: 13px; font-weight: 700; color: #475569;">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="calculateDailyData()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="header-title-bar" id="dynamicTitle">IRCTC DAILY ACHIEVEMENTS REPORT (YESTERDAY)</div>
+        <div style="font-size: 12px; color: #64748b; text-align: center; margin-top: -5px; margin-bottom: 25px; font-weight: bold;" id="reportDate">Report Generated on: </div>
+
+        <div class="kpi-display-row">
+            <div class="kpi-box-clean t-color">
+                <span class="lbl">DAILY TARGET:</span>
+                <span class="val" id="dispTotalTarget">0</span>
+            </div>
+            <div class="kpi-box-clean a-color">
+                <span class="lbl">Y'DAY ACHIEVED:</span>
+                <span class="val" id="dispTotalAchieved">0</span>
+            </div>
+            <div class="kpi-box-clean b-color">
+                <span class="lbl">SHORTFALL / BALANCE:</span>
+                <span class="val" id="dispTotalBalance">0</span>
+            </div>
+            <div class="kpi-box-clean p-color">
+                <span class="lbl">% ACHIEVED:</span>
+                <span class="val" id="dispTotalPercent">0%</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="periodicTable">
+                <thead>
+                    <tr>
+                        <th class="th-dist">DISTRICT ⇅</th>
+                        <th class="th-ids">TOTAL IRCTC IDs</th>
+                        <th class="th-act">FY 25-26 ACTIVE</th>
+                        <th class="th-act-new">FY 26-27 ACTIVE</th>
+                        <th class="th-part">Y'DAY PARTICIPATED</th>
+                        <th class="th-tar">DAILY TARGET</th>
+                        <th class="th-ach">Y'DAY ACHIEVED</th>
+                        <th class="th-bal">SHORTFALL</th>
+                        <th class="th-per">% ACHIEVED</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="9"><div class="loader"><div class="spinner"></div> Fetching Daily Achievements Data... Please wait.</div></td></tr>
+                </tbody>
+                <tfoot id="tableFooter">
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        window.globalRawData = null; // Store raw data globally
+        let globalData = { old: {}, new: {} }; 
+        let oldDistrictsList = [];
+        let newDistrictsList = [];
+        
+        let allowedOldDistricts = new Set();
+        let allowedNewDistricts = new Set();
+        
+        let targetTxns = 181654;
+        let targetRegs = 809;
+
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            document.getElementById("districtType").value = "old";
+
+            let d = new Date();
+            let yday = new Date(d);
+            yday.setDate(yday.getDate() - 1);
+            
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = `Report based on data from: ${yday.toLocaleDateString('en-US', dateOptions)}`;
+            
+            fetchData();
+        };
+
+        function refreshData() {
+            sessionStorage.removeItem("cscTravelData");
+            sessionStorage.removeItem("cscTargetConfig");
+            
+            document.getElementById("reportType").value = "txns";
+            document.getElementById("districtType").value = "old";
+            document.getElementById("districtName").innerHTML = '<option value="All">All Districts</option>';
+            document.getElementById("tableBody").innerHTML = "<tr><td colspan='9'><div class='loader'><div class='spinner'></div> Fetching Fresh Live Data...</div></td></tr>";
+            
+            document.getElementById("dispTotalTarget").innerText = "0";
+            document.getElementById("dispTotalAchieved").innerText = "0";
+            document.getElementById("dispTotalBalance").innerText = "0";
+            document.getElementById("dispTotalPercent").innerText = "0%";
+            document.getElementById("tableFooter").innerHTML = "";
+
+            fetchData();
+        }
+
+        // Helper function to get Excel column letter (A, B, C... AG, AH)
+        function getColumnLetter(colIndex) {
+            let letter = '';
+            while (colIndex >= 0) {
+                letter = String.fromCharCode((colIndex % 26) + 65) + letter;
+                colIndex = Math.floor(colIndex / 26) - 1;
+            }
+            return letter;
+        }
+
+        // Function to dynamically populate the Dropdown with all column headers
+        function populateColDropdown(rawData) {
+            if(!rawData || rawData.length === 0) return;
+            let colSelect = document.getElementById("ydayColSelect");
+            let currentSelection = colSelect.value;
+            colSelect.innerHTML = "";
+            
+            let headers = rawData[0];
+            for(let i=0; i<headers.length; i++) {
+                let colName = getColumnLetter(i);
+                let hName = headers[i] ? headers[i].toString().trim() : 'Empty';
+                let opt = document.createElement("option");
+                opt.value = i;
+                opt.innerText = `${colName} - ${hName}`;
+                // Default target is 32 (AG)
+                if(i === 32) opt.selected = true; 
+                colSelect.appendChild(opt);
+            }
+            // Restore if changed by user
+            if (currentSelection && currentSelection !== "32" && currentSelection !== "") {
+                colSelect.value = currentSelection;
+            }
+        }
+
+        async function fetchData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                let cachedConfig = sessionStorage.getItem("cscTargetConfig");
+
+                let confData = cachedConfig ? JSON.parse(cachedConfig) : null;
+                let rawData = cachedData ? JSON.parse(cachedData) : null;
+
+                let promises = [];
+                let timestamp = new Date().getTime();
+
+                if (!confData) {
+                    promises.push(fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).then(d => {
+                        confData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTargetConfig", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+                
+                if (!rawData) {
+                    promises.push(fetch(apiURL + "?t=" + timestamp).then(r => r.json()).then(d => {
+                        rawData = d;
+                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                    }).catch(() => null));
+                }
+
+                if (promises.length > 0) await Promise.all(promises);
+
+                if (confData) processConfigData(confData);
+                if (rawData) {
+                    window.globalRawData = rawData;
+                    populateColDropdown(rawData); // 🌟 Populate the dropdown with sheet headers
+                    processMainData(); // 🌟 Then process the data
+                }
+                else throw new Error("Data not fetched");
+
+            } catch(e) { 
+                console.warn("Error processing data", e); 
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processConfigData(confData) {
+            if(confData && confData.length > 0) {
+                for(let i=1; i<confData.length; i++) {
+                    if(confData[i][0] === "IRCTC_BOOKING") {
+                        targetTxns = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 181654;
+                    }
+                    if(confData[i][0] === "IRCTC_REG") {
+                        targetRegs = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 809;
+                    }
+                }
+            }
+        }
+
+        function processMainData() {
+            let rawData = window.globalRawData;
+            if(rawData && rawData.length > 0) {
+                let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                
+                let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+                if (idxcscid === -1) idxcscid = 1; 
+                
+                let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid') || h === 'irctc');
+                if (idxirctc === -1) idxirctc = 2; 
+                
+                let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+                if (idxolddist === -1) idxolddist = 4; 
+                
+                let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+                if (idxnewdist === -1) idxnewdist = 5; 
+                
+                let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                if (idxempname === -1) idxempname = 7; 
+                
+                let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+                if (idxDate === -1) idxDate = 11; 
+                
+                let idx26 = cleanHeaders.findIndex(h => (h.includes('25') && h.includes('26')) || h.includes('202526'));
+                if (idx26 === -1) idx26 = 16; 
+
+                let mIndices = [];
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < cleanHeaders.length) mIndices.push(idx26 + k);
+                }
+                
+                let today = new Date();
+                let ydayDateObj = new Date(today);
+                ydayDateObj.setDate(ydayDateObj.getDate() - 1);
+                
+                // 🌟 FIX: Gets the index chosen by the user from the Dropdown (Defaults to 32/AG) 🌟
+                let idxYdayTxns = parseInt(document.getElementById("ydayColSelect").value);
+                if (isNaN(idxYdayTxns)) idxYdayTxns = 32; 
+
+                let loggedInUser = (localStorage.getItem("userName") || "").toLowerCase().trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "";
+
+                globalData = { old: {}, new: {} };
+                oldDistrictsList = [];
+                newDistrictsList = [];
+                allowedOldDistricts.clear();
+                allowedNewDistricts.clear();
+
+                for(let i=1; i<rawData.length; i++) {
+                    let row = rawData[i];
+                    let cscId = row[idxcscid] ? row[idxcscid].toString().trim() : '';
+                    if(!cscId || cscId === '-') continue;
+
+                    let irctcId = row[idxirctc] ? row[idxirctc].toString().trim() : '';
+                    let hasIrctc = (irctcId && irctcId !== '' && irctcId !== '-') ? 1 : 0;
+
+                    let oldD = row[idxolddist] ? row[idxolddist].toString().trim() : '';
+                    let newD = row[idxnewdist] ? row[idxnewdist].toString().trim() : '';
+                    let dmNameStr = row[idxempname] ? row[idxempname].toString().trim() : '';
+
+                    if (userDesignation === "District Manager" && dmNameStr.toLowerCase() === loggedInUser && loggedInUser !== "") {
+                        if (oldD && oldD !== '-') allowedOldDistricts.add(oldD);
+                        if (newD && newD !== '-') allowedNewDistricts.add(newD);
+                    }
+
+                    let oldKey = oldD.toLowerCase();
+                    let newKey = newD.toLowerCase();
+
+                    let fy26 = parseInt(row[idx26]) || 0;
+                    let isAct25 = fy26 > 0 ? 1 : 0;
+                    
+                    let isAct27 = 0;
+                    mIndices.forEach(colIdx => {
+                        if((parseInt(row[colIdx]) || 0) > 0) isAct27 = 1;
+                    });
+
+                    // 🌟 Values processed directly from the selected Column Index 🌟
+                    let ydayTxns = parseFloat((row[idxYdayTxns] || 0).toString().replace(/,/g, '')) || 0;
+
+                    let dateStr = row[idxDate] ? row[idxDate].toString().trim() : '';
+                    let ydayRegs = 0;
+                    if (dateStr && dateStr !== '-') {
+                        let rowDate = new Date(dateStr);
+                        if (!isNaN(rowDate.getTime())) {
+                            if(rowDate.getFullYear() === ydayDateObj.getFullYear() && 
+                               rowDate.getMonth() === ydayDateObj.getMonth() && 
+                               rowDate.getDate() === ydayDateObj.getDate()) {
+                                ydayRegs = 1;
+                            }
+                        }
+                    }
+
+                    if(oldD && oldD !== '-' && oldKey !== 'unknown') {
+                        if(!globalData.old[oldKey]) {
+                            globalData.old[oldKey] = { name: oldD, ids: 0, act25: 0, act26: 0, ydayTxns: 0, ydayRegs: 0, ydayPartTxns: 0, ydayPartRegs: 0, uniqueVles: new Set() };
+                            if (!oldDistrictsList.includes(oldD)) oldDistrictsList.push(oldD);
+                        }
+                        globalData.old[oldKey].ids += hasIrctc;
+                        globalData.old[oldKey].act25 += isAct25;
+                        globalData.old[oldKey].act26 += isAct27;
+                        globalData.old[oldKey].ydayTxns += ydayTxns;
+                        globalData.old[oldKey].ydayRegs += ydayRegs;
+                        if(ydayTxns > 0) globalData.old[oldKey].uniqueVles.add(cscId);
+                        globalData.old[oldKey].ydayPartRegs += (ydayRegs > 0 ? 1 : 0);
+                    }
+
+                    if(newD && newD !== '-' && newKey !== 'unknown') {
+                        if(!globalData.new[newKey]) {
+                            globalData.new[newKey] = { name: newD, ids: 0, act25: 0, act26: 0, ydayTxns: 0, ydayRegs: 0, ydayPartTxns: 0, ydayPartRegs: 0, uniqueVles: new Set() };
+                            if (!newDistrictsList.includes(newD)) newDistrictsList.push(newD);
+                        }
+                        globalData.new[newKey].ids += hasIrctc;
+                        globalData.new[newKey].act25 += isAct25;
+                        globalData.new[newKey].act26 += isAct27;
+                        globalData.new[newKey].ydayTxns += ydayTxns;
+                        globalData.new[newKey].ydayRegs += ydayRegs;
+                        if(ydayTxns > 0) globalData.new[newKey].uniqueVles.add(cscId);
+                        globalData.new[newKey].ydayPartRegs += (ydayRegs > 0 ? 1 : 0);
+                    }
+                }
+
+                // Count unique participants
+                for(let key in globalData.old) { globalData.old[key].ydayPartTxns = globalData.old[key].uniqueVles.size; }
+                for(let key in globalData.new) { globalData.new[key].ydayPartTxns = globalData.new[key].uniqueVles.size; }
+
+                oldDistrictsList.sort();
+                newDistrictsList.sort();
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value;
+            const dropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            dropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let fullList = type === 'old' ? oldDistrictsList : newDistrictsList;
+            let arr = [];
+            
+            if (userDesignation === "District Manager") {
+                fullList.forEach(dist => {
+                    if (type === 'old' && allowedOldDistricts.has(dist)) {
+                        arr.push(dist);
+                    } else if (type === 'new' && allowedNewDistricts.has(dist)) {
+                        arr.push(dist);
+                    }
+                });
+            } else {
+                arr = fullList;
+            }
+
+            arr.forEach(dist => {
+                dropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+            
+            calculateDailyData();
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) {
+                distDropdown.value = "All";
+            } else {
+                distDropdown.value = distName;
+            }
+            calculateDailyData();
+        }
+
+        function resetFilters() {
+            document.getElementById("reportType").value = "txns";
+            document.getElementById("districtType").value = "old";
+            document.getElementById("ydayColSelect").value = "32"; // Reset to AG
+            updateDistrictsDropdown();
+        }
+
+        function calculateDailyData() {
+            const reportType = document.getElementById("reportType").value;
+            const type = document.getElementById("districtType").value;
+            const selectedDist = document.getElementById("districtName").value;
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const isTxns = reportType === 'txns';
+            let typeName = isTxns ? 'TRANSACTIONS' : 'NEW REGISTRATIONS';
+
+            document.getElementById("dynamicTitle").innerText = `IRCTC DAILY ${typeName} ACHIEVEMENTS (YESTERDAY)`;
+
+            let distDataset = type === 'old' ? globalData.old : globalData.new;
+            let fullDistList = type === 'old' ? oldDistrictsList : newDistrictsList;
+            
+            let stateTotalVles = 0;
+            fullDistList.forEach(d => {
+                let key = d.toLowerCase();
+                if(distDataset[key]) stateTotalVles += distDataset[key].act25;
+            });
+            if(stateTotalVles === 0) stateTotalVles = 1; 
+
+            let totalDistricts = fullDistList.length;
+            if(totalDistricts === 0) totalDistricts = 1; 
+
+            let districtTargets = {};
+            fullDistList.forEach((d, idx) => {
+                let key = d.toLowerCase();
+                let data = distDataset[key];
+                if(!data) return;
+
+                if (isTxns) {
+                    let vRatio = data.act25 / stateTotalVles;
+                    let yearlyTargetDist = Math.round(targetTxns * vRatio);
+                    districtTargets[key] = parseFloat((yearlyTargetDist / 365).toFixed(1)); 
+                } else {
+                    let yearlyTargetDist = Math.floor(targetRegs / totalDistricts);
+                    if (idx < (targetRegs % totalDistricts)) yearlyTargetDist += 1;
+                    districtTargets[key] = parseFloat((yearlyTargetDist / 365).toFixed(2));
+                }
+            });
+
+            let distList = [];
+            if (userDesignation === "District Manager") {
+                fullDistList.forEach(d => {
+                    if (type === 'old' && allowedOldDistricts.has(d)) {
+                        distList.push(d);
+                    } else if (type === 'new' && allowedNewDistricts.has(d)) {
+                        distList.push(d);
+                    }
+                });
+            } else {
+                distList = fullDistList;
+            }
+
+            let bodyHtml = "";
+            let grandTotals = { ids: 0, act25: 0, act26: 0, participated: 0, target: 0, achieved: 0, balance: 0 };
+
+            distList.forEach(d => {
+                let key = d.toLowerCase();
+                let data = distDataset[key];
+                if(!data) return;
+
+                if (selectedDist !== "All" && d !== selectedDist) return;
+
+                let dailyTarget = districtTargets[key] || 0;
+                let achieved = isTxns ? data.ydayTxns : data.ydayRegs;
+                let participated = isTxns ? data.ydayPartTxns : data.ydayPartRegs;
+                let act26 = data.act26;
+
+                let balance = dailyTarget - achieved;
+                if(balance < 0) balance = 0;
+
+                let pct = dailyTarget > 0 ? ((achieved / dailyTarget) * 100).toFixed(1) : (achieved > 0 ? 100 : 0);
+                
+                let pctClass = "pct-low";
+                if (pct >= 80) pctClass = "pct-high";
+                else if (pct >= 50) pctClass = "pct-med";
+
+                grandTotals.ids += data.ids;
+                grandTotals.act25 += data.act25;
+                grandTotals.act26 += act26;
+                grandTotals.participated += participated;
+                grandTotals.target += dailyTarget;
+                grandTotals.achieved += achieved;
+                
+                let dispTarget = isTxns ? Math.ceil(dailyTarget) : dailyTarget.toFixed(2);
+                let dispBalance = isTxns ? Math.ceil(balance) : balance.toFixed(2);
+
+                bodyHtml += `<tr>
+                    <td class="td-district" onclick="filterByDistrict('${d}')" title="Click to filter">${d}</td>
+                    <td class="td-ids">${data.ids.toLocaleString('en-IN')}</td>
+                    <td class="td-act">${data.act25.toLocaleString('en-IN')}</td>
+                    <td class="td-act-new">${act26.toLocaleString('en-IN')}</td>
+                    <td class="td-part">${participated.toLocaleString('en-IN')}</td>
+                    <td class="td-tar">${dispTarget}</td>
+                    <td class="td-ach">${achieved.toLocaleString('en-IN')}</td>
+                    <td class="td-bal">${dispBalance}</td>
+                    <td class="${pctClass}">${pct}%</td>
+                </tr>`;
+            });
+
+            if (distList.length === 0) {
+                bodyHtml = `<tr><td colspan="9" style="padding: 30px; color: #d9534f; font-weight: bold;">No data found in sheet for your account!</td></tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = bodyHtml;
+
+            if (selectedDist === "All" && userDesignation !== "District Manager") {
+                if (isTxns) {
+                    grandTotals.target = parseFloat((targetTxns / 365).toFixed(1));
+                } else {
+                    grandTotals.target = parseFloat((targetRegs / 365).toFixed(2));
+                }
+            }
+
+            grandTotals.balance = grandTotals.target - grandTotals.achieved;
+            if(grandTotals.balance < 0) grandTotals.balance = 0;
+            
+            let gtPct = grandTotals.target > 0 ? ((grandTotals.achieved / grandTotals.target) * 100).toFixed(1) : (grandTotals.achieved > 0 ? 100 : 0);
+            let gtPctClass = "pct-low";
+            if (gtPct >= 80) gtPctClass = "pct-high";
+            else if (gtPct >= 50) gtPctClass = "pct-med";
+
+            let gtDispTarget = isTxns ? Math.ceil(grandTotals.target) : grandTotals.target.toFixed(2);
+            let gtDispBalance = isTxns ? Math.ceil(grandTotals.balance) : grandTotals.balance.toFixed(2);
+
+            let tf = document.getElementById("tableFooter");
+            tf.innerHTML = `
+                <td>GRAND TOTAL</td>
+                <td class="td-ids">${grandTotals.ids.toLocaleString('en-IN')}</td>
+                <td class="td-act">${grandTotals.act25.toLocaleString('en-IN')}</td>
+                <td class="td-act-new">${grandTotals.act26.toLocaleString('en-IN')}</td>
+                <td class="td-part">${grandTotals.participated.toLocaleString('en-IN')}</td>
+                <td class="td-tar">${gtDispTarget}</td>
+                <td class="td-ach">${grandTotals.achieved.toLocaleString('en-IN')}</td>
+                <td class="td-bal">${gtDispBalance}</td>
+                <td class="${gtPctClass}">${gtPct}%</td>
+            `;
+
+            document.getElementById("dispTotalTarget").innerText = gtDispTarget;
+            document.getElementById("dispTotalAchieved").innerText = grandTotals.achieved.toLocaleString('en-IN');
+            document.getElementById("dispTotalBalance").innerText = gtDispBalance;
+            document.getElementById("dispTotalPercent").innerText = `${gtPct}%`;
+            document.getElementById("dispTotalPercent").className = `val ${gtPctClass}`;
+        }
+
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            
+            const stickyEls = captureArea.querySelectorAll('th, td.td-district, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+            
+            captureArea.classList.add("capture-compact");
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let ydayDate = new Date();
+                    ydayDate.setDate(ydayDate.getDate() - 1);
+                    let dateStr = ("0" + ydayDate.getDate()).slice(-2) + "-" + ("0" + (ydayDate.getMonth() + 1)).slice(-2) + "-" + ydayDate.getFullYear();
+                    
+                    let typeSelect = document.getElementById("districtType");
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    let reportType = document.getElementById("reportType").value;
+                    let reportTypeName = reportType === 'regs' ? 'New_Registrations' : 'Transactions';
+                    
+                    link.download = `IRCTC_Daily_${reportTypeName}_Achievements_${typeText}_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    captureArea.classList.remove("capture-compact");
+                    
+                    stickyEls.forEach(el => {
+                        el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                    });
+                    
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    captureArea.classList.remove("capture-compact");
+                    
+                    stickyEls.forEach(el => {
+                        el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                    });
+                    
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500); 
+        }
+    </script>
+</body>
+</html>

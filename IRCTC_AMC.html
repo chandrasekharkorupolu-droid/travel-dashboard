@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMC MaxGain Report - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel */
+        .target-control-panel {
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
+        }
+        .page-heading { font-size: 18px; color: #ea580c; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .filter-group select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .search-box { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 200px; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* KPI Cards */
+        .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 20px; }
+        .kpi-card { 
+            background-color: #ffffff; border-radius: 6px; padding: 8px 20px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid; 
+            cursor: pointer; transition: 0.2s; min-width: 200px;
+            display: flex; align-items: center; justify-content: space-between; 
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
+        .kpi-value { font-size: 22px; font-weight: 800; margin: 0; }
+
+        .kpi-total { border-left-color: #3b82f6; } .kpi-total .kpi-value { color: #3b82f6; }
+        .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #10b981; }
+        .kpi-expired { border-left-color: #f59e0b; } .kpi-expired .kpi-value { color: #f59e0b; }
+        .kpi-inactive { border-left-color: #ef4444; } .kpi-inactive .kpi-value { color: #ef4444; }
+        .kpi-card.selected-filter { border: 2px solid #333; }
+
+        /* Report Capture Area */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        .report-header h1 { font-size: 20px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 0; }
+
+        .capture-compact { 
+            width: max-content !important; min-width: 1000px !important; margin: 0; 
+            background-color: #ffffff !important; padding: 30px !important; 
+            display: inline-block !important; height: auto !important; overflow: visible !important; 
+        }
+        .capture-compact .table-container { 
+            height: auto !important; overflow: visible !important; display: block !important; 
+            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+        }
+        .capture-compact table { width: 100% !important; }
+        .capture-compact thead, .capture-compact th { position: static !important; }
+
+        /* Table Settings */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        th, td { white-space: nowrap; }
+
+        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
+        td { padding: 10px 8px; font-size: 12px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; vertical-align: middle; }
+        
+        /* Custom Header Colors */
+        .th-dist { background-color: #0b1120; min-width: 150px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;} 
+        .th-csc { background-color: #1e3a8a; } 
+        .th-vle { background-color: #2563eb; } 
+        .th-mob1 { background-color: #475569; } 
+        .th-mob2 { background-color: #64748b; } 
+        .th-fy25 { background-color: #059669; } 
+        .th-fy26 { background-color: #0ea5e9; } 
+        .th-promo { background-color: #8b5cf6; } 
+        .th-amc { background-color: #020617; } 
+
+        tr:hover td { background-color: #f0f8ff; }
+        
+        .col-district { 
+            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
+            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05); user-select: none;
+        }
+        .col-district:hover { background-color: #e0f2fe !important; color: #0369a1; }
+        tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
+
+        /* Buttons & Badges */
+        .btn-promo { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 0 #047857; transition: 0.2s;}
+        .btn-promo:active { transform: translateY(2px); box-shadow: 0 0 0 #047857; }
+        
+        .btn-amc-activate { background-color: #0f172a; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-bottom: 5px; transition: 0.2s;}
+        .btn-amc-activate:hover { background-color: #334155; }
+        
+        .amc-card { background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 6px 8px; width: 100%; max-width: 140px; margin: 0 auto; line-height: 1.3;}
+        .amc-card-expired { background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 6px 8px; width: 100%; max-width: 140px; margin: 0 auto; line-height: 1.3;}
+        .amc-card-pending { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 8px; width: 100%; max-width: 140px; margin: 0 auto; color: #dc2626; font-weight: 800; font-size: 11px;}
+
+        /* Loader & Toasts */
+        .loader { text-align: center; padding: 40px; font-size: 14px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 10px;}
+        .spinner { width: 24px; height: 24px; border: 3px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background-color: #10b981; color: white; padding: 12px 25px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+        /* Modal Settings */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #ffffff; width: 450px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 25px; position: relative; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { font-size: 18px; font-weight: 800; color: #002244; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;}
+        .modal-close { position: absolute; top: 20px; right: 20px; font-size: 20px; cursor: pointer; color: #888; border: none; background: transparent; font-weight: bold; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; text-transform: uppercase;}
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; background-color: #fdfdfd; font-weight: 600; font-family: inherit;}
+        .form-control:focus { border-color: #3b82f6; background-color: #fff; }
+        .form-readonly { background-color: #e2e8f0; color: #334155; border-color: #cbd5e1; cursor: not-allowed; }
+        
+        .modal-info { background-color: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #334155; font-weight: 600;}
+        .modal-info span { color: #2563eb; font-weight: 800;}
+
+        .btn-save { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 0 #047857;}
+        .btn-save:active { transform: translateY(3px); box-shadow: 0 0 0 #047857; }
+        .btn-save:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
+    </style>
+</head>
+<body>
+
+    <div class="target-control-panel">
+        <div class="page-heading">🏆 AMC Premium & MaxGain Tracker</div>
+        <div class="filter-group">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name or CSC ID..." onkeyup="renderTable()">
+            <span style="font-size: 12px; font-weight: 700; color: #555;">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="renderTable()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="report-header">
+            <h1>CSC AP – AMC Premium & MaxGain List</h1>
+            <p id="reportDate">Report Generated on: </p>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-total selected-filter" id="kpi-all" onclick="setKpiFilter('all')">
+                <span class="kpi-title">TOTAL DISPLAYED VLEs</span>
+                <span class="kpi-value" id="val-total">0</span>
+            </div>
+            <div class="kpi-card kpi-active" id="kpi-active" onclick="setKpiFilter('active')">
+                <span class="kpi-title">AMC ACTIVATED</span>
+                <span class="kpi-value" id="val-active">0</span>
+            </div>
+            <div class="kpi-card kpi-expired" id="kpi-expired" onclick="setKpiFilter('expired')">
+                <span class="kpi-title">AMC EXPIRED</span>
+                <span class="kpi-value" id="val-expired">0</span>
+            </div>
+            <div class="kpi-card kpi-inactive" id="kpi-inactive" onclick="setKpiFilter('pending')">
+                <span class="kpi-title">AMC PENDING</span>
+                <span class="kpi-value" id="val-pending">0</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th class="th-dist">DISTRICT</th>
+                        <th class="th-csc">CSC ID</th>
+                        <th class="th-vle">VLE NAME</th>
+                        <th class="th-mob1">MOBILE NO</th>
+                        <th class="th-mob2">VLE MOBILE NO</th>
+                        <th class="th-fy25">FY 25-26 TXNS</th>
+                        <th class="th-fy26">FY 26-27 TXNS</th>
+                        <th class="th-promo">ACTION (PROMO)</th>
+                        <th class="th-amc">AMC STATUS ▾</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="9">
+                        <div class="loader"><div class="spinner"></div> Fetching VLEs & AMC Status...</div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="amcModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAMCModal()">✖</button>
+            <div class="modal-header">Activate AMC Package</div>
+            
+            <div class="modal-info">
+                VLE: <span id="modalVleName">Name</span><br>
+                CSC ID: <span id="modalCscIdDisplay">ID</span>
+                <input type="hidden" id="modalCscId">
+            </div>
+
+            <div class="form-group">
+                <label>Select Package</label>
+                <select id="amcPackage" class="form-control">
+                    <option value="Premium (1000)">Premium (1000)</option>
+                    <option value="MaxGain (2000)">MaxGain (2000)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>AMC Start Date</label>
+                <input type="date" id="amcStartDate" class="form-control" onchange="calculateEndDate()">
+            </div>
+
+            <div class="form-group">
+                <label>AMC Expiry Date (Auto Calculated)</label>
+                <input type="text" id="amcEndDate" class="form-control form-readonly" readonly placeholder="Select start date first">
+            </div>
+
+            <button class="btn-save" id="saveAmcBtn" onclick="saveAMCData()">Save & Activate</button>
+        </div>
+    </div>
+
+    <div id="toast">✅ AMC Activated Successfully!</div>
+
+    <script>
+        let globalAllData = []; 
+        let oldDistrictsSet = new Set();
+        let newDistrictsSet = new Set();
+        let currentKpiFilter = 'all'; 
+
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
+
+            document.getElementById("amcStartDate").valueAsDate = new Date();
+            calculateEndDate();
+
+            fetchSheetData(); 
+        };
+
+        async function fetchSheetData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                if (cachedData) {
+                    processData(JSON.parse(cachedData));
+                    return;
+                }
+
+                let response = await fetch(apiURL);
+                let rawData = await response.json();
+
+                sessionStorage.setItem("cscTravelData", JSON.stringify(rawData));
+                processData(rawData);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processData(rawData) {
+            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
+            let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
+            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));            
+
+            let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
+            let idxAmcStart = cleanHeaders.findIndex(h => h.includes('amcstartdate') || h.includes('amcstart'));
+            let idxAmcEnd = cleanHeaders.findIndex(h => h.includes('amcenddate') || h.includes('amcend'));
+            
+            let mIndices = [];
+            let idx27 = -1;
+            if (idx26 > -1) {
+                for (let k = 1; k <= 12; k++) {
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                }
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+            }
+
+            globalAllData = [];
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
+            dmMappedOldDistricts.clear();
+            dmMappedNewDistricts.clear();
+
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            for(let i=1; i<rawData.length; i++) {
+                let row = rawData[i];
+                let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                if(!cscId || cscId === '-') continue;
+
+                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+                
+                let monthSum = 0;
+                mIndices.forEach(colIdx => {
+                    if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
+                });
+
+                let fy27Total = monthSum;
+                if (fy27Total === 0 && idx27 > -1) {
+                    fy27Total = parseInt(row[idx27]) || 0;
+                }
+
+                let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
+                let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
+                let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
+
+                if(oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
+                if(newDist !== 'Unknown') newDistrictsSet.add(newDist);
+
+                if (userDesignation === "District Manager" && dmNameStr.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                    if(oldDist !== 'Unknown' && oldDist !== '-') dmMappedOldDistricts.add(oldDist);
+                    if(newDist !== 'Unknown' && newDist !== '-') dmMappedNewDistricts.add(newDist);
+                }
+
+                let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString() : '';
+                let amcStart = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
+                let amcEnd = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString() : '';
+
+                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid'));
+
+                globalAllData.push({
+                    district_old: oldDist,
+                    district_new: newDist,
+                    dmname: dmNameStr,
+                    vlename: idxvlename > -1 ? row[idxvlename] : '-',
+                    cscid: cscId,
+                    mobile: idxmob > -1 ? row[idxmob] : '-',
+                    vlemob: idxvlemob > -1 ? row[idxvlemob] : '-',
+                    txns_25_26: fy26,
+                    txns_26_27: fy27Total,
+                    amcStatus: amcStatus,
+                    amcStart: amcStart,
+                    amcEnd: amcEnd,
+                    isEligible: isEligible, 
+                    status: idxstatus > -1 ? (row[idxstatus] || 'Active').toString().toUpperCase().trim() : 'ACTIVE'
+                });
+            }
+            
+            globalAllData.sort((a, b) => {
+                if(a.isEligible && !b.isEligible) return -1;
+                if(!a.isEligible && b.isEligible) return 1;
+                return Math.max(b.txns_25_26, b.txns_26_27) - Math.max(a.txns_25_26, a.txns_26_27);
+            });
+            
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 arr = arr.filter(dist => mappedSet.has(dist));
+            }
+
+            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            
+            renderTable(); 
+        }
+
+        function setKpiFilter(status) {
+            currentKpiFilter = status;
+            document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
+            
+            if(status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
+            else if(status === 'active') document.getElementById('kpi-active').classList.add('selected-filter');
+            else if(status === 'expired') document.getElementById('kpi-expired').classList.add('selected-filter');
+            else if(status === 'pending') document.getElementById('kpi-inactive').classList.add('selected-filter');
+            
+            renderTable();
+        }
+
+        function renderTable() {
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            let tbodyHtml = "";
+            let counts = { total: 0, active: 0, expired: 0, pending: 0 };
+            let displayedRows = 0;
+            let currentDate = new Date();
+
+            globalAllData.forEach((row, index) => {
+                let dist = row[distKey];
+
+                let statusText = row.status || 'ACTIVE';
+                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) {
+                    return; 
+                }
+
+                if (userDesignation === "District Manager") {
+                    if (distType === 'old') {
+                        if (!dmMappedOldDistricts.has(dist)) return; 
+                    } else {
+                        if (row.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
+                    }
+                }
+                
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                
+                if (searchQuery === "" && !row.isEligible) return;
+                if (searchQuery !== "") {
+                    let text = `${row.vlename} ${row.cscid}`.toLowerCase();
+                    if (!text.includes(searchQuery)) return;
+                }
+
+                let isPaid = row.amcStatus && row.amcStatus.toLowerCase().includes('paid');
+                let isExpired = false;
+                let isActivated = false;
+
+                if(isPaid) {
+                    let endDate = new Date(row.amcEnd);
+                    if(!isNaN(endDate.getTime()) && endDate < currentDate) {
+                        isExpired = true;
+                    } else {
+                        isActivated = true;
+                    }
+                }
+                
+                counts.total++;
+                if(isActivated) counts.active++;
+                else if (isExpired) counts.expired++;
+                else counts.pending++;
+
+                if(currentKpiFilter === 'active' && !isActivated) return;
+                if(currentKpiFilter === 'expired' && !isExpired) return;
+                if(currentKpiFilter === 'pending' && (isActivated || isExpired)) return;
+
+                if(searchQuery === "" && displayedRows >= 300) return;
+
+                let promoBtnId = `promo-btn-${index}`;
+                let promoBtnHtml = `<button id="${promoBtnId}" class="btn-promo" onclick="sendPromoWhatsApp('${row.cscid}', '${promoBtnId}')">💬 Send Promo</button>`;
+
+                let amcHtml = "";
+                if(isActivated) {
+                    amcHtml = `
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                        <span style="color:#10b981; font-weight:800; font-size:11px;">✅ ACTIVATED</span>
+                        <div class="amc-card">
+                            <div style="color:#047857; font-weight:800; font-size:10px; text-transform:uppercase;">${row.amcStatus}</div>
+                            <div style="color:#64748b; font-size:9px; font-weight:600;">Till: ${formatDisplayDate(row.amcEnd)}</div>
+                        </div>
+                    </div>`;
+                } else if(isExpired) {
+                    amcHtml = `
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                        <span style="color:#f59e0b; font-weight:800; font-size:11px;">⚠️ EXPIRED</span>
+                        <div class="amc-card-expired">
+                            <div style="color:#d97706; font-weight:800; font-size:10px; text-transform:uppercase;">${row.amcStatus}</div>
+                            <div style="color:#64748b; font-size:9px; font-weight:600;">Expired On: ${formatDisplayDate(row.amcEnd)}</div>
+                        </div>
+                        <button class="btn-amc-activate" style="margin-top:4px;" onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')">Renew AMC</button>
+                    </div>`;
+                } else {
+                    amcHtml = `
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <button class="btn-amc-activate" onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')">Activate AMC</button>
+                        <div class="amc-card-pending">PENDING ❌</div>
+                    </div>`;
+                }
+
+                tbodyHtml += `<tr>
+                    <td class="col-district" ondblclick="filterByDistrictIndex(${index})" style="font-weight:700;" title="Double click to filter">${dist}</td>
+                    <td style="color: #1e3a8a; font-weight: 700;">${row.cscid}</td>
+                    <td style="text-align:left; color: #2563eb; font-weight:700;">${row.vlename}</td>
+                    <td style="color: #475569;">${row.mobile}</td>
+                    <td style="color: #64748b; font-weight:700;">${row.vlemob}</td>
+                    <td style="font-size: 14px; font-weight: 800; color: #059669;">${row.txns_25_26}</td>
+                    <td style="font-size: 14px; font-weight: 800; color: #0ea5e9;">${row.txns_26_27}</td>
+                    <td>${promoBtnHtml}</td>
+                    <td style="padding:5px;">${amcHtml}</td>
+                </tr>`;
+                
+                displayedRows++;
+            });
+
+            if (counts.total > 300 && searchQuery === "") {
+                tbodyHtml += `<tr><td colspan="9" style="padding:15px; text-align:center; color:#e65c00; font-weight:bold; background-color:#fffaf7;">Showing top 300 eligible VLEs. Please use Search to find specific VLEs.</td></tr>`;
+            } else if (counts.total === 0) {
+                if(searchQuery !== "") {
+                    tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No VLE found with that CSC ID/Name!</td></tr>`;
+                } else {
+                    tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No Records match your current filter!</td></tr>`;
+                }
+            }
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml;
+            
+            document.getElementById("val-total").innerText = counts.total;
+            document.getElementById("val-active").innerText = counts.active;
+            document.getElementById("val-expired").innerText = counts.expired;
+            document.getElementById("val-pending").innerText = counts.pending;
+        }
+
+        function filterByDistrictIndex(index) {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let rowData = globalAllData[index];
+            if(!rowData) return;
+            
+            let distName = rowData[distKey];
+            let distDropdown = document.getElementById("districtName");
+            
+            if (distDropdown.value === distName) { 
+                distDropdown.value = "All"; 
+            } else { 
+                distDropdown.value = distName; 
+            }
+            renderTable();
+        }
+
+        function calculateEndDate() {
+            let startVal = document.getElementById("amcStartDate").value;
+            if(startVal) {
+                let d = new Date(startVal);
+                d.setFullYear(d.getFullYear() + 1); 
+                
+                let day = ("0" + d.getDate()).slice(-2);
+                let monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                let month = monthNames[d.getMonth()];
+                let year = d.getFullYear();
+                
+                document.getElementById("amcEndDate").value = `${day}-${month}-${year}`;
+            }
+        }
+
+        function formatDisplayDate(dateStr) {
+            if(!dateStr || dateStr === '-') return '-';
+            let d = new Date(dateStr);
+            if(isNaN(d.getTime())) return dateStr; 
+            
+            let day = ("0" + d.getDate()).slice(-2);
+            let monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            let month = monthNames[d.getMonth()];
+            let year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function openAMCModal(cscId, vleName) {
+            document.getElementById("modalCscIdDisplay").innerText = cscId;
+            document.getElementById("modalCscId").value = cscId;
+            document.getElementById("modalVleName").innerText = vleName;
+            document.getElementById("amcModal").style.display = "flex";
+            
+            document.getElementById("saveAmcBtn").innerText = "Save & Activate";
+            document.getElementById("saveAmcBtn").disabled = false;
+        }
+
+        function closeAMCModal() {
+            document.getElementById("amcModal").style.display = "none";
+        }
+
+        function showToast(msg) {
+            let toast = document.getElementById("toast");
+            if(toast) {
+                toast.innerText = msg;
+                toast.style.display = "block";
+                setTimeout(() => { toast.style.display = "none"; }, 3000);
+            }
+        }
+
+        async function saveAMCData() {
+            let cscId = document.getElementById("modalCscId").value;
+            let pkg = document.getElementById("amcPackage").value;
+            let start = document.getElementById("amcStartDate").value;
+            let end = document.getElementById("amcEndDate").value;
+            
+            if(!start || !end) {
+                alert("Please select AMC Start Date!");
+                return;
+            }
+
+            let formattedStart = formatDisplayDate(start);
+            let statusText = `Paid (${pkg})`;
+
+            let btn = document.getElementById("saveAmcBtn");
+            btn.innerText = "⏳ Saving to Server...";
+            btn.disabled = true;
+
+            try {
+                let payload = {
+                    action: "updateAMC",
+                    cscid: cscId,
+                    amcStatus: statusText,
+                    startDate: formattedStart,
+                    endDate: end
+                };
+
+                fetch(apiURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                sessionStorage.removeItem("cscTravelData");
+
+                setTimeout(() => {
+                    let row = globalAllData.find(r => String(r.cscid) === String(cscId));
+                    if(row) {
+                        row.amcStatus = statusText;
+                        row.amcStart = formattedStart;
+                        row.amcEnd = end;
+                        row.isEligible = true; 
+                    }
+                    renderTable();
+                    closeAMCModal();
+                    
+                    showToast("✅ AMC Activated Successfully!");
+                    
+                }, 800);
+
+            } catch(e) {
+                alert("Something went wrong!");
+                btn.innerText = "Save & Activate";
+                btn.disabled = false;
+            }
+        }
+
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        function sendPromoWhatsApp(cscId, btnId) {
+            let rowData = globalAllData.find(r => String(r.cscid) === String(cscId));
+            if(!rowData) {
+                console.error("VLE data not found for CSC ID:", cscId);
+                return;
+            }
+            
+            let mobileNumber = rowData.vlemob !== '-' ? rowData.vlemob : rowData.mobile; 
+            let cleanMobile = mobileNumber ? mobileNumber.toString().replace(/\D/g, '') : '';
+
+            let loggedInUser = localStorage.getItem("userName") || "Chandra Sekhara Babu K";
+            let loggedInRole = localStorage.getItem("userDesignation") || "CSC Travel SPOC || AP";
+
+            let isPaid = rowData.amcStatus && rowData.amcStatus.toLowerCase().includes('paid');
+            let isExpired = false;
+            if(isPaid) {
+                let endDate = new Date(rowData.amcEnd);
+                let currentDate = new Date();
+                if(!isNaN(endDate.getTime()) && endDate < currentDate) {
+                    isExpired = true;
+                }
+            }
+
+            if(cleanMobile.length >= 10) {
+                let message = "";
+
+                if (isExpired) {
+                    message = `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
+                              `మీరు గతంలో తీసుకున్న *IRCTC AMC ప్యాకేజీ (${rowData.amcStatus})* గడువు ముగిసింది.\n\n` +
+                              `దయచేసి వెంటనే మీ ప్యాకేజీని రెన్యువల్ చేసుకొని, మీ అదనపు కమిషన్ లాభాలను కొనసాగించండి:\n` +
+                              `✅ AC టికెట్‌పై ₹39 కమిషన్\n` +
+                              `✅ Non-AC టికెట్‌పై ₹19 కమిషన్\n` +
+                              `✅ 100% పేమెంట్ గేట్‌వే (PG) ఛార్జీల రిఫండ్!\n\n` +
+                              `ధన్యవాదాలు,\n` +
+                              `*${loggedInUser}*\n` +
+                              `*${loggedInRole}*`;
+                } else {
+                    let ticketsDone = rowData.txns_25_26 > 0 ? rowData.txns_25_26 : rowData.txns_26_27;
+
+                    message = `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
+                              `మీరు గత సంవత్సరంలో *${ticketsDone} టికెట్లు* బుక్ చేసి అద్భుతమైన పనితీరు కనబరిచారు. అభినందనలు! 🎉\n\n` +
+                              `వెంటనే AMC ప్యాకేజీ తీసుకోండి:\n` +
+                              `✅ AC టికెట్‌పై ₹39 కమిషన్\n` +
+                              `✅ Non-AC టికెట్‌పై ₹19 కమిషన్\n` +
+                              `✅ 100% పేమెంట్ గేట్‌వే (PG) ఛార్జీల రిఫండ్!\n\n` +
+                              `ధన్యవాదాలు,\n` +
+                              `*${loggedInUser}*\n` +
+                              `*${loggedInRole}*`;
+                }
+                
+                let whatsappUrl = `https://wa.me/91${cleanMobile}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+                
+                let btn = document.getElementById(btnId);
+                if(btn) {
+                    btn.outerHTML = `<span style="color:#94a3b8; font-weight:700; font-size:12px;">Sent ✅</span>`;
+                }
+            } else {
+                showToast("❌ VLE Mobile Number is missing or invalid!");
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("districtType").value = "old";
+            document.getElementById("districtName").value = "All";
+            setKpiFilter('all'); 
+            updateDistrictsDropdown();
+        }
+
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-container");
+            
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            
+            const stickyEls = captureArea.querySelectorAll('th, td.col-district');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    let typeSelect = document.getElementById("districtType");
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    
+                    link.download = `IRCTC_AMC_Eligible_List_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500);
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

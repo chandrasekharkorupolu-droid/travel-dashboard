@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoM Growth Matrix - CSC TravelCloud</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* 🌟 Iframe Friendly Basic Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* 🌟 FIX: Two-Row Top Controls Layout 🌟 */
+        .top-controls-wrapper {
+            background-color: #ffffff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            border: 1px solid #dcdcdc; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;
+        }
+        
+        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .page-heading { font-size: 20px; color: #003366; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        
+        .top-controls-filters { display: flex; gap: 20px; align-items: center; background-color: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
+        
+        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
+        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #ffffff; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group-custom select:focus { border-color: #3b82f6; }
+        .period-select { background-color: #eff6ff !important; border-color: #3b82f6 !important; color: #1e40af !important; font-weight: 800 !important; }
+
+        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 Image Export Panels 🌟 */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: #f8f9fc; padding: 15px; border-radius: 8px;}
+        
+        .capture-compact { 
+            width: max-content !important; min-width: 1000px !important; margin: 0; 
+            background-color: #ffffff !important; padding: 30px !important; 
+            display: inline-block !important; height: auto !important; overflow: visible !important; 
+        }
+        .capture-compact .table-container { 
+            height: auto !important; overflow: visible !important; display: block !important; 
+            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+        }
+        .capture-compact table { width: 100% !important; min-width: unset !important; }
+        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
+        .capture-compact .td-district { position: static !important; }
+
+        /* Report Header */
+        .report-header { text-align: center; padding: 0 0 15px 0; flex-shrink: 0; }
+        .report-header h1 { font-size: 22px; color: #0f172a; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 5px; text-transform: uppercase;}
+        .report-header p { font-size: 13px; color: #64748b; font-weight: 600; margin-top: 0; }
+
+        /* Flat Clean KPI Badges */
+        .kpi-display-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-shrink: 0; flex-wrap: nowrap;}
+        .kpi-box-clean { 
+            background-color: #ffffff; border-radius: 8px; padding: 15px 20px; border: 1px solid #cbd5e1; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            display: flex; flex-direction: row; align-items: center; gap: 15px; 
+            min-width: max-content; 
+        }
+        .kpi-box-clean.p-color { border-left: 5px solid #64748b; }
+        .kpi-box-clean.c-color { border-left: 5px solid #0284c7; }
+        .kpi-box-clean.g-color { border-left: 5px solid #10b981; }
+        .kpi-box-clean.b-color { border-left: 5px solid #ef4444; }
+        .kpi-box-clean.s-color { border-left: 5px solid #f59e0b; background: linear-gradient(to right, #fffbeb, #ffffff); }
+        
+        .kpi-box-clean .kpi-info { display: flex; flex-direction: column; }
+        .kpi-box-clean .lbl { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; white-space: nowrap;}
+        .kpi-box-clean .val { font-size: 24px; font-weight: 900; color: #1e293b; margin: 0; line-height: 1; white-space: nowrap; display: flex; align-items: baseline; gap: 5px;}
+        .kpi-box-clean .sub-val { font-size: 14px; font-weight: 700; padding-left: 5px;}
+
+        /* Data table container */
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+        
+        thead { position: sticky; top: 0; z-index: 20; }
+        th, td { white-space: nowrap; }
+
+        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
+        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; }
+        
+        /* Corporate Style Colors */
+        .th-dist { background-color: #0f172a; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;}
+        .th-ids { background-color: #334155; }
+        .th-prev { background-color: #64748b; }
+        .th-curr { background-color: #0284c7; }
+        .th-diff { background-color: #475569; }
+        .th-gro { background-color: #0f766e; }
+
+        tr:hover td { background-color: #f8fafc; }
+        
+        .td-district { 
+            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
+            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05); user-select: none;
+        }
+        .td-district:hover { background-color: #e0f2fe; color: #2563eb; }
+        tbody tr:nth-child(even) .td-district { background-color: #f8fafc; }
+
+        .td-ids { color: #475569; font-weight: 700; }
+        .td-prev { color: #64748b; font-weight: 800;}
+        .td-curr { color: #0284c7; font-weight: 800; background-color: #f0f9ff; font-size: 14px;}
+        
+        /* Growth Indicators */
+        .growth-up { color: #10b981; font-weight: 900; background-color: #ecfdf5; }
+        .growth-down { color: #ef4444; font-weight: 900; background-color: #fef2f2; }
+        .growth-neutral { color: #64748b; font-weight: 800; background-color: #f8fafc; }
+
+        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
+        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+
+        .loader { text-align: center; padding: 50px; font-size: 16px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        .spinner { width: 30px; height: 30px; border: 4px solid #ccc; border-top-color: #0284c7; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Full Screen Modifiers */
+        body.fullscreen-mode { padding: 0; gap: 0;}
+        body.fullscreen-mode .top-controls-wrapper { border-radius: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="top-controls-wrapper">
+        <div class="top-controls-header">
+            <div class="page-heading">📊 MoM Growth Matrix</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+                <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download</button>
+                <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+            </div>
+        </div>
+
+        <div class="top-controls-filters">
+            <div class="filter-group-custom">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">District:</span>
+                <select id="districtType" onchange="updateDistrictsDropdown()">
+                    <option value="old" selected>Old Districts</option>
+                    <option value="new">New Districts</option>
+                </select>
+                <select id="districtName" onchange="calculateMoMData()" style="font-weight: 800; border-color:#e65c00; color:#e65c00;">
+                    <option value="All">All Districts</option>
+                </select>
+            </div>
+
+            <div class="filter-group-custom">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
+                <select id="reportType" onchange="calculateMoMData()" style="border-color: #0284c7; color: #0369a1; font-weight: 800; background-color: #f0f9ff;">
+                    <option value="txns" selected>🎫 Transactions Growth</option>
+                    <option value="regs">📋 Registrations Growth</option>
+                </select>
+            </div>
+
+            <div class="filter-group-custom">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">Compare Month:</span>
+                <select id="dataMonth" class="period-select" onchange="calculateMoMData()">
+                    <option value="0">April 2026 (vs FY26 Avg)</option>
+                    <option value="1">May 2026 (vs April)</option>
+                    <option value="2">June 2026 (vs May)</option>
+                    <option value="3">July 2026 (vs June)</option>
+                    <option value="4">August 2026 (vs July)</option>
+                    <option value="5">September 2026 (vs Aug)</option>
+                    <option value="6">October 2026 (vs Sep)</option>
+                    <option value="7">November 2026 (vs Oct)</option>
+                    <option value="8">December 2026 (vs Nov)</option>
+                    <option value="9">January 2027 (vs Dec)</option>
+                    <option value="10">February 2027 (vs Jan)</option>
+                    <option value="11">March 2027 (vs Feb)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="captureArea">
+        <div class="report-header">
+            <h1 id="dynamicTitle">IRCTC MONTH-OVER-MONTH (MOM) GROWTH MATRIX</h1>
+            <p id="reportDate">Report Generated on: </p>
+        </div>
+
+        <div class="kpi-display-row">
+            <div class="kpi-box-clean p-color">
+                <div class="kpi-info">
+                    <span class="lbl" id="kpi-lbl-prev">PREVIOUS MONTH</span>
+                    <span class="val" id="dispTotalPrev">0</span>
+                </div>
+            </div>
+            <div class="kpi-box-clean c-color">
+                <div class="kpi-info">
+                    <span class="lbl" id="kpi-lbl-curr">CURRENT MONTH</span>
+                    <span class="val" id="dispTotalCurr">0</span>
+                </div>
+            </div>
+            <div class="kpi-box-clean g-color" id="kpi-box-growth">
+                <div class="kpi-info">
+                    <span class="lbl">NET GROWTH / DECLINE</span>
+                    <span class="val" id="dispTotalGrowth">0 <span class="sub-val" id="dispTotalPct">0%</span></span>
+                </div>
+            </div>
+            <div class="kpi-box-clean s-color">
+                <div class="kpi-info">
+                    <span class="lbl" style="color:#d97706;">🏆 TOP GROWTH DISTRICT</span>
+                    <span class="val" style="color:#b45309;" id="dispStarDist">- <span class="sub-val" id="dispStarPct"></span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="periodicTable">
+                <thead>
+                    <tr>
+                        <th class="th-dist">DISTRICT ⇅</th>
+                        <th class="th-ids">TOTAL IRCTC IDs</th>
+                        <th class="th-prev" id="th-prev">PREVIOUS MONTH</th>
+                        <th class="th-curr" id="th-curr">CURRENT MONTH</th>
+                        <th class="th-diff">VARIANCE (+/-)</th>
+                        <th class="th-gro">GROWTH %</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="6"><div class="loader"><div class="spinner"></div> Fetching MoM Growth Data... Please wait.</div></td></tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row" id="tableFooter">
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let globalData = {}; 
+        let oldDistrictsList = [];
+        let newDistrictsList = [];
+        
+        let dmMappedOldDistricts = new Set();
+        let dmMappedNewDistricts = new Set();
+
+        const monthNames = ["APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"];
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        window.onload = function() {
+            let d = new Date();
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = `Report Generated on: ${d.toLocaleDateString('en-US', dateOptions)}`;
+            
+            let currMonth = d.getMonth(); 
+            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+            document.getElementById("dataMonth").value = fyMonthIndex.toString();
+
+            fetchData();
+        };
+
+        async function fetchData() {
+            try {
+                let cachedData = sessionStorage.getItem("cscTravelData");
+                if (cachedData) {
+                    processData(JSON.parse(cachedData));
+                    return;
+                }
+
+                let timestamp = new Date().getTime();
+                let response = await fetch(apiURL + "?t=" + timestamp);
+                let rawData = await response.json();
+                
+                sessionStorage.setItem("cscTravelData", JSON.stringify(rawData));
+                processData(rawData);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='6' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+            }
+        }
+
+        function processData(rawData) {
+            if (rawData && rawData.length > 0) {
+                let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+                let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+                let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+                let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
+                let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+                let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
+                
+                let mIndices = [];
+                let idx27 = -1;
+                
+                if (idx26 > -1) {
+                    for (let k = 1; k <= 12; k++) {
+                        if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                    }
+                    if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+                }
+
+                globalData = { old: {}, new: {} };
+                oldDistrictsList = [];
+                newDistrictsList = [];
+                dmMappedOldDistricts.clear();
+                dmMappedNewDistricts.clear();
+
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+                let loggedInUser = localStorage.getItem("userName") || "";
+
+                for(let i=1; i<rawData.length; i++) {
+                    let row = rawData[i];
+                    let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                    let irctcId = idxirctc > -1 ? row[idxirctc] : '';
+                    if(!cscId || cscId === '-') continue;
+
+                    let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '';
+                    let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '';
+                    let dmName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
+                    
+                    let oldKey = oldD.toLowerCase();
+                    let newKey = newD.toLowerCase();
+
+                    if (userDesignation === "District Manager" && dmName.toLowerCase() === loggedInUser.toLowerCase().trim()) {
+                        if(oldD && oldD !== '-' && oldKey !== 'unknown') dmMappedOldDistricts.add(oldD);
+                        if(newD && newD !== '-' && newKey !== 'unknown') dmMappedNewDistricts.add(newD);
+                    }
+
+                    let hasIrctc = (irctcId && irctcId !== '-') ? 1 : 0;
+                    let fy26Txns = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0; 
+                    let fy26Regs = 0; 
+
+                    let dateStr = idxDate > -1 ? row[idxDate] : '';
+                    let regMonthIdx = -1;
+
+                    if (dateStr && dateStr !== '-') {
+                        let rowDate = new Date(dateStr);
+                        if (!isNaN(rowDate.getTime())) {
+                            let y = rowDate.getFullYear();
+                            let m = rowDate.getMonth() + 1; 
+                            let fyStartYear = m >= 4 ? y : y - 1;
+                            
+                            if(fyStartYear === 2025) fy26Regs = 1; 
+                            
+                            if (fyStartYear === 2026) {
+                                regMonthIdx = m >= 4 ? m - 4 : m + 8;
+                            }
+                        }
+                    }
+
+                    let mTxnsArr = [];
+                    for(let m=0; m<12; m++) {
+                        let colIdx = mIndices[m];
+                        mTxnsArr.push((colIdx !== undefined && colIdx > -1) ? (parseInt(row[colIdx]) || 0) : 0);
+                    }
+
+                    if(oldD && oldD !== '-' && oldKey !== 'unknown') {
+                        if(!globalData.old[oldKey]) {
+                            globalData.old[oldKey] = { 
+                                name: oldD, ids: 0, 
+                                fy26Txns: 0, fy26Regs: 0,
+                                monthsTxn: Array(12).fill(0), monthsReg: Array(12).fill(0) 
+                            };
+                            if (!oldDistrictsList.includes(oldD)) oldDistrictsList.push(oldD);
+                        }
+                        globalData.old[oldKey].ids += hasIrctc;
+                        globalData.old[oldKey].fy26Txns += fy26Txns;
+                        globalData.old[oldKey].fy26Regs += fy26Regs;
+                        
+                        for(let m=0; m<12; m++) globalData.old[oldKey].monthsTxn[m] += mTxnsArr[m];
+                        if(regMonthIdx > -1) globalData.old[oldKey].monthsReg[regMonthIdx]++;
+                    }
+
+                    if(newD && newD !== '-' && newKey !== 'unknown') {
+                        if(!globalData.new[newKey]) {
+                            globalData.new[newKey] = { 
+                                name: newD, ids: 0, 
+                                fy26Txns: 0, fy26Regs: 0,
+                                monthsTxn: Array(12).fill(0), monthsReg: Array(12).fill(0) 
+                            };
+                            if (!newDistrictsList.includes(newD)) newDistrictsList.push(newD);
+                        }
+                        globalData.new[newKey].ids += hasIrctc;
+                        globalData.new[newKey].fy26Txns += fy26Txns;
+                        globalData.new[newKey].fy26Regs += fy26Regs;
+                        
+                        for(let m=0; m<12; m++) globalData.new[newKey].monthsTxn[m] += mTxnsArr[m];
+                        if(regMonthIdx > -1) globalData.new[newKey].monthsReg[regMonthIdx]++;
+                    }
+                }
+
+                oldDistrictsList.sort();
+                newDistrictsList.sort();
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value;
+            const dropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            dropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let fullList = type === 'old' ? oldDistrictsList : newDistrictsList;
+            let arr = [];
+            
+            if (userDesignation === "District Manager") {
+                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                 arr = fullList.filter(dist => mappedSet.has(dist));
+            } else {
+                 arr = fullList;
+            }
+
+            arr.forEach(dist => {
+                dropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+            calculateMoMData();
+        }
+
+        function calculateMoMData() {
+            const reportType = document.getElementById("reportType").value;
+            const type = document.getElementById("districtType").value;
+            const selectedDist = document.getElementById("districtName").value;
+            const mIdx = parseInt(document.getElementById("dataMonth").value);
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+            const isTxns = reportType === 'txns';
+            let typeName = isTxns ? 'TRANSACTIONS' : 'REGISTRATIONS';
+
+            let selMonthName = monthNames[mIdx];
+            let prevMonthName = mIdx > 0 ? monthNames[mIdx - 1] : "FY26 MONTHLY AVG";
+
+            document.getElementById("dynamicTitle").innerText = `IRCTC MONTH-OVER-MONTH GROWTH MATRIX (${typeName})`;
+
+            document.getElementById("th-curr").innerText = `${selMonthName} ${isTxns ? 'TXNS' : 'REGS'}`;
+            document.getElementById("th-prev").innerText = mIdx > 0 ? `${prevMonthName} ${isTxns ? 'TXNS' : 'REGS'}` : `FY 25-26 (AVG/M)`;
+            
+            document.getElementById("kpi-lbl-curr").innerText = `${selMonthName} TOTAL`;
+            document.getElementById("kpi-lbl-prev").innerText = mIdx > 0 ? `${prevMonthName} TOTAL` : `FY26 MONTHLY AVG`;
+
+            let distDataset = type === 'old' ? globalData.old : globalData.new;
+            let distList = type === 'old' ? oldDistrictsList : newDistrictsList;
+            
+            let bodyHtml = "";
+            let gt = { ids: 0, prev: 0, curr: 0, diff: 0 };
+            let starDist = { name: "-", pct: -Infinity, diff: 0 };
+
+            distList.forEach((distName) => {
+                if (userDesignation === "District Manager") {
+                    let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                    if (!mappedSet.has(distName)) return; 
+                }
+
+                let key = distName.toLowerCase();
+                let data = distDataset[key];
+                if(!data) return;
+
+                if (selectedDist !== "All" && distName !== selectedDist) return;
+
+                let currVal = isTxns ? data.monthsTxn[mIdx] : data.monthsReg[mIdx];
+                let prevVal = 0;
+                
+                if (mIdx > 0) {
+                    prevVal = isTxns ? data.monthsTxn[mIdx - 1] : data.monthsReg[mIdx - 1];
+                } else {
+                    let fy26Tot = isTxns ? data.fy26Txns : data.fy26Regs;
+                    prevVal = Math.round(fy26Tot / 12); 
+                }
+
+                let diff = currVal - prevVal;
+                let pct = 0;
+                
+                if (prevVal > 0) {
+                    pct = ((diff / prevVal) * 100);
+                } else if (prevVal === 0 && currVal > 0) {
+                    pct = 100; 
+                }
+                
+                let pctFormatted = pct.toFixed(1);
+                
+                let growthClass = "growth-neutral";
+                let diffIndicator = "";
+                
+                if (diff > 0) {
+                    growthClass = "growth-up";
+                    diffIndicator = "📈 +";
+                    if (pct > starDist.pct || (pct === starDist.pct && diff > starDist.diff)) {
+                        starDist = { name: distName, pct: pct, diff: diff };
+                    }
+                } else if (diff < 0) {
+                    growthClass = "growth-down";
+                    diffIndicator = "📉 "; 
+                } else {
+                    diffIndicator = "➖ ";
+                }
+
+                gt.ids += data.ids;
+                gt.prev += prevVal;
+                gt.curr += currVal;
+                gt.diff += diff;
+                
+                let diffStr = diff > 0 ? `+${diff.toLocaleString('en-IN')}` : diff.toLocaleString('en-IN');
+
+                bodyHtml += `<tr>
+                    <td class="td-district" onclick="filterByDistrict('${distName}')" title="Click to filter">${distName}</td>
+                    <td class="td-ids">${data.ids.toLocaleString('en-IN')}</td>
+                    <td class="td-prev">${prevVal.toLocaleString('en-IN')}</td>
+                    <td class="td-curr">${currVal.toLocaleString('en-IN')}</td>
+                    <td class="${growthClass}">${diffIndicator}${diffStr.replace('-','')}</td>
+                    <td class="${growthClass}">${diff > 0 ? '+' : ''}${pctFormatted}%</td>
+                </tr>`;
+            });
+
+            if (bodyHtml === "") {
+                bodyHtml = `<tr><td colspan="6" style="padding: 30px; color: #d9534f; font-weight: bold;">No data found for this filter!</td></tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = bodyHtml;
+
+            // Grand Total Calculation
+            let gtPct = 0;
+            if (gt.prev > 0) {
+                gtPct = ((gt.diff / gt.prev) * 100);
+            } else if (gt.prev === 0 && gt.curr > 0) {
+                gtPct = 100;
+            }
+            let gtPctFormatted = gtPct.toFixed(1);
+            
+            let gtGrowthClass = "growth-neutral";
+            let gtIndicator = "";
+            let gtDiffStr = gt.diff > 0 ? `+${gt.diff.toLocaleString('en-IN')}` : gt.diff.toLocaleString('en-IN');
+            
+            if (gt.diff > 0) { gtGrowthClass = "growth-up"; gtIndicator = "📈 +"; }
+            else if (gt.diff < 0) { gtGrowthClass = "growth-down"; gtIndicator = "📉 "; }
+            else { gtIndicator = "➖ "; }
+
+            document.getElementById("tableFooter").innerHTML = `
+                <td>GRAND TOTAL</td>
+                <td class="td-ids">${gt.ids.toLocaleString('en-IN')}</td>
+                <td class="td-prev">${gt.prev.toLocaleString('en-IN')}</td>
+                <td class="td-curr">${gt.curr.toLocaleString('en-IN')}</td>
+                <td class="${gtGrowthClass}">${gtIndicator}${gtDiffStr.replace('-','')}</td>
+                <td class="${gtGrowthClass}">${gt.diff > 0 ? '+' : ''}${gtPctFormatted}%</td>
+            `;
+
+            // Update Top KPIs
+            document.getElementById("dispTotalPrev").innerText = gt.prev.toLocaleString('en-IN');
+            document.getElementById("dispTotalCurr").innerText = gt.curr.toLocaleString('en-IN');
+            
+            let boxGrowth = document.getElementById("kpi-box-growth");
+            document.getElementById("dispTotalGrowth").innerHTML = `${gtIndicator}${gtDiffStr.replace('-','')} <span class="sub-val" id="dispTotalPct">${gt.diff > 0 ? '+' : ''}${gtPctFormatted}%</span>`;
+            
+            if (gt.diff > 0) {
+                boxGrowth.className = "kpi-box-clean g-color";
+                document.getElementById("dispTotalGrowth").style.color = "#10b981";
+            } else if (gt.diff < 0) {
+                boxGrowth.className = "kpi-box-clean b-color";
+                document.getElementById("dispTotalGrowth").style.color = "#ef4444";
+            } else {
+                boxGrowth.className = "kpi-box-clean p-color";
+                document.getElementById("dispTotalGrowth").style.color = "#64748b";
+            }
+
+            if (starDist.name !== "-") {
+                document.getElementById("dispStarDist").innerHTML = `${starDist.name.toUpperCase()} <span class="sub-val" id="dispStarPct">(📈 +${starDist.pct.toFixed(1)}%)</span>`;
+            } else {
+                document.getElementById("dispStarDist").innerHTML = `NONE <span class="sub-val" id="dispStarPct"></span>`;
+            }
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
+            else { distDropdown.value = distName; }
+            calculateMoMData();
+        }
+
+        function resetFilters() {
+            document.getElementById("reportType").value = "txns";
+            document.getElementById("districtType").value = "old";
+            
+            const d = new Date();
+            let currMonth = d.getMonth(); 
+            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+            document.getElementById("dataMonth").value = fyMonthIndex.toString();
+            
+            updateDistrictsDropdown();
+        }
+
+        /* 🌟 Full Screen Real API Fix 🌟 */
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+        /* 🌟 Image Download Fix 🌟 */
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            const tableWrapper = document.querySelector(".table-container");
+            
+            // Backup styles
+            const origAreaOverflow = captureArea.style.overflow;
+            const origWrapperOverflow = tableWrapper.style.overflow;
+            const origWrapperHeight = tableWrapper.style.height;
+
+            // Prepare for capture
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.height = "auto";
+            
+            // Remove Sticky elements temporarily
+            const stickyEls = captureArea.querySelectorAll('th, td.td-district, tfoot td');
+            stickyEls.forEach(el => {
+                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
+                el.style.position = 'static';
+            });
+            
+            setTimeout(() => {
+                html2canvas(captureArea, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: captureArea.scrollWidth + 50
+                }).then(canvas => {
+                    let link = document.createElement('a');
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    
+                    let typeSelect = document.getElementById("districtType");
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    let periodText = document.getElementById("dataMonth").options[document.getElementById("dataMonth").selectedIndex].text.split(" ")[0];
+                    let reportType = document.getElementById("reportType").value;
+                    let reportTypeName = reportType === 'regs' ? 'New_Registrations' : 'Transactions';
+                    
+                    link.download = `IRCTC_MoM_Growth_${reportTypeName}_${periodText}_${typeText}_${dateStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+
+                    restoreStyles();
+                    btn.innerHTML = "✅ Downloaded";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                }).catch(err => {
+                    console.error("Error capturing image:", err);
+                    restoreStyles();
+                    btn.innerHTML = "❌ Failed";
+                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                });
+            }, 500); 
+
+            function restoreStyles() {
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                tableWrapper.style.height = origWrapperHeight;
+                stickyEls.forEach(el => {
+                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
