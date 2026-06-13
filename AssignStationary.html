@@ -2,20 +2,67 @@
 <html>
 <head>
   <base target="_top">
+  <!-- CSS & JS for Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <style>
     body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
     .card-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: white; font-weight: bold; border-radius: 8px 8px 0 0 !important; }
     .table-hover tbody tr:hover { background-color: #f5f3ff; cursor: pointer; }
-    .score-box { background-color: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 10px; text-align: center; }
-    .score-val { font-size: 18px; font-weight: 900; color: #6d28d9; }
-    .score-label { font-size: 10px; color: #7c3aed; font-weight: bold; text-transform: uppercase; margin-top: 2px; }
     .btn-purple { background-color: #6d28d9; color: white; font-weight: bold; border: none; }
     .btn-purple:hover { background-color: #5b21b6; color: white; }
     .btn-purple-outline { color: #6d28d9; border-color: #6d28d9; background: transparent; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 4px; }
     .btn-purple-outline:hover { background: #6d28d9; color: white; }
     .text-purple { color: #6d28d9 !important; }
     .eligibility-badge { background-color: #dbeafe; color: #1e40af; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; border: 1px dashed #93c5fd; font-size: 13px; }
+    
+    /* 🌟 Violet Theme: Center Serial Display Box 🌟 */
+    .serial-preview-box {
+      background-color: #fbfaff; /* Very light violet */
+      border: 2px dashed #8b5cf6 !important; /* Soft violet border */
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(109, 40, 217, 0.08); /* Violet shadow */
+    }
+
+    /* 🌟 CORPORATE NOTIFICATION MODAL STYLES (VIOLET THEME) 🌟 */
+    .corp-modal-content {
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .icon-circle {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    /* Changed Success to Violet matching theme */
+    .icon-circle.success { background-color: #f5f3ff; color: #6d28d9; } 
+    .icon-circle.error { background-color: #fee2e2; color: #ef4444; }
+    
+    .corp-btn {
+      border-radius: 8px;
+      padding: 10px 30px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    /* Changed Success button to Violet */
+    .corp-btn-success { background-color: #6d28d9; color: white; border: none; }
+    .corp-btn-success:hover { background-color: #5b21b6; color: white; box-shadow: 0 6px 15px rgba(109,40,217,0.3); transform: translateY(-2px); }
+    
+    .corp-btn-error { background-color: #ef4444; color: white; border: none; }
+    .corp-btn-error:hover { background-color: #dc2626; color: white; box-shadow: 0 6px 15px rgba(239,68,68,0.3); transform: translateY(-2px); }
+    
+    .alert-title { font-size: 22px; font-weight: 800; margin-bottom: 12px; color: #1e293b; }
+    .alert-text { font-size: 14px; color: #475569; line-height: 1.6; font-weight: 500; }
   </style>
 </head>
 <body>
@@ -48,13 +95,19 @@
               <h4 class="mt-2 mb-0 text-danger fw-bold">Quantity: <span id="lblReqQty">0</span> Papers</h4>
             </div>
             
-            <h6 class="fw-bold text-secondary mb-2" style="font-size:12px;">📊 VLE Transaction Counts (Eligibility Data)</h6>
-            <div class="row g-1 mb-2 text-center">
-              <div class="col"><div class="score-box"><div class="score-val" id="scDigipay">-</div><div class="score-label">Digipay</div></div></div>
-              <div class="col"><div class="score-box"><div class="score-val" id="scIrctc">-</div><div class="score-label">IRCTC</div></div></div>
-              <div class="col"><div class="score-box"><div class="score-val" id="scIns">-</div><div class="score-label">DSP</div></div></div>
-              <div class="col"><div class="score-box"><div class="score-val" id="scNps">-</div><div class="score-label">NPS</div></div></div>
-              <div class="col"><div class="score-box"><div class="score-val" id="scAadhar">-</div><div class="score-label">Aadhaar</div></div></div>
+            <div class="card shadow-sm border-0 mb-3" style="background-color: #f8fafc; border-top: 4px solid #3b82f6 !important;">
+              <div class="card-body p-3">
+                <h6 class="text-center fw-bold mb-3" style="color: #1e293b; font-size: 13px;">📊 VLE Performance Scorecard (Prime Services)</h6>
+                <div class="row g-2 text-center mb-3">
+                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">DIGIPAY</div><div style="font-size: 15px; font-weight: 900; color: #0284c7;" id="score-digipay">-</div></div></div>
+                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">TRAVEL</div><div style="font-size: 15px; font-weight: 900; color: #ea580c;" id="score-travel">-</div></div></div>
+                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">INSURANCE</div><div style="font-size: 15px; font-weight: 900; color: #16a34a;" id="score-insurance">-</div><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div></div>
+                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">AADHAAR</div><div style="font-size: 15px; font-weight: 900; color: #9333ea;" id="score-aadhaar">-</div></div></div>
+                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">NPS</div><div style="font-size: 15px; font-weight: 900; color: #dc2626;" id="score-nps">-</div></div></div>
+                  <div class="col-4"><div class="p-2 border rounded" style="background-color: #fffbeb; border-color: #fde047 !important;"><div style="font-size: 10px; color: #854d0e; font-weight: 800;">⭐ TOTAL TXNS</div><div style="font-size: 15px; font-weight: 900; color: #ca8a04;" id="score-total">-</div></div></div>
+                </div>
+                <button type="button" class="btn btn-sm w-100" style="background-color: #e2e8f0; color: #334155; font-weight: bold; border: 1px solid #cbd5e1; font-size: 12px;" onclick="showAllServicesModal()">👁️ View Detailed Breakdown (45 Services)</button>
+              </div>
             </div>
             
             <div class="eligibility-badge mb-4" id="lblEligibility">Loading Eligibility...</div>
@@ -63,28 +116,65 @@
               <div class="row g-3">
                 <div class="col-12" id="divAppQty">
                   <label class="form-label fw-bold text-secondary">Approved Quantity <span class="text-danger">*</span></label>
-                  <input type="number" id="appQty" class="form-control fw-bold text-success" required>
+                  <input type="number" id="appQty" class="form-control fw-bold text-purple form-control-lg" required>
                 </div>
                 
-                <div class="col-12" id="divStartSerial" style="display:none;">
-                  <label class="form-label fw-bold text-secondary">Start Serial No (టైప్ చేసి 🔍 నొక్కండి) <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <input type="text" id="startSerial" class="form-control text-uppercase" placeholder="చివరి అంకెలు (ఉదా: 4201)">
-                    <button class="btn btn-outline-primary fw-bold" type="button" id="btnAutoFill" onclick="autoFillSerial()">🔍 Auto-Fill</button>
+                <div class="col-12" id="divSerialPreview" style="display:none;">
+                  <div class="serial-preview-box">
+                    <div style="font-size: 11px; color: #6d28d9; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">📋 Allocated Stationary Serials</div>
+                    <div class="row g-2 align-items-center justify-content-center">
+                      <div class="col-5">
+                        <span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">START SERIAL</span>
+                        <strong style="font-size:13px; color:#1e293b;" id="previewStart">-</strong>
+                      </div>
+                      <div class="col-2 text-purple fw-bold" style="font-size:16px;">➔</div>
+                      <div class="col-5">
+                        <span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">END SERIAL</span>
+                        <strong style="font-size:13px; color:#1e293b;" id="previewEnd">-</strong>
+                      </div>
+                    </div>
                   </div>
-                  <small id="stockAvailableMsg" class="text-success fw-bold mt-1 d-block"></small>
-                </div>
-
-                <div class="col-12" id="divEndSerial" style="display:none;">
-                  <label class="form-label fw-bold text-secondary">End Serial No (ఆటోమేటిక్) <span class="text-danger">*</span></label>
-                  <input type="text" id="endSerial" class="form-control text-uppercase bg-light fw-bold" readonly placeholder="Auto-Calculated">
                 </div>
               </div>
 
+              <button type="button" id="btnPreviewSerials" class="btn btn-purple w-100 mt-4 py-2 fw-bold" style="display:none;" onclick="generateSerialsPreview()">🔍 Generate Serial Numbers</button>
               <button type="submit" id="btnApprove" class="btn btn-purple w-100 mt-4 py-2">Confirm Action</button>
               <button type="button" class="btn btn-light border w-100 mt-2 text-muted" onclick="hideApprovalPanel()">Cancel</button>
             </form>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🌟 NEW CORPORATE ALERT MODAL (VIOLET THEME) 🌟 -->
+  <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content corp-modal-content">
+        <div class="modal-body text-center p-4">
+          <div id="alertIconContainer" class="icon-circle success">
+            <!-- Icon Injected via JS -->
+          </div>
+          <h5 id="alertTitle" class="alert-title">Success!</h5>
+          <p id="alertMessage" class="alert-text mb-4">Message goes here.</p>
+          <button type="button" id="alertBtn" class="btn corp-btn corp-btn-success w-100" data-bs-dismiss="modal">OK, Great!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="allServicesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white;">
+          <h6 class="modal-title fw-bold">📋 VLE Detailed Service Report</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0">
+          <table class="table table-hover align-middle text-center mb-0" style="font-size: 13px;">
+            <thead class="table-light"><tr><th class="text-start ps-3">Service Name</th><th>Total Txns</th><th>Amount (₹)</th></tr></thead>
+            <tbody id="allServicesList"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -98,20 +188,45 @@
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
     let loggedInUserId = localStorage.getItem("userId") || "";
 
-    window.onload = function() { 
-       checkCacheAndLoadRequests(); 
-    };
+    window.onload = function() { checkCacheAndLoadRequests(); };
+
+    // 🌟 CORPORATE UI - CUSTOM ALERT FUNCTION 🌟
+    function customAlert(msg, isSuccess) {
+        const iconContainer = document.getElementById("alertIconContainer");
+        const title = document.getElementById("alertTitle");
+        const message = document.getElementById("alertMessage");
+        const btn = document.getElementById("alertBtn");
+
+        const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>`;
+        const errorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/></svg>`;
+
+        if (isSuccess) {
+            iconContainer.className = "icon-circle success";
+            iconContainer.innerHTML = successSvg;
+            title.innerText = "Success!";
+            btn.className = "btn corp-btn corp-btn-success w-100";
+            btn.innerText = "OK, Great!";
+        } else {
+            iconContainer.className = "icon-circle error";
+            iconContainer.innerHTML = errorSvg;
+            title.innerText = "Action Failed";
+            btn.className = "btn corp-btn corp-btn-error w-100";
+            btn.innerText = "Try Again";
+        }
+        
+        message.innerHTML = msg.replace(/\n/g, '<br>');
+        
+        var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
+        alertModal.show();
+    }
 
     function checkCacheAndLoadRequests() {
        let cachedData = localStorage.getItem("pendingRequestsCache");
        let cacheTime = localStorage.getItem("pendingRequestsTime");
        let now = new Date().getTime();
-
        if (cachedData && cacheTime && (now - cacheTime < 120000)) { 
           renderRequestsTable(JSON.parse(cachedData));
-       } else {
-          fetchPendingRequests();
-       }
+       } else { fetchPendingRequests(); }
     }
 
     function refreshLiveRequests() {
@@ -127,9 +242,7 @@
             localStorage.setItem("pendingRequestsCache", JSON.stringify(res.data));
             localStorage.setItem("pendingRequestsTime", new Date().getTime().toString());
             renderRequestsTable(res.data);
-         } else {
-            renderRequestsTable([]);
-         }
+         } else { renderRequestsTable([]); }
       }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data.</td></tr>`; });
     }
 
@@ -155,9 +268,7 @@
 
              tbody.innerHTML += `<tr><td style="font-size:12px; color:#64748b;">${req.date}</td><td class="fw-bold text-purple">${req.cscId}</td><td class="fw-bold">${req.vleName}</td><td><span class="badge bg-purple" style="background-color:#7c3aed;">${req.district}</span></td><td class="fw-bold text-danger">${req.reqQty}</td><td>${btnHtml}</td></tr>`;
           });
-       } else { 
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-success fw-bold">🎉 No pending stock requests found!</td></tr>`; 
-       }
+       } else { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-success fw-bold">🎉 No pending stock requests found!</td></tr>`; }
     }
 
     function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
@@ -169,120 +280,152 @@
        document.getElementById("lblReqQty").innerText = reqQty;
        
        let qtyInput = document.getElementById("appQty");
-       let startBox = document.getElementById("divStartSerial");
-       let endBox = document.getElementById("divEndSerial");
        let btnApprove = document.getElementById("btnApprove");
+       let btnPreview = document.getElementById("btnPreviewSerials");
        let title = document.getElementById("approvalPanelTitle");
+       let serialPreview = document.getElementById("divSerialPreview");
 
-       // క్లియర్ చేయడం
-       document.getElementById("startSerial").value = "";
-       document.getElementById("endSerial").value = "";
-       document.getElementById("stockAvailableMsg").innerText = "";
+       qtyInput.value = reqQty;
+       serialPreview.style.display = "none";
+       btnPreview.style.display = "none";
+       btnApprove.style.display = "block";
+       btnApprove.disabled = false;
 
        if (stepType === 1) { 
-           title.innerText = "📝 Recommend to SPOC"; qtyInput.value = reqQty; qtyInput.readOnly = false; startBox.style.display = "none"; endBox.style.display = "none"; document.getElementById("startSerial").removeAttribute("required"); document.getElementById("endSerial").removeAttribute("required"); btnApprove.innerText = "Recommend Quantity"; btnApprove.className = "btn btn-purple w-100 mt-4 py-2";
+           title.innerText = "📝 Recommend to SPOC"; qtyInput.readOnly = false; btnApprove.innerText = "Recommend Quantity"; btnApprove.className = "btn btn-purple w-100 mt-4 py-2";
        } else if (stepType === 2) { 
-           title.innerText = "⭐ Final Approval (SPOC)"; qtyInput.value = reqQty; qtyInput.readOnly = false; startBox.style.display = "none"; endBox.style.display = "none"; document.getElementById("startSerial").removeAttribute("required"); document.getElementById("endSerial").removeAttribute("required"); btnApprove.innerText = "Approve Quantity"; btnApprove.className = "btn btn-warning w-100 mt-4 py-2 fw-bold text-dark";
+           title.innerText = "⭐ Final Approval (SPOC)"; qtyInput.readOnly = false; btnApprove.innerText = "Approve Quantity"; btnApprove.className = "btn btn-warning w-100 mt-4 py-2 fw-bold text-dark";
        } else if (stepType === 3) { 
-           title.innerText = "📦 Dispatch Physical Stock"; qtyInput.value = reqQty; qtyInput.readOnly = true; startBox.style.display = "block"; endBox.style.display = "block"; document.getElementById("startSerial").setAttribute("required", "true"); document.getElementById("endSerial").setAttribute("required", "true"); btnApprove.innerText = "Dispatch Stock (Submit Serials)"; btnApprove.className = "btn btn-success w-100 mt-4 py-2 fw-bold";
+           title.innerText = "📦 Auto-Dispatch Physical Stock"; 
+           qtyInput.readOnly = false; 
+           btnApprove.style.display = "none"; 
+           btnPreview.style.display = "block"; 
+           btnPreview.innerText = "🔍 Generate Serial Numbers";
+           btnPreview.className = "btn btn-purple w-100 mt-4 py-2 fw-bold";
        }
 
-       document.querySelectorAll('[id^="sc"]').forEach(el => el.innerText = "⏳");
+       document.getElementById("score-digipay").innerText = "⏳";
+       document.getElementById("score-travel").innerText = "⏳";
+       document.getElementById("score-insurance").innerText = "⏳";
+       document.getElementById("amt-insurance").innerText = "(⏳)";
+       document.getElementById("score-aadhaar").innerText = "⏳";
+       document.getElementById("score-nps").innerText = "⏳";
+       document.getElementById("score-total").innerText = "⏳";
        document.getElementById("lblEligibility").innerText = "Calculating Eligibility...";
 
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId }) }).then(res => res.json()).then(res => {
           if(res.success && res.performance) {
-             let d = parseInt(res.performance.digipay) || 0;
-             let i = parseInt(res.performance.irctc) || 0;
-             let ins = parseInt(res.performance.insurance) || 0; 
-             let n = parseInt(res.performance.nps) || 0;
-             let a = parseInt(res.performance.aadhaar) || 0;
-             
-             document.getElementById("scDigipay").innerText = d;
-             document.getElementById("scIrctc").innerText = i;
-             document.getElementById("scIns").innerText = ins; 
-             document.getElementById("scNps").innerText = n;
-             document.getElementById("scAadhar").innerText = a;
+             let p = res.performance;
+             document.getElementById("score-digipay").innerText = p.digipay;
+             document.getElementById("score-travel").innerText = p.travel;
+             document.getElementById("score-insurance").innerText = p.insurance;
+             document.getElementById("amt-insurance").innerText = "(₹ " + Math.round(p.insAmt).toLocaleString('en-IN') + ")";
+             document.getElementById("score-aadhaar").innerText = p.aadhaar;
+             document.getElementById("score-nps").innerText = p.nps;
+             document.getElementById("score-total").innerText = p.totalScore;
 
-             let totalScore = d + i + ins + n + a;
+             let listHtml = "";
+             for(let srv in p.allServices) {
+                 let srvData = p.allServices[srv];
+                 if(srvData.txn > 0 || srvData.amt > 0) {
+                     listHtml += `<tr><td class="text-start ps-3 fw-bold text-secondary">${srv}</td><td class="fw-bold text-primary">${srvData.txn}</td><td class="text-success fw-bold">₹ ${Math.round(srvData.amt).toLocaleString('en-IN')}</td></tr>`;
+                 }
+             }
+             document.getElementById("allServicesList").innerHTML = listHtml || '<tr><td colspan="3" class="text-danger py-3">No active services found.</td></tr>';
+
+             let totalScore = p.totalScore;
              let eligibleQty = 10; 
-             
              if(totalScore >= 500) eligibleQty = 200;
              else if(totalScore >= 200) eligibleQty = 100;
              else if(totalScore >= 100) eligibleQty = 50;
              else if(totalScore >= 50) eligibleQty = 25;
 
-             document.getElementById("lblEligibility").innerHTML = `⭐ <b>VLE Total Score:</b> ${totalScore} Txns <br> 📦 <b>System Recommended Eligibility:</b> ~${eligibleQty} Papers`;
+             document.getElementById("lblEligibility").innerHTML = `⭐ <b>Overall Total Score:</b> ${totalScore} Txns <br> 📦 <b>System Recommended Eligibility:</b> ~${eligibleQty} Papers`;
           }
-       });
+       }).catch(e => { document.getElementById("lblEligibility").innerHTML = "<span class='text-danger'>Error loading data!</span>"; });
     }
 
-    function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }
-
-    // 🌟 కొత్తగా యాడ్ చేసిన Auto-Fill & Check Logic 🌟
-    function autoFillSerial() {
-        var startInput = document.getElementById("startSerial").value.trim();
-        var reqQty = document.getElementById("appQty").value;
-        var district = document.getElementById("lblVleDistrict").innerText.trim();
-        var msgLabel = document.getElementById("stockAvailableMsg");
-        var btnFill = document.getElementById("btnAutoFill");
-
-        if(!startInput) { alert("దయచేసి ముందు స్టార్ట్ సీరియల్ నెంబర్ ఎంటర్ చేయండి!"); return; }
-        if(!reqQty || reqQty <= 0) { alert("దయచేసి క్వాంటిటీ (Approved Quantity) ఎంటర్ చేయండి!"); return; }
-
-        btnFill.innerText = "⏳"; btnFill.disabled = true;
-        msgLabel.innerText = "వెతుకుతోంది..."; msgLabel.className = "text-secondary fw-bold mt-1 d-block";
-
-        fetch(SCRIPT_URL, { 
-            method: "POST", 
-            body: JSON.stringify({ action: "validateDmStock", district: district, serial: startInput, qty: reqQty }) 
+    function generateSerialsPreview() {
+        var qty = document.getElementById("appQty").value;
+        var dist = document.getElementById("lblVleDistrict").innerText.trim();
+        var btnPreview = document.getElementById("btnPreviewSerials");
+        
+        if(!qty || qty <= 0) { customAlert("దయచేసి Approved Quantity ఎంటర్ చేయండి!", false); return; }
+        
+        btnPreview.disabled = true;
+        btnPreview.innerText = "⏳ Generating Serials...";
+        
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "previewAutoDispatch", district: dist, appQty: qty })
         })
         .then(res => res.json())
         .then(res => {
-            btnFill.innerText = "🔍 Auto-Fill"; btnFill.disabled = false;
+            btnPreview.disabled = false;
+            btnPreview.innerText = "🔍 Generate Serial Numbers";
+            
             if(res.success) {
-                document.getElementById("startSerial").value = res.fullStart;
-                document.getElementById("endSerial").value = res.fullEnd;
-                msgLabel.innerText = "✅ అవైలబుల్ స్టాక్: ఈ సిరీస్ లో " + res.available + " పేపర్లు ఉన్నాయి.";
-                msgLabel.className = "text-success fw-bold mt-1 d-block";
+                document.getElementById("previewStart").innerText = res.startSerial;
+                document.getElementById("previewEnd").innerText = res.endSerial;
+                document.getElementById("divSerialPreview").style.display = "block";
+                
+                btnPreview.style.display = "none";
+                var btnApprove = document.getElementById("btnApprove");
+                btnApprove.style.display = "block";
+                btnApprove.innerText = "🚀 Confirm & Submit Dispatch";
+                btnApprove.className = "btn btn-purple w-100 mt-4 py-2 fw-bold";
             } else {
-                document.getElementById("endSerial").value = "";
-                msgLabel.innerText = "❌ ఎర్రర్: " + res.message;
-                msgLabel.className = "text-danger fw-bold mt-1 d-block";
-                alert(res.message);
+                customAlert(res.message, false);
             }
         })
         .catch(err => {
-            btnFill.innerText = "🔍 Auto-Fill"; btnFill.disabled = false;
-            msgLabel.innerText = "నెట్‌వర్క్ ఎర్రర్!";
-            msgLabel.className = "text-danger fw-bold mt-1 d-block";
+            btnPreview.disabled = false;
+            btnPreview.innerText = "🔍 Generate Serial Numbers";
+            customAlert("Network Error! Please check connection.", false);
         });
     }
 
     function approveRequest(e) {
        e.preventDefault(); if(!activeRowIdx) return;
-       let start = document.getElementById("startSerial").value.toUpperCase(); let end = document.getElementById("endSerial").value.toUpperCase();
        
-       if (currentStep === 3) {
-           if (!start || !end) { alert("Please enter Start and End Serial Numbers!"); return; }
-           // ఒకవేళ DM ఆటో-ఫిల్ చేయకుండా డైరెక్ట్ సబ్మిట్ నొక్కితే ఆపేయడానికి
-           if (document.getElementById("stockAvailableMsg").innerText.indexOf("✅") === -1) {
-               alert("దయచేసి '🔍 Auto-Fill' బటన్ నొక్కి స్టాక్ మరియు ఎండ్ నెంబర్ వెరిఫై చేసుకోండి!"); return;
-           }
-       }
-
-       var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: document.getElementById("lblVleId").innerText, appQty: document.getElementById("appQty").value, startSerial: start, endSerial: end, approvedBy: loggedInUser };
-       var btn = document.getElementById("btnApprove"); btn.disabled = true; btn.innerText = "Processing...";
+       let dist = document.getElementById("lblVleDistrict").innerText.trim();
+       let vName = document.getElementById("lblVleName").innerText.trim();
+       
+       var payload = { 
+           action: "approveVleRequest", 
+           stepType: currentStep, 
+           role: loggedInDesig, 
+           rowIdx: activeRowIdx, 
+           vleId: document.getElementById("lblVleId").innerText, 
+           vleName: vName,
+           district: dist, 
+           appQty: document.getElementById("appQty").value, 
+           approvedBy: loggedInUser 
+       };
+       
+       var btn = document.getElementById("btnApprove"); 
+       btn.disabled = true; 
+       
+       if (currentStep === 1) { btn.innerText = "Processing Recommendation..."; }
+       else if (currentStep === 2) { btn.innerText = "Processing Approval..."; }
+       else { btn.innerText = "Processing Auto-Dispatch..."; }
        
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
           btn.disabled = false;
           if(res.success) { 
-             alert("✅ " + res.message); 
+             customAlert(res.message, true);
              localStorage.removeItem("pendingRequestsCache"); 
              hideApprovalPanel(); 
              fetchPendingRequests(); 
-          }
-       }).catch(e => { btn.disabled = false; alert("Network error!"); });
+          } else { customAlert(res.message, false); }
+       }).catch(e => { btn.disabled = false; customAlert("Network error! Please check connection.", false); });
+    }
+
+    function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }
+
+    function showAllServicesModal() {
+        var myModal = new bootstrap.Modal(document.getElementById('allServicesModal'));
+        myModal.show();
     }
   </script>
 </body>

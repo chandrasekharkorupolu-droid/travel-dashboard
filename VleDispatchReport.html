@@ -3,13 +3,15 @@
 <head>
   <base target="_top">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- 🌟 ఎక్సెల్ ఫైల్ డౌన్‌లోడ్ కోసం SheetJS లైబ్రరీ 🌟 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
     .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid #e2e8f0; }
     .table-header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 20px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
     .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 14px; padding: 6px 12px; border-radius: 20px; border: 1px solid #a7f3d0; }
     
-    /* 🌟 సెర్చ్ బాక్స్ కోసం కొత్త స్టైల్స్ 🌟 */
     .search-box { width: 280px; border: 1px solid #10b981; border-radius: 6px; padding: 6px 15px; outline: none; transition: 0.3s; font-size: 14px; }
     .search-box:focus { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
   </style>
@@ -20,9 +22,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
       <h5 class="fw-bold text-success mb-0">🚚 Detailed VLE Dispatch Tracking Report</h5>
       
-      <!-- 🌟 సెర్చ్ బాక్స్ మరియు రిఫ్రెష్ బటన్ ఒకే వరుసలో ఉండేలా సెట్ చేసాం 🌟 -->
       <div class="d-flex gap-3 align-items-center">
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search VLE Name, CSC ID, District..." onkeyup="searchTable()">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="searchTable()">
+        <button class="btn btn-sm btn-outline-primary text-nowrap py-2 fw-bold" onclick="exportToExcel()">📥 Excel</button>
         <button class="btn btn-sm btn-outline-success text-nowrap py-2 fw-bold" onclick="refreshDispatchReport()">🔄 Refresh Data</button>
       </div>
     </div>
@@ -33,19 +35,21 @@
         <span class="badge bg-light text-dark" id="lblScope">-</span>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover align-middle text-center mb-0">
+        <!-- 🌟 ఇక్కడ టేబుల్ ఐడీ మారకుండా చూసాను 🌟 -->
+        <table class="table table-hover align-middle text-center mb-0" id="dispatchTable">
           <thead class="table-light">
             <tr>
               <th>Date</th>
               <th class="text-start ps-3">VLE Details</th>
               <th>District</th>
+              <th>Stock Holding Request No</th>
               <th>Serial No. Range</th>
               <th>Dispatched Qty</th>
               <th>Dispatched By</th>
             </tr>
           </thead>
           <tbody id="reportBody">
-            <tr><td colspan="6" class="text-muted py-4">Loading dispatch history...</td></tr>
+            <tr><td colspan="7" class="text-muted py-4">Loading dispatch history...</td></tr>
           </tbody>
         </table>
       </div>
@@ -62,31 +66,20 @@
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     document.getElementById("lblScope").innerText = isDM ? "District: " + loggedInDistrict.toUpperCase() : "Full State Report";
 
-    window.onload = function() { 
-       checkCacheAndLoadDispatch(); 
-    };
+    window.onload = function() { checkCacheAndLoadDispatch(); };
 
-    // ⚡ స్మార్ట్ క్యాష్ లాజిక్ (ఒక్కసారి లోడ్ అయితే చాలు, మళ్ళీ మళ్ళీ లోడింగ్ అడగదు) ⚡
     function checkCacheAndLoadDispatch() {
        let cachedData = localStorage.getItem("vleDispatchCache");
        let cacheTime = localStorage.getItem("vleDispatchTime");
        let now = new Date().getTime();
-
-       // 2 నిమిషాల వరకు బ్రౌజర్ మెమరీ లో ఉంచుకుంటుంది, రిపోర్ట్ వెంటనే ఓపెన్ అవుతుంది
-       if (cachedData && cacheTime && (now - cacheTime < 120000)) { 
-          renderDispatchTable(JSON.parse(cachedData));
-       } else {
-          fetchDispatchReport();
-       }
+       if (cachedData && cacheTime && (now - cacheTime < 120000)) { renderDispatchTable(JSON.parse(cachedData)); } 
+       else { fetchDispatchReport(); }
     }
 
-    // డేటా కొత్తది కావాలంటే (రిఫ్రెష్ బటన్ నొక్కినప్పుడు)
     function refreshDispatchReport() {
        localStorage.removeItem("vleDispatchCache");
-       document.getElementById("reportBody").innerHTML = `<tr><td colspan="6" class="text-muted py-4">Refreshing live data...</td></tr>`;
+       document.getElementById("reportBody").innerHTML = `<tr><td colspan="7" class="text-muted py-4">Refreshing live data...</td></tr>`;
        fetchDispatchReport();
-       
-       // 🌟 రిఫ్రెష్ చేసినప్పుడు సెర్చ్ బాక్స్ ఖాళీ చేయడం 🌟
        document.getElementById("searchInput").value = "";
     }
 
@@ -94,55 +87,51 @@
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVleDispatchReport", role: loggedInDesig, userId: loggedInUserId }) })
        .then(res => res.json()).then(res => {
           if(res.success && res.data) {
-             // డేటాని బ్రౌజర్ క్యాష్ లో సేవ్ చేస్తున్నాం
              localStorage.setItem("vleDispatchCache", JSON.stringify(res.data));
              localStorage.setItem("vleDispatchTime", new Date().getTime().toString());
              renderDispatchTable(res.data);
-          } else { 
-             renderDispatchTable([]); 
-          }
-       }).catch(e => { document.getElementById("reportBody").innerHTML = `<tr><td colspan="6" class="text-danger py-4">Network Error. Please refresh.</td></tr>`; });
+          } else { renderDispatchTable([]); }
+       }).catch(e => { document.getElementById("reportBody").innerHTML = `<tr><td colspan="7" class="text-danger py-4">Network Error. Please refresh.</td></tr>`; });
     }
 
     function renderDispatchTable(data) {
        const tbody = document.getElementById("reportBody"); 
        tbody.innerHTML = "";
-       
        if(data && data.length > 0) {
           data.forEach(item => {
-             // 🌟 సెర్చ్ కోసం క్లాస్ (data-row) మరియు (search-target) యాడ్ చేశాం 🌟
+             // 🌟 ఇక్కడ VLE Name మరియు ID ని పాత స్టైల్ లోనే ఒకే లైన్ లోకి మార్చాను 🌟
              tbody.innerHTML += `
                <tr class="data-row">
                  <td style="font-size:12px; color:#64748b;">${item.date}</td>
-                 <td class="text-start ps-3 fw-bold search-target">${item.vleName} <br><span class="text-primary" style="font-size:11px;">${item.cscId}</span></td>
+                 <td class="text-start ps-3 fw-bold search-target">${item.vleName} <span class="text-primary" style="font-size:11px;">${item.cscId}</span></td>
                  <td class="search-target"><span class="badge bg-secondary">${item.district}</span></td>
+                 <td class="search-target fw-bold text-danger">${item.reqNo}</td>
                  <td class="search-target"><code class="text-dark bg-light px-2 border rounded">${item.startSerial} to ${item.endSerial}</code></td>
                  <td><span class="badge-qty">${item.qty} Papers</span></td>
                  <td style="font-size:12px;" class="fw-bold text-muted search-target">${item.assignedBy}</td>
                </tr>`;
           });
-       } else { 
-          tbody.innerHTML = `<tr><td colspan="6" class="text-danger py-4 fw-bold">No dispatch records found.</td></tr>`; 
-       }
+       } else { tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4 fw-bold">No dispatch records found.</td></tr>`; }
     }
 
-    // 🌟 సెర్చ్ ఫంక్షనాలిటీ కోసం రాసిన ఫంక్షన్ 🌟
     function searchTable() {
        let input = document.getElementById("searchInput").value.toUpperCase();
        let rows = document.querySelectorAll(".data-row");
-       
        rows.forEach(row => {
           let match = false;
           let targets = row.querySelectorAll(".search-target");
-          
-          targets.forEach(cell => {
-             if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) {
-                match = true;
-             }
-          });
-          
+          targets.forEach(cell => { if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
           row.style.display = match ? "" : "none";
        });
+    }
+
+    function exportToExcel() {
+       let table = document.getElementById("dispatchTable");
+       let wb = XLSX.utils.table_to_book(table, {sheet: "Dispatch Report"});
+       let today = new Date();
+       let dateStr = ("0" + today.getDate()).slice(-2) + "-" + ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
+       let fileName = "Dispatch_Report_" + dateStr + ".xlsx";
+       XLSX.writeFile(wb, fileName);
     }
   </script>
 </body>

@@ -270,7 +270,6 @@
     window.vleSalesCart = [];
 
     function loadVLEDashboard() {
-      // 🌟 ప్రస్తుత నెల పేరు కనుక్కోవడం 🌟
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       const currentMonthName = monthNames[new Date().getMonth()];
 
@@ -278,12 +277,9 @@
       <div style="background-color: #f4f0fc; min-height: 100%; padding: 20px; font-family: 'Segoe UI', sans-serif;">
         <div style="max-width: 800px; margin: 0 auto;">
           
-          <!-- 🌟 కొత్తగా యాడ్ చేసిన VLE పెర్ఫార్మెన్స్ టేబుల్ 🌟 -->
           <div style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 4px solid #6d28d9; padding: 20px; margin-bottom: 25px; overflow-x: auto;">
-            
-            <!-- 🌟 మంత్ బ్యాడ్జ్ యాడ్ చేసిన హెడ్డింగ్ 🌟 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-              <h4 style="color: #6d28d9; margin: 0;">📊 నా ఈ-స్టాంపింగ్ పెర్ఫార్మెన్స్ & టార్గెట్ రిపోర్ట్</h4>
+              <h4 style="color: #6d28d9; margin: 0;">📊 ఈ-స్టాంపింగ్ పెర్ఫార్మెన్స్ & టార్గెట్ రిపోర్ట్</h4>
               <span style="background-color: #6d28d9; color: white; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;">${currentMonthName}</span>
             </div>
 
@@ -311,7 +307,6 @@
             </table>
           </div>
 
-          <!-- పాత ఫారమ్ కోడ్ ఇక్కడినుండి మొదలవుతుంది -->
           <div style="background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #6f42c1; padding: 30px;">
             <h3 style="text-align: center; color: #6f42c1; margin-top: 0; margin-bottom: 20px;">📝 VLE E-Stamping Portal</h3>
             
@@ -400,7 +395,6 @@
 
       document.getElementById('reportViewer').innerHTML = vleHtml;
       
-      // 🌟 టేబుల్ కోసం డేటా తెచ్చే ఫంక్షన్ కాల్ 🌟
       window.loadMyPerformance();
       
       window.showVleActionDiv = function() {
@@ -551,6 +545,7 @@
         .catch(err => { btn.innerText = "Report Damage"; btn.disabled = false; alert("Network Error!"); });
       };
 
+      // 🌟🌟 అప్‌డేటెడ్ ట్రాక్ స్టేటస్ ఫంక్షన్ (సీరియల్ నెంబర్స్ హైలైట్ తో) 🌟🌟
       window.fetchMyStatus = function() {
          let btn = document.getElementById('btnFetchTrack');
          let resultArea = document.getElementById('trackResultArea');
@@ -573,14 +568,35 @@
                   else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; }
                   else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; }
 
+                  // 🌟 రిమార్క్స్ నుండి సీరియల్ నెంబర్ ని విడదీసి ఎర్ర రంగులో హైలైట్ చేయడం 🌟
+                  let rawRemarks = req.remarks || "-";
+                  let finalRemarks = rawRemarks;
+                  let serialsHtml = "";
+                  
+                  if(rawRemarks.includes("(Serials:")) {
+                      let splitPart = rawRemarks.split("(Serials:");
+                      finalRemarks = splitPart[0].trim();
+                      let serialsPart = splitPart[1].replace(")", "").trim();
+                      
+                      serialsHtml = `
+                        <div style="margin-top: 10px; background: #fff1f2; padding: 10px; border-radius: 6px; border: 1px dashed #fda4af;">
+                           <span style="font-size: 11px; color: #e11d48; font-weight: bold; text-transform: uppercase;">📋 Allocated Serials:</span><br>
+                           <span style="font-size: 14px; font-weight: 900; color: #be123c;">${serialsPart}</span>
+                        </div>
+                      `;
+                  }
+
                   html += `
-                    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:10px; background:white; text-align:left;">
+                    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:10px; background:white; text-align:left; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <span style="font-size:12px; color:#64748b; font-weight:bold;">📅 ${req.date}</span>
                         <span style="background:${bg}; color:${col}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; border:1px solid ${col}40;">${st}</span>
                       </div>
                       <div style="font-size:14px;"><span style="color:#64748b;">Req Qty:</span> <strong style="font-size:16px;">${req.qty} Papers</strong></div>
-                      <div style="font-size:12px; margin-top:8px; background:#f1f5f9; padding:8px; border-radius:4px;">📝 <b>Remarks:</b> ${req.remarks}</div>
+                      
+                      <div style="font-size:13px; margin-top:8px; color: #475569;">📝 <b>Status:</b> ${finalRemarks}</div>
+                      
+                      ${serialsHtml}
                     </div>
                   `;
                });
