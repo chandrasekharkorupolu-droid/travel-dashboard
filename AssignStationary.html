@@ -65,15 +65,22 @@
                   <label class="form-label fw-bold text-secondary">Approved Quantity <span class="text-danger">*</span></label>
                   <input type="number" id="appQty" class="form-control fw-bold text-success" required>
                 </div>
-                <div class="col-6" id="divStartSerial" style="display:none;">
-                  <label class="form-label fw-bold text-secondary">Start Serial No <span class="text-danger">*</span></label>
-                  <input type="text" id="startSerial" class="form-control text-uppercase" placeholder="AP-A0001">
+                
+                <div class="col-12" id="divStartSerial" style="display:none;">
+                  <label class="form-label fw-bold text-secondary">Start Serial No (టైప్ చేసి 🔍 నొక్కండి) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input type="text" id="startSerial" class="form-control text-uppercase" placeholder="చివరి అంకెలు (ఉదా: 4201)">
+                    <button class="btn btn-outline-primary fw-bold" type="button" id="btnAutoFill" onclick="autoFillSerial()">🔍 Auto-Fill</button>
+                  </div>
+                  <small id="stockAvailableMsg" class="text-success fw-bold mt-1 d-block"></small>
                 </div>
-                <div class="col-6" id="divEndSerial" style="display:none;">
-                  <label class="form-label fw-bold text-secondary">End Serial No <span class="text-danger">*</span></label>
-                  <input type="text" id="endSerial" class="form-control text-uppercase" placeholder="AP-A0100">
+
+                <div class="col-12" id="divEndSerial" style="display:none;">
+                  <label class="form-label fw-bold text-secondary">End Serial No (ఆటోమేటిక్) <span class="text-danger">*</span></label>
+                  <input type="text" id="endSerial" class="form-control text-uppercase bg-light fw-bold" readonly placeholder="Auto-Calculated">
                 </div>
               </div>
+
               <button type="submit" id="btnApprove" class="btn btn-purple w-100 mt-4 py-2">Confirm Action</button>
               <button type="button" class="btn btn-light border w-100 mt-2 text-muted" onclick="hideApprovalPanel()">Cancel</button>
             </form>
@@ -95,13 +102,12 @@
        checkCacheAndLoadRequests(); 
     };
 
-    // ⚡ Smart Cache Logic for Instant Loading ⚡
     function checkCacheAndLoadRequests() {
        let cachedData = localStorage.getItem("pendingRequestsCache");
        let cacheTime = localStorage.getItem("pendingRequestsTime");
        let now = new Date().getTime();
 
-       if (cachedData && cacheTime && (now - cacheTime < 120000)) { // 2 Minutes Cache
+       if (cachedData && cacheTime && (now - cacheTime < 120000)) { 
           renderRequestsTable(JSON.parse(cachedData));
        } else {
           fetchPendingRequests();
@@ -168,6 +174,11 @@
        let btnApprove = document.getElementById("btnApprove");
        let title = document.getElementById("approvalPanelTitle");
 
+       // క్లియర్ చేయడం
+       document.getElementById("startSerial").value = "";
+       document.getElementById("endSerial").value = "";
+       document.getElementById("stockAvailableMsg").innerText = "";
+
        if (stepType === 1) { 
            title.innerText = "📝 Recommend to SPOC"; qtyInput.value = reqQty; qtyInput.readOnly = false; startBox.style.display = "none"; endBox.style.display = "none"; document.getElementById("startSerial").removeAttribute("required"); document.getElementById("endSerial").removeAttribute("required"); btnApprove.innerText = "Recommend Quantity"; btnApprove.className = "btn btn-purple w-100 mt-4 py-2";
        } else if (stepType === 2) { 
@@ -208,10 +219,57 @@
 
     function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }
 
+    // 🌟 కొత్తగా యాడ్ చేసిన Auto-Fill & Check Logic 🌟
+    function autoFillSerial() {
+        var startInput = document.getElementById("startSerial").value.trim();
+        var reqQty = document.getElementById("appQty").value;
+        var district = document.getElementById("lblVleDistrict").innerText.trim();
+        var msgLabel = document.getElementById("stockAvailableMsg");
+        var btnFill = document.getElementById("btnAutoFill");
+
+        if(!startInput) { alert("దయచేసి ముందు స్టార్ట్ సీరియల్ నెంబర్ ఎంటర్ చేయండి!"); return; }
+        if(!reqQty || reqQty <= 0) { alert("దయచేసి క్వాంటిటీ (Approved Quantity) ఎంటర్ చేయండి!"); return; }
+
+        btnFill.innerText = "⏳"; btnFill.disabled = true;
+        msgLabel.innerText = "వెతుకుతోంది..."; msgLabel.className = "text-secondary fw-bold mt-1 d-block";
+
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "validateDmStock", district: district, serial: startInput, qty: reqQty }) 
+        })
+        .then(res => res.json())
+        .then(res => {
+            btnFill.innerText = "🔍 Auto-Fill"; btnFill.disabled = false;
+            if(res.success) {
+                document.getElementById("startSerial").value = res.fullStart;
+                document.getElementById("endSerial").value = res.fullEnd;
+                msgLabel.innerText = "✅ అవైలబుల్ స్టాక్: ఈ సిరీస్ లో " + res.available + " పేపర్లు ఉన్నాయి.";
+                msgLabel.className = "text-success fw-bold mt-1 d-block";
+            } else {
+                document.getElementById("endSerial").value = "";
+                msgLabel.innerText = "❌ ఎర్రర్: " + res.message;
+                msgLabel.className = "text-danger fw-bold mt-1 d-block";
+                alert(res.message);
+            }
+        })
+        .catch(err => {
+            btnFill.innerText = "🔍 Auto-Fill"; btnFill.disabled = false;
+            msgLabel.innerText = "నెట్‌వర్క్ ఎర్రర్!";
+            msgLabel.className = "text-danger fw-bold mt-1 d-block";
+        });
+    }
+
     function approveRequest(e) {
        e.preventDefault(); if(!activeRowIdx) return;
        let start = document.getElementById("startSerial").value.toUpperCase(); let end = document.getElementById("endSerial").value.toUpperCase();
-       if (currentStep === 3 && (!start || !end)) { alert("Please enter Start and End Serial Numbers!"); return; }
+       
+       if (currentStep === 3) {
+           if (!start || !end) { alert("Please enter Start and End Serial Numbers!"); return; }
+           // ఒకవేళ DM ఆటో-ఫిల్ చేయకుండా డైరెక్ట్ సబ్మిట్ నొక్కితే ఆపేయడానికి
+           if (document.getElementById("stockAvailableMsg").innerText.indexOf("✅") === -1) {
+               alert("దయచేసి '🔍 Auto-Fill' బటన్ నొక్కి స్టాక్ మరియు ఎండ్ నెంబర్ వెరిఫై చేసుకోండి!"); return;
+           }
+       }
 
        var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: document.getElementById("lblVleId").innerText, appQty: document.getElementById("appQty").value, startSerial: start, endSerial: end, approvedBy: loggedInUser };
        var btn = document.getElementById("btnApprove"); btn.disabled = true; btn.innerText = "Processing...";
@@ -220,7 +278,7 @@
           btn.disabled = false;
           if(res.success) { 
              alert("✅ " + res.message); 
-             localStorage.removeItem("pendingRequestsCache"); // Clear cache after success
+             localStorage.removeItem("pendingRequestsCache"); 
              hideApprovalPanel(); 
              fetchPendingRequests(); 
           }

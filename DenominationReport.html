@@ -16,6 +16,7 @@
     
     /* Card Top Colors */
     .border-vles { border-top-color: #f97316; } .active.border-vles { border-color: #f97316 !important; background-color: #fff7ed; }
+    .border-tot { border-top-color: #ef4444; } .active.border-tot { border-color: #ef4444 !important; background-color: #fef2f2; }
     .border-10 { border-top-color: #22c55e; } .active.border-10 { border-color: #22c55e !important; background-color: #f0fdf4; }
     .border-20 { border-top-color: #0ea5e9; } .active.border-20 { border-color: #0ea5e9 !important; background-color: #f0f9ff; }
     .border-50 { border-top-color: #eab308; } .active.border-50 { border-color: #eab308 !important; background-color: #fefce8; }
@@ -33,6 +34,9 @@
     .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
     .table-header { background: #f8fafc; padding: 12px 20px; font-weight: bold; font-size: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; color: #334155; }
     .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #a7f3d0; }
+
+    /* Grand Total Row Sticky */
+    .grand-total-row td { background-color: #e2e8f0 !important; font-weight: 900 !important; color: #1e293b !important; border-top: 2px solid #94a3b8 !important; position: sticky; bottom: 0; z-index: 10; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -45,7 +49,6 @@
         <span class="badge bg-light text-secondary border" id="lblScope">Access Level: Loading...</span>
       </div>
       <div class="d-flex align-items-center" data-html2canvas-ignore="true">
-        <!-- 🌟 Financial Year Categories List 🌟 -->
         <select id="dateFilter" class="form-select form-select-sm fw-bold me-3" style="width:200px; cursor:pointer;" onchange="fetchReportData()">
           <option value="ALL">All Time (Overall)</option>
           <optgroup label="Monthly (Current FY)">
@@ -81,10 +84,11 @@
     <!-- Clickable Summary Cards -->
     <div class="row g-2 mb-3">
       <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title text-orange" style="color:#ea580c;">Total VLEs</div><div class="stat-value text-orange" style="color:#ea580c;" id="totVles">0</div></div></div>
-      <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title text-success" style="color:#16a34a;">₹ 10 Papers</div><div class="stat-value text-success" style="color:#16a34a;" id="tot10">0</div></div></div>
-      <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title text-info" style="color:#0284c7;">₹ 20 Papers</div><div class="stat-value text-info" style="color:#0284c7;" id="tot20">0</div></div></div>
-      <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title text-warning" style="color:#ca8a04;">₹ 50 Papers</div><div class="stat-value text-warning" style="color:#ca8a04;" id="tot50">0</div></div></div>
-      <div class="col"><div class="stat-card border-100" id="card-D100" onclick="filterVles('D100')"><div class="stat-title text-purple" style="color:#9333ea;">₹ 100 Papers</div><div class="stat-value text-purple" style="color:#9333ea;" id="tot100">0</div></div></div>
+      <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title text-danger" style="color:#ef4444;">Total Papers</div><div class="stat-value text-danger" style="color:#ef4444;" id="totPapers">0</div></div></div>
+      <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title text-success" style="color:#16a34a;">₹ 10</div><div class="stat-value text-success" style="color:#16a34a;" id="tot10">0</div></div></div>
+      <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title text-info" style="color:#0284c7;">₹ 20</div><div class="stat-value text-info" style="color:#0284c7;" id="tot20">0</div></div></div>
+      <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title text-warning" style="color:#ca8a04;">₹ 50</div><div class="stat-value text-warning" style="color:#ca8a04;" id="tot50">0</div></div></div>
+      <div class="col"><div class="stat-card border-100" id="card-D100" onclick="filterVles('D100')"><div class="stat-title text-purple" style="color:#9333ea;">₹ 100</div><div class="stat-value text-purple" style="color:#9333ea;" id="tot100">0</div></div></div>
       <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title text-secondary">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
     </div>
 
@@ -106,15 +110,34 @@
         <span id="lblFilterText" class="badge bg-purple" style="background:#6d28d9;">Loading...</span>
       </div>
       <div class="table-responsive" style="max-height: 400px; background:white;">
-        <table class="table table-hover align-middle text-center mb-0">
-          <thead class="table-light sticky-top" id="theadDist" style="display:none;">
-            <tr><th class="text-start ps-4">District Name</th><th>₹ 10 Papers</th><th>₹ 20 Papers</th><th>₹ 50 Papers</th><th>₹ 100 Papers</th><th>Others</th></tr>
+        <table class="table table-hover align-middle text-center mb-0" style="font-size: 13px;">
+          <thead class="table-light sticky-top" id="theadDist" style="display:none; z-index: 11;">
+            <tr>
+              <th class="text-start ps-4">District Name</th>
+              <th class="text-secondary">Issued Stock</th>
+              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th>
+              <th class="text-info">Used Stock</th> <!-- 🌟 కొత్త కాలమ్ 🌟 -->
+              <th class="text-primary">Avail. Stock</th>
+              <th class="text-primary">Target (₹)</th>
+              <th class="text-success">Total Sales(₹)</th> <!-- 🌟 స్థానం మార్చాం 🌟 -->
+              <th class="text-danger">Pending (₹)</th>
+            </tr>
           </thead>
-          <thead class="table-light sticky-top" id="theadVle">
-            <tr><th class="text-start ps-4">VLE Details</th><th>District</th><th>₹ 10 Papers</th><th>₹ 20 Papers</th><th>₹ 50 Papers</th><th>₹ 100 Papers</th><th>Others</th></tr>
+          <thead class="table-light sticky-top" id="theadVle" style="z-index: 11;">
+            <tr>
+              <th class="text-start ps-4">VLE Details</th>
+              <th>District</th>
+              <th class="text-secondary">Issued Stock</th>
+              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th>
+              <th class="text-info">Used Stock</th> <!-- 🌟 కొత్త కాలమ్ 🌟 -->
+              <th class="text-primary">Avail. Stock</th>
+              <th class="text-primary">Target (₹)</th>
+              <th class="text-success">Total Sales(₹)</th> <!-- 🌟 స్థానం మార్చాం 🌟 -->
+              <th class="text-danger">Pending (₹)</th>
+            </tr>
           </thead>
           <tbody id="reportTbody">
-            <tr><td colspan="7" class="text-muted py-4">Loading Data...</td></tr>
+            <tr><td colspan="13" class="text-muted py-4">Loading Data...</td></tr>
           </tbody>
         </table>
       </div>
@@ -130,14 +153,12 @@
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     document.getElementById("lblScope").innerText = isDM ? "🔒 District Filter: " + loggedInDistrict.toUpperCase() : "🌐 Access Level: Full State Data";
 
-    // Global Data Variables
     let masterVleData = [];
     let masterDistData = [];
     let currentView = 'VLE'; 
     let currentFilter = 'ALL';
 
     window.onload = function() { 
-       // 🌟 ఆటోమేటిక్ గా ఏ నెల నడుస్తుంటే ఆ నెల సెలెక్ట్ అవుతుంది 🌟
        let d = new Date();
        let monthMap = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
        document.getElementById("dateFilter").value = monthMap[d.getMonth()];
@@ -150,7 +171,7 @@
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
        document.getElementById("lblFilterText").innerText = filterText;
 
-       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="7" class="text-muted py-4">Fetching live sales data...</td></tr>`;
+       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="13" class="text-muted py-4">Fetching live sales data...</td></tr>`;
 
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
        .then(res => res.json()).then(res => {
@@ -160,16 +181,18 @@
              calculateTotals(masterVleData);
              renderCurrentView();
           }
-       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="7" class="text-danger py-4">Network Error.</td></tr>`; });
+       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="13" class="text-danger py-4">Network Error.</td></tr>`; });
     }
 
     function calculateTotals(data) {
-       let d10=0, d20=0, d50=0, d100=0, oth=0;
+       let d10=0, d20=0, d50=0, d100=0, oth=0, totPap=0;
        data.forEach(item => {
           d10 += item.data.d10; d20 += item.data.d20; d50 += item.data.d50;
           d100 += item.data.d100; oth += item.data.other;
+          totPap += (item.data.assignedStock || 0); 
        });
        document.getElementById("totVles").innerText = data.length;
+       document.getElementById("totPapers").innerText = totPap;
        document.getElementById("tot10").innerText = d10;
        document.getElementById("tot20").innerText = d20;
        document.getElementById("tot50").innerText = d50;
@@ -211,13 +234,70 @@
        const tbody = document.getElementById("reportTbody"); tbody.innerHTML = "";
        let dataToRender = [];
 
+       // Grand Total Variables (Added gtUsed)
+       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtAmt = 0;
+       let gtAvail = 0, gtTarget = 0, gtPending = 0, gtIssued = 0, gtUsed = 0;
+
        if (currentView === 'DIST') {
           dataToRender = masterDistData;
+          
+          let distExtMap = {};
+          masterVleData.forEach(v => {
+             let d = v.data.district;
+             if(!distExtMap[d]) distExtMap[d] = {avail:0, target:0, pending:0, issued:0};
+             distExtMap[d].avail += (v.data.availableStock || 0);
+             distExtMap[d].target += (v.data.targetAmount || 0);
+             distExtMap[d].pending += (v.data.pendingAmount || 0);
+             distExtMap[d].issued += (v.data.assignedStock || 0);
+          });
+
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
-                tbody.innerHTML += `<tr class="data-row"><td class="text-start ps-4 fw-bold text-dark search-target">${item.district}</td><td><span class="badge-qty">${item.data.d10}</span></td><td><span class="badge-qty">${item.data.d20}</span></td><td><span class="badge-qty">${item.data.d50}</span></td><td><span class="badge-qty">${item.data.d100}</span></td><td class="text-muted fw-bold">${item.data.other}</td></tr>`;
+                let otherAmt = item.data.otherAmt || 0;
+                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt;
+                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other;
+                
+                let ext = distExtMap[item.district] || {avail:0, target:0, pending:0, issued:0};
+
+                gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
+                gt100 += item.data.d100; gtOth += item.data.other; gtAmt += totalAmt;
+                gtAvail += ext.avail; gtTarget += ext.target; gtPending += ext.pending; gtIssued += ext.issued; gtUsed += usedStock;
+
+                let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
+                let pendingHtml = ext.pending > 0 ? `<span class="text-danger fw-bold">₹ ${ext.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
+
+                tbody.innerHTML += `<tr class="data-row">
+                    <td class="text-start ps-4 fw-bold text-dark search-target">${item.district}</td>
+                    <td class="text-secondary fw-bold">${ext.issued}</td>
+                    <td><span class="badge-qty">${item.data.d10}</span></td>
+                    <td><span class="badge-qty">${item.data.d20}</span></td>
+                    <td><span class="badge-qty">${item.data.d50}</span></td>
+                    <td><span class="badge-qty">${item.data.d100}</span></td>
+                    <td class="text-muted fw-bold">${otherHtml}</td>
+                    <td class="text-info fw-bold">${usedStock}</td>
+                    <td><span class="badge bg-primary">${ext.avail}</span></td>
+                    <td class="text-secondary fw-bold">₹ ${ext.target.toLocaleString('en-IN')}</td>
+                    <td class="fw-bold text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td>${pendingHtml}</td>
+                </tr>`;
              });
-          } else { tbody.innerHTML = `<tr><td colspan="6" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
+             
+             tbody.innerHTML += `
+                <tr class="grand-total-row data-row">
+                    <td class="text-end pe-4">GRAND TOTAL</td>
+                    <td class="text-secondary">${gtIssued}</td>
+                    <td style="color:#16a34a;">${gt10}</td>
+                    <td style="color:#0284c7;">${gt20}</td>
+                    <td style="color:#ca8a04;">${gt50}</td>
+                    <td style="color:#9333ea;">${gt100}</td>
+                    <td>${gtOth}</td>
+                    <td class="text-info">${gtUsed}</td>
+                    <td class="text-primary">${gtAvail}</td>
+                    <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
+                </tr>`;
+          } else { tbody.innerHTML = `<tr><td colspan="12" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
        } 
        else {
           if(currentFilter === 'ALL') dataToRender = masterVleData;
@@ -229,9 +309,54 @@
 
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
-                tbody.innerHTML += `<tr class="data-row"><td class="text-start ps-4 fw-bold search-target">${item.data.name} <br><span class="text-primary" style="font-size:11px;">${item.id}</span></td><td class="search-target"><span class="badge bg-secondary">${item.data.district}</span></td><td><span class="badge-qty">${item.data.d10}</span></td><td><span class="badge-qty">${item.data.d20}</span></td><td><span class="badge-qty">${item.data.d50}</span></td><td><span class="badge-qty">${item.data.d100}</span></td><td class="text-muted fw-bold">${item.data.other}</td></tr>`;
+                let otherAmt = item.data.otherAmt || 0;
+                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt;
+                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other;
+                let availStock = item.data.availableStock || 0;
+                let targetAmt = item.data.targetAmount || 0;
+                let pendingAmt = item.data.pendingAmount || 0;
+                let assignedStock = item.data.assignedStock || 0;
+
+                gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
+                gt100 += item.data.d100; gtOth += item.data.other; gtAmt += totalAmt;
+                gtAvail += availStock; gtTarget += targetAmt; gtPending += pendingAmt; gtIssued += assignedStock; gtUsed += usedStock;
+
+                let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
+                let pendingHtml = pendingAmt > 0 ? `<span class="text-danger fw-bold">₹ ${pendingAmt.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
+
+                tbody.innerHTML += `<tr class="data-row">
+                    <td class="text-start ps-4 fw-bold search-target">${item.data.name} <br><span class="text-primary" style="font-size:11px;">${item.id}</span></td>
+                    <td class="search-target"><span class="badge bg-secondary">${item.data.district}</span></td>
+                    <td class="text-secondary fw-bold">${assignedStock}</td>
+                    <td><span class="badge-qty">${item.data.d10}</span></td>
+                    <td><span class="badge-qty">${item.data.d20}</span></td>
+                    <td><span class="badge-qty">${item.data.d50}</span></td>
+                    <td><span class="badge-qty">${item.data.d100}</span></td>
+                    <td class="text-muted fw-bold">${otherHtml}</td>
+                    <td class="text-info fw-bold">${usedStock}</td>
+                    <td><span class="badge bg-primary">${availStock}</span></td>
+                    <td class="text-secondary fw-bold">₹ ${targetAmt.toLocaleString('en-IN')}</td>
+                    <td class="fw-bold text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td>${pendingHtml}</td>
+                </tr>`;
              });
-          } else { tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
+             
+             tbody.innerHTML += `
+                <tr class="grand-total-row data-row">
+                    <td colspan="2" class="text-end pe-4">GRAND TOTAL</td>
+                    <td class="text-secondary">${gtIssued}</td>
+                    <td style="color:#16a34a;">${gt10}</td>
+                    <td style="color:#0284c7;">${gt20}</td>
+                    <td style="color:#ca8a04;">${gt50}</td>
+                    <td style="color:#9333ea;">${gt100}</td>
+                    <td>${gtOth}</td>
+                    <td class="text-info">${gtUsed}</td>
+                    <td class="text-primary">${gtAvail}</td>
+                    <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
+                </tr>`;
+          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
        }
        searchTable(); 
     }
@@ -242,8 +367,13 @@
        rows.forEach(row => {
           let targets = row.querySelectorAll(".search-target");
           let match = false;
-          targets.forEach(cell => { if (cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
-          row.style.display = match ? "" : "none";
+          targets.forEach(cell => { if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
+          
+          if(row.classList.contains("grand-total-row")) {
+             row.style.display = "";
+          } else {
+             row.style.display = match ? "" : "none";
+          }
        });
     }
 

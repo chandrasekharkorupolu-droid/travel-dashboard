@@ -169,6 +169,14 @@
     </div>
   </div>
 
+
+
+
+
+
+
+
+
   <script>
     // 🌟 మీ వెబ్ యాప్ URL ఇక్కడ పెట్టుకోండి 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -288,9 +296,15 @@
             <option value="track">🔍 Track Request Status</option>
           </select>
 
-          <div id="divVleRequest" style="display: none;">
+         
+<div id="divVleRequest" style="display: none;">
+            <!-- కొత్తగా యాడ్ చేసిన Stock Holding Request No బాక్స్ -->
+            <label style="font-weight: bold; color: #475569;">Stock Holding Request No</label>
+            <input type="text" id="shqNo" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="Ex: SHQ12345ABC">
+
             <label style="font-weight: bold; color: #475569;">How many papers do you need?</label>
             <input type="number" id="reqQty" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Ex: 100">
+            
             <button id="btnReqStock" onclick="window.submitVleRequest()" style="width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Submit Request</button>
           </div>
 
@@ -373,22 +387,58 @@
         document.getElementById('customAmount').style.display = (val === 'custom') ? 'block' : 'none';
       };
 
-      window.addVleSaleRow = function() {
-        var serial = document.getElementById('serialNo').value.toUpperCase();
+     window.addVleSaleRow = function() {
+        var serialInput = document.getElementById('serialNo').value.trim().toUpperCase();
         var amt = document.getElementById('stampAmount').value;
         if(amt === 'custom') {
            amt = document.getElementById('customAmount').value;
            if(!amt) { alert("Please enter the custom amount!"); return; }
         }
-        if(!serial) { alert("Please enter Serial Number!"); return; }
+        if(!serialInput) { alert("దయచేసి సీరియల్ నెంబర్ (లేదా చివరి అంకెలు) ఎంటర్ చేయండి!"); return; }
         
-        window.vleSalesCart.push({serial: serial, amount: amt});
-        window.renderVleSalesTable();
-        
-        document.getElementById('serialNo').value = '';
-        document.getElementById('stampAmount').value = '10';
-        document.getElementById('customAmount').style.display = 'none';
-        document.getElementById('customAmount').value = '';
+        // గూగుల్ షీట్ ని అడిగేలోపు బటన్ లో ⏳ లోడింగ్ సింబల్ చూపించడం
+        var btnAdd = event.target || document.querySelector('button[onclick="window.addVleSaleRow()"]');
+        var originalBtnHtml = btnAdd.innerHTML;
+        btnAdd.innerHTML = "⏳"; 
+        btnAdd.disabled = true;
+
+        // Code.gs కి నెంబర్ పంపి చెక్ చేయడం
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "validateSerial", vleId: loggedInId, serial: serialInput }) 
+        })
+        .then(res => res.json())
+        .then(res => {
+            btnAdd.innerHTML = originalBtnHtml; 
+            btnAdd.disabled = false;
+            
+            if(res.success) {
+                // నెంబర్ కరెక్ట్ అయితే, అది ఇప్పటికే టేబుల్ లో ఉందో లేదో చెక్ చేయడం
+                var isDuplicate = window.vleSalesCart.some(item => item.serial === res.fullSerial);
+                if (isDuplicate) {
+                    alert("⚠️ ఈ సీరియల్ నెంబర్ ని ఇప్పటికే కింద లిస్ట్ లో యాడ్ చేశారు!");
+                    return;
+                }
+                
+                // పూర్తి నెంబర్ ని కార్ట్ (టేబుల్) లోకి యాడ్ చేయడం
+                window.vleSalesCart.push({serial: res.fullSerial, amount: amt});
+                window.renderVleSalesTable();
+                
+                // బాక్స్ లు ఖాళీ చేయడం
+                document.getElementById('serialNo').value = '';
+                document.getElementById('stampAmount').value = '10';
+                document.getElementById('customAmount').style.display = 'none';
+                document.getElementById('customAmount').value = '';
+            } else {
+                // నెంబర్ తప్పు అయితే ఎర్రర్ చూపించడం
+                alert("❌ " + res.message);
+            }
+        })
+        .catch(err => {
+            btnAdd.innerHTML = originalBtnHtml; 
+            btnAdd.disabled = false;
+            alert("నెట్‌వర్క్ ఎర్రర్! దయచేసి మళ్ళీ ప్రయత్నించండి.");
+        });
       };
 
       window.removeVleSaleRow = function(index) {
@@ -408,13 +458,43 @@
         });
       };
 
-      window.submitVleRequest = function() {
+     window.submitVleRequest = function() {
+        var shqNo = document.getElementById('shqNo').value.trim();
         var qty = document.getElementById('reqQty').value;
+        
+        if(!shqNo) { alert("దయచేసి Stock Holding Request No ఎంటర్ చేయండి!"); return; }
         if(!qty || qty <= 0) { alert("దయచేసి ఎన్ని పేపర్లు కావాలో ఎంటర్ చేయండి!"); return; }
-        var btn = document.getElementById('btnReqStock'); btn.innerText = "Submitting..."; btn.disabled = true;
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: 'vleRequestStock', vleId: loggedInId, vleName: loggedInUser, quantity: qty }) })
-        .then(res => res.json()).then(res => { btn.innerText = "Submit Request"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); document.getElementById('reqQty').value = ''; } else alert("❌ Error: " + res.message); })
-        .catch(err => { btn.innerText = "Submit Request"; btn.disabled = false; alert("Network Error!"); });
+        
+        var btn = document.getElementById('btnReqStock'); 
+        btn.innerText = "Submitting..."; 
+        btn.disabled = true;
+        
+        fetch(SCRIPT_URL, { 
+          method: "POST", 
+          body: JSON.stringify({ 
+            action: 'vleRequestStock', 
+            vleId: loggedInId, 
+            vleName: loggedInUser, 
+            quantity: qty,
+            shqNo: shqNo  // కొత్తగా యాడ్ చేసిన వాల్యూ 
+          }) 
+        })
+        .then(res => res.json()).then(res => { 
+          btn.innerText = "Submit Request"; 
+          btn.disabled = false; 
+          if(res.success) { 
+            alert("✅ " + res.message); 
+            document.getElementById('shqNo').value = '';
+            document.getElementById('reqQty').value = ''; 
+          } else {
+            alert("❌ Error: " + res.message);
+          } 
+        })
+        .catch(err => { 
+          btn.innerText = "Submit Request"; 
+          btn.disabled = false; 
+          alert("Network Error!"); 
+        });
       };
 
       window.submitVleSales = function() {
