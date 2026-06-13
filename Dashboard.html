@@ -169,14 +169,6 @@
     </div>
   </div>
 
-
-
-
-
-
-
-
-
   <script>
     // 🌟 మీ వెబ్ యాప్ URL ఇక్కడ పెట్టుకోండి 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -273,101 +265,143 @@
     }
 
     // =========================================================
-    // 🌟🌟🌟 VLE పర్పుల్ ఫారమ్ లాజిక్ 🌟🌟🌟
+    // 🌟🌟🌟 VLE పర్పుల్ ఫారమ్ లాజిక్ (విత్ టార్గెట్ టేబుల్) 🌟🌟🌟
     // =========================================================
     window.vleSalesCart = [];
 
     function loadVLEDashboard() {
+      // 🌟 ప్రస్తుత నెల పేరు కనుక్కోవడం 🌟
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const currentMonthName = monthNames[new Date().getMonth()];
+
       const vleHtml = `
       <div style="background-color: #f4f0fc; min-height: 100%; padding: 20px; font-family: 'Segoe UI', sans-serif;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #6f42c1; padding: 30px;">
-          <h3 style="text-align: center; color: #6f42c1; margin-bottom: 20px;">📝 VLE E-Stamping Portal</h3>
+        <div style="max-width: 800px; margin: 0 auto;">
           
-          <div style="background-color: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px; font-size: 16px;">
-            <strong>Welcome: </strong> <span style="font-weight: bold; text-transform: uppercase;">${loggedInUser}</span>
-          </div>
-          
-          <label style="font-weight: bold; margin-bottom: 8px; display: block; color: #334155;">Select Action:</label>
-          <select id="vleActionType" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-size: 15px; outline: none;" onchange="window.showVleActionDiv()">
-            <option value="">-- Choose Option --</option>
-            <option value="request">📦 Request New Stock</option>
-            <option value="sales">📊 Submit Daily Sales / Usage</option>
-            <option value="spoil">⚠️ Report Spoiled Stamp</option>
-            <option value="track">🔍 Track Request Status</option>
-          </select>
-
-         
-<div id="divVleRequest" style="display: none;">
-            <!-- కొత్తగా యాడ్ చేసిన Stock Holding Request No బాక్స్ -->
-            <label style="font-weight: bold; color: #475569;">Stock Holding Request No</label>
-            <input type="text" id="shqNo" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="Ex: SHQ12345ABC">
-
-            <label style="font-weight: bold; color: #475569;">How many papers do you need?</label>
-            <input type="number" id="reqQty" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Ex: 100">
+          <!-- 🌟 కొత్తగా యాడ్ చేసిన VLE పెర్ఫార్మెన్స్ టేబుల్ 🌟 -->
+          <div style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 4px solid #6d28d9; padding: 20px; margin-bottom: 25px; overflow-x: auto;">
             
-            <button id="btnReqStock" onclick="window.submitVleRequest()" style="width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Submit Request</button>
+            <!-- 🌟 మంత్ బ్యాడ్జ్ యాడ్ చేసిన హెడ్డింగ్ 🌟 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+              <h4 style="color: #6d28d9; margin: 0;">📊 నా ఈ-స్టాంపింగ్ పెర్ఫార్మెన్స్ & టార్గెట్ రిపోర్ట్</h4>
+              <span style="background-color: #6d28d9; color: white; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px;">${currentMonthName}</span>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px;">
+              <thead style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                <tr>
+                  <th style="padding: 10px; color: #475569; white-space: nowrap;">Issued Stock</th>
+                  <th style="padding: 10px; color: #475569;">₹ 10</th>
+                  <th style="padding: 10px; color: #475569;">₹ 20</th>
+                  <th style="padding: 10px; color: #475569;">₹ 50</th>
+                  <th style="padding: 10px; color: #475569;">₹ 100</th>
+                  <th style="padding: 10px; color: #475569;">Oth.</th>
+                  <th style="padding: 10px; color: #0ea5e9; white-space: nowrap;">Used Stock</th>
+                  <th style="padding: 10px; color: #3b82f6; white-space: nowrap;">Avail. Stock</th>
+                  <th style="padding: 10px; color: #3b82f6; white-space: nowrap;">Target (₹)</th>
+                  <th style="padding: 10px; color: #22c55e; white-space: nowrap;">Total Sales(₹)</th>
+                  <th style="padding: 10px; color: #ef4444; white-space: nowrap;">Pending (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="myPerformanceRow" style="border-bottom: 1px solid #e2e8f0;">
+                  <td colspan="11" style="padding: 15px; color: #64748b; font-weight: bold;">లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div id="divVleSales" style="display: none;">
-            <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Enter Sales Details</h5>
+          <!-- పాత ఫారమ్ కోడ్ ఇక్కడినుండి మొదలవుతుంది -->
+          <div style="background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #6f42c1; padding: 30px;">
+            <h3 style="text-align: center; color: #6f42c1; margin-top: 0; margin-bottom: 20px;">📝 VLE E-Stamping Portal</h3>
             
-            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 120px;">
-                  <label style="font-size: 13px; font-weight: bold; color: #64748b;">Serial Number</label>
-                  <input type="text" id="serialNo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" placeholder="AP-A0001">
-                </div>
-                <div style="flex: 1; min-width: 120px;">
-                  <label style="font-size: 13px; font-weight: bold; color: #64748b;">Amount (₹)</label>
-                  <select id="stampAmount" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" onchange="window.checkVleCustomAmount()">
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="custom">Other</option>
-                  </select>
-                  <input type="number" id="customAmount" style="display: none; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Enter Amount (₹)">
-                </div>
-                <div style="width: 50px; display: flex; align-items: flex-end;">
-                  <button style="width: 100%; height: 35px; background-color: #22c55e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="window.addVleSaleRow()">➕</button>
+            <div style="background-color: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px; font-size: 16px;">
+              <strong>Welcome: </strong> <span style="font-weight: bold; text-transform: uppercase;">${loggedInUser}</span>
+            </div>
+            
+            <label style="font-weight: bold; margin-bottom: 8px; display: block; color: #334155;">Select Action:</label>
+            <select id="vleActionType" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-size: 15px; outline: none;" onchange="window.showVleActionDiv()">
+              <option value="">-- Choose Option --</option>
+              <option value="request">📦 Request New Stock</option>
+              <option value="sales">📊 Submit Daily Sales / Usage</option>
+              <option value="spoil">⚠️ Report Spoiled Stamp</option>
+              <option value="track">🔍 Track Request Status</option>
+            </select>
+
+            <div id="divVleRequest" style="display: none;">
+              <label style="font-weight: bold; color: #475569;">Stock Holding Request No</label>
+              <input type="text" id="shqNo" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="Ex: SHQ12345ABC">
+
+              <label style="font-weight: bold; color: #475569;">How many papers do you need?</label>
+              <input type="number" id="reqQty" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Ex: 100">
+              
+              <button id="btnReqStock" onclick="window.submitVleRequest()" style="width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Submit Request</button>
+            </div>
+
+            <div id="divVleSales" style="display: none;">
+              <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Enter Sales Details</h5>
+              
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <div style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 13px; font-weight: bold; color: #64748b;">Serial Number</label>
+                    <input type="text" id="serialNo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" placeholder="AP-A0001">
+                  </div>
+                  <div style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 13px; font-weight: bold; color: #64748b;">Amount (₹)</label>
+                    <select id="stampAmount" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" onchange="window.checkVleCustomAmount()">
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                      <option value="custom">Other</option>
+                    </select>
+                    <input type="number" id="customAmount" style="display: none; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Enter Amount (₹)">
+                  </div>
+                  <div style="width: 50px; display: flex; align-items: flex-end;">
+                    <button style="width: 100%; height: 35px; background-color: #22c55e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="window.addVleSaleRow()">➕</button>
+                  </div>
                 </div>
               </div>
+
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 15px; font-size: 14px;">
+                  <thead>
+                    <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                      <th style="padding: 10px; color: #475569;">Serial No</th>
+                      <th style="padding: 10px; color: #475569;">Amount</th>
+                      <th style="padding: 10px; color: #475569;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="salesBody"></tbody>
+                </table>
+              </div>
+              <button id="btnSubmitSales" onclick="window.submitVleSales()" style="width: 100%; padding: 12px; background-color: #6f42c1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Submit Sales Report</button>
+            </div>
+            
+            <div id="divVleSpoil" style="display: none;">
+              <label style="font-weight: bold; color: #475569;">Spoiled Serial Number</label>
+              <input type="text" id="spoilSerial" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="AP-A0001">
+              <label style="font-weight: bold; color: #475569;">Reason</label>
+              <input type="text" id="spoilReason" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Printer jam, torn, etc.">
+              <button id="btnReportSpoil" onclick="window.submitVleSpoil()" style="width: 100%; padding: 12px; background-color: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Report Damage</button>
             </div>
 
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 15px; font-size: 14px;">
-                <thead>
-                  <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 10px; color: #475569;">Serial No</th>
-                    <th style="padding: 10px; color: #475569;">Amount</th>
-                    <th style="padding: 10px; color: #475569;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="salesBody"></tbody>
-              </table>
+            <div id="divVleTrack" style="display: none;">
+               <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Track Request Status</h5>
+               <button id="btnFetchTrack" onclick="window.fetchMyStatus()" style="width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Check Status Now</button>
+               <div id="trackResultArea" style="margin-top:20px;"></div>
             </div>
-            <button id="btnSubmitSales" onclick="window.submitVleSales()" style="width: 100%; padding: 12px; background-color: #6f42c1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Submit Sales Report</button>
-          </div>
-          
-          <div id="divVleSpoil" style="display: none;">
-            <label style="font-weight: bold; color: #475569;">Spoiled Serial Number</label>
-            <input type="text" id="spoilSerial" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="AP-A0001">
-            <label style="font-weight: bold; color: #475569;">Reason</label>
-            <input type="text" id="spoilReason" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Printer jam, torn, etc.">
-            <button id="btnReportSpoil" onclick="window.submitVleSpoil()" style="width: 100%; padding: 12px; background-color: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Report Damage</button>
-          </div>
 
-          <div id="divVleTrack" style="display: none;">
-             <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Track Request Status</h5>
-             <button id="btnFetchTrack" onclick="window.fetchMyStatus()" style="width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Check Status Now</button>
-             <div id="trackResultArea" style="margin-top:20px;"></div>
           </div>
-
         </div>
       </div>
       `;
 
       document.getElementById('reportViewer').innerHTML = vleHtml;
+      
+      // 🌟 టేబుల్ కోసం డేటా తెచ్చే ఫంక్షన్ కాల్ 🌟
+      window.loadMyPerformance();
       
       window.showVleActionDiv = function() {
         var type = document.getElementById('vleActionType').value;
@@ -396,13 +430,11 @@
         }
         if(!serialInput) { alert("దయచేసి సీరియల్ నెంబర్ (లేదా చివరి అంకెలు) ఎంటర్ చేయండి!"); return; }
         
-        // గూగుల్ షీట్ ని అడిగేలోపు బటన్ లో ⏳ లోడింగ్ సింబల్ చూపించడం
         var btnAdd = event.target || document.querySelector('button[onclick="window.addVleSaleRow()"]');
         var originalBtnHtml = btnAdd.innerHTML;
         btnAdd.innerHTML = "⏳"; 
         btnAdd.disabled = true;
 
-        // Code.gs కి నెంబర్ పంపి చెక్ చేయడం
         fetch(SCRIPT_URL, { 
             method: "POST", 
             body: JSON.stringify({ action: "validateSerial", vleId: loggedInId, serial: serialInput }) 
@@ -413,24 +445,20 @@
             btnAdd.disabled = false;
             
             if(res.success) {
-                // నెంబర్ కరెక్ట్ అయితే, అది ఇప్పటికే టేబుల్ లో ఉందో లేదో చెక్ చేయడం
                 var isDuplicate = window.vleSalesCart.some(item => item.serial === res.fullSerial);
                 if (isDuplicate) {
                     alert("⚠️ ఈ సీరియల్ నెంబర్ ని ఇప్పటికే కింద లిస్ట్ లో యాడ్ చేశారు!");
                     return;
                 }
                 
-                // పూర్తి నెంబర్ ని కార్ట్ (టేబుల్) లోకి యాడ్ చేయడం
                 window.vleSalesCart.push({serial: res.fullSerial, amount: amt});
                 window.renderVleSalesTable();
                 
-                // బాక్స్ లు ఖాళీ చేయడం
                 document.getElementById('serialNo').value = '';
                 document.getElementById('stampAmount').value = '10';
                 document.getElementById('customAmount').style.display = 'none';
                 document.getElementById('customAmount').value = '';
             } else {
-                // నెంబర్ తప్పు అయితే ఎర్రర్ చూపించడం
                 alert("❌ " + res.message);
             }
         })
@@ -451,8 +479,8 @@
         tbody.innerHTML = "";
         window.vleSalesCart.forEach((item, index) => {
            tbody.innerHTML += `<tr style="border-bottom: 1px solid #e2e8f0;">
-             <td><span style="padding:10px; color:#334155; font-weight:bold;">${item.serial}</span></td>
-             <td><span style="padding:10px; color:#059669; font-weight:bold;">₹ ${item.amount}</span></td>
+             <td style="padding:10px; color:#334155; font-weight:bold;">${item.serial}</td>
+             <td style="padding:10px; color:#059669; font-weight:bold;">₹ ${item.amount}</td>
              <td><button style="background:#ef4444; color:white; border:none; border-radius:4px; padding:4px 8px; margin:5px; cursor:pointer;" onclick="window.removeVleSaleRow(${index})">❌</button></td>
            </tr>`;
         });
@@ -476,7 +504,7 @@
             vleId: loggedInId, 
             vleName: loggedInUser, 
             quantity: qty,
-            shqNo: shqNo  // కొత్తగా యాడ్ చేసిన వాల్యూ 
+            shqNo: shqNo 
           }) 
         })
         .then(res => res.json()).then(res => { 
@@ -501,7 +529,16 @@
         if(window.vleSalesCart.length === 0) { alert("ముందుగా కనీసం ఒక్క సేల్స్ ఎంట్రీ అయినా చేయండి!"); return; }
         var btn = document.getElementById('btnSubmitSales'); btn.innerText = "Submitting..."; btn.disabled = true;
         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: 'vleSubmitSales', vleId: loggedInId, vleName: loggedInUser, salesData: window.vleSalesCart }) })
-        .then(res => res.json()).then(res => { btn.innerText = "Submit Sales Report"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); window.vleSalesCart = []; window.renderVleSalesTable(); } else alert("❌ Error: " + res.message); })
+        .then(res => res.json()).then(res => { 
+            btn.innerText = "Submit Sales Report"; 
+            btn.disabled = false; 
+            if(res.success) { 
+                alert("✅ " + res.message); 
+                window.vleSalesCart = []; 
+                window.renderVleSalesTable(); 
+                window.loadMyPerformance(); // 🌟 లైవ్ అప్‌డేట్ 🌟
+            } else alert("❌ Error: " + res.message); 
+        })
         .catch(err => { btn.innerText = "Submit Sales Report"; btn.disabled = false; alert("Network Error!"); });
       };
 
@@ -514,7 +551,6 @@
         .catch(err => { btn.innerText = "Report Damage"; btn.disabled = false; alert("Network Error!"); });
       };
 
-      // 🌟🌟 లాగిన్ అయిన VLE ఐడీ తోనే డైరెక్ట్ ట్రాకింగ్ లాజిక్ 🌟🌟
       window.fetchMyStatus = function() {
          let btn = document.getElementById('btnFetchTrack');
          let resultArea = document.getElementById('trackResultArea');
@@ -558,6 +594,38 @@
          });
       };
     }
+
+    // 🌟🌟 డేటా తెచ్చే ఫంక్షన్ ఇక్కడ ఉంది 🌟🌟
+    window.loadMyPerformance = function() {
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "getVleMySalesSummary", userId: loggedInId }) 
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                let d = res.data;
+                let otherHtml = d.other > 0 ? `<span style="color:#475569;">${d.other}</span> <br><span style="font-size:10px; color:#3b82f6;">(₹${d.otherAmt.toLocaleString('en-IN')})</span>` : `<span style="color:#cbd5e1;">0</span>`;
+                let pendingHtml = d.pending > 0 ? `<span style="color:#ef4444; font-weight:bold; white-space: nowrap;">₹ ${d.pending.toLocaleString('en-IN')}</span>` : `<span style="color:#10b981; font-weight:bold;">Achieved 🎉</span>`;
+                
+                document.getElementById("myPerformanceRow").innerHTML = `
+                    <td style="padding: 12px; font-weight: bold; color: #475569; white-space: nowrap;">${d.issued}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #16a34a;">${d.d10}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #0284c7;">${d.d20}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #ca8a04;">${d.d50}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #9333ea;">${d.d100}</td>
+                    <td style="padding: 12px; font-weight: bold;">${otherHtml}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #0ea5e9; white-space: nowrap;">${d.used}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #3b82f6; font-size: 14px; white-space: nowrap;">${d.avail}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #3b82f6; white-space: nowrap;">₹ ${d.target.toLocaleString('en-IN')}</td>
+                    <td style="padding: 12px; font-weight: bold; color: #22c55e; font-size: 14px; white-space: nowrap;">₹ ${d.totalSales.toLocaleString('en-IN')}</td>
+                    <td style="padding: 12px; white-space: nowrap;">${pendingHtml}</td>
+                `;
+            }
+        }).catch(err => {
+            document.getElementById("myPerformanceRow").innerHTML = `<td colspan="11" style="padding: 15px; color: #ef4444; font-weight: bold;">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td>`;
+        });
+    };
 
     // =========================================================
     // మీ పాత కోడ్ (అడ్మిన్ మెనూ క్లిక్ చేస్తే రిపోర్ట్స్ లోడ్ అయ్యే ఫంక్షన్స్)
@@ -668,68 +736,55 @@
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Activations.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && (reportName === "Daily Transactions")) {
+      else if (moduleName === "IRCTC" && (reportName === "Daily Transactions")) {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; 
           document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Daily_Achievements.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
        else if (moduleName === "IRCTC" && reportName === "New Registrations (FY 26-27)") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
-          // ఇక్కడ మీ రిపోర్ట్ ఫైల్ పేరును కరెక్ట్ గా ఇవ్వాలి 
-         document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_New_Registrations.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
+          document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_New_Registrations.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Daily Achievements") {
+      else if (moduleName === "IRCTC" && reportName === "Daily Achievements") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Progress.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Periodic Reports") {
+      else if (moduleName === "IRCTC" && reportName === "Periodic Reports") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Periodic_Reports.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Priority Follow Up Report") {
+      else if (moduleName === "IRCTC" && reportName === "Priority Follow Up Report") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Priority_FollowUp.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "AMC Eligible Agents") {
+      else if (moduleName === "IRCTC" && reportName === "AMC Eligible Agents") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "AMC Summary Report") {
+      else if (moduleName === "IRCTC" && reportName === "AMC Summary Report") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC_Summary.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Top 5 Performance") {
+      else if (moduleName === "IRCTC" && reportName === "Top 5 Performance") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Poster_Maker.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Employee Performance") {
+      else if (moduleName === "IRCTC" && reportName === "Employee Performance") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Employee_Performance.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "MoM Growth Matrix") {
+      else if (moduleName === "IRCTC" && reportName === "MoM Growth Matrix") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_MoM_Growth_Matrix.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "Monthly Closure Report") {
+      else if (moduleName === "IRCTC" && reportName === "Monthly Closure Report") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Closure_Report.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
-else if (moduleName === "IRCTC" && reportName === "VLE Details Editor") {
+      else if (moduleName === "IRCTC" && reportName === "VLE Details Editor") {
           document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch';
           document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_VLE_Details_Editor.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`;
       }
-
       else {
           document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center';
           document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h2 style="color:#1e3a8a; margin-bottom: 5px;">${moduleName}</h2><h3 style="color:#475569; margin-top: 0;">${reportName}</h3><p style="color:#ea580c; font-weight:bold; margin-top: 20px;">డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</p></div>`;
