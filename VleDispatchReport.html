@@ -3,6 +3,7 @@
 <head>
   <base target="_top">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
   <!-- 🌟 ఎక్సెల్ ఫైల్ డౌన్‌లోడ్ కోసం SheetJS లైబ్రరీ 🌟 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -14,9 +15,43 @@
     
     .search-box { width: 280px; border: 1px solid #10b981; border-radius: 6px; padding: 6px 15px; outline: none; transition: 0.3s; font-size: 14px; }
     .search-box:focus { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+
+    /* 🌟 కాపీ చేసినప్పుడు వచ్చే పాప్-అప్ స్టైల్ 🌟 */
+    #copyToast {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e293b;
+      color: #22c55e;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 1px solid #334155;
+    }
+    
+    /* 🌟 మౌస్ పెట్టినప్పుడు ఏ పదం కాపీ అవుతుందో స్పష్టంగా చూపించడానికి స్టైల్ 🌟 */
+    .copyable-text { 
+      cursor: pointer; 
+      display: inline-block; 
+      transition: all 0.2s; 
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .copyable-text:hover { 
+      background-color: #e2e8f0; 
+      box-shadow: 0 0 0 1px #cbd5e1;
+    }
   </style>
 </head>
 <body>
+
+  <!-- 🌟 కాపీ సక్సెస్ మెసేజ్ చూపించే బాక్స్ 🌟 -->
+  <div id="copyToast">✅ టెక్స్ట్ కాపీ అయ్యింది!</div>
 
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -24,6 +59,7 @@
       
       <div class="d-flex gap-3 align-items-center">
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="searchTable()">
+        
         <button class="btn btn-sm btn-outline-primary text-nowrap py-2 fw-bold" onclick="exportToExcel()">📥 Excel</button>
         <button class="btn btn-sm btn-outline-success text-nowrap py-2 fw-bold" onclick="refreshDispatchReport()">🔄 Refresh Data</button>
       </div>
@@ -31,11 +67,10 @@
 
     <div class="table-container">
       <div class="table-header">
-        <span>📜 Dispatched Stationary History</span>
+        <span>📜 Dispatched Stationary History <small style="font-weight:normal; font-size:12px; margin-left:10px;">(Hover and double-click exactly on what you want to copy)</small></span>
         <span class="badge bg-light text-dark" id="lblScope">-</span>
       </div>
       <div class="table-responsive">
-        <!-- 🌟 ఇక్కడ టేబుల్ ఐడీ మారకుండా చూసాను 🌟 -->
         <table class="table table-hover align-middle text-center mb-0" id="dispatchTable">
           <thead class="table-light">
             <tr>
@@ -66,14 +101,20 @@
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     document.getElementById("lblScope").innerText = isDM ? "District: " + loggedInDistrict.toUpperCase() : "Full State Report";
 
-    window.onload = function() { checkCacheAndLoadDispatch(); };
+    window.onload = function() { 
+       checkCacheAndLoadDispatch(); 
+    };
 
     function checkCacheAndLoadDispatch() {
        let cachedData = localStorage.getItem("vleDispatchCache");
        let cacheTime = localStorage.getItem("vleDispatchTime");
        let now = new Date().getTime();
-       if (cachedData && cacheTime && (now - cacheTime < 120000)) { renderDispatchTable(JSON.parse(cachedData)); } 
-       else { fetchDispatchReport(); }
+
+       if (cachedData && cacheTime && (now - cacheTime < 120000)) { 
+          renderDispatchTable(JSON.parse(cachedData));
+       } else {
+          fetchDispatchReport();
+       }
     }
 
     function refreshDispatchReport() {
@@ -90,37 +131,74 @@
              localStorage.setItem("vleDispatchCache", JSON.stringify(res.data));
              localStorage.setItem("vleDispatchTime", new Date().getTime().toString());
              renderDispatchTable(res.data);
-          } else { renderDispatchTable([]); }
+          } else { 
+             renderDispatchTable([]); 
+          }
        }).catch(e => { document.getElementById("reportBody").innerHTML = `<tr><td colspan="7" class="text-danger py-4">Network Error. Please refresh.</td></tr>`; });
     }
 
     function renderDispatchTable(data) {
        const tbody = document.getElementById("reportBody"); 
        tbody.innerHTML = "";
+       
        if(data && data.length > 0) {
           data.forEach(item => {
-             // 🌟 ఇక్కడ VLE Name మరియు ID ని పాత స్టైల్ లోనే ఒకే లైన్ లోకి మార్చాను 🌟
+             // 🌟 ఇక్కడ ప్రతి పదాన్ని (Name, ID, Start Serial, End Serial) విడివిడిగా విడగొట్టి ondblclick ఇచ్చాను సార్ 🌟
              tbody.innerHTML += `
                <tr class="data-row">
-                 <td style="font-size:12px; color:#64748b;">${item.date}</td>
-                 <td class="text-start ps-3 fw-bold search-target">${item.vleName} <span class="text-primary" style="font-size:11px;">${item.cscId}</span></td>
-                 <td class="search-target"><span class="badge bg-secondary">${item.district}</span></td>
-                 <td class="search-target fw-bold text-danger">${item.reqNo}</td>
-                 <td class="search-target"><code class="text-dark bg-light px-2 border rounded">${item.startSerial} to ${item.endSerial}</code></td>
-                 <td><span class="badge-qty">${item.qty} Papers</span></td>
-                 <td style="font-size:12px;" class="fw-bold text-muted search-target">${item.assignedBy}</td>
+                 <td style="font-size:12px; color:#64748b;">
+                    <span class="copyable-text" title="Double-click to copy Date" ondblclick="copyCellText('${item.date}')">${item.date}</span>
+                 </td>
+                 
+                 <td class="text-start ps-3 search-target">
+                    <span class="copyable-text fw-bold" title="Double-click to copy VLE Name" ondblclick="copyCellText('${item.vleName}')">${item.vleName}</span> <br>
+                    <span class="copyable-text text-primary fw-bold" title="Double-click to copy CSC ID" style="font-size:11px;" ondblclick="copyCellText('${item.cscId}')">${item.cscId}</span>
+                 </td>
+                 
+                 <td class="search-target">
+                    <span class="badge bg-secondary copyable-text" title="Double-click to copy District" ondblclick="copyCellText('${item.district}')">${item.district}</span>
+                 </td>
+                 
+                 <td class="search-target fw-bold text-danger">
+                    <span class="copyable-text" title="Double-click to copy Request No" ondblclick="copyCellText('${item.reqNo}')">${item.reqNo}</span>
+                 </td>
+                 
+                 <td class="search-target">
+                    <code class="text-dark bg-light px-2 border rounded" style="display:inline-block;">
+                       <span class="copyable-text text-primary" title="Double-click to copy Start Serial" ondblclick="copyCellText('${item.startSerial}')">${item.startSerial}</span> 
+                       <span class="text-muted" style="padding: 0 4px;">to</span> 
+                       <span class="copyable-text text-danger" title="Double-click to copy End Serial" ondblclick="copyCellText('${item.endSerial}')">${item.endSerial}</span>
+                    </code>
+                 </td>
+                 
+                 <td>
+                    <span class="badge-qty copyable-text" title="Double-click to copy Quantity" ondblclick="copyCellText('${item.qty}')">${item.qty} Papers</span>
+                 </td>
+                 
+                 <td style="font-size:12px;" class="fw-bold text-muted search-target">
+                    <span class="copyable-text" title="Double-click to copy Dispatched By" ondblclick="copyCellText('${item.assignedBy}')">${item.assignedBy}</span>
+                 </td>
                </tr>`;
           });
-       } else { tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4 fw-bold">No dispatch records found.</td></tr>`; }
+       } else { 
+          tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4 fw-bold">No dispatch records found.</td></tr>`; 
+       }
     }
 
     function searchTable() {
        let input = document.getElementById("searchInput").value.toUpperCase();
        let rows = document.querySelectorAll(".data-row");
+       
        rows.forEach(row => {
           let match = false;
           let targets = row.querySelectorAll(".search-target");
-          targets.forEach(cell => { if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
+          
+          targets.forEach(cell => {
+             if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) {
+                match = true;
+             }
+          });
+          
           row.style.display = match ? "" : "none";
        });
     }
@@ -132,6 +210,24 @@
        let dateStr = ("0" + today.getDate()).slice(-2) + "-" + ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
        let fileName = "Dispatch_Report_" + dateStr + ".xlsx";
        XLSX.writeFile(wb, fileName);
+    }
+
+    // 🌟 కేవలం డబుల్ క్లిక్ చేసిన పదం మాత్రమే కాపీ చేసే ఫంక్షన్ 🌟
+    function copyCellText(textToCopy) {
+       if(!textToCopy || textToCopy === "undefined") return;
+       
+       // ఇక్కడ window.getSelection().removeAllRanges() వాడి బ్లూ కలర్ సెలెక్షన్ ని క్లియర్ చేస్తున్నాం
+       if (window.getSelection) { window.getSelection().removeAllRanges(); }
+       
+       navigator.clipboard.writeText(textToCopy).then(() => {
+          let toast = document.getElementById("copyToast");
+          toast.style.display = "block";
+          setTimeout(() => {
+             toast.style.display = "none";
+          }, 2000); 
+       }).catch(err => {
+          console.error("Could not copy text: ", err);
+       });
     }
   </script>
 </body>
