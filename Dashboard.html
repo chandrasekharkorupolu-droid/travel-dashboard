@@ -3,6 +3,7 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <style>
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
 
@@ -35,20 +36,23 @@
     .logout-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #b91c1c; }
 
     /* 4. మెయిన్ కంటెంట్ ఏరియా */
-    .main-content { display: flex; padding: 20px; gap: 20px; height: calc(100vh - 85px); box-sizing: border-box; }
-    .sidebar { width: 270px; min-width: 270px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: none; flex-direction: column; overflow-y: auto; }
-    .sidebar-header { background: #f8fafc; padding: 15px; font-weight: 800; color: #1e293b; border-bottom: 1px solid #e2e8f0; text-align: center; position: sticky; top: 0; font-size: 14px; letter-spacing: 0.5px; z-index: 10; }
+    .main-content { display: flex; padding: 15px 20px; gap: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
+    .sidebar { width: 250px; min-width: 250px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; }
+    .sidebar-header { background: #f8fafc; padding: 15px; font-weight: 900; color: #6d28d9; border-bottom: 2px solid #e2e8f0; text-align: center; position: sticky; top: 0; font-size: 14px; letter-spacing: 0.5px; z-index: 10; border-radius: 12px 12px 0 0; }
     .report-list { list-style: none; padding: 0; margin: 0; }
     
-    :root { --theme-color: #3b82f6; --theme-bg: #eff6ff; }
-    .report-list li { padding: 12px 15px; border-bottom: 1px solid #f8fafc; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+    :root { --theme-color: #6d28d9; --theme-bg: #f5f3ff; }
+    .report-list li { padding: 12px 15px; border-bottom: 1px solid #f8fafc; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
     .report-list li:hover { background: var(--theme-bg); color: #0f172a; border-left: 4px solid var(--theme-color); padding-left: 11px; }
-    .report-list li.active-item { background: var(--theme-bg); color: var(--theme-color); border-left: 4px solid var(--theme-color); padding-left: 11px; font-weight: 800; }
+    .report-list li.active-item { background: var(--theme-bg); color: var(--theme-color); border-left: 4px solid var(--theme-color); padding-left: 11px; font-weight: 900; }
     
-    .report-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; }
-    #homeDisplay { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
-    .report-box { background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box;}
+    .report-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; background: transparent; border-radius: 12px; }
+    #homeDisplay { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    #reportIframeContainer { display: none; flex-direction: column; width: 100%; height: 100%; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
+    /* DASHBOARD LAYOUT CSS */
+    #dashboardCards { display: none; width: 100%; box-sizing: border-box; justify-content: center; align-items: center; height: 100%; }
+    
     /* గ్లోబ్ యానిమేషన్ */
     .globe-wrapper { position: relative; width: 450px; height: 450px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
     .earth-globe { width: 250px; height: 250px; border-radius: 50%; background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'); background-size: 200% 100%; background-position: 0 0; box-shadow: inset -20px -20px 40px rgba(0,0,0,0.6), inset 5px 5px 20px rgba(255,255,255,0.3), 0 15px 35px rgba(0, 51, 102, 0.3); animation: spinEarth 25s linear infinite; position: absolute; z-index: 10; }
@@ -57,10 +61,8 @@
     .orbit-text text { font-size: 20px; font-weight: 900; fill: #1e3a8a; letter-spacing: 6px; }
     @keyframes spinText { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .welcome-text-area { text-align: center; margin-top: 10px; z-index: 30; }
-    .welcome-text-area h2 { margin: 0; color: #1e293b; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
-    .welcome-text-area p { margin: 5px 0 0 0; color: #ea580c; font-size: 15px; font-weight: 700; }
 
-    /* పాప్-అప్ మోడల్ స్టైల్స్ */
+    /* 🌟 Modals & Popups Styling 🌟 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
     .modal-box { background-color: #ffffff; width: 380px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; animation: popIn 0.3s ease-out; position: relative; }
     .modal-close-btn { position: absolute; top: 12px; right: 15px; background: none; border: none; font-size: 22px; color: #64748b; cursor: pointer; transition: 0.2s; font-weight: bold; }
@@ -74,13 +76,10 @@
     .srv-date-label { font-weight: 800; color: #059669; }
     .modal-ok-btn { background-color: #7c3aed; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; width: 100%; }
     .modal-ok-btn:hover { background-color: #6d28d9; }
-
     .logout-btn-group { display: flex; gap: 15px; margin-top: 25px; }
     .btn-cancel { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; transition: 0.2s; font-size: 14px; }
-    .btn-cancel:hover { background-color: #e2e8f0; color: #1e293b; }
-    .btn-confirm { background-color: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; transition: 0.2s; font-size: 14px; box-shadow: 0 4px 6px rgba(239,68,68,0.2); }
-    .btn-confirm:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(239,68,68,0.3); }
-    
+    .btn-confirm { background-color: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; transition: 0.2s; font-size: 14px; }
+    .access-denied-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 450px; margin: auto; border-top: 5px solid #dc2626; animation: popIn 0.3s; }
     @keyframes popIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   </style>
 </head>
@@ -95,6 +94,7 @@
       </div>
     </div>
 
+    <!-- 🌟 మెనూ బటన్స్ 🌟 -->
     <div class="nav-menu">
       <button class="nav-btn" onclick="loadHome()">🏠 HOME</button>
       <button class="nav-btn color-irctc" onclick="openModule('IRCTC')">🚆 IRCTC</button>
@@ -120,19 +120,29 @@
     </div>
 
     <div class="report-area" id="reportViewer">
+      
+      <!-- 🌟 డిఫాల్ట్ హోమ్ డిస్ప్లే 🌟 -->
       <div id="homeDisplay">
         <div class="globe-wrapper">
           <div class="earth-globe"></div>
           <svg class="orbit-text" viewBox="0 0 300 300"><defs><path id="circlePath" d="M 150, 150 m -125, 0 a 125,125 0 1,1 250,0 a 125,125 0 1,1 -250,0"></path></defs><text><textPath href="#circlePath" startOffset="0%" textLength="785" lengthAdjust="spacing">★ CSC - TOUR & TRAVELS ★ ANDHRA PRADESH </textPath></text></svg>
         </div>
         <div class="welcome-text-area">
-          <h2>Welcome, <span id="mainUserName">User</span></h2>
-          <p id="timeGreeting">Good Morning 🌅</p>
+          <h2 style="color:#1e293b; font-size:24px; font-weight:800;">Welcome, <span id="mainUserName">User</span></h2>
+          <p id="timeGreeting" style="color:#ea580c; font-size:15px; font-weight:700;">Good Morning 🌅</p>
         </div>
       </div>
+
+      <!-- 🌟 DASHBOARD CARDS (Used for message display now) 🌟 -->
+      <div id="dashboardCards"></div>
+
+      <!-- 🌟 రిపోర్ట్స్ Iframe 🌟 -->
+      <div id="reportIframeContainer"></div>
+
     </div>
   </div>
 
+  <!-- 🌟 Sync Status Popup 🌟 -->
   <div class="modal-overlay" id="syncPopupOverlay">
     <div class="modal-box">
       <button class="modal-close-btn" onclick="closeSyncPopup()">✖</button>
@@ -145,28 +155,28 @@
     </div>
   </div>
 
+  <!-- 🌟 Logout Popup 🌟 -->
   <div class="modal-overlay" id="logoutPopupOverlay">
     <div class="modal-box" style="width: 360px;">
       <div class="sync-icon">🚪</div>
-      <div class="modal-title">Confirm Logout<br><span style="font-size:14px; color:#64748b;">లాగౌట్ నిర్ధారణ</span></div>
+      <div class="modal-title">Confirm Logout</div>
       <div style="text-align: center; margin-top: 15px;">
         <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Are you sure you want to logout?</p>
-        <p style="margin: 5px 0 0 0; font-size: 14px; color: #ef4444; font-weight: bold;">మీరు నిజంగా లాగౌట్ చేయాలనుకుంటున్నారా?</p>
       </div>
       <div class="logout-btn-group">
-        <button class="btn-cancel" onclick="closeLogoutPopup()">Cancel<br><span style="font-size:12px; font-weight:normal;">రద్దు చేయి</span></button>
-        <button class="btn-confirm" onclick="confirmLogout()">Logout<br><span style="font-size:12px; font-weight:normal;">లాగౌట్</span></button>
+        <button class="btn-cancel" onclick="closeLogoutPopup()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmLogout()">Logout</button>
       </div>
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-
+    
     let loggedInUser = localStorage.getItem("userName") || "User";
     let loggedInDesig = localStorage.getItem("userDesignation") || "";
     let loggedInId = localStorage.getItem("userId") || "Unknown ID"; 
-
+    
     const reportMenus = {
       "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "Daily Transactions", "Daily Achievements", "New Registration Targets", "TXN & REV Targets", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor"],
       "REDBUS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
@@ -179,447 +189,177 @@
       let greeting = "Good Evening 🌙";
       if (hour < 12) greeting = "Good Morning 🌅";
       else if (hour < 17) greeting = "Good Afternoon ☀️";
-      const greetingElement = document.getElementById('timeGreeting');
-      if(greetingElement) greetingElement.innerText = greeting;
-    }
-
-    async function preLoadAllData() {
-        try { let response = await fetch(SCRIPT_URL); let rawData = await response.json(); localStorage.setItem("cscGlobalData", JSON.stringify(rawData)); } catch (error) { console.error("Error pre-loading data:", error); }
+      document.getElementById('timeGreeting').innerText = greeting;
     }
 
     window.onload = function() {
       if(!localStorage.getItem("userName")) { window.location.replace("Login.html"); return; }
       document.getElementById('headerUserName').innerText = loggedInUser;
       if(loggedInDesig) document.getElementById('headerDesignation').innerText = "(" + loggedInDesig + ")";
-      const mainUserNameEl = document.getElementById('mainUserName');
-      if(mainUserNameEl) mainUserNameEl.innerText = loggedInUser;
+      document.getElementById('mainUserName').innerText = loggedInUser;
       updateGreeting();
-      
-      if (loggedInDesig && loggedInDesig.toUpperCase() === "VLE") {
-          document.querySelector('.nav-menu').style.display = 'none'; 
-          document.getElementById('sidebar').style.display = 'none'; 
-          sessionStorage.setItem('syncPopupShown', 'true'); 
-          document.getElementById('reportViewer').style.justifyContent = 'flex-start';
-          document.getElementById('reportViewer').style.alignItems = 'stretch';
-          loadVLEDashboard(); 
-      } else {
-          preLoadAllData(); checkAndShowPopup();
-      }
+      checkAndShowPopup(); // 🌟 Sync Popup Load Logic restored here! 🌟
     };
 
     function loadHome() {
-      if (loggedInDesig && loggedInDesig.toUpperCase() === "VLE") return; 
       document.getElementById('sidebar').style.display = 'none';
-      document.getElementById('reportViewer').style.justifyContent = 'center';
-      document.getElementById('reportViewer').style.alignItems = 'center';
-      document.getElementById('reportViewer').innerHTML = `<div id="homeDisplay"><div class="globe-wrapper"><div class="earth-globe"></div><svg class="orbit-text" viewBox="0 0 300 300"><defs><path id="circlePath" d="M 150, 150 m -125, 0 a 125,125 0 1,1 250,0 a 125,125 0 1,1 -250,0"></path></defs><text><textPath href="#circlePath" startOffset="0%" textLength="785" lengthAdjust="spacing">★ CSC - TOUR & TRAVELS ★ ANDHRA PRADESH </textPath></text></svg></div><div class="welcome-text-area"><h2>Welcome, <span id="mainUserName">${loggedInUser}</span></h2><p id="timeGreeting"></p></div></div>`;
+      document.getElementById('reportIframeContainer').style.display = 'none';
+      document.getElementById('dashboardCards').style.display = 'none';
+      document.getElementById('homeDisplay').style.display = 'flex';
       updateGreeting(); 
     }
 
-    window.vleSalesCart = [];
-
-    function loadVLEDashboard() {
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      const currentMonthName = monthNames[new Date().getMonth()];
-
-      const vleHtml = `
-      <div style="background-color: #f4f0fc; min-height: 100%; padding: 20px; font-family: 'Segoe UI', sans-serif;">
-        <div style="max-width: 800px; margin: 0 auto;">
-          <div style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 4px solid #6d28d9; padding: 20px; margin-bottom: 25px; overflow-x: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-              <h4 style="color: #6d28d9; margin: 0;">📊 ఈ-స్టాంపింగ్ పెర్ఫార్మెన్స్ & టార్గెట్ రిపోర్ట్</h4>
-              <span style="background-color: #6d28d9; color: white; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold;">${currentMonthName}</span>
-            </div>
-            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px;">
-              <thead style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">
-                <tr><th style="padding: 10px; color: #475569;">Issued Stock</th><th style="padding: 10px; color: #475569;">₹ 10</th><th style="padding: 10px; color: #475569;">₹ 20</th><th style="padding: 10px; color: #475569;">₹ 50</th><th style="padding: 10px; color: #475569;">₹ 100</th><th style="padding: 10px; color: #475569;">Oth.</th><th style="padding: 10px; color: #0ea5e9;">Used Stock</th><th style="padding: 10px; color: #3b82f6;">Avail. Stock</th><th style="padding: 10px; color: #3b82f6;">Target (₹)</th><th style="padding: 10px; color: #22c55e;">Total Sales(₹)</th><th style="padding: 10px; color: #ef4444;">Pending (₹)</th></tr>
-              </thead>
-              <tbody><tr id="myPerformanceRow" style="border-bottom: 1px solid #e2e8f0;"><td colspan="11" style="padding: 15px; color: #64748b; font-weight: bold;">లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td></tr></tbody>
-            </table>
-          </div>
-
-          <div style="background: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid #6f42c1; padding: 30px;">
-            <h3 style="text-align: center; color: #6f42c1; margin-top: 0; margin-bottom: 20px;">📝 VLE E-Stamping Portal</h3>
-            <div style="background-color: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px; font-size: 16px;"><strong>Welcome: </strong> <span style="font-weight: bold; text-transform: uppercase;">${loggedInUser}</span></div>
-            <label style="font-weight: bold; margin-bottom: 8px; display: block; color: #334155;">Select Action:</label>
-            <select id="vleActionType" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-size: 15px; outline: none;" onchange="window.showVleActionDiv()">
-              <option value="">-- Choose Option --</option><option value="request">📦 Request New Stock</option><option value="sales">📊 Submit Daily Sales / Usage</option><option value="spoil">⚠️ Report Spoiled Stamp</option><option value="track">🔍 Track Request Status</option>
-            </select>
-
-            <div id="divVleRequest" style="display: none;">
-              <label style="font-weight: bold; color: #475569;">Stock Holding Request No</label>
-              <input type="text" id="shqNo" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="Ex: SHQ12345ABC">
-              <label style="font-weight: bold; color: #475569;">How many papers do you need?</label>
-              <input type="number" id="reqQty" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Ex: 100">
-              <button id="btnReqStock" onclick="window.submitVleRequest()" style="width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Submit Request</button>
-            </div>
-
-            <div id="divVleSales" style="display: none;">
-              <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Enter Sales Details</h5>
-              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                  <div style="flex: 1; min-width: 120px;"><label style="font-size: 13px; font-weight: bold; color: #64748b;">Serial Number</label><input type="text" id="serialNo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" placeholder="AP-A0001"></div>
-                  <div style="flex: 1; min-width: 120px;"><label style="font-size: 13px; font-weight: bold; color: #64748b;">Amount (₹)</label>
-                    <select id="stampAmount" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; margin-top: 5px;" onchange="window.checkVleCustomAmount()"><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="custom">Other</option></select>
-                    <input type="number" id="customAmount" style="display: none; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Enter Amount (₹)">
-                  </div>
-                  <div style="width: 50px; display: flex; align-items: flex-end;"><button style="width: 100%; height: 35px; background-color: #22c55e; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;" onclick="window.addVleSaleRow()">➕</button></div>
-                </div>
-              </div>
-              <div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; text-align: center; margin-bottom: 15px; font-size: 14px;"><thead><tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;"><th style="padding: 10px; color: #475569;">Serial No</th><th style="padding: 10px; color: #475569;">Amount</th><th style="padding: 10px; color: #475569;">Action</th></tr></thead><tbody id="salesBody"></tbody></table></div>
-              <button id="btnSubmitSales" onclick="window.submitVleSales()" style="width: 100%; padding: 12px; background-color: #6f42c1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Submit Sales Report</button>
-            </div>
-            
-            <div id="divVleSpoil" style="display: none;">
-              <label style="font-weight: bold; color: #475569;">Spoiled Serial Number</label><input type="text" id="spoilSerial" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; margin-bottom: 15px; outline: none;" placeholder="AP-A0001">
-              <label style="font-weight: bold; color: #475569;">Reason</label><input type="text" id="spoilReason" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 8px; outline: none;" placeholder="Printer jam, torn, etc.">
-              <button id="btnReportSpoil" onclick="window.submitVleSpoil()" style="width: 100%; padding: 12px; background-color: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 15px;">Report Damage</button>
-            </div>
-
-            <div id="divVleTrack" style="display: none;">
-               <h5 style="color: #6f42c1; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">Track Request Status</h5>
-               <button id="btnFetchTrack" onclick="window.fetchMyStatus()" style="width: 100%; padding: 12px; background-color: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">Check Status Now</button>
-               <div id="trackResultArea" style="margin-top:20px;"></div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      `;
-
-      document.getElementById('reportViewer').innerHTML = vleHtml;
-      window.loadMyPerformance();
-      
-      window.showVleActionDiv = function() {
-        var type = document.getElementById('vleActionType').value;
-        document.getElementById('divVleRequest').style.display = 'none'; document.getElementById('divVleSales').style.display = 'none'; document.getElementById('divVleSpoil').style.display = 'none'; document.getElementById('divVleTrack').style.display = 'none';
-        if(type === 'request') document.getElementById('divVleRequest').style.display = 'block';
-        if(type === 'sales') document.getElementById('divVleSales').style.display = 'block';
-        if(type === 'spoil') document.getElementById('divVleSpoil').style.display = 'block';
-        if(type === 'track') document.getElementById('divVleTrack').style.display = 'block';
-      };
-
-      window.checkVleCustomAmount = function() { var val = document.getElementById('stampAmount').value; document.getElementById('customAmount').style.display = (val === 'custom') ? 'block' : 'none'; };
-
-     window.addVleSaleRow = function() {
-        var serialInput = document.getElementById('serialNo').value.trim().toUpperCase(); var amt = document.getElementById('stampAmount').value;
-        if(amt === 'custom') { amt = document.getElementById('customAmount').value; if(!amt) { alert("Please enter the custom amount!"); return; } }
-        if(!serialInput) { alert("దయచేసి సీరియల్ నెంబర్ ఎంటర్ చేయండి!"); return; }
-        var btnAdd = event.target || document.querySelector('button[onclick="window.addVleSaleRow()"]'); var originalBtnHtml = btnAdd.innerHTML; btnAdd.innerHTML = "⏳"; btnAdd.disabled = true;
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "validateSerial", vleId: loggedInId, serial: serialInput }) })
-        .then(res => res.json()).then(res => {
-            btnAdd.innerHTML = originalBtnHtml; btnAdd.disabled = false;
-            if(res.success) {
-                var isDup = window.vleSalesCart.some(item => item.serial === res.fullSerial);
-                if (isDup) { alert("⚠️ ఈ సీరియల్ నెంబర్ ని ఇప్పటికే యాడ్ చేశారు!"); return; }
-                window.vleSalesCart.push({serial: res.fullSerial, amount: amt}); window.renderVleSalesTable();
-                document.getElementById('serialNo').value = ''; document.getElementById('stampAmount').value = '10'; document.getElementById('customAmount').style.display = 'none'; document.getElementById('customAmount').value = '';
-            } else { alert("❌ " + res.message); }
-        }).catch(err => { btnAdd.innerHTML = originalBtnHtml; btnAdd.disabled = false; alert("నెట్‌వర్క్ ఎర్రర్!"); });
-      };
-
-      window.removeVleSaleRow = function(index) { window.vleSalesCart.splice(index, 1); window.renderVleSalesTable(); };
-      window.renderVleSalesTable = function() { var tbody = document.getElementById('salesBody'); tbody.innerHTML = ""; window.vleSalesCart.forEach((item, index) => { tbody.innerHTML += `<tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding:10px; color:#334155; font-weight:bold;">${item.serial}</td><td style="padding:10px; color:#059669; font-weight:bold;">₹ ${item.amount}</td><td><button style="background:#ef4444; color:white; border:none; border-radius:4px; padding:4px 8px; margin:5px; cursor:pointer;" onclick="window.removeVleSaleRow(${index})">❌</button></td></tr>`; }); };
-
-     window.submitVleRequest = function() {
-        var shqNo = document.getElementById('shqNo').value.trim(); var qty = document.getElementById('reqQty').value;
-        if(!shqNo) { alert("దయచేసి Stock Holding Request No ఎంటర్ చేయండి!"); return; } if(!qty || qty <= 0) { alert("దయచేసి ఎన్ని పేపర్లు కావాలో ఎంటర్ చేయండి!"); return; }
-        var btn = document.getElementById('btnReqStock'); btn.innerText = "Submitting..."; btn.disabled = true;
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: 'vleRequestStock', vleId: loggedInId, vleName: loggedInUser, quantity: qty, shqNo: shqNo }) })
-        .then(res => res.json()).then(res => { btn.innerText = "Submit Request"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); document.getElementById('shqNo').value = ''; document.getElementById('reqQty').value = ''; } else { alert("❌ Error: " + res.message); } })
-        .catch(err => { btn.innerText = "Submit Request"; btn.disabled = false; alert("Network Error!"); });
-      };
-
-      window.submitVleSales = function() {
-        if(window.vleSalesCart.length === 0) { alert("ముందుగా కనీసం ఒక్క సేల్స్ ఎంట్రీ అయినా చేయండి!"); return; }
-        var btn = document.getElementById('btnSubmitSales'); btn.innerText = "Submitting..."; btn.disabled = true;
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: 'vleSubmitSales', vleId: loggedInId, vleName: loggedInUser, salesData: window.vleSalesCart }) })
-        .then(res => res.json()).then(res => { btn.innerText = "Submit Sales Report"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); window.vleSalesCart = []; window.renderVleSalesTable(); window.loadMyPerformance(); } else alert("❌ Error: " + res.message); })
-        .catch(err => { btn.innerText = "Submit Sales Report"; btn.disabled = false; alert("Network Error!"); });
-      };
-
-      window.submitVleSpoil = function() {
-        var serial = document.getElementById('spoilSerial').value; var reason = document.getElementById('spoilReason').value;
-        if(!serial || !reason) { alert("దయచేసి సీరియల్ నెంబర్ మరియు కారణం ఎంటర్ చేయండి!"); return; }
-        var btn = document.getElementById('btnReportSpoil'); btn.innerText = "Submitting..."; btn.disabled = true;
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: 'vleReportSpoil', vleId: loggedInId, vleName: loggedInUser, spoilSerial: serial, spoilReason: reason }) })
-        .then(res => res.json()).then(res => { btn.innerText = "Report Damage"; btn.disabled = false; if(res.success) { alert("✅ " + res.message); document.getElementById('spoilSerial').value = ''; document.getElementById('spoilReason').value = ''; } else alert("❌ Error: " + res.message); })
-        .catch(err => { btn.innerText = "Report Damage"; btn.disabled = false; alert("Network Error!"); });
-      };
-
-      window.fetchMyStatus = function() {
-         let btn = document.getElementById('btnFetchTrack');
-         let resultArea = document.getElementById('trackResultArea');
-         btn.disabled = true; btn.innerText = "⏳ Fetching..."; resultArea.innerHTML = "";
-         
-         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "checkVleStatus", vleId: loggedInId }) })
-         .then(res => res.json()).then(res => {
-            btn.disabled = false; btn.innerText = "Check Status Now";
-
-            if(res.success && res.data.length > 0) {
-               let html = `<h6 style="color:#059669; font-weight:bold; margin-bottom:15px;">Recent Requests for ${loggedInId}:</h6>`;
-               
-               res.data.forEach(req => {
-                  let bg = "#f8fafc", col = "#475569";
-                  let st = req.status;
-                  if(st.includes("Pending with SPOC")) { bg = "#e0f2fe"; col = "#0369a1"; }
-                  else if(st === "Pending") { bg = "#fef9c3"; col = "#854d0e"; }
-                  else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; }
-                  else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; }
-                  else if(st.includes("Rejected")) { bg = "#fee2e2"; col = "#b91c1c"; }
-
-                  let rawRemarks = req.remarks || "-";
-                  let finalRemarks = rawRemarks;
-                  let serialsHtml = "";
-                  
-                  let remarkColor = st.includes("Rejected") ? "#b91c1c" : "#475569";
-                  
-                  let rawDate = new Date(req.date);
-                  let formattedDateStr = "";
-                  if (!isNaN(rawDate)) {
-                      let yy = rawDate.getFullYear();
-                      let mm = String(rawDate.getMonth() + 1).padStart(2, '0');
-                      let dd = String(rawDate.getDate()).padStart(2, '0');
-                      let hrs = String(rawDate.getHours()).padStart(2, '0');
-                      let mins = String(rawDate.getMinutes()).padStart(2, '0');
-                      formattedDateStr = `${yy}${mm}${dd}${hrs}${mins}`;
-                  } else {
-                      formattedDateStr = Math.floor(Math.random() * 90000) + 10000;
-                  }
-                  let dynamicReqNo = `ACK-${formattedDateStr}-${loggedInId.slice(-4)}`;
-                  
-                  if(rawRemarks.includes("(Serials:")) {
-                      let splitPart = rawRemarks.split("(Serials:");
-                      finalRemarks = splitPart[0].trim();
-                      let serialsPart = splitPart[1].replace(")", "").trim();
-                      
-                      serialsHtml = `
-                        <div style="margin-top: 10px; background: #fff1f2; padding: 10px; border-radius: 6px; border: 1px dashed #fda4af;">
-                           <span style="font-size: 11px; color: #e11d48; font-weight: bold; text-transform: uppercase;">📋 Allocated Serials:</span><br>
-                           <span style="font-size: 14px; font-weight: 900; color: #be123c;">${serialsPart}</span>
-                        </div>
-                        <div style="margin-top: 15px;">
-                           <button onclick="window.printAckNewTab('${req.date}', '${req.qty}', '${serialsPart}', '${dynamicReqNo}')" style="width: 100%; padding: 10px; background-color: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">🖨️ Download / Print Acknowledgement Form</button>
-                        </div>
-                      `;
-                  }
-
-                  html += `
-                    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:10px; background:white; text-align:left; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:12px; color:#64748b; font-weight:bold;">📅 ${req.date}</span>
-                        <span style="background:${bg}; color:${col}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; border:1px solid ${col}40;">${st}</span>
-                      </div>
-                      <div style="font-size:14px;"><span style="color:#64748b;">Req Qty:</span> <strong style="font-size:16px;">${req.qty} Papers</strong></div>
-                      
-                      <div style="font-size:13px; margin-top:8px; color: ${remarkColor};">📝 <b>Status:</b> ${finalRemarks}</div>
-                      ${serialsHtml}
-                    </div>
-                  `;
-               });
-               resultArea.innerHTML = html;
-            } else {
-               resultArea.innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:8px; font-weight:bold; text-align:center;">❌ No stock requests found.</div>`;
-            }
-         }).catch(e => {
-            btn.disabled = false; btn.innerText = "Check Status Now";
-            resultArea.innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:8px; font-weight:bold; text-align:center;">⚠️ Network Error.</div>`;
-         });
-      };
-      
-      // 🌟 బటన్ తీసేసాము + Auto Close + ID బేస్డ్ ఫైల్‌నేమ్ 🌟
-      window.printAckNewTab = function(date, qty, serials, generatedReqNo) {
-          let userName = loggedInUser;
-          let userId = loggedInId;
-          
-          let printHtml = `
-            <html>
-              <head>
-                <title>ACK_${userId}</title>
-                <style>
-                  body { font-family: 'Times New Roman', serif; padding: 30px; color: #000; margin: 0 auto; max-width: 800px; }
-                  
-                  .header { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
-                  .header img { height: 65px; margin-bottom: 5px; }
-                  .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
-                  .header h3 { margin: 5px 0 0 0; font-size: 16px; text-decoration: underline; }
-                  
-                  .details-table { width: 100%; margin-bottom: 20px; font-size: 15px; }
-                  .details-table td { padding: 5px; }
-                  
-                  .section { margin-bottom: 20px; }
-                  .section h4 { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; font-size: 15px; }
-                  .section p { margin: 5px 0; font-size: 15px; }
-                  
-                  .serial-highlight { 
-                     display: inline-block; 
-                     padding: 6px 12px; 
-                     margin-top: 5px;
-                     border: 2px solid #000; 
-                     background-color: #f8f9fa; 
-                     font-weight: 900; 
-                     font-size: 17px; 
-                     letter-spacing: 1px;
-                     border-radius: 4px;
-                  }
-
-                  .declaration { font-style: italic; line-height: 1.6; margin-bottom: 40px; font-size: 15px; text-align: justify; }
-                  
-                  .signature-box { display: flex; justify-content: space-between; margin-bottom: 50px; }
-                  
-                  .office-use { border-top: 2px dashed black; padding-top: 20px; }
-                  .office-use h4 { text-align: center; margin-top: 0; font-size: 15px;}
-                  
-                  @media print {
-                     @page { margin: 10mm; size: A4; }
-                     body { padding: 0; max-width: 100%; }
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="header">
-                  <img src="https://csc.gov.in/assets/images/logo.png" alt="CSC Logo">
-                  <h2>COMMON SERVICE CENTRES (CSC) - ANDHRA PRADESH</h2>
-                  <h3>E-STAMPING STATIONARY ACKNOWLEDGEMENT FORM</h3>
-                </div>
-                
-                <table class="details-table">
-                  <tr>
-                    <td><strong>Date of Dispatch:</strong> ${date}</td>
-                    <td><strong>Acknowledgement No:</strong> <span style="font-weight:bold; color:#be123c;">${generatedReqNo}</span></td>
-                  </tr>
-                </table>
-                
-                <div class="section">
-                  <h4>VLE DETAILS</h4>
-                  <p><strong>Name:</strong> ${userName}</p>
-                  <p><strong>CSC ID:</strong> ${userId}</p>
-                </div>
-
-                <div class="section">
-                  <h4>ALLOCATED STOCK DETAILS</h4>
-                  <p><strong>Quantity Sanctioned:</strong> ${qty} Papers</p>
-                  <p><strong>Serial Numbers:</strong></p>
-                  <div class="serial-highlight">${serials}</div>
-                </div>
-
-                <div class="section declaration">
-                  <h4 style="font-style:normal;">DECLARATION</h4>
-                  <p>I, <strong>${userName}</strong>, hereby acknowledge that I have received the physical e-Stamping stationary mentioned above from the District Manager's office. I ensure that these stamp papers will be used strictly for authorized CSC e-Stamping purposes.</p>
-                </div>
-
-                <div class="signature-box">
-                  <div>
-                    <p>____________________________________</p>
-                    <p><strong>(VLE Signature & Stamp)</strong></p>
-                    <p>Date: ______________</p>
-                  </div>
-                </div>
-
-                <div class="office-use">
-                  <h4>FOR OFFICE USE ONLY</h4>
-                  <div class="signature-box" style="margin-top:40px; margin-bottom:0;">
-                    <div>
-                      <p>____________________________________</p>
-                      <p><strong>Stock Handed Over By</strong> (DM Name / Sign)</p>
-                      <p>Date: ______________</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <script>
-                   // విండో లోడ్ అవ్వగానే ప్రింట్ వస్తుంది, ప్రింట్ అయ్యాక వెంటనే క్లోజ్ అవుతుంది
-                   window.onload = function() {
-                       setTimeout(function() { window.print(); }, 500);
-                   };
-                   window.onafterprint = function() {
-                       window.close();
-                   };
-                <\/script>
-              </body>
-            </html>
-          `;
-          
-          let printWindow = window.open('', '_blank');
-          printWindow.document.write(printHtml);
-          printWindow.document.close();
-      };
+    function closeActiveReport() {
+        document.getElementById('reportIframeContainer').style.display = 'none';
+        document.getElementById('reportIframeContainer').innerHTML = ''; 
+        let activeModuleTxt = document.getElementById('sidebarTitle').innerText;
+        let activeModule = activeModuleTxt.split(' ')[0]; 
+        
+        if(activeModule === "E-STAMPING" || document.getElementById('dashboardCards').innerHTML.trim() !== '') {
+            document.getElementById('dashboardCards').style.display = 'flex';
+        } else {
+            document.getElementById('homeDisplay').style.display = 'flex';
+        }
+        document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
     }
 
-    window.loadMyPerformance = function() {
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVleMySalesSummary", userId: loggedInId }) })
-        .then(res => res.json()).then(res => {
-            if(res.success) {
-                let d = res.data;
-                let otherHtml = d.other > 0 ? `<span style="color:#475569;">${d.other}</span> <br><span style="font-size:10px; color:#3b82f6;">(₹${d.otherAmt.toLocaleString('en-IN')})</span>` : `<span style="color:#cbd5e1;">0</span>`;
-                let pendingHtml = d.pending > 0 ? `<span style="color:#ef4444; font-weight:bold; white-space: nowrap;">₹ ${d.pending.toLocaleString('en-IN')}</span>` : `<span style="color:#10b981; font-weight:bold;">Achieved 🎉</span>`;
-                document.getElementById("myPerformanceRow").innerHTML = `
-                    <td style="padding: 12px; font-weight: bold; color: #475569; white-space: nowrap;">${d.issued}</td><td style="padding: 12px; font-weight: bold; color: #16a34a;">${d.d10}</td><td style="padding: 12px; font-weight: bold; color: #0284c7;">${d.d20}</td><td style="padding: 12px; font-weight: bold; color: #ca8a04;">${d.d50}</td><td style="padding: 12px; font-weight: bold; color: #9333ea;">${d.d100}</td><td style="padding: 12px; font-weight: bold;">${otherHtml}</td><td style="padding: 12px; font-weight: bold; color: #0ea5e9; white-space: nowrap;">${d.used}</td><td style="padding: 12px; font-weight: bold; color: #3b82f6; font-size: 14px; white-space: nowrap;">${d.avail}</td><td style="padding: 12px; font-weight: bold; color: #3b82f6; white-space: nowrap;">₹ ${d.target.toLocaleString('en-IN')}</td><td style="padding: 12px; font-weight: bold; color: #22c55e; font-size: 14px; white-space: nowrap;">₹ ${d.totalSales.toLocaleString('en-IN')}</td><td style="padding: 12px; white-space: nowrap;">${pendingHtml}</td>
-                `;
+    // 🌟 Escape Key Logic Restored 🌟
+    document.addEventListener('keydown', function(event) { 
+        if (event.key === "Escape") { 
+            closeSyncPopup(); // Added sync popup close
+            closeLogoutPopup(); 
+            if(document.getElementById('reportIframeContainer').style.display === 'flex') {
+                closeActiveReport();
             }
-        }).catch(err => { document.getElementById("myPerformanceRow").innerHTML = `<td colspan="11" style="padding: 15px; color: #ef4444; font-weight: bold;">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td>`; });
-    };
+        } 
+    });
 
     function openModule(moduleName) {
-      const themes = { "IRCTC": {c: "#ea580c", b: "#fff7ed"}, "REDBUS": {c: "#dc2626", b: "#fef2f2"}, "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, "E-STAMPING": {c: "#8b5cf6", b: "#f5f3ff"}, "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, "MASTER": {c: "#475569", b: "#f1f5f9"} };
+      let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
+      let isVLE = role === "VLE";
+
+      if (isVLE && moduleName !== 'E-STAMPING') {
+          document.getElementById('sidebar').style.display = 'none';
+          document.getElementById('homeDisplay').style.display = 'none';
+          document.getElementById('dashboardCards').style.display = 'none';
+          document.getElementById('reportIframeContainer').style.display = 'flex';
+          document.getElementById('reportIframeContainer').innerHTML = `
+            <div class="access-denied-box" style="margin-top:50px;">
+              <div class="access-denied-icon">🚫</div>
+              <h2 class="access-denied-title">Access Denied</h2>
+              <p class="access-denied-desc">You do not have permission to access the <b>${moduleName}</b> module.<br><br><b>Please access the E-STAMPING module only.</b></p>
+            </div>`;
+          return;
+      }
+
+      const themes = { "IRCTC": {c: "#ea580c", b: "#fff7ed"}, "REDBUS": {c: "#dc2626", b: "#fef2f2"}, "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, "E-STAMPING": {c: "#6d28d9", b: "#f5f3ff"}, "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, "MASTER": {c: "#475569", b: "#f1f5f9"} };
       let t = themes[moduleName] || {c: "#3b82f6", b: "#eff6ff"};
       document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
+      
       document.getElementById('sidebar').style.display = 'flex';
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
-      document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center';
+      
       const list = document.getElementById('reportList'); list.innerHTML = ''; 
       
-      if(moduleName === 'MASTER') {
+      if(moduleName === 'E-STAMPING') {
+          if (isVLE) {
+              let options = [ { id: 'VleRequestStock', icon: '📦', name: 'Request New Stock' }, { id: 'VleSubmitSales', icon: '📊', name: 'Submit Daily Sales' }, { id: 'VleReportSpoil', icon: '⚠️', name: 'Report Spoiled Stamp' }, { id: 'VleTrackStatus', icon: '🔍', name: 'Track Request Status' } ];
+              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
+          } else {
+              let options = [ { id: 'AddMasterStock', icon: '📥', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '📦', name: 'Assign Stationary' }, { id: 'StockReport', icon: '📈', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '🚚', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '📊', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '⭐', name: 'VLE Performance Report' } ];
+              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
+          }
+          
+          document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
+          document.getElementById('dashboardCards').style.display = 'flex';
+          document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center; padding:50px;"><h3 style="color:#6d28d9; margin-bottom: 5px;">E-STAMPING మాడ్యూల్</h3><p style="color:#64748b; font-size:15px;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
+
+      } else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
         let li0 = document.createElement('li'); li0.innerHTML = '<span>📊</span> AP Consolidated Report'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
-        let li1 = document.createElement('li'); li1.innerHTML = '<span>📤</span> Daily Data Upload'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadMasterUpload(); } else { loadAccessDenied(); } }; list.appendChild(li1);
-        let li2 = document.createElement('li'); li2.innerHTML = '<span>📧</span> Send Daily Mails'; li2.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li2.classList.add('active-item'); alert('ఈ ఫీచర్ త్వరలో డిజైన్ చేద్దాం!'); }; list.appendChild(li2);
-        document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h3 style="color:#475569; margin-bottom: 5px;">MASTER మాడ్యూల్</h3><p style="color:#64748b; font-size:14px;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
-      } else if(moduleName === 'HELPDESK') {
-        let li1 = document.createElement('li'); li1.innerHTML = '<span>🎧</span> Manage Tickets'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="HelpdeskAdmin.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li1);
-        document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h3 style="color:#475569; margin-bottom: 5px;">HELPDESK మాడ్యూల్</h3><p style="color:#64748b; font-size:14px;">ఎడమ వైపు సైడ్‌బార్ నుండి 'Manage Tickets' ఎంచుకోండి.</p></div>`;
-     } else if(moduleName === 'E-STAMPING') {
-        let li0 = document.createElement('li'); li0.innerHTML = '<span>📥</span> Add Master Stock'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="AddMasterStock.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li0);
-        let li1 = document.createElement('li'); li1.innerHTML = '<span>📦</span> Assign Stationary'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="AssignStationary.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li1);
-        let li3 = document.createElement('li'); li3.innerHTML = '<span>📈</span> Stock Summary Report'; li3.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="StockReport.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li3);
-        let li4 = document.createElement('li'); li4.innerHTML = '<span>🚚</span> VLE Dispatch History'; li4.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').innerHTML = `<iframe src="VleDispatchReport.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li4);
-        let li5 = document.createElement('li'); li5.innerHTML = '<span>📊</span> Denomination Sales Report'; li5.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').innerHTML = `<iframe src="DenominationReport.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }; list.appendChild(li5);
-        let li2 = document.createElement('li'); li2.innerHTML = '<span>📊</span> VLE Performance Report'; li2.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center'; document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h2 style="color:#1e3a8a;">VLE Performance Report</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; }; list.appendChild(li2);
-       document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h3 style="color:#475569; margin-bottom: 5px;">E-STAMPING మాడ్యూల్</h3><p style="color:#64748b; font-size:14px;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
+        let li1 = document.createElement('li'); li1.innerHTML = '<span>📤</span> Daily Data Upload'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); } else { loadAccessDenied(); } }; list.appendChild(li1);
+        
+        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
+        document.getElementById('dashboardCards').style.display = 'flex';
+        document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h3 style="color:#475569;">MASTER మాడ్యూల్</h3><p style="color:#64748b;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
       } else {
         let reports = reportMenus[moduleName] || [];
         reports.forEach(reportName => { let li = document.createElement('li'); li.innerHTML = '📄 ' + reportName; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li.classList.add('active-item'); loadReport(moduleName, reportName); }; list.appendChild(li); });
-        document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h3 style="color:#475569; margin-bottom: 5px;">${moduleName} మాడ్యూల్ యాక్టివేట్ అయింది</h3><p style="color:#64748b; font-size:14px;">ఎడమ వైపు ఓపెన్ అయిన సైడ్‌బార్ నుండి మీ రిపోర్ట్ ఎంచుకోండి.</p></div>`;
+        
+        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
+        document.getElementById('dashboardCards').style.display = 'flex';
+        document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h3 style="color:#475569;">${moduleName} మాడ్యూల్</h3><p style="color:#64748b;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ రిపోర్ట్ ఎంచుకోండి.</p></div>`;
       }
     }
 
-    function loadAccessDenied() { document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center'; document.getElementById('reportViewer').innerHTML = `<div class="access-denied-box"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have the required permissions to upload or sync data.<br><br><b>Only "SPOC" or "STATE HEAD" can perform this action.</b></p></div>`; }
-    function loadReport(moduleName, reportName) {
-      if (moduleName === "IRCTC" && reportName === "VLE Performance") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_VLE_Performance.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; } 
-      else if (moduleName === "IRCTC" && reportName === "Performance Report") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Performance_Report.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Total Registrations") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Total_Registrations.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Monthly Activations") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Activations.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }
-      else if (moduleName === "IRCTC" && (reportName === "Daily Transactions")) { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Daily_Achievements.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-       else if (moduleName === "IRCTC" && reportName === "New Registrations (FY 26-27)") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_New_Registrations.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Daily Achievements") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Progress.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Periodic Reports") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Periodic_Reports.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Priority Follow Up Report") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Priority_FollowUp.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "AMC Eligible Agents") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "AMC Summary Report") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_AMC_Summary.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Top 5 Performance") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Poster_Maker.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Employee Performance") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Employee_Performance.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "MoM Growth Matrix") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_MoM_Growth_Matrix.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "Monthly Closure Report") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_Monthly_Closure_Report.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else if (moduleName === "IRCTC" && reportName === "VLE Details Editor") { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="IRCTC_VLE_Details_Editor.html" style="width:100%; height:100%; border:none; border-radius:8px;" allowfullscreen></iframe>`; }
-      else { document.getElementById('reportViewer').style.justifyContent = 'center'; document.getElementById('reportViewer').style.alignItems = 'center'; document.getElementById('reportViewer').innerHTML = `<div class="report-box"><h2 style="color:#1e3a8a; margin-bottom: 5px;">${moduleName}</h2><h3 style="color:#475569; margin-top: 0;">${reportName}</h3><p style="color:#ea580c; font-weight:bold; margin-top: 20px;">డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</p></div>`; }
+    function loadAccessDenied() { document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; }
+    
+    function loadReport(moduleName, reportId, reportNameParam) {
+      let iframeSrc = ""; let reportName = reportNameParam || reportId;
+      
+      if (moduleName === "E-STAMPING" && reportId === "VleRequestStock") iframeSrc = "VleRequestStock.html";
+      else if (moduleName === "E-STAMPING" && reportId === "VleSubmitSales") iframeSrc = "VleSubmitSales.html";
+      else if (moduleName === "E-STAMPING" && reportId === "VleReportSpoil") iframeSrc = "VleReportSpoil.html";
+      else if (moduleName === "E-STAMPING" && reportId === "VleTrackStatus") iframeSrc = "VleTrackStatus.html";
+      else if (moduleName === "E-STAMPING" && reportId === "AddMasterStock") iframeSrc = "AddMasterStock.html";
+      else if (moduleName === "E-STAMPING" && reportId === "AssignStationary") iframeSrc = "AssignStationary.html";
+      else if (moduleName === "E-STAMPING" && reportId === "StockReport") iframeSrc = "StockReport.html";
+      else if (moduleName === "E-STAMPING" && reportId === "VleDispatchReport") iframeSrc = "VleDispatchReport.html";
+      else if (moduleName === "E-STAMPING" && reportId === "DenominationReport") iframeSrc = "DenominationReport.html";
+      
+      else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
+      else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
+      else if (moduleName === "IRCTC" && reportId === "Total Registrations") iframeSrc = "IRCTC_Total_Registrations.html";
+      else if (moduleName === "IRCTC" && reportId === "Monthly Activations") iframeSrc = "IRCTC_Monthly_Activations.html";
+      else if (moduleName === "IRCTC" && reportId === "Daily Transactions") iframeSrc = "IRCTC_Daily_Achievements.html";
+      else if (moduleName === "IRCTC" && reportId === "Daily Achievements") iframeSrc = "IRCTC_Monthly_Progress.html";
+      else if (moduleName === "IRCTC" && reportId === "New Registrations (FY 26-27)") iframeSrc = "IRCTC_New_Registrations.html";
+      else if (moduleName === "IRCTC" && reportId === "Periodic Reports") iframeSrc = "IRCTC_Periodic_Reports.html";
+      else if (moduleName === "IRCTC" && reportId === "Priority Follow Up Report") iframeSrc = "IRCTC_Priority_FollowUp.html";
+      else if (moduleName === "IRCTC" && reportId === "AMC Eligible Agents") iframeSrc = "IRCTC_AMC.html";
+      else if (moduleName === "IRCTC" && reportId === "AMC Summary Report") iframeSrc = "IRCTC_AMC_Summary.html";
+      else if (moduleName === "IRCTC" && reportId === "Top 5 Performance") iframeSrc = "IRCTC_Poster_Maker.html";
+      else if (moduleName === "IRCTC" && reportId === "Employee Performance") iframeSrc = "IRCTC_Employee_Performance.html";
+      else if (moduleName === "IRCTC" && reportId === "MoM Growth Matrix") iframeSrc = "IRCTC_MoM_Growth_Matrix.html";
+      else if (moduleName === "IRCTC" && reportId === "Monthly Closure Report") iframeSrc = "IRCTC_Monthly_Closure_Report.html";
+      else if (moduleName === "IRCTC" && reportId === "VLE Details Editor") iframeSrc = "IRCTC_VLE_Details_Editor.html";
+      
+      else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
+      else if (moduleName === "HELPDESK" && reportId === "HelpdeskAdmin") iframeSrc = "HelpdeskAdmin.html";
+      
+      else {
+          document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none';
+          document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; return;
+      }
+
+      let closeBar = `
+        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;">
+            <h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5>
+            <button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(239,68,68,0.3);">✖ Close Report (ESC)</button>
+        </div>`;
+      
+      document.getElementById('homeDisplay').style.display = 'none';
+      document.getElementById('dashboardCards').style.display = 'none';
+      document.getElementById('reportIframeContainer').style.display = 'flex';
+      document.getElementById('reportIframeContainer').innerHTML = closeBar + `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:0 0 12px 12px; background:white;"></iframe>`;
     }
-    function loadMasterUpload() { document.getElementById('reportViewer').style.justifyContent = 'flex-start'; document.getElementById('reportViewer').style.alignItems = 'stretch'; document.getElementById('reportViewer').innerHTML = `<iframe src="DailyDataUpload.html" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>`; }
+
+    // 🌟 Sync Popup & Logout Logic Restored 🌟
     function showLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'flex'; }
     function closeLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'none'; }
     function confirmLogout() { localStorage.clear(); sessionStorage.clear(); window.location.replace("Login.html"); }
-    function checkAndShowPopup() { if (!sessionStorage.getItem('syncPopupShown')) { document.getElementById('syncPopupOverlay').style.display = 'flex'; fetchPopupLogs(); sessionStorage.setItem('syncPopupShown', 'true'); } }
-    function closeSyncPopup() { document.getElementById('syncPopupOverlay').style.display = 'none'; }
-    document.addEventListener('keydown', function(event) { if (event.key === "Escape") { closeSyncPopup(); closeLogoutPopup(); } });
+
+    function checkAndShowPopup() { 
+        if (!sessionStorage.getItem('syncPopupShown')) { 
+            document.getElementById('syncPopupOverlay').style.display = 'flex'; 
+            fetchPopupLogs(); 
+            sessionStorage.setItem('syncPopupShown', 'true'); 
+        } 
+    }
+    
+    function closeSyncPopup() { 
+        document.getElementById('syncPopupOverlay').style.display = 'none'; 
+    }
 
     function fetchPopupLogs() {
       var callbackName = 'popupLogsCallback_' + new Date().getTime();
@@ -628,14 +368,27 @@
         if(data.success && data.logs && data.logs.length > 0) {
           let latestDates = {};
           data.logs.forEach(log => { let srv = log[1]; if(!latestDates[srv] && log[5].includes("Success")) { latestDates[srv] = log[3]; } });
-          let defaultServices = ["IRCTC", "REDBUS", "AIRWAYS", "APSRTC", "E-STAMPING"]; let icons = { "IRCTC": "🚆", "REDBUS": "🚌", "AIRWAYS": "✈️", "APSRTC": "🚍", "E-STAMPING": "📜" }; let html = "";
-          defaultServices.forEach(srv => { let dateText = latestDates[srv] ? latestDates[srv] : "<span style='color:#ef4444; font-size:12px;'>Not Synced</span>"; html += `<div class="srv-row"><span class="srv-name-label">${icons[srv]} ${srv}</span><span class="srv-date-label"> : &nbsp; ${dateText}</span></div>`; });
+          
+          let defaultServices = ["IRCTC", "REDBUS", "AIRWAYS", "APSRTC", "E-STAMPING"]; 
+          let icons = { "IRCTC": "🚆", "REDBUS": "🚌", "AIRWAYS": "✈️", "APSRTC": "🚍", "E-STAMPING": "📜" }; 
+          let html = "";
+          
+          defaultServices.forEach(srv => { 
+              let dateText = latestDates[srv] ? latestDates[srv] : "<span style='color:#ef4444; font-size:12px;'>Not Synced</span>"; 
+              html += `<div class="srv-row"><span class="srv-name-label">${icons[srv]} ${srv}</span><span class="srv-date-label"> : &nbsp; ${dateText}</span></div>`; 
+          });
           content.innerHTML = html;
-        } else { content.innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">No successful uploads found yet.</span>'; }
+        } else { 
+            content.innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">No successful uploads found yet.</span>'; 
+        }
         delete window[callbackName];
       };
-      var script = document.createElement('script'); script.src = SCRIPT_URL + "?action=getLogs&callback=" + callbackName;
-      script.onerror = function() { document.getElementById('syncPopupContent').innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">Unable to fetch status.</span>'; };
+      
+      var script = document.createElement('script'); 
+      script.src = SCRIPT_URL + "?action=getLogs&callback=" + callbackName;
+      script.onerror = function() { 
+          document.getElementById('syncPopupContent').innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">Unable to fetch status.</span>'; 
+      };
       document.body.appendChild(script);
     }
   </script>

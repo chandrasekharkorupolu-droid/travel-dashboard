@@ -115,11 +115,11 @@
             <tr>
               <th class="text-start ps-4">District Name</th>
               <th class="text-secondary">Issued Stock</th>
-              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th>
-              <th class="text-info">Used Stock</th> <!-- 🌟 కొత్త కాలమ్ 🌟 -->
+              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
+              <th class="text-info">Used Stock</th>
               <th class="text-primary">Avail. Stock</th>
               <th class="text-primary">Target (₹)</th>
-              <th class="text-success">Total Sales(₹)</th> <!-- 🌟 స్థానం మార్చాం 🌟 -->
+              <th class="text-success">Total Sales(₹)</th>
               <th class="text-danger">Pending (₹)</th>
             </tr>
           </thead>
@@ -128,16 +128,16 @@
               <th class="text-start ps-4">VLE Details</th>
               <th>District</th>
               <th class="text-secondary">Issued Stock</th>
-              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th>
-              <th class="text-info">Used Stock</th> <!-- 🌟 కొత్త కాలమ్ 🌟 -->
+              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
+              <th class="text-info">Used Stock</th>
               <th class="text-primary">Avail. Stock</th>
               <th class="text-primary">Target (₹)</th>
-              <th class="text-success">Total Sales(₹)</th> <!-- 🌟 స్థానం మార్చాం 🌟 -->
+              <th class="text-success">Total Sales(₹)</th>
               <th class="text-danger">Pending (₹)</th>
             </tr>
           </thead>
           <tbody id="reportTbody">
-            <tr><td colspan="13" class="text-muted py-4">Loading Data...</td></tr>
+            <tr><td colspan="14" class="text-muted py-4">Loading Data...</td></tr>
           </tbody>
         </table>
       </div>
@@ -171,7 +171,7 @@
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
        document.getElementById("lblFilterText").innerText = filterText;
 
-       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="13" class="text-muted py-4">Fetching live sales data...</td></tr>`;
+       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-muted py-4">Fetching live sales data...</td></tr>`;
 
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
        .then(res => res.json()).then(res => {
@@ -181,7 +181,7 @@
              calculateTotals(masterVleData);
              renderCurrentView();
           }
-       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="13" class="text-danger py-4">Network Error.</td></tr>`; });
+       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-4">Network Error.</td></tr>`; });
     }
 
     function calculateTotals(data) {
@@ -234,8 +234,7 @@
        const tbody = document.getElementById("reportTbody"); tbody.innerHTML = "";
        let dataToRender = [];
 
-       // Grand Total Variables (Added gtUsed)
-       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtAmt = 0;
+       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtDsd = 0, gtAmt = 0;
        let gtAvail = 0, gtTarget = 0, gtPending = 0, gtIssued = 0, gtUsed = 0;
 
        if (currentView === 'DIST') {
@@ -254,16 +253,20 @@
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
                 let otherAmt = item.data.otherAmt || 0;
-                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt;
-                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other;
+                let dsdCount = item.data.dsdCount || 0;
+                let dsdAmt = item.data.dsd || 0;
+
+                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
+                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
                 
                 let ext = distExtMap[item.district] || {avail:0, target:0, pending:0, issued:0};
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
-                gt100 += item.data.d100; gtOth += item.data.other; gtAmt += totalAmt;
+                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
                 gtAvail += ext.avail; gtTarget += ext.target; gtPending += ext.pending; gtIssued += ext.issued; gtUsed += usedStock;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
+                let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let pendingHtml = ext.pending > 0 ? `<span class="text-danger fw-bold">₹ ${ext.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
 
                 tbody.innerHTML += `<tr class="data-row">
@@ -274,6 +277,7 @@
                     <td><span class="badge-qty">${item.data.d50}</span></td>
                     <td><span class="badge-qty">${item.data.d100}</span></td>
                     <td class="text-muted fw-bold">${otherHtml}</td>
+                    <td class="text-secondary fw-bold">${dsdHtml}</td>
                     <td class="text-info fw-bold">${usedStock}</td>
                     <td><span class="badge bg-primary">${ext.avail}</span></td>
                     <td class="text-secondary fw-bold">₹ ${ext.target.toLocaleString('en-IN')}</td>
@@ -291,13 +295,14 @@
                     <td style="color:#ca8a04;">${gt50}</td>
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
+                    <td class="text-secondary">${gtDsd}</td>
                     <td class="text-info">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
                     <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="12" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
+          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
        } 
        else {
           if(currentFilter === 'ALL') dataToRender = masterVleData;
@@ -310,18 +315,22 @@
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
                 let otherAmt = item.data.otherAmt || 0;
-                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt;
-                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other;
+                let dsdCount = item.data.dsdCount || 0;
+                let dsdAmt = item.data.dsd || 0;
+
+                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
+                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
                 let availStock = item.data.availableStock || 0;
                 let targetAmt = item.data.targetAmount || 0;
                 let pendingAmt = item.data.pendingAmount || 0;
                 let assignedStock = item.data.assignedStock || 0;
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
-                gt100 += item.data.d100; gtOth += item.data.other; gtAmt += totalAmt;
+                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
                 gtAvail += availStock; gtTarget += targetAmt; gtPending += pendingAmt; gtIssued += assignedStock; gtUsed += usedStock;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
+                let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let pendingHtml = pendingAmt > 0 ? `<span class="text-danger fw-bold">₹ ${pendingAmt.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
 
                 tbody.innerHTML += `<tr class="data-row">
@@ -333,6 +342,7 @@
                     <td><span class="badge-qty">${item.data.d50}</span></td>
                     <td><span class="badge-qty">${item.data.d100}</span></td>
                     <td class="text-muted fw-bold">${otherHtml}</td>
+                    <td class="text-secondary fw-bold">${dsdHtml}</td>
                     <td class="text-info fw-bold">${usedStock}</td>
                     <td><span class="badge bg-primary">${availStock}</span></td>
                     <td class="text-secondary fw-bold">₹ ${targetAmt.toLocaleString('en-IN')}</td>
@@ -350,13 +360,14 @@
                     <td style="color:#ca8a04;">${gt50}</td>
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
+                    <td class="text-secondary">${gtDsd}</td>
                     <td class="text-info">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
                     <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
+          } else { tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
        }
        searchTable(); 
     }

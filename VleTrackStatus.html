@@ -2,99 +2,136 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
-    .tracker-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; border-top: 5px solid #6d28d9; }
-    .form-control { border-radius: 6px; padding: 12px; font-weight: bold; border: 1px solid #cbd5e1; }
-    .btn-track { background-color: #6d28d9; color: white; font-weight: bold; padding: 10px; border-radius: 6px; border: none; width: 100%; font-size: 16px; }
-    .btn-track:hover { background-color: #5b21b6; color: white; }
-    
-    .status-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-top: 15px; background: #fff; text-align: left; }
-    .date-text { font-size: 12px; color: #64748b; font-weight: bold; }
-    .qty-text { font-size: 18px; font-weight: 900; color: #1e293b; }
-    .remarks-text { font-size: 12px; color: #475569; margin-top: 8px; background: #f1f5f9; padding: 8px; border-radius: 4px; }
-    
-    /* Status Colors */
-    .badge-Pending { background-color: #fef08a; color: #854d0e; }
-    .badge-SPOC { background-color: #bae6fd; color: #0369a1; }
-    .badge-Approved { background-color: #fed7aa; color: #c2410c; }
-    .badge-Dispatched { background-color: #bbf7d0; color: #15803d; }
-  </style>
+  <style>body { background-color: #f8fafc; padding: 20px; font-family: 'Segoe UI', Tahoma, sans-serif; }</style>
 </head>
 <body>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold text-info mb-0" style="color: #0ea5e9 !important;">🔍 Track Request Status</h5>
+    <button id="btnFetchTrack" class="btn btn-info text-white fw-bold px-4" style="background-color: #0ea5e9; border-color: #0ea5e9;" onclick="fetchMyStatus()">🔄 Refresh Status</button>
+  </div>
 
-  <div class="container text-center">
-    <div class="tracker-box">
-      <h4 class="fw-bold mb-1" style="color: #6d28d9;">📦 Track Your Request</h4>
-      <p class="text-muted" style="font-size: 14px;">Enter your CSC ID to check stationary status</p>
-      
-      <form onsubmit="trackStatus(event)">
-        <div class="mb-3 mt-4 text-start">
-          <label class="form-label fw-bold text-secondary">CSC ID / VLE ID</label>
-          <input type="text" id="cscIdInput" class="form-control text-uppercase" placeholder="Enter your 12-digit CSC ID" required>
-        </div>
-        <button type="submit" id="btnTrack" class="btn-track">🔍 Check Status</button>
-      </form>
-
-      <div id="resultArea" class="mt-4">
-        <!-- Results will appear here -->
-      </div>
-    </div>
+  <div id="trackResultArea">
+    <!-- Results load here -->
   </div>
 
   <script>
-    // 🌟🌟🌟 కింద మీ గూగుల్ వెబ్ యాప్ లింక్ కచ్చితంగా పేస్ట్ చేయండి 🌟🌟🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    let loggedInId = localStorage.getItem("userId") || "";
+    let loggedInUser = localStorage.getItem("userName") || "";
 
-    function trackStatus(e) {
-       e.preventDefault();
-       let cscId = document.getElementById("cscIdInput").value.trim().toUpperCase();
-       let btn = document.getElementById("btnTrack");
-       let resultArea = document.getElementById("resultArea");
+    window.onload = function() { fetchMyStatus(); };
 
-       btn.disabled = true;
-       btn.innerText = "⏳ Fetching Details...";
-       resultArea.innerHTML = "";
+    function fetchMyStatus() {
+         let btn = document.getElementById('btnFetchTrack');
+         let resultArea = document.getElementById('trackResultArea');
+         btn.disabled = true; btn.innerText = "⏳ Fetching..."; 
+         resultArea.innerHTML = `<div class="text-center text-muted fw-bold py-5">లోడ్ అవుతోంది...</div>`;
+         
+         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "checkVleStatus", vleId: loggedInId }) })
+         .then(res => res.json()).then(res => {
+            btn.disabled = false; btn.innerText = "🔄 Refresh Status";
 
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "checkVleStatus", vleId: cscId }) })
-       .then(res => res.json()).then(res => {
-          btn.disabled = false;
-          btn.innerText = "🔍 Check Status";
+            if(res.success && res.data.length > 0) {
+               let html = `<h6 class="text-success fw-bold mb-3">Recent Requests for ${loggedInId}:</h6>`;
+               
+               res.data.forEach(req => {
+                  let bg = "#f8fafc", col = "#475569";
+                  let st = req.status;
+                  if(st.includes("Pending with SPOC")) { bg = "#e0f2fe"; col = "#0369a1"; }
+                  else if(st === "Pending") { bg = "#fef9c3"; col = "#854d0e"; }
+                  else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; }
+                  else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; }
+                  else if(st.includes("Rejected")) { bg = "#fee2e2"; col = "#b91c1c"; }
 
-          if(res.success && res.data.length > 0) {
-             let html = `<h6 class="fw-bold text-success mb-3 text-start">Recent Requests found for ${cscId}:</h6>`;
-             
-             res.data.forEach(req => {
-                // బ్యాడ్జ్ కలర్ లాజిక్
-                let statusClass = "bg-secondary";
-                let statusText = req.status;
+                  let rawRemarks = req.remarks || "-";
+                  let finalRemarks = rawRemarks;
+                  let serialsHtml = "";
+                  let remarkColor = st.includes("Rejected") ? "#b91c1c" : "#475569";
+                  
+                  let rawDate = new Date(req.date);
+                  let formattedDateStr = "";
+                  if (!isNaN(rawDate)) {
+                      let yy = rawDate.getFullYear();
+                      let mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+                      let dd = String(rawDate.getDate()).padStart(2, '0');
+                      let hrs = String(rawDate.getHours()).padStart(2, '0');
+                      let mins = String(rawDate.getMinutes()).padStart(2, '0');
+                      formattedDateStr = `${yy}${mm}${dd}${hrs}${mins}`;
+                  } else { formattedDateStr = Math.floor(Math.random() * 90000) + 10000; }
+                  let dynamicReqNo = `ACK-${formattedDateStr}-${loggedInId.slice(-4)}`;
+                  
+                  if(rawRemarks.includes("(Serials:")) {
+                      let splitPart = rawRemarks.split("(Serials:");
+                      finalRemarks = splitPart[0].trim();
+                      let serialsPart = splitPart[1].replace(")", "").trim();
+                      
+                      serialsHtml = `
+                        <div class="mt-3 p-3 rounded" style="background: #fff1f2; border: 1px dashed #fda4af;">
+                           <span style="font-size: 11px; color: #e11d48; font-weight: bold; text-transform: uppercase;">📋 Allocated Serials:</span><br>
+                           <span style="font-size: 15px; font-weight: 900; color: #be123c;">${serialsPart}</span>
+                        </div>
+                        <div class="mt-3">
+                           <button onclick="printAckNewTab('${req.date}', '${req.qty}', '${serialsPart}', '${dynamicReqNo}')" class="btn btn-success w-100 fw-bold py-2 shadow-sm">🖨️ Download / Print Acknowledgement Form</button>
+                        </div>
+                      `;
+                  }
 
-                if(statusText.includes("Pending with SPOC")) statusClass = "badge-SPOC";
-                else if(statusText === "Pending") statusClass = "badge-Pending";
-                else if(statusText === "Approved by SPOC") statusClass = "badge-Approved";
-                else if(statusText === "Dispatched") statusClass = "badge-Dispatched";
-
-                html += `
-                  <div class="status-card shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <span class="date-text">📅 ${req.date}</span>
-                      <span class="badge ${statusClass} px-2 py-1 border" style="font-size:12px;">${statusText}</span>
+                  html += `
+                    <div class="card shadow-sm border-0 mb-3">
+                      <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span style="font-size:12px; color:#64748b; font-weight:bold;">📅 ${req.date}</span>
+                          <span style="background:${bg}; color:${col}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; border:1px solid ${col}40;">${st}</span>
+                        </div>
+                        <div style="font-size:14px;"><span class="text-secondary fw-bold">Req Qty:</span> <strong style="font-size:16px;">${req.qty} Papers</strong></div>
+                        <div style="font-size:13px; margin-top:8px; color: ${remarkColor};">📝 <b>Status:</b> ${finalRemarks}</div>
+                        ${serialsHtml}
+                      </div>
                     </div>
-                    <div><span class="text-secondary fw-bold" style="font-size:13px;">Requested/Approved:</span> <span class="qty-text">${req.qty} Papers</span></div>
-                    <div class="remarks-text">📝 <b>Updates:</b> ${req.remarks}</div>
-                  </div>
-                `;
-             });
-             resultArea.innerHTML = html;
-          } else {
-             resultArea.innerHTML = `<div class="alert alert-danger fw-bold py-2 mt-3">❌ No stock requests found for this CSC ID.</div>`;
-          }
-       }).catch(e => {
-          btn.disabled = false; btn.innerText = "🔍 Check Status";
-          resultArea.innerHTML = `<div class="alert alert-danger fw-bold py-2 mt-3">⚠️ Network Error. Try again.</div>`;
-       });
+                  `;
+               });
+               resultArea.innerHTML = html;
+            } else {
+               resultArea.innerHTML = `<div class="alert alert-danger text-center fw-bold">❌ No stock requests found.</div>`;
+            }
+         }).catch(e => {
+            btn.disabled = false; btn.innerText = "Check Status Now";
+            resultArea.innerHTML = `<div class="alert alert-danger text-center fw-bold">⚠️ Network Error.</div>`;
+         });
+    }
+
+    function printAckNewTab(date, qty, serials, generatedReqNo) {
+          let userName = loggedInUser;
+          let userId = loggedInId;
+          let printHtml = `
+            <html><head><title>ACK_${userId}</title><style>
+                  body { font-family: 'Times New Roman', serif; padding: 30px; color: #000; margin: 0 auto; max-width: 800px; }
+                  .header { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+                  .header img { height: 65px; margin-bottom: 5px; }
+                  .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
+                  .header h3 { margin: 5px 0 0 0; font-size: 16px; text-decoration: underline; }
+                  .details-table { width: 100%; margin-bottom: 20px; font-size: 15px; } .details-table td { padding: 5px; }
+                  .section { margin-bottom: 20px; } .section h4 { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; font-size: 15px; } .section p { margin: 5px 0; font-size: 15px; }
+                  .serial-highlight { display: inline-block; padding: 6px 12px; margin-top: 5px; border: 2px solid #000; background-color: #f8f9fa; font-weight: 900; font-size: 17px; letter-spacing: 1px; border-radius: 4px; }
+                  .declaration { font-style: italic; line-height: 1.6; margin-bottom: 40px; font-size: 15px; text-align: justify; }
+                  .signature-box { display: flex; justify-content: space-between; margin-bottom: 50px; }
+                  .office-use { border-top: 2px dashed black; padding-top: 20px; } .office-use h4 { text-align: center; margin-top: 0; font-size: 15px;}
+                  @media print { @page { margin: 10mm; size: A4; } body { padding: 0; max-width: 100%; } }
+                </style></head>
+              <body>
+                <div class="header"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC Logo"><h2>COMMON SERVICE CENTRES (CSC) - ANDHRA PRADESH</h2><h3>E-STAMPING STATIONARY ACKNOWLEDGEMENT FORM</h3></div>
+                <table class="details-table"><tr><td><strong>Date of Dispatch:</strong> ${date}</td><td><strong>Acknowledgement No:</strong> <span style="font-weight:bold; color:#be123c;">${generatedReqNo}</span></td></tr></table>
+                <div class="section"><h4>VLE DETAILS</h4><p><strong>Name:</strong> ${userName}</p><p><strong>CSC ID:</strong> ${userId}</p></div>
+                <div class="section"><h4>ALLOCATED STOCK DETAILS</h4><p><strong>Quantity Sanctioned:</strong> ${qty} Papers</p><p><strong>Serial Numbers:</strong></p><div class="serial-highlight">${serials}</div></div>
+                <div class="section declaration"><h4 style="font-style:normal;">DECLARATION</h4><p>I, <strong>${userName}</strong>, hereby acknowledge that I have received the physical e-Stamping stationary mentioned above from the District Manager's office. I ensure that these stamp papers will be used strictly for authorized CSC e-Stamping purposes.</p></div>
+                <div class="signature-box"><div><p>____________________________________</p><p><strong>(VLE Signature & Stamp)</strong></p><p>Date: ______________</p></div></div>
+                <div class="office-use"><h4>FOR OFFICE USE ONLY</h4><div class="signature-box" style="margin-top:40px; margin-bottom:0;"><div><p>____________________________________</p><p><strong>Stock Handed Over By</strong> (DM Name / Sign)</p><p>Date: ______________</p></div></div></div>
+                <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); }; window.onafterprint = function() { window.close(); };<\/script>
+              </body></html>`;
+          let printWindow = window.open('', '_blank');
+          printWindow.document.write(printHtml); printWindow.document.close();
     }
   </script>
 </body>
