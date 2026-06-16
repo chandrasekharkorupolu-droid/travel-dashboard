@@ -9,7 +9,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ1NDIEFQIFRvdXIgJiBUcmF2ZWxzIiwic2hvcnRfbmFtZSI6IkNTQyBUcmF2ZWxzIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJzdGFydF91cmwiOiIuLyIsImJhY2tncm91bmRfY29sb3IiOiIjMGYxNzJhIiwidGhlbWVfY29sb3IiOiIjMGYxNzJhIn0=">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -21,27 +20,33 @@
             position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); overflow: hidden;
         }
 
-        /* 🌟 LOGIN SCREEN 🌟 */
+        /* 🌟 LOGIN & PIN SCREENS 🌟 */
         #loginScreen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff;
             display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; z-index: 100;
         }
-        .login-logo { font-size: 40px; margin-bottom: 10px; }
+        .login-logo { margin-bottom: 15px; display: flex; justify-content: center; }
+        .login-logo img { max-width: 90px; height: auto; object-fit: contain; }
         .login-title { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 5px; text-align: center;}
         .login-sub { font-size: 13px; color: #64748b; margin-bottom: 30px; font-weight: 600; text-align: center;}
         .input-group { width: 100%; margin-bottom: 15px; }
         .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 15px; outline: none; font-weight: 600; transition: 0.3s;}
         .input-group input:focus { border-color: #3b82f6; }
+        
+        .pin-input { font-size: 24px !important; text-align: center; letter-spacing: 15px; font-weight: 900 !important; }
+        .text-link { color: #3b82f6; font-size: 13px; text-decoration: none; cursor: pointer; display: block; text-align: center; margin-top: 20px; font-weight: 700; }
+        
         .btn-login { width: 100%; padding: 15px; background-color: #10b981; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s;}
         .btn-login:active { transform: scale(0.98); }
         .login-error { color: #ef4444; font-size: 13px; font-weight: 700; margin-top: 15px; display: none; text-align: center;}
 
         /* MAIN APP SCREEN */
-        #appScreen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        #appScreen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; }
 
         .app-header { background-color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
         .header-left h1 { font-size: 18px; font-weight: 800; color: #1e293b; }
-        .header-left span { font-size: 11px; color: #64748b; font-weight: 600; display: block;}
+        .header-left span { font-size: 12px; color: #64748b; font-weight: 700; display: block;}
+        .live-time { font-size: 10px; color: #3b82f6; font-weight: 700; margin-top: 2px; }
         .header-right { display: flex; align-items: center; gap: 8px; }
         .progress-badge { background-color: #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
         
@@ -59,14 +64,13 @@
         .c-inact { color: #f87171; } 
         .c-pend { color: #60a5fa; } 
 
-        /* 🌟 FIX: CARDS HIDDEN COMPLETELY (200%) 🌟 */
         .card-stack { 
             flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; 
             padding: 20px; overflow: hidden; 
         }
         
         .vle-card { 
-            background-color: #ffffff; width: calc(100% - 40px); height: calc(100% - 40px); max-height: 520px; 
+            background-color: #ffffff; width: calc(100% - 40px); height: calc(100% - 40px); max-height: 540px; 
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; 
             position: absolute; 
             transition: transform 1s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -75,13 +79,12 @@
         }
         
         .card-active { transform: translateY(0) !important; z-index: 5;}
-        
         .card-done { transform: translateY(-200%) !important; z-index: 1;}
         
         .service-banner { text-align: center; padding: 12px; font-size: 20px; font-weight: 900; color: white; letter-spacing: 1px; border-radius: 20px 20px 0 0;}
         .bg-irctc { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
 
-        .vle-info { padding: 15px 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .vle-info { padding: 15px 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; overflow-y: auto;}
         .vle-name { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 5px; line-height: 1.2;}
         .vle-id { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 10px; }
         
@@ -104,44 +107,150 @@
         .remark-select:focus { border-color: #3b82f6; }
         .remark-select:disabled { background-color: #e2e8f0; cursor: not-allowed; }
 
+        .custom-remark-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 15px; outline: none; background-color: #ffffff; display: none; }
+        .custom-remark-input:focus { border-color: #3b82f6; }
+
         .submit-btn { background-color: #0f172a; color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
         .submit-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
         .submit-btn:active:not(:disabled) { transform: scale(0.98); }
 
-        .done-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 30px; }
-        .done-icon { font-size: 60px; margin-bottom: 20px; }
-        .done-title { font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 10px; }
-        .done-desc { font-size: 14px; color: #64748b; font-weight: 500; }
+        /* DONE SCREEN & SUMMARY TABLE CSS */
+        .done-screen { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; width: 100%; padding: 20px; overflow-y: auto; background-color: #f8fafc; }
+        .done-header { text-align: center; margin-top: 20px; margin-bottom: 20px; }
+        .done-icon { font-size: 50px; margin-bottom: 10px; }
+        .done-title { font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .done-desc { font-size: 13px; color: #64748b; font-weight: 500; }
+        
+        .summary-section { width: 100%; display: flex; flex-direction: column; }
+        .summary-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;}
+        .table-responsive { width: 100%; overflow-x: auto; background: #ffffff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #cbd5e1; }
+        .summary-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .summary-table th { background-color: #1e293b; color: white; font-size: 11px; font-weight: 700; padding: 10px; white-space: nowrap; }
+        .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; vertical-align: middle; }
+        .summary-table tr:last-child td { border-bottom: none; }
+        .s-name { font-weight: 700; color: #0f172a; display: block; font-size: 12px; }
+        .s-id { color: #64748b; font-size: 10px; font-weight: 600; }
+        .s-rem { font-weight: 600; color: #dc2626; }
+        .s-rem.good { color: #059669; }
+        
+        .btn-recall { background-color: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; display: block; text-align: center; box-shadow: 0 2px 5px rgba(59,130,246,0.3); margin-bottom: 6px;}
+        .btn-recall:active { transform: scale(0.95); }
+        .btn-update { background-color: #f59e0b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; display: block; width: 100%; cursor: pointer; text-align: center; box-shadow: 0 2px 5px rgba(245,158,11,0.3);}
+        .btn-update:active { transform: scale(0.95); }
+
+        /* POPUP MODAL CSS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: #ffffff; width: 100%; max-width: 350px; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .modal-sub { font-size: 11px; color: #64748b; margin-bottom: 15px; font-weight: 600; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #e2e8f0; color: #475569; font-weight: 700; cursor: pointer; }
+        .btn-save-modal { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #10b981; color: white; font-weight: 700; cursor: pointer; }
+        .btn-save-modal:disabled { background: #94a3b8; cursor: not-allowed; }
 
         .loader-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;}
         .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* HOLIDAY SCREEN & CONFETTI BLAST CSS */
+        #holidayScreen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a, #1e293b); flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 500; overflow: hidden; padding: 20px;}
+        .holiday-icon { font-size: 80px; margin-bottom: 10px; animation: bounce 2s infinite ease-in-out; }
+        .holiday-title { font-size: 28px; font-weight: 900; color: #facc15; margin-bottom: 15px; line-height: 1.2; text-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 502;}
+        .holiday-desc { font-size: 15px; color: #e2e8f0; font-weight: 500; margin-bottom: 40px; z-index: 502;}
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .confetti { position: absolute; top: -10px; width: 10px; height: 10px; border-radius: 3px; z-index: 501; }
+        @keyframes fallConfetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="app-container" ondblclick="openFullscreen()">
+    <div class="modal-overlay" id="updateModal">
+        <div class="modal-box">
+            <div class="modal-title">Update Status</div>
+            <div class="modal-sub" id="updateModalVleName">VLE Name</div>
+            
+            <select id="updateModalSelect" class="remark-select" onchange="handleModalRemarkChange()">
+                <option value="" disabled selected>Select new reason...</option>
+                <option value="ACTIVATED">✅ ACTIVATED / Will do right now</option>
+                <option value="Promised to do today/tomorrow">Promised to do today/tomorrow</option>
+                <option value="Using Competitor / B2C">Using Competitor / B2C Portal</option>
+                <option value="DSP e-KYC Problem">DSP e-KYC Problem</option>
+                <option value="Password / ID Block / Technical Issue">Password / ID Block / Technical Issue</option>
+                <option value="Wallet / Funds Issue">Wallet / Funds Issue</option>
+                <option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option>
+                <option value="Not Interested anymore">Not Interested anymore</option>
+                <option value="Did not Lift / Not Reachable">Did not Lift / Not Reachable</option>
+                <option value="Other">Other (Type your reason)</option>
+            </select>
+            
+            <input type="text" id="modalCustomRemark" class="custom-remark-input" placeholder="Type reason here..." oninput="checkModalCustomRemark()">
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeUpdateModal()">Cancel</button>
+                <button class="btn-save-modal" id="btnModalSave" disabled onclick="saveUpdatedRemark()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="mainContainer">
         
         <div id="loginScreen">
-            <div class="login-logo">📱</div>
+            <div class="login-logo">
+                <img src="https://csc.gov.in/assets/images/logo.png" alt="CSC Logo" onerror="this.src='logo.png'">
+            </div>
             <div class="login-title">CSC AP Tour & Travels</div>
             <div class="login-sub">Priority Follow-Up System</div>
             
-            <div class="input-group">
-                <input type="tel" id="userId" placeholder="Enter User ID (Mobile No)" maxlength="10">
+            <div id="idPasswordForm" style="width: 100%;">
+                <div class="input-group">
+                    <input type="tel" id="userId" placeholder="Enter User ID (Mobile No)" maxlength="10">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Enter Password">
+                </div>
+                <button class="btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
             </div>
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Enter Password">
+
+            <div id="pinSetupForm" style="display: none; width: 100%;">
+                <h4 style="font-size:15px; text-align:center; margin-bottom:15px; font-weight:700; color:#1e293b;">Set 4-Digit Login PIN</h4>
+                <div class="input-group">
+                    <input type="password" id="newPin" class="pin-input" placeholder="* * * *" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4)">
+                </div>
+                <button class="btn-login" onclick="savePin()">Set PIN & Enter</button>
+                <a class="text-link" onclick="skipPin()">Skip & Continue</a>
             </div>
-            <button class="btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
+
+            <div id="pinLoginForm" style="display: none; width: 100%;">
+                <h4 style="font-size:15px; text-align:center; margin-bottom:15px; font-weight:700; color:#1e293b;">Welcome Back!<br><span id="pinUserName" style="color:#10b981;"></span></h4>
+                <div class="input-group">
+                    <input type="password" id="enterPin" class="pin-input" placeholder="* * * *" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4)">
+                </div>
+                <button class="btn-login" onclick="handlePinLogin()">Login</button>
+                <a class="text-link" onclick="forgotPin()">Forgot PIN? Login with Password</a>
+            </div>
+
             <div class="login-error" id="loginError">Invalid Credentials!</div>
         </div>
 
         <div id="appScreen">
-            <div class="app-header">
+            
+            <div id="holidayScreen">
+                <div class="holiday-icon">🎉</div>
+                <div class="holiday-title" id="holidayTitle">Happy Holiday!</div>
+                <div class="holiday-desc" id="holidaySub">Enjoy your day off!</div>
+                <button class="btn-login" style="width: 200px; z-index: 502;" onclick="handleLogout()">Logout</button>
+            </div>
+
+            <div class="app-header" id="mainHeader">
                 <div class="header-left">
-                    <h1>Follow-Up</h1>
+                    <h1 id="greetingTitle">Follow-Up</h1>
                     <span id="dmNameLabel">DM Name</span>
+                    <div id="liveTimeLabel" class="live-time"></div>
                 </div>
                 <div class="header-right">
                     <span class="progress-badge" id="progressTxt">Wait...</span>
@@ -151,7 +260,7 @@
             </div>
 
             <div class="conversion-banner" id="convBanner">
-                🔥 Awesome! <span id="convCount">0</span> of your recently called VLEs are now ACTIVE!
+                🔥 Awesome! You called <span id="totalCalled7Days">0</span> VLEs in the last 7 days, and <span id="convCount">0</span> are now ACTIVE!
             </div>
 
             <div class="global-stats" id="globalStats" style="display: none;">
@@ -164,30 +273,84 @@
             <div class="card-stack" id="cardStack">
                 <div class="loader-container" id="loader">
                     <div class="spinner"></div>
-                    <div style="font-weight: 700; color: #64748b;" id="loadingTxt">Authenticating & Fetching Data...</div>
+                    <div style="font-weight: 700; color: #64748b;" id="loadingTxt">Authenticating...</div>
                 </div>
             </div>
 
             <div class="done-screen" id="doneScreen">
-                <div class="done-icon">🎉</div>
-                <div class="done-title">Awesome Job!</div>
-                <div class="done-desc">You have completed your priority quota for today.</div>
+                <div class="done-header">
+                    <div class="done-icon">🎊</div>
+                    <div class="done-title">Awesome Job!</div>
+                    <div class="done-desc">You have completed your priority quota.</div>
+                </div>
+                
+                <div class="summary-section">
+                    <div class="summary-title">📊 Today's Call Summary</div>
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th>VLE Details</th>
+                                    <th>Remark</th>
+                                    <th style="width: 70px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryTbody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
 
     <script>
-        // 🌟 IKKADA CORRECT CHESANU SIR (Double quotes theesesanu) 🌟
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         
         let pendingQueue = [];
         let currentIndex = 0;
         let callStartTime = null;
+        let currentUpdateIndex = -1;
 
         let totalDmTargetVles = 0;
         let totalDmInactive = 0;
         let totalDmActive = 0;
+
+        // 🌟 FORCE FULLSCREEN LOGIC 🌟
+        document.body.addEventListener('click', function() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                openFullscreen();
+            }
+        });
+
+        document.body.addEventListener('touchstart', function() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                openFullscreen();
+            }
+        });
+
+        function updateDateTime() {
+            let now = new Date();
+            let hours = now.getHours();
+            let greeting = "Good Evening,";
+            
+            if (hours >= 0 && hours < 12) {
+                greeting = "Good Morning,";
+            } else if (hours >= 12 && hours < 17) {
+                greeting = "Good Afternoon,";
+            }
+            
+            let dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            let timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            let greetingEl = document.getElementById("greetingTitle");
+            let timeEl = document.getElementById("liveTimeLabel");
+            if(greetingEl) greetingEl.innerText = greeting;
+            if(timeEl) timeEl.innerText = `📅 ${dateStr} • ⏰ ${timeStr}`;
+        }
+        
+        setInterval(updateDateTime, 60000);
 
         function openFullscreen() {
             try {
@@ -200,16 +363,28 @@
             } catch(e) {}
         }
 
+        // 🌟 ONLOAD LOGIC FOR PIN LOGIN 🌟
         window.onload = () => {
+            updateDateTime(); 
             let user = localStorage.getItem("userName");
-            if (user) {
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("appScreen").style.display = "flex";
-                document.getElementById("dmNameLabel").innerText = user;
-                fetchAndPrepareData();
+            let pin = localStorage.getItem("userPin");
+            let isLoggedIn = sessionStorage.getItem("isLoggedIn"); 
+            
+            if (user && isLoggedIn) {
+                enterApp();
+            } else if (user && pin) {
+                document.getElementById("loginScreen").style.display = "flex";
+                document.getElementById("appScreen").style.display = "none";
+                document.getElementById("idPasswordForm").style.display = "none";
+                document.getElementById("pinSetupForm").style.display = "none";
+                document.getElementById("pinLoginForm").style.display = "block";
+                document.getElementById("pinUserName").innerText = user;
             } else {
                 document.getElementById("loginScreen").style.display = "flex";
                 document.getElementById("appScreen").style.display = "none";
+                document.getElementById("idPasswordForm").style.display = "block";
+                document.getElementById("pinSetupForm").style.display = "none";
+                document.getElementById("pinLoginForm").style.display = "none";
             }
         };
 
@@ -228,7 +403,6 @@
 
         async function handleLogin() {
             openFullscreen(); 
-
             let uidInput = document.getElementById("userId").value.trim();
             let pwdInput = document.getElementById("password").value.trim();
             let btn = document.getElementById("loginBtn");
@@ -254,11 +428,9 @@
                     localStorage.setItem("userDesignation", foundUser[2]);
                     localStorage.setItem("userName", foundUser[5]);
                     
-                    document.getElementById("loginScreen").style.display = "none";
-                    document.getElementById("appScreen").style.display = "flex";
-                    document.getElementById("dmNameLabel").innerText = foundUser[5];
-                    
-                    fetchAndPrepareData();
+                    document.getElementById("idPasswordForm").style.display = "none";
+                    document.getElementById("pinSetupForm").style.display = "block";
+                    document.getElementById("loginError").style.display = "none";
                 } else {
                     err.innerText = "Invalid User ID or Password!"; err.style.display = "block";
                 }
@@ -268,67 +440,80 @@
             btn.innerText = "Login"; btn.disabled = false;
         }
 
-        function handleLogout() { localStorage.clear(); sessionStorage.clear(); location.reload(); }
-
-        async function fetchAndPrepareData() {
-            try {
-                document.getElementById("loadingTxt").innerHTML = "Downloading IRCTC Data...<br><small style='color:#3b82f6;'>Please wait...</small>";
-                
-                let irctcData = JSON.parse(sessionStorage.getItem("irctcData"));
-                if (!irctcData) {
-                    irctcData = await fetchWithRetry(apiURL + "?sheet=IRCTC&t=" + new Date().getTime());
-                    sessionStorage.setItem("irctcData", JSON.stringify(irctcData));
-                }
-
-                document.getElementById("loadingTxt").innerHTML = "Checking Call History...<br><small style='color:#10b981;'>Analyzing your success rate...</small>";
-                
-                let logsData = null;
-                try {
-                    logsData = await fetchWithRetry(apiURL + "?sheet=FollowUp_Logs&t=" + new Date().getTime());
-                } catch(err) {
-                    console.warn("Could not fetch logs");
-                }
-
-                document.getElementById("loadingTxt").innerText = "Processing Target Queue...";
-                buildFollowUpQueue(irctcData, logsData);
-
-            } catch(e) {
-                document.getElementById("loader").innerHTML = "<div style='color:red; font-weight:bold; margin-top:20px; font-size:14px;'>❌ Error connecting to server!<br>Please refresh the page.</div>";
+        function savePin() {
+            let pin = document.getElementById("newPin").value.trim();
+            if(pin.length === 4 && !isNaN(pin)) {
+                localStorage.setItem("userPin", pin);
+                enterApp();
+            } else {
+                let err = document.getElementById("loginError");
+                err.innerText = "Please enter a valid 4-digit PIN!"; err.style.display = "block";
             }
         }
 
-        function buildFollowUpQueue(rawData, logsData) {
-            if(!rawData || rawData.length < 2) return;
-            
-            let loggedInUser = (localStorage.getItem("userName") || "").toLowerCase().trim();
-            let now = new Date();
-            
-            let vleHistory = {};
-            let myRecentCalls = new Set();
+        function skipPin() { enterApp(); }
 
-            if(logsData && logsData.length > 1) {
-                for(let i=1; i<logsData.length; i++) {
-                    let logDate = new Date(logsData[i][0]);
-                    let cid = logsData[i][1];
-                    let srv = logsData[i][2];
-                    let dm = (logsData[i][3] || "").toString().toLowerCase().trim();
-                    let rmk = logsData[i][4];
-                    
-                    if(srv === 'IRCTC') {
-                        if(!vleHistory[cid] || logDate > vleHistory[cid].lastDate) {
-                            vleHistory[cid] = { lastDate: logDate, lastRemark: rmk };
-                        }
-                        let diffDays = (now - logDate) / (1000 * 60 * 60 * 24);
-                        if (dm === loggedInUser && diffDays <= 7) {
-                            myRecentCalls.add(cid);
-                        }
-                    }
-                }
+        function handlePinLogin() {
+            let entered = document.getElementById("enterPin").value.trim();
+            let saved = localStorage.getItem("userPin");
+            if(entered === saved) {
+                document.getElementById("loginError").style.display = "none";
+                enterApp();
+            } else {
+                let err = document.getElementById("loginError");
+                err.innerText = "Incorrect PIN!"; err.style.display = "block";
             }
+        }
 
+        function forgotPin() {
+            localStorage.clear(); sessionStorage.clear(); location.reload();
+        }
+
+        function enterApp() {
+            sessionStorage.setItem("isLoggedIn", "true");
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("appScreen").style.display = "flex";
+            document.getElementById("dmNameLabel").innerText = localStorage.getItem("userName");
+            fetchAndPrepareData();
+        }
+
+        function handleLogout() { 
+            sessionStorage.removeItem("isLoggedIn"); 
+            location.reload(); 
+        }
+
+        function fireConfettiBlast() {
+            const colors = ['#facc15', '#34d399', '#60a5fa', '#f87171', '#c084fc', '#ffffff'];
+            let screen = document.getElementById('holidayScreen');
+            for(let i=0; i<100; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animation = `fallConfetti ${Math.random() * 3 + 2}s linear forwards`;
+                conf.style.animationDelay = Math.random() * 1.5 + 's';
+                screen.appendChild(conf);
+            }
+        }
+
+        function showCelebrationScreen(title, subTitle) {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("mainHeader").style.display = "none";
+            document.getElementById("cardStack").style.display = "none";
+            
+            document.getElementById("holidayTitle").innerText = title;
+            document.getElementById("holidaySub").innerText = subTitle;
+            document.getElementById("holidayScreen").style.display = "flex";
+            
+            fireConfettiBlast();
+        }
+
+        // 🌟 1. SMART DATA PARSER (Safely parses any sheet) 🌟
+        function parseSheetData(rawData, loggedInUser, userRole) {
+            if (!rawData || rawData.length < 2) return {};
             let headers = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-            let idxcscid = headers.findIndex(h => h.includes('cscid')); if(idxcscid===-1) idxcscid = 1;
-            let idxname = headers.findIndex(h => h.includes('vlename') || h.includes('name')); if(idxname===-1) idxname = 6;
+            let idxcscid = headers.findIndex(h => h.includes('cscid')); if(idxcscid === -1) idxcscid = 1;
+            let idxname = headers.findIndex(h => h.includes('vlename') || h.includes('name')); if(idxname === -1) idxname = 6;
             let idxmobile = 9; 
             let idxHo = headers.findIndex(h => h.includes('horemarks') || h.includes('remarks'));
             let idxEmp = headers.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('districtmanager') || h.includes('dmname'));
@@ -342,23 +527,14 @@
                 for (let k = 1; k <= 12; k++) { if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k); }
             }
 
-            let inactiveList = [];
-            let userRole = localStorage.getItem("userDesignation") || "";
-            
-            totalDmTargetVles = 0;
-            totalDmInactive = 0;
-            totalDmActive = 0;
-            let activatedFromMyCalls = 0;
-
+            let result = {};
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
                 let cscId = row[idxcscid];
                 if(!cscId || cscId === '-') continue;
 
                 let dmNameStr = idxEmp > -1 ? (row[idxEmp] || '').toString().toLowerCase().trim() : '';
-                if (userRole.includes("Manager")) {
-                    if (!dmNameStr.includes(loggedInUser) && loggedInUser !== "") continue; 
-                }
+                if (userRole.includes("manager") && !dmNameStr.includes(loggedInUser)) continue;
 
                 if (idxHo > -1) {
                     let hoRemark = (row[idxHo] || '').toString().toLowerCase();
@@ -369,52 +545,221 @@
                 let currentYearTxns = 0;
                 mIndices.forEach(colIdx => { currentYearTxns += (parseInt(row[colIdx]) || 0); });
 
-                if(lastYearTxns > 0) {
-                    totalDmTargetVles++; 
-                    if(currentYearTxns === 0) {
-                        totalDmInactive++;
-                    } else {
-                        totalDmActive++;
-                        if(myRecentCalls.has(cscId)) activatedFromMyCalls++;
-                    }
+                result[cscId] = {
+                    name: row[idxname] || "Unknown",
+                    mobile: row[idxmobile] ? row[idxmobile].toString().trim() : "No Number",
+                    lastYear: lastYearTxns,
+                    thisYear: currentYearTxns
+                };
+            }
+            return result;
+        }
+
+        // 🌟 2. ERROR HANDLING FETCH LOGIC 🌟
+        async function fetchAndPrepareData() {
+            try {
+                let today = new Date();
+                if (today.getDay() === 0) { 
+                    showCelebrationScreen("✨ Happy Sunday! ✨", "Enjoy your weekly holiday. Take a good rest! 🌴"); return; 
                 }
 
-                if(lastYearTxns > 0 && currentYearTxns === 0) {
-                    let mob = row[idxmobile] ? row[idxmobile].toString().trim() : "No Number";
-                    let history = vleHistory[cscId];
-                    let lRemark = "";
-                    let lDateStr = "";
-                    
-                    if(history) {
-                        let diffDays = (now - history.lastDate) / (1000 * 60 * 60 * 24);
-                        if(diffDays < 3) continue; 
-                        lRemark = history.lastRemark;
-                        let dObj = history.lastDate;
-                        lDateStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
-                    }
+                document.getElementById("loadingTxt").innerHTML = "Checking Calendar...<br><small style='color:#facc15;'>Looking for celebrations!</small>";
+                let holidaysData = null;
+                try { holidaysData = await fetchWithRetry(apiURL + "?sheet=Holidays&t=" + new Date().getTime()); } catch(err) { }
+                if (holidaysData && holidaysData.length > 1) { /* Handle holidays... */ }
 
-                    inactiveList.push({
-                        cscId: cscId, name: row[idxname] || "Unknown", mobile: mob,
-                        lastYear: lastYearTxns, thisYear: currentYearTxns, service: 'IRCTC',
-                        lastRemark: lRemark, lastCallDate: lDateStr
-                    });
+                // Download IRCTC (With try-catch for storage quota)
+                document.getElementById("loadingTxt").innerHTML = "Downloading IRCTC Data...<br><small style='color:#3b82f6;'>Please wait...</small>";
+                let irctcData = null;
+                try { irctcData = JSON.parse(sessionStorage.getItem("irctcData")); } catch(e){}
+                if (!irctcData) { 
+                    irctcData = await fetchWithRetry(apiURL + "?sheet=IRCTC&t=" + new Date().getTime()); 
+                    try { sessionStorage.setItem("irctcData", JSON.stringify(irctcData)); } catch(e){} 
+                }
+
+                // Download REDBUS
+                document.getElementById("loadingTxt").innerHTML = "Downloading REDBUS Data...<br><small style='color:#dc2626;'>Getting travel details...</small>";
+                let redbusData = null;
+                try { redbusData = JSON.parse(sessionStorage.getItem("redbusData")); } catch(e){}
+                if (!redbusData) { 
+                    redbusData = await fetchWithRetry(apiURL + "?sheet=REDBUS&t=" + new Date().getTime()); 
+                    try { sessionStorage.setItem("redbusData", JSON.stringify(redbusData)); } catch(e){} 
+                }
+
+                document.getElementById("loadingTxt").innerHTML = "Checking Call History...<br><small style='color:#10b981;'>Analyzing your success rate...</small>";
+                let logsData = null;
+                try { logsData = await fetchWithRetry(apiURL + "?sheet=FollowUp_Logs&t=" + new Date().getTime()); } catch(err) {}
+
+                document.getElementById("loadingTxt").innerText = "Processing Target Queue...";
+                buildFollowUpQueue(irctcData, redbusData, logsData);
+
+            } catch(e) {
+                // 🌟 Display exact error message for debugging 🌟
+                document.getElementById("loader").innerHTML = `<div style='color:red; font-weight:bold; margin-top:20px; font-size:14px; text-align:center;'>❌ Connection Failed!<br><span style='font-size:10px; color:#64748b;'>${e.message}</span><br><br><button onclick="location.reload()" style="padding:8px 15px; background:#ef4444; color:white; border:none; border-radius:5px;">Retry</button></div>`;
+            }
+        }
+
+        // 🌟 3. COMBO LOGIC & 5+2 ALGORITHM 🌟
+        function buildFollowUpQueue(irctcData, redbusData, logsData) {
+            let loggedInUser = (localStorage.getItem("userName") || "").toLowerCase().trim();
+            let userRole = (localStorage.getItem("userDesignation") || "").toLowerCase().trim();
+            let now = new Date();
+            let todayStr = now.toLocaleDateString('en-GB'); 
+
+            let savedDate = localStorage.getItem("todayQueueDate");
+            if (savedDate === todayStr) {
+                let savedQueue = JSON.parse(localStorage.getItem("todayQueueData"));
+                if (savedQueue && savedQueue.length > 0) {
+                    pendingQueue = savedQueue;
+                    currentIndex = parseInt(localStorage.getItem("todayCurrentIndex")) || 0;
+                    totalDmTargetVles = parseInt(localStorage.getItem("todayTotalTarget")) || 0;
+                    totalDmActive = parseInt(localStorage.getItem("todayTotalActive")) || 0;
+                    totalDmInactive = parseInt(localStorage.getItem("todayTotalInactive")) || 0;
+                    let activatedFromMyCalls = parseInt(localStorage.getItem("todayActivatedCalls")) || 0;
+                    let totalRecentCalls = parseInt(localStorage.getItem("todayTotalRecentCalls")) || 0;
+                    finalizeQueueLoad(activatedFromMyCalls, totalRecentCalls);
+                    return; 
                 }
             }
 
-            inactiveList.sort((a, b) => b.lastYear - a.lastYear);
+            let irctcMap = parseSheetData(irctcData, loggedInUser, userRole);
+            let redbusMap = parseSheetData(redbusData, loggedInUser, userRole);
+            let allCscIds = new Set([...Object.keys(irctcMap), ...Object.keys(redbusMap)]);
 
-            let isFriday = new Date().getDay() === 5; 
-            let irctcLimit = isFriday ? 15 : 5; 
+            let vleHistory = {};
+            let myRecentCalls = new Set();
+
+            if(logsData && logsData.length > 1) {
+                for(let i=1; i<logsData.length; i++) {
+                    let logDate = new Date(logsData[i][0]);
+                    let cid = logsData[i][1];
+                    let dm = (logsData[i][3] || "").toString().toLowerCase().trim();
+                    let rmk = logsData[i][4];
+                    
+                    if(!vleHistory[cid] || logDate > vleHistory[cid].lastDate) {
+                        vleHistory[cid] = { lastDate: logDate, lastRemark: rmk };
+                    }
+                    let diffDays = (now - logDate) / (1000 * 60 * 60 * 24);
+                    if (dm === loggedInUser && diffDays <= 7) {
+                        myRecentCalls.add(cid);
+                    }
+                }
+            }
+
+            let comboList = [];
+            let irctcOnlyList = [];
+            let redbusOnlyList = [];
             
-            pendingQueue = inactiveList.slice(0, irctcLimit);
+            totalDmTargetVles = 0;
+            totalDmInactive = 0;
+            totalDmActive = 0;
+            let activatedFromMyCalls = 0;
+
+            allCscIds.forEach(cid => {
+                let iData = irctcMap[cid];
+                let rData = redbusMap[cid];
+                
+                let hasHistory = (iData && iData.lastYear > 0) || (rData && rData.lastYear > 0);
+                if(hasHistory) {
+                    totalDmTargetVles++;
+                    let isActiveNow = (iData && iData.thisYear > 0) || (rData && rData.thisYear > 0);
+                    if (isActiveNow) {
+                        totalDmActive++;
+                        if (myRecentCalls.has(cid)) activatedFromMyCalls++;
+                    } else {
+                        totalDmInactive++;
+                    }
+                }
+
+                let isIrctcTarget = iData && iData.lastYear > 0 && iData.thisYear === 0;
+                let isRedbusTarget = rData && rData.lastYear > 0 && rData.thisYear === 0;
+                
+                if (!isIrctcTarget && !isRedbusTarget) return;
+                
+                let history = vleHistory[cid];
+                if (history) {
+                    let diffDays = (now - history.lastDate) / (1000 * 60 * 60 * 24);
+                    if (diffDays < 3) return; 
+                }
+                
+                let obj = {
+                    cscId: cid,
+                    name: (iData ? iData.name : rData.name),
+                    mobile: (iData ? iData.mobile : rData.mobile),
+                    irctc: iData || {lastYear: 0, thisYear: 0},
+                    redbus: rData || {lastYear: 0, thisYear: 0},
+                    lastCallDate: history ? `${history.lastDate.getDate()}/${history.lastDate.getMonth()+1}` : "",
+                    lastRemark: history ? history.lastRemark : "",
+                    submittedRemark: ""
+                };
+                
+                if (isIrctcTarget && isRedbusTarget) {
+                    obj.service = "IRCTC, REDBUS"; 
+                    obj.sortVal = obj.irctc.lastYear + obj.redbus.lastYear;
+                    comboList.push(obj);
+                } else if (isIrctcTarget) {
+                    obj.service = "IRCTC";
+                    obj.sortVal = obj.irctc.lastYear;
+                    irctcOnlyList.push(obj);
+                } else if (isRedbusTarget) {
+                    obj.service = "REDBUS";
+                    obj.sortVal = obj.redbus.lastYear;
+                    redbusOnlyList.push(obj);
+                }
+            });
+
+            comboList.sort((a,b) => b.sortVal - a.sortVal);
+            irctcOnlyList.sort((a,b) => b.sortVal - a.sortVal);
+            redbusOnlyList.sort((a,b) => b.sortVal - a.sortVal);
+
+            let isFriday = now.getDay() === 5; 
+            let iQuota = isFriday ? 15 : 5; 
+            let rQuota = isFriday ? 5 : 2;  
             
+            pendingQueue = [];
+            
+            for(let i=0; i<comboList.length; i++) {
+                if (iQuota <= 0 && rQuota <= 0) break;
+                pendingQueue.push(comboList[i]);
+                iQuota--; rQuota--;
+            }
+            
+            for(let i=0; i<irctcOnlyList.length; i++) {
+                if (iQuota <= 0) break;
+                pendingQueue.push(irctcOnlyList[i]);
+                iQuota--;
+            }
+            
+            for(let i=0; i<redbusOnlyList.length; i++) {
+                if (rQuota <= 0) break;
+                pendingQueue.push(redbusOnlyList[i]);
+                rQuota--;
+            }
+
+            currentIndex = 0;
+            let totalRecentCalls = myRecentCalls.size;
+
+            localStorage.setItem("todayQueueDate", todayStr);
+            localStorage.setItem("todayQueueData", JSON.stringify(pendingQueue));
+            localStorage.setItem("todayCurrentIndex", currentIndex);
+            localStorage.setItem("todayTotalTarget", totalDmTargetVles);
+            localStorage.setItem("todayTotalActive", totalDmActive);
+            localStorage.setItem("todayTotalInactive", totalDmInactive);
+            localStorage.setItem("todayActivatedCalls", activatedFromMyCalls);
+            localStorage.setItem("todayTotalRecentCalls", totalRecentCalls);
+
+            finalizeQueueLoad(activatedFromMyCalls, totalRecentCalls);
+        }
+
+        function finalizeQueueLoad(activatedFromMyCalls, totalRecentCalls) {
             document.getElementById("loader").style.display = "none";
             
             if(pendingQueue.length === 0) {
                 showDoneScreen();
             } else {
-                if (activatedFromMyCalls > 0) {
+                if (totalRecentCalls > 0) {
                     document.getElementById("convBanner").style.display = "block";
+                    document.getElementById("totalCalled7Days").innerText = totalRecentCalls;
                     document.getElementById("convCount").innerText = activatedFromMyCalls;
                 }
 
@@ -424,8 +769,12 @@
                 document.getElementById("gStatInact").innerText = totalDmInactive;
                 document.getElementById("gStatPend").innerText = pendingQueue.length;
                 
-                renderAllCardsInStack();
-                updateStatsBar();
+                if (currentIndex >= pendingQueue.length) {
+                    showDoneScreen();
+                } else {
+                    renderAllCardsInStack();
+                    updateStatsBar();
+                }
             }
         }
 
@@ -442,18 +791,45 @@
             let vle = pendingQueue[index];
             let badgeHtml = vle.lastRemark ? `<div class="last-remark-badge">⚠️ Last Call (${vle.lastCallDate}): ${vle.lastRemark}</div>` : "";
 
+            let bannerHtml = '';
+            let statsHtml = '';
+            
+            if (vle.service === "IRCTC, REDBUS") {
+                bannerHtml = `<div class="service-banner" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);">🚄 IRCTC & 🚌 REDBUS</div>`;
+                statsHtml = `
+                    <div class="stats-box" style="display:flex; flex-direction:column; gap:5px;">
+                        <div style="font-size:11px; font-weight:800; color:#1e3a8a;">IRCTC &nbsp;➤&nbsp; FY26: <span class="val-good">${vle.irctc.lastYear}</span> &nbsp;|&nbsp; FY27: <span class="val-bad">${vle.irctc.thisYear}</span></div>
+                        <div style="height:1px; background:#cbd5e1; width:100%;"></div>
+                        <div style="font-size:11px; font-weight:800; color:#dc2626;">REDBUS ➤&nbsp; FY26: <span class="val-good">${vle.redbus.lastYear}</span> &nbsp;|&nbsp; FY27: <span class="val-bad">${vle.redbus.thisYear}</span></div>
+                    </div>
+                `;
+            } else if (vle.service === "REDBUS") {
+                bannerHtml = `<div class="service-banner" style="background: linear-gradient(135deg, #dc2626, #ef4444);">🚌 REDBUS FOLLOW-UP</div>`;
+                statsHtml = `
+                    <div class="stats-box">
+                        <div class="stat-item"><div class="stat-lbl">FY 25-26</div><div class="stat-val val-good">${vle.redbus.lastYear}</div></div>
+                        <div class="stat-item"><div class="stat-lbl">FY 26-27</div><div class="stat-val val-bad">${vle.redbus.thisYear}</div></div>
+                    </div>
+                `;
+            } else {
+                bannerHtml = `<div class="service-banner bg-irctc">🚄 IRCTC FOLLOW-UP</div>`;
+                statsHtml = `
+                    <div class="stats-box">
+                        <div class="stat-item"><div class="stat-lbl">FY 25-26</div><div class="stat-val val-good">${vle.irctc.lastYear}</div></div>
+                        <div class="stat-item"><div class="stat-lbl">FY 26-27</div><div class="stat-val val-bad">${vle.irctc.thisYear}</div></div>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="vle-card" id="card-${index}">
-                    <div class="service-banner bg-irctc">🚄 IRCTC TARGET</div>
+                    ${bannerHtml}
                     
                     <div class="vle-info">
                         <div class="vle-name">${vle.name}</div>
                         <div class="vle-id">CSC ID: ${vle.cscId}</div>
                         ${badgeHtml}
-                        <div class="stats-box">
-                            <div class="stat-item"><div class="stat-lbl">FY 25-26</div><div class="stat-val val-good">${vle.lastYear}</div></div>
-                            <div class="stat-item"><div class="stat-lbl">FY 26-27</div><div class="stat-val val-bad">${vle.thisYear}</div></div>
-                        </div>
+                        ${statsHtml}
                     </div>
 
                     <div class="action-area">
@@ -461,7 +837,7 @@
                             📞 Call ${vle.mobile}
                         </button>
                         
-                        <select id="remarkSelect-${index}" class="remark-select" onchange="enableSubmit(${index})">
+                        <select id="remarkSelect-${index}" class="remark-select" onchange="handleRemarkChange(${index})">
                             <option value="" disabled selected>Select Reason for Inactivity...</option>
                             <option value="ACTIVATED">✅ ACTIVATED / Will do right now</option>
                             <option value="Promised to do today/tomorrow">Promised to do today/tomorrow</option>
@@ -472,8 +848,10 @@
                             <option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option>
                             <option value="Not Interested anymore">Not Interested anymore</option>
                             <option value="Did not Lift / Not Reachable">Did not Lift / Not Reachable</option>
-                            <option value="Other">Other (Update in Group)</option>
+                            <option value="Other">Other (Type your reason)</option>
                         </select>
+                        
+                        <input type="text" id="customRemark-${index}" class="custom-remark-input" placeholder="Type reason here..." oninput="checkCustomRemark(${index})">
 
                         <button id="submitBtn-${index}" class="submit-btn" disabled onclick="processSubmission(${index})">SUBMIT & NEXT ⏭</button>
                     </div>
@@ -486,6 +864,7 @@
                 let card = document.getElementById(`card-${i}`);
                 let callBtn = document.getElementById(`callBtn-${i}`);
                 let remarkSel = document.getElementById(`remarkSelect-${i}`);
+                let customInput = document.getElementById(`customRemark-${i}`);
                 
                 if(!card) continue;
 
@@ -497,11 +876,13 @@
                     card.classList.remove("card-done");
                     if(callBtn) callBtn.disabled = false;
                     if(remarkSel) remarkSel.disabled = false;
+                    if(customInput) customInput.disabled = false;
                 } else {
                     card.classList.remove("card-active");
                     card.classList.remove("card-done");
                     if(callBtn) callBtn.disabled = true;
                     if(remarkSel) remarkSel.disabled = true;
+                    if(customInput) customInput.disabled = true;
                 }
             }
         }
@@ -512,13 +893,30 @@
 
         function startCallTimer(mobileNumber) {
             callStartTime = new Date();
-            openFullscreen(); 
-            window.open(`tel:${mobileNumber}`, "_self");
+            let callLink = document.createElement('a');
+            callLink.href = `tel:${mobileNumber}`;
+            document.body.appendChild(callLink);
+            callLink.click();
+            document.body.removeChild(callLink);
         }
 
-        function enableSubmit(index) {
+        function handleRemarkChange(index) {
             let val = document.getElementById(`remarkSelect-${index}`).value;
-            if(val) document.getElementById(`submitBtn-${index}`).disabled = false;
+            let customInput = document.getElementById(`customRemark-${index}`);
+            let submitBtn = document.getElementById(`submitBtn-${index}`);
+
+            if (val === "Other") {
+                customInput.style.display = "block";
+                submitBtn.disabled = customInput.value.trim() === "";
+            } else {
+                customInput.style.display = "none";
+                submitBtn.disabled = !val;
+            }
+        }
+
+        function checkCustomRemark(index) {
+            let val = document.getElementById(`customRemark-${index}`).value.trim();
+            document.getElementById(`submitBtn-${index}`).disabled = val === "";
         }
 
         function processSubmission(index) {
@@ -526,6 +924,17 @@
             document.getElementById(`submitBtn-${index}`).innerText = "Saving...";
 
             let remark = document.getElementById(`remarkSelect-${index}`).value;
+            
+            if (remark === "Other") {
+                let customVal = document.getElementById(`customRemark-${index}`).value.trim();
+                remark = "Other: " + customVal;
+            }
+            
+            if(pendingQueue[index]) {
+                pendingQueue[index].submittedRemark = remark;
+                localStorage.setItem("todayQueueData", JSON.stringify(pendingQueue));
+            }
+
             let durationSeconds = 0;
             if (callStartTime) {
                 let endTime = new Date();
@@ -556,14 +965,14 @@
                 remark: remark, duration: durationSecs, location: locationCoords
             };
 
-            // 🌟 GITHUB బ్రౌజర్ సెక్యూరిటీ (CORS) ని బైపాస్ చేసే అసలైన కోడ్ 🌟
             fetch(apiURL, {
                 method: 'POST',
-                mode: 'no-cors', // ఇది గిట్‌హబ్ నుండి గూగుల్ కి డైరెక్ట్ దారి ఇస్తుంది!
+                mode: 'no-cors',
                 body: JSON.stringify(payload)
             }).then(r => console.log("Saved")).catch(e => console.log(e));
 
             currentIndex++;
+            localStorage.setItem("todayCurrentIndex", currentIndex);
             
             if (currentIndex < pendingQueue.length) {
                 updateStatsBar(); 
@@ -574,11 +983,118 @@
             }
         }
 
+        function populateSummaryTable() {
+            let tbody = document.getElementById("summaryTbody");
+            let html = "";
+            
+            for(let i=0; i<pendingQueue.length; i++) {
+                let vle = pendingQueue[i];
+                let rem = vle.submittedRemark || "No Remark";
+                let remClass = (rem.includes("ACTIVATED") || rem.includes("Promised")) ? "good" : "";
+                
+                let srvIcon = vle.service === "IRCTC, REDBUS" ? "🚄🚌" : (vle.service === "REDBUS" ? "🚌" : "🚄");
+
+                html += `
+                    <tr>
+                        <td><span class="s-name">${srvIcon} ${vle.name}</span><span class="s-id">${vle.cscId}</span></td>
+                        <td class="s-rem ${remClass}">${rem}</td>
+                        <td>
+                            <a href="tel:${vle.mobile}" class="btn-recall">📞 Call</a>
+                            <button class="btn-update" onclick="openUpdateModal(${i})">✏️ Update</button>
+                        </td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+
         function showDoneScreen() {
             document.getElementById("globalStats").style.display = "none";
             document.getElementById("cardStack").style.display = "none";
+            
+            populateSummaryTable();
+            
             document.getElementById("doneScreen").style.display = "flex";
             document.getElementById("progressTxt").innerText = "Completed!";
+        }
+
+        // 🌟 MODAL FUNCTIONS 🌟
+        function openUpdateModal(index) {
+            currentUpdateIndex = index;
+            let vle = pendingQueue[index];
+            document.getElementById("updateModalVleName").innerText = `${vle.name} (${vle.cscId})`;
+            
+            let selectBox = document.getElementById("updateModalSelect");
+            selectBox.value = "";
+            
+            let customInput = document.getElementById("modalCustomRemark");
+            customInput.value = "";
+            customInput.style.display = "none";
+            
+            document.getElementById("btnModalSave").disabled = true;
+            document.getElementById("btnModalSave").innerText = "Save";
+            document.getElementById("updateModal").style.display = "flex";
+        }
+
+        function closeUpdateModal() {
+            document.getElementById("updateModal").style.display = "none";
+            currentUpdateIndex = -1;
+        }
+
+        function handleModalRemarkChange() {
+            let val = document.getElementById("updateModalSelect").value;
+            let customInput = document.getElementById("modalCustomRemark");
+            let saveBtn = document.getElementById("btnModalSave");
+
+            if (val === "Other") {
+                customInput.style.display = "block";
+                saveBtn.disabled = customInput.value.trim() === "";
+            } else {
+                customInput.style.display = "none";
+                saveBtn.disabled = !val;
+            }
+        }
+
+        function checkModalCustomRemark() {
+            let val = document.getElementById("modalCustomRemark").value.trim();
+            document.getElementById("btnModalSave").disabled = val === "";
+        }
+
+        function saveUpdatedRemark() {
+            if(currentUpdateIndex === -1) return;
+            
+            let newRemark = document.getElementById("updateModalSelect").value;
+            
+            if (newRemark === "Other") {
+                let customVal = document.getElementById("modalCustomRemark").value.trim();
+                newRemark = "Other: " + customVal;
+            }
+            
+            let vle = pendingQueue[currentUpdateIndex];
+            let dmName = localStorage.getItem("userName");
+            
+            let btn = document.getElementById("btnModalSave");
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            let payload = {
+                cscId: vle.cscId, service: vle.service, dmName: dmName,
+                remark: newRemark, duration: 0, location: "Updated from Summary"
+            };
+
+            fetch(apiURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            }).then(r => {
+                vle.submittedRemark = newRemark; 
+                localStorage.setItem("todayQueueData", JSON.stringify(pendingQueue));
+                populateSummaryTable(); 
+                closeUpdateModal(); 
+            }).catch(e => {
+                console.log(e);
+                closeUpdateModal(); 
+            });
         }
     </script>
 </body>
