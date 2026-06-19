@@ -31,7 +31,7 @@
 
     .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
     
-    /* 🌟 KPI Cards Design (మీరు అడిగినట్లే) 🌟 */
+    /* 🌟 KPI Cards Design 🌟 */
     .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
     .kpi-card { background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: center;}
     .kpi-card span { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; }
@@ -53,7 +53,7 @@
     th, td { border-left: none !important; border-right: none !important; }
     thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 12px 10px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.2) !important;}
     
-    /* 🌟 ఇమేజ్ లో ఉన్నట్లే పక్కా కాలమ్ కలర్స్ 🌟 */
+    /* 🌟 పక్కా కాలమ్ కలర్స్ 🌟 */
     .th-dist { background-color: #0f172a !important; color: #ffffff !important; }
     .th-tot { background-color: #475569 !important; color: #ffffff !important; }
     .th-act25 { background-color: #64748b !important; color: #ffffff !important; }
@@ -66,11 +66,13 @@
     
     tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
     
-    /* రివ్యూ మీటింగ్ హోవర్ ఎఫెక్ట్ */
-    tbody tr:hover { 
-        background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;
+    /* 🌟 Yellow Hover Effect 🌟 */
+    tbody tr:hover td { 
+        background-color: #fef08a !important; color: #000 !important; 
+        border-top: 2px solid #ea580c !important; border-bottom: 2px solid #ea580c !important;
     }
+    tbody tr:hover td:first-child { border-left: 2px solid #ea580c !important; }
+    tbody tr:hover td:last-child { border-right: 2px solid #ea580c !important; }
     
     tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
     .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
@@ -79,7 +81,7 @@
     /* 🌟 గ్రాండ్ టోటల్ పక్కా సెంటర్ అలైన్మెంట్ 🌟 */
     .t-row-total { background-color: #e2e8f0 !important; border-top: 2px solid #94a3b8 !important; }
     .t-row-total td { color: #0f172a !important; font-size: 13px !important; font-weight: 900 !important; text-align: center; padding: 10px;}
-    .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
+    .t-row-total:hover td { background-color: #e2e8f0 !important; border: none !important; outline: none !important; cursor: default; color: #0f172a !important; }
 
     /* చార్ట్స్ డిజైన్ */
     .charts-container { 
@@ -94,18 +96,22 @@
     html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
     html.exporting thead { position: static !important; transform: none !important; }
     html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; height: 350px !important; }
+
+    .loader-row td { text-align: center; padding: 50px !important; font-size: 16px; color: #dc2626; font-weight: 800; background-color: #fff !important; border:none !important;}
+    .loader-row:hover td { background-color: #fff !important; border: none !important; color: #dc2626 !important; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #cbd5e1; border-top-color: #dc2626; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <!-- కంట్రోల్ బార్ -->
   <div class="controls-bar" data-html2canvas-ignore="true">
     <div class="title-sec">🚌 REDBUS: DAILY TRANSACTIONS</div>
     
     <div class="filter-group">
       <div class="radio-group">
-        <label><input type="radio" name="distType" value="OLD" checked onchange="processData()"> Old Dist</label>
-        <label><input type="radio" name="distType" value="NEW" onchange="processData()"> New Dist</label>
+        <label><input type="radio" name="distType" value="OLD" checked onchange="renderView()"> Old Dist</label>
+        <label><input type="radio" name="distType" value="NEW" onchange="renderView()"> New Dist</label>
       </div>
       <select id="distDropdown" class="dist-select" onchange="renderView()">
           <option value="">All Districts</option>
@@ -115,7 +121,7 @@
     
     <div class="d-flex gap-2">
       <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
-      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-export" onclick="refreshData()">🔄 Refresh Data</button>
       <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
       <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
     </div>
@@ -127,7 +133,6 @@
         <h2 class="report-main-title">CSC AP - REDBUS DAILY TRANSACTIONS REPORT</h2>
     </div>
 
-    <!-- 🌟 KPI Cards Section 🌟 -->
     <div class="kpi-container" id="kpiCards">
         <div class="kpi-card kpi-target"><span>Daily Target:</span> <strong id="kpiTarget">0</strong></div>
         <div class="kpi-card kpi-achieved"><span>Y'Day Achieved:</span> <strong id="kpiAchieved">0</strong></div>
@@ -135,7 +140,6 @@
         <div class="kpi-card kpi-percent"><span>% Achieved:</span> <strong id="kpiPercent">0%</strong></div>
     </div>
 
-    <!-- స్క్రోలబుల్ ఏరియా -->
     <div class="scrollable-area" id="scrollableArea">
       <table id="reportTable">
         <thead>
@@ -152,13 +156,12 @@
           </tr>
         </thead>
         <tbody id="reportBody">
-          <tr><td colspan="9" class="text-danger py-4 text-center fw-bold">Loading District Data...</td></tr>
+          <tr class="loader-row"><td colspan="9"><div class="spinner"></div> Fetching Real Data...</td></tr>
         </tbody>
         <tfoot id="reportFoot"></tfoot>
       </table>
 
-      <!-- చార్ట్స్ సెక్షన్ -->
-      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
+      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true" style="display:none;">
         <div class="chart-box" style="flex: 2;">
           <div class="chart-title">📈 District-Wise: Target vs Achieved</div>
           <canvas id="barChart"></canvas>
@@ -176,81 +179,250 @@
     
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
     let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let loggedInUser = localStorage.getItem("userName") || "";
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     
-    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+    // 🌟 CHANGED CACHE KEY TO WIPE OUT OLD NaN DATA 🌟
+    const CACHE_KEY = "cscRedbusDailyTxnsProcessedCacheV2";
 
-    let rawData = [];
-    let districtAggregatedData = [];
+    window.rawOldTargets = {}; 
+    window.vleDistributionMap = {}; 
+    window.precalculatedOldDist = [];
+    window.precalculatedNewDist = [];
+    window.dmNewDistrictsSet = new Set();
+    let dmAssignedOldDistrict = ""; 
+
     let selectedDistFilter = ""; 
 
     let barChartInstance = null;
     let pieChartInstance = null;
 
-    window.onload = async function() {
-        let cachedObj = await getCachedData(CACHE_KEY);
-        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
-            rawData = cachedObj.data;
-            processData();
-        } else {
-            fetchDataFromServer();
-        }
-    };
-
-    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
-    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
-    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
-    
-    function fetchDataFromServer() {
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
-        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+    function isNameMatch(sheetName, loginName) {
+        if (!sheetName || !loginName) return false;
+        let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+        let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+        if (sClean === lClean) return true;
+        if (lClean.length > 5 && sClean.includes(lClean)) return true;
+        if (sClean.length > 5 && lClean.includes(sClean)) return true;
+        return false;
     }
-    
+
     function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
 
-    function processData() {
-        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
-        let distMap = {};
+    function normalizeDistrict(distName) {
+        if (!distName) return "";
+        var distMap = { 
+            "ANANTHAPUR": "ANANTAPUR", "ANANTHAPURAM": "ANANTAPUR", "CHITTOOR": "CHITTOOR", 
+            "EAST GODAVARI": "EAST GODAVARI", "GUNTUR": "GUNTUR", "KRISHNA": "KRISHNA", 
+            "KURNOOL": "KURNOOL", "PRAKASAM": "PRAKASAM", "PARAKASAM": "PRAKASAM", 
+            "NELLORE": "SPSR NELLORE", "SPSR NELLORE": "SPSR NELLORE", "SRIKAKULAM": "SRIKAKULAM", 
+            "VISAKHAPATNAM": "VISAKHAPATNAM", "VISAKHAPTNAM": "VISAKHAPATNAM", "VISAKHAPATANAM": "VISAKHAPATNAM", 
+            "VIZIANAGARAM": "VIZIANAGARAM", "WEST GODAVARI": "WEST GODAVARI", "YSR KADAPA": "YSR KADAPA", 
+            "Y.S.R.": "YSR KADAPA", "KADAPA": "YSR KADAPA", "Y.S.R": "YSR KADAPA" 
+        };
+        return distMap[distName.toUpperCase()] || distName.toUpperCase();
+    }
 
-        rawData.forEach(r => {
-            if (isNew && isDM && !r.isMyNewDist) return; 
-            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
-            if(distName === "Unknown") return;
+    window.onload = async function() {
+        fetchSheetData();
+    };
 
-            if(!distMap[distName]) {
-                distMap[distName] = { 
-                    name: distName, totCsc: 0, act25: 0, act26: 0
-                };
+    async function fetchSheetData() {
+        document.getElementById("reportBody").innerHTML = "<tr class='loader-row'><td colspan='9'><div class='spinner'></div> Fetching Real Data...</td></tr>";
+
+        try {
+            let cachedProcessed = localStorage.getItem(CACHE_KEY);
+            if (cachedProcessed) {
+                let parsedData = JSON.parse(cachedProcessed);
+                window.rawOldTargets = parsedData.rawOldTargets;
+                window.vleDistributionMap = parsedData.vleDistributionMap;
+                window.precalculatedOldDist = parsedData.precalculatedOldDist;
+                window.precalculatedNewDist = parsedData.precalculatedNewDist;
+                window.dmNewDistrictsSet = new Set(parsedData.dmNewDistrictsArray);
+                dmAssignedOldDistrict = parsedData.dmAssignedOldDistrict;
+                
+                populateDropdown();
+                renderView();
+                return;
             }
 
-            let d = distMap[distName];
-            d.totCsc++;
-            if(r.srv2526 > 0) d.act25++;
-            if(r.srv2627 > 0) d.act26++;
-        });
+            let timestamp = new Date().getTime();
+            let [confData, usersData, vlesData] = await Promise.all([
+                fetch(SCRIPT_URL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).catch(() => null),
+                fetch(SCRIPT_URL + "?sheet=Users&t=" + timestamp).then(r => r.json()).catch(() => null),
+                fetch(SCRIPT_URL + "?sheet=REDBUS&t=" + timestamp).then(r => r.json()).catch(() => null)
+            ]);
 
-        // 🌟 Daily Targets & Achieved ని క్యాలిక్యులేట్ చేసే లాజిక్ (డైనమిక్ గా) 🌟
-        districtAggregatedData = Object.values(distMap).map(d => {
-            // టోటల్ CSCs లో 5% డైలీ టార్గెట్ అని ఫిక్స్ చేశాం (బ్యాకెండ్ లో రియల్ టార్గెట్స్ లేనందువల్ల)
-            let dailyTarget = Math.ceil(d.totCsc * 0.05);
-            if(dailyTarget < 5) dailyTarget = 5; // కనీసం 5 ఉండేలా
-            
-            // యాక్టివ్ VLEs ఆధారంగా Achieved నంబర్ తీసుకుంటున్నాం
-            let randFactor = (d.name.charCodeAt(0) % 5 + 4) / 10; // 0.4 to 0.8
-            let ydayAchieved = Math.floor(dailyTarget * randFactor) + Math.floor(d.act26 * 0.02);
-            let ydayPart = Math.max(1, Math.floor(ydayAchieved * 0.85)); // పార్టిసిపేటెడ్ కొంచెం తక్కువ
-            
-            let shortfall = Math.max(0, dailyTarget - ydayAchieved);
-            let percent = dailyTarget > 0 ? ((ydayAchieved / dailyTarget) * 100).toFixed(1) : 0;
+            if (isDM && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                let idxDist = uHeaders.findIndex(h => h === 'district');
+                if (idxUid > -1 && idxDist > -1) {
+                    for(let i=1; i<usersData.length; i++) {
+                        if ((usersData[i][idxUid] || '').toString().trim() === loggedInUserId) {
+                            dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                            break;
+                        }
+                    }
+                }
+            }
 
-            return { ...d, dailyTarget, ydayAchieved, ydayPart, shortfall, percent };
+            if(confData && vlesData) {
+                processTargetDataAndCache(confData, vlesData);
+            } else {
+                throw new Error("Empty Data");
+            }
+        } catch (error) {
+            document.getElementById("reportBody").innerHTML = "<tr><td colspan='9' class='text-danger text-center fw-bold py-4'>❌ Error loading Data. Please Refresh.</td></tr>";
+        }
+    }
+
+    function refreshData() {
+        localStorage.removeItem(CACHE_KEY);
+        dmAssignedOldDistrict = "";
+        window.dmNewDistrictsSet.clear();
+        fetchSheetData();
+    }
+
+    function processTargetDataAndCache(confData, vlesData) {
+        window.rawOldTargets = {};
+        let tHeaders = confData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+        let idxDist = tHeaders.findIndex(h => h.includes('distname') || h === 'district');
+        let idxProj = tHeaders.findIndex(h => h.includes('project') || h.includes('service'));
+        let idxTaxTarget = tHeaders.findIndex(h => h.includes('taxtarget') || h.includes('target') || h.includes('count'));
+
+        for(let i=1; i<confData.length; i++) {
+            let dName = (confData[i][idxDist] || '').toString().trim();
+            let proj = (confData[i][idxProj] || '').toString().trim().toUpperCase();
+            if(!dName || dName === '-' || dName.toLowerCase() === 'all') continue;
+
+            let normDist = normalizeDistrict(dName).toLowerCase(); 
+
+            if(proj === "BUS" || proj === "REDBUS") {
+                let countTar = 0;
+                if (idxTaxTarget > -1) {
+                    let cleanCountStr = (confData[i][idxTaxTarget] || '0').toString().replace(/[^0-9.-]/g, '');
+                    countTar = parseInt(cleanCountStr) || 0;
+                }
+                window.rawOldTargets[normDist] = (window.rawOldTargets[normDist] || 0) + countTar;
+            }
+        }
+
+        window.vleDistributionMap = {};
+        window.dmNewDistrictsSet.clear(); 
+        
+        let oldMap = {};
+        let newMap = {};
+
+        for(let i=1; i<vlesData.length; i++) {
+            let row = vlesData[i];
+            let oldD = (row[3] || '').toString().trim();
+            let newD = (row[4] || '').toString().trim();
+            let empName = (row[7] || '').toString().trim();
+            
+            if(oldD === '-' || oldD === '' || oldD.toUpperCase() === 'UNKNOWN') continue;
+            
+            let oldProper = toProperCase(normalizeDistrict(oldD)); 
+            let newProper = toProperCase(newD);
+            
+            if(!oldMap[oldProper]) oldMap[oldProper] = { name: oldProper, totCsc: 0, act25: 0, act26: 0, ydayPart: 0, ydayAch: 0, annualTarget: 0 };
+            if(!newMap[newProper]) newMap[newProper] = { name: newProper, totCsc: 0, act25: 0, act26: 0, ydayPart: 0, ydayAch: 0, annualTarget: 0 };
+            
+            if (isDM && loggedInUser && isNameMatch(empName, loggedInUser)) {
+                window.dmNewDistrictsSet.add(newProper);
+            }
+
+            let tx25 = parseInt(row[11]) || 0; 
+            
+            let tx26 = 0;
+            for(let m=12; m<=23; m++) tx26 += (parseInt(row[m]) || 0);
+
+            let ydayTxn = parseInt(row[66] || 0) || 0; 
+
+            oldMap[oldProper].totCsc++;
+            if(tx25 > 0) oldMap[oldProper].act25++;
+            if(tx26 > 0) oldMap[oldProper].act26++;
+            if(ydayTxn > 0) { oldMap[oldProper].ydayPart++; oldMap[oldProper].ydayAch += ydayTxn; }
+
+            newMap[newProper].totCsc++;
+            if(tx25 > 0) newMap[newProper].act25++;
+            if(tx26 > 0) newMap[newProper].act26++;
+            if(ydayTxn > 0) { newMap[newProper].ydayPart++; newMap[newProper].ydayAch += ydayTxn; }
+
+            let oldKey = oldProper.toLowerCase();
+            let newKey = newProper.toLowerCase();
+            if(!window.vleDistributionMap[oldKey]) window.vleDistributionMap[oldKey] = { totalOldActive: 0, children: {} };
+            let isActive = (tx25 > 0) ? 1 : 1; 
+            window.vleDistributionMap[oldKey].totalOldActive += isActive;
+            if(!window.vleDistributionMap[oldKey].children[newKey]) window.vleDistributionMap[oldKey].children[newKey] = { name: newProper, activeCount: 0 };
+            window.vleDistributionMap[oldKey].children[newKey].activeCount += isActive;
+        }
+
+        window.precalculatedOldDist = Object.values(oldMap).map(d => {
+            let annualTarget = window.rawOldTargets[d.name.toLowerCase()] || 0;
+            let dailyTarget = Math.round(annualTarget / 365) || 0; 
+            
+            let shortfall = Math.max(0, dailyTarget - d.ydayAch);
+            let percent = "0.0";
+            if (dailyTarget > 0) percent = ((d.ydayAch / dailyTarget) * 100).toFixed(1);
+            else if (d.ydayAch > 0) percent = "100.0"; 
+            
+            return { ...d, annualTarget, dailyTarget, shortfall, percent };
         }).sort((a, b) => a.name.localeCompare(b.name));
+
+        window.precalculatedNewDist = Object.values(newMap).map(d => {
+            let annualTarget = 0;
+            for (let oldKey in window.vleDistributionMap) {
+                let parentObj = window.vleDistributionMap[oldKey];
+                let childObj = parentObj.children[d.name.toLowerCase()];
+                if (childObj) {
+                    let parentTgt = window.rawOldTargets[oldKey];
+                    if (parentTgt && parentObj.totalOldActive > 0) {
+                        let ratio = childObj.activeCount / parentObj.totalOldActive;
+                        annualTarget += parentTgt * ratio;
+                    }
+                }
+            }
+            let dailyTarget = Math.round(annualTarget / 365) || 0; 
+            
+            let shortfall = Math.max(0, dailyTarget - d.ydayAch);
+            let percent = "0.0";
+            if (dailyTarget > 0) percent = ((d.ydayAch / dailyTarget) * 100).toFixed(1);
+            else if (d.ydayAch > 0) percent = "100.0";
+
+            return { ...d, annualTarget, dailyTarget, shortfall, percent };
+        }).sort((a, b) => a.name.localeCompare(b.name));
+
+        try {
+            let cacheObj = {
+                rawOldTargets: window.rawOldTargets,
+                vleDistributionMap: window.vleDistributionMap,
+                precalculatedOldDist: window.precalculatedOldDist,
+                precalculatedNewDist: window.precalculatedNewDist,
+                dmAssignedOldDistrict: dmAssignedOldDistrict,
+                dmNewDistrictsArray: Array.from(window.dmNewDistrictsSet)
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObj));
+        } catch (e) { console.warn("Cache save failed", e); }
+
+        populateDropdown();
+        renderView(); 
+    }
+
+    function populateDropdown() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let sourceData = isNew ? window.precalculatedNewDist : window.precalculatedOldDist;
         
         let distDropdown = document.getElementById("distDropdown");
         distDropdown.innerHTML = '<option value="">All Districts</option>';
-        districtAggregatedData.forEach(d => { distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`; });
-
-        renderView();
+        
+        sourceData.forEach(d => {
+            if (isDM) {
+                if (isNew && !window.dmNewDistrictsSet.has(d.name)) return;
+                if (!isNew && dmAssignedOldDistrict && d.name.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) return;
+            }
+            distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+        });
     }
 
     window.resetFilters = function() {
@@ -258,7 +430,8 @@
         document.getElementById("distDropdown").value = "";
         selectedDistFilter = "";
         document.querySelector('input[name="distType"][value="OLD"]').checked = true; 
-        processData();
+        populateDropdown();
+        renderView();
     };
 
     window.toggleFullScreen = function() {
@@ -278,9 +451,17 @@
     };
 
     function renderView() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let sourceData = isNew ? window.precalculatedNewDist : window.precalculatedOldDist;
+
         let searchTxt = document.getElementById("searchInput").value.toUpperCase();
         let dropDownVal = document.getElementById("distDropdown").value;
-        let filteredData = districtAggregatedData.filter(d => {
+        
+        let filteredData = sourceData.filter(d => {
+            if (isDM) {
+                if (isNew && !window.dmNewDistrictsSet.has(d.name)) return false;
+                if (!isNew && dmAssignedOldDistrict && d.name.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) return false;
+            }
             return d.name.toUpperCase().includes(searchTxt) && (selectedDistFilter === "" || d.name === selectedDistFilter) && (dropDownVal === "" || d.name === dropDownVal);
         });
         
@@ -299,14 +480,23 @@
             document.getElementById("kpiAchieved").innerText = "0";
             document.getElementById("kpiShortfall").innerText = "0";
             document.getElementById("kpiPercent").innerText = "0%";
+            document.getElementById("chartsContainer").style.display = "none";
             return;
         }
+
+        document.getElementById("chartsContainer").style.display = "flex";
 
         let tCsc=0, tA25=0, tA26=0, tPart=0, tTarg=0, tAch=0, tShort=0;
 
         dataArray.forEach(d => {
-            tCsc += d.totCsc; tA25 += d.act25; tA26 += d.act26;
-            tPart += d.ydayPart; tTarg += d.dailyTarget; tAch += d.ydayAchieved; tShort += d.shortfall;
+            tCsc += (d.totCsc || 0); 
+            tA25 += (d.act25 || 0); 
+            tA26 += (d.act26 || 0);
+            tPart += (d.ydayPart || 0); 
+            tAch += (d.ydayAch || 0); 
+            
+            // 🌟 46 & 47 Mismatch Fix: Adding the daily targets exactly as shown in the table!
+            tTarg += (d.dailyTarget || 0); 
 
             tbody.innerHTML += `
             <tr>
@@ -316,13 +506,15 @@
                 <td style="color:#6366f1;">${d.act26}</td>
                 <td style="color:#a855f7;">${d.ydayPart}</td>
                 <td style="color:#1e3a8a; font-weight:900;">${d.dailyTarget}</td>
-                <td style="color:#10b981; font-weight:900;">${d.ydayAchieved}</td>
+                <td style="color:#10b981; font-weight:900;">${d.ydayAch}</td>
                 <td style="color:#be123c;">${d.shortfall}</td>
                 <td style="color:#ea580c; font-weight:900;">${d.percent}%</td>
             </tr>`;
         });
 
-        let tPerc = tTarg > 0 ? ((tAch / tTarg) * 100).toFixed(1) : 0;
+        // Calculate final exact total shortfall
+        tShort = Math.max(0, tTarg - tAch);
+        let tPerc = tTarg > 0 ? ((tAch / tTarg) * 100).toFixed(1) : "0.0";
 
         // KPI Cards Update
         document.getElementById("kpiTarget").innerText = tTarg;
@@ -353,9 +545,13 @@
 
         dataArray.forEach(d => {
             labels.push(d.name.substring(0,8) + ".."); 
-            targData.push(d.dailyTarget); achData.push(d.ydayAchieved);
-            totTarg += d.dailyTarget; totAch += d.ydayAchieved; totShort += d.shortfall;
+            targData.push(d.dailyTarget || 0); 
+            achData.push(d.ydayAch || 0);
+            totTarg += (d.dailyTarget || 0); 
+            totAch += (d.ydayAch || 0); 
         });
+
+        totShort = Math.max(0, totTarg - totAch);
 
         if(barChartInstance) barChartInstance.destroy();
         let ctxBar = document.getElementById('barChart').getContext('2d');
@@ -383,14 +579,6 @@
         });
     }
 
-    function exportToExcel() {
-       let ws = XLSX.utils.table_to_sheet(document.getElementById('reportTable'));
-       let wb = XLSX.utils.book_new();
-       XLSX.utils.book_append_sheet(wb, ws, "Daily Transactions");
-       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
-       XLSX.writeFile(wb, `REDBUS_Daily_Transactions_${dStr}.xlsx`);
-    }
-
     function downloadImage() {
        document.documentElement.classList.add("exporting");
        let captureArea = document.getElementById('captureArea');
@@ -400,7 +588,8 @@
            .then(canvas => {
               document.documentElement.classList.remove("exporting");
               let link = document.createElement('a');
-              link.download = `REDBUS_Daily_Transactions.png`; link.href = canvas.toDataURL("image/png"); link.click();
+              let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+              link.download = `REDBUS_Daily_Transactions_${dStr}.png`; link.href = canvas.toDataURL("image/png"); link.click();
            });
        }, 500); 
     }

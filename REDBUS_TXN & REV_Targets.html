@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REDBUS Targets Matrix - CSC TravelCloud</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        /* 🌟 Clean Corporate Theme Settings 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 15px; gap: 12px; }
+
+        /* Top Controls */
+        .top-controls {
+            display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; 
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-shrink: 0;
+        }
+        .page-heading { font-size: 18px; color: #dc2626; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .filter-label { font-size: 14px; font-weight: 800; color: #64748b; margin-right: 5px; }
+        .filter-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #f8fafc; font-weight: 700; cursor: pointer; color: #334155;}
+        
+        .btn-action { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #e2e8f0; display: flex; align-items: center; gap: 5px;}
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
+        .btn-action:hover { background-color: #e2e8f0; color: #1e293b;}
+        .btn-primary { color: #dc2626; background-color: #fef2f2; border-color: #fecaca; }
+
+        /* 🌟 Printable Report Area 🌟 */
+        .report-wrapper { 
+            flex: 1; 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            border: 1px solid #e2e8f0; 
+            overflow: auto; 
+            position: relative;
+        }
+        
+        /* 🌟 Report Header 🌟 */
+        .report-header { 
+            text-align: center; 
+            border-bottom: 2px dashed #cbd5e1; 
+            background-color: #ffffff;
+            position: sticky; 
+            top: 0; 
+            left: 0;
+            padding-top: 18px;
+            padding-bottom: 12px;
+            z-index: 100;
+            height: 80px;
+            width: 100%;
+        }
+        .report-header h2 { color: #1e293b; font-size: 24px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .report-header p { color: #dc2626; font-size: 14px; font-weight: 800; }
+
+        /* 🌟 Table Container & Sticky Logic 🌟 */
+        .table-container { 
+            width: 100%; 
+            padding: 0 20px 20px 20px;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1400px; text-align: center;}
+        
+        /* Table Headers */
+        th { 
+            color: #ffffff; font-size: 13px; text-transform: uppercase; padding: 14px 10px; 
+            font-weight: 800; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.2);
+            position: sticky; z-index: 90;
+        }
+        
+        /* Double Header Positioning */
+        thead tr:first-child th { top: 80px; height: 45px; } 
+        thead tr:nth-child(2) th { top: 125px; height: 40px; } 
+
+        /* Group Header Colors */
+        th.col-dist-head { background-color: #111c24 !important; left: 20px; z-index: 95 !important; border-right: 1px solid #2d3748 !important; min-width: 180px; font-size: 14px !important;}
+        th.group-count { background-color: #dc2626 !important; font-size: 14px !important;}
+        th.group-rev { background-color: #047857 !important; font-size: 14px !important;}
+
+        /* Sub Header Colors */
+        th.sub-annual { background-color: #0f172a !important; font-size: 12px !important; }
+        th.sub-quarter { background-color: #ef4444 !important; font-size: 12px !important; }
+        th.sub-month { background-color: #f87171 !important; font-size: 12px !important; }
+        th.sub-daily { background-color: #fca5a5 !important; color: #7f1d1d !important; font-size: 12px !important; }
+
+        th.sub-rev-annual { background-color: #022c22 !important; font-size: 12px !important; }
+        th.sub-rev-quarter { background-color: #059669 !important; font-size: 12px !important; }
+        th.sub-rev-month { background-color: #10b981 !important; font-size: 12px !important; }
+
+        /* 🌟 Table Body Cells 🌟 */
+        td { padding: 12px 10px; font-size: 14px; color: #334155; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; font-weight: 700; white-space: nowrap; transition: background-color 0.1s;}
+        
+        /* District Name Column (Sticky Left) */
+        td:first-child { position: sticky; left: 20px; background-color: #ffffff; z-index: 10; font-weight: 800; font-size: 14px; color: #0f172a; border-right: 1px solid #e2e8f0; text-align: left; padding-left: 15px; cursor: pointer;}
+        
+        tbody tr:nth-child(even) td { background-color: #f8fafc; }
+        tbody tr:nth-child(even) td:first-child { background-color: #f8fafc; }
+
+        /* 🌟🌟 PERFECT YELLOW HIGHLIGHT EFFECT (Exactly like your image) 🌟🌟 */
+        tbody tr:hover td { 
+            background-color: #fef08a !important; /* Yellow Background */
+            color: #000000 !important; /* Black text for clarity */
+            border-top: 2px solid #ea580c !important; /* Orange Border Top */
+            border-bottom: 2px solid #ea580c !important; /* Orange Border Bottom */
+        }
+        tbody tr:hover td:first-child {
+            border-left: 2px solid #ea580c !important; /* Orange Border Left for the first cell */
+        }
+        tbody tr:hover td:last-child {
+            border-right: 2px solid #ea580c !important; /* Orange Border Right for the last cell */
+        }
+
+        .text-count { color: #dc2626; font-weight: 900; font-size: 15px;}
+        .text-rev { color: #047857; font-weight: 900; font-size: 15px;}
+        .text-day { color: #b91c1c; font-weight: 900; font-size: 15px;}
+
+        /* Grand Total Row */
+        tr.total-row td { background-color: #eaedf2 !important; font-weight: 900; color: #0f172a; border-top: 2px solid #cbd5e1 !important; border-bottom: none !important; font-size: 15px; padding: 15px 10px;}
+        tr.total-row td:first-child { background-color: #eaedf2 !important; position: sticky; left: 20px; z-index: 10; border-right: 1px solid #cbd5e1 !important; border-left: none !important;}
+
+        /* Charts Container */
+        .charts-container { display: flex; gap: 20px; margin-top: 20px; padding: 0 20px 20px 20px; flex-wrap: wrap; justify-content: center;}
+        .chart-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex: 1; min-width: 400px; display: flex; flex-direction: column;}
+        .chart-title { text-align: center; font-size: 15px; font-weight: 800; color: #475569; margin-bottom: 10px; text-transform: uppercase;}
+        .canvas-wrapper { position: relative; height: 250px; width: 100%; }
+
+        .loader-row td { text-align: center; padding: 50px !important; font-size: 16px; color: #dc2626; font-weight: 800; background-color: #fff !important; border:none !important;}
+        .loader-row:hover td { background-color: #fff !important; border: none !important; color: #dc2626 !important; }
+        .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #cbd5e1; border-top-color: #dc2626; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="top-controls">
+        <div class="page-heading">🚌 REDBUS TXN & REV Targets Matrix</div>
+        <div class="filter-group">
+            <span class="filter-label">Filter:</span>
+            <select id="districtType" onchange="updateDistrictsDropdown()">
+                <option value="old" selected>Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="loadPerformanceReport()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action btn-primary" onclick="refreshData()">🔄 Refresh Config</button>
+            <button class="btn-action" onclick="downloadReportImage()" id="downloadBtn">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div id="printableReport" class="report-wrapper">
+        <div class="report-header">
+            <h2>CSC AP – REDBUS BOOKING TARGETS (TXN & REV)</h2>
+            <p id="reportDate">Report Generated on: Loading...</p>
+        </div>
+
+        <div class="table-container" id="reportTableContainer">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="col-dist-head" title="Double click to filter">DISTRICT NAME ⇅</th>
+                        <th colspan="7" class="group-count">REDBUS TXN TARGETS (COUNT)</th>
+                        <th colspan="7" class="group-rev">REDBUS REVENUE TARGETS (₹)</th>
+                    </tr>
+                    <tr>
+                        <th class="sub-annual">ANNUAL</th>
+                        <th class="sub-quarter">Q1 (20%)</th>
+                        <th class="sub-quarter">Q2 (25%)</th>
+                        <th class="sub-quarter">Q3 (35%)</th>
+                        <th class="sub-quarter">Q4 (20%)</th>
+                        <th class="sub-month">MONTHLY</th>
+                        <th class="sub-daily">DAILY</th>
+
+                        <th class="sub-rev-annual">ANNUAL</th>
+                        <th class="sub-rev-quarter">Q1 (20%)</th>
+                        <th class="sub-rev-quarter">Q2 (25%)</th>
+                        <th class="sub-rev-quarter">Q3 (35%)</th>
+                        <th class="sub-rev-quarter">Q4 (20%)</th>
+                        <th class="sub-rev-month">MONTHLY</th>
+                        <th class="sub-daily" style="background-color: #6ee7b7 !important;">DAILY</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <tr class="loader-row"><td colspan="15"><div class="spinner"></div>Loading Booking Targets Data...</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row" id="grandTotalRow">
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="charts-container" id="chartsArea" style="display: none;">
+            <div class="chart-box">
+                <div class="chart-title">District Wise REDBUS Targets Overview</div>
+                <div class="canvas-wrapper">
+                    <canvas id="targetChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        
+        window.rawOldTargets = {}; 
+        window.vleDistributionMap = {}; 
+        
+        let dmAssignedOldDistrict = ""; 
+        window.dmNewDistrictsSet = new Set();
+
+        let oldDistrictsList = [];
+        let newDistrictsList = [];
+        let barChartInstance = null;
+
+        function setReportDate() {
+            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+            const today = new Date().toLocaleDateString('en-US', options);
+            document.getElementById('reportDate').innerText = "Report Generated on: " + today;
+        }
+
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (sClean === lClean) return true;
+            if (lClean.length > 5 && sClean.includes(lClean)) return true;
+            if (sClean.length > 5 && lClean.includes(sClean)) return true;
+            return false;
+        }
+
+        window.onload = function() {
+            setReportDate();
+            document.getElementById("districtType").value = "old";
+            fetchSheetData();
+        };
+
+        // 🌟 ZERO-SECOND LOADING LOGIC 🌟
+        async function fetchSheetData() {
+            document.getElementById("reportTableBody").innerHTML = "<tr class='loader-row'><td colspan='15'><div class='spinner'></div> Fetching Configuration Data...</td></tr>";
+            
+            try {
+                // 1. మనం మొత్తం డేటాని కాకుండా, లెక్కించిన చిన్న డేటాని (50KB) లోకల్ గా క్యాచ్ చేస్తున్నాం.
+                let cachedProcessedData = localStorage.getItem("cscRedbusProcessedTargets");
+                
+                if (cachedProcessedData) {
+                    let parsedData = JSON.parse(cachedProcessedData);
+                    window.rawOldTargets = parsedData.rawOldTargets;
+                    window.vleDistributionMap = parsedData.vleDistributionMap;
+                    oldDistrictsList = parsedData.oldDistrictsList;
+                    newDistrictsList = parsedData.newDistrictsList;
+                    dmAssignedOldDistrict = parsedData.dmAssignedOldDistrict;
+                    window.dmNewDistrictsSet = new Set(parsedData.dmNewDistrictsArray);
+                    
+                    updateDistrictsDropdown();
+                    return; // 🌟 క్యాచ్ ఉంటే అసలు నెట్వర్క్ నుండి డేటా లాగదు, క్షణాల్లో పేజీ ఓపెన్ అవుతుంది! 🌟
+                }
+
+                // ఒకవేళ క్యాచ్ లేకపోతే మాత్రమే గూగుల్ షీట్ నుండి తెచ్చుకుంటుంది
+                let timestamp = new Date().getTime();
+                let promises = [
+                    fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()),
+                    fetch(apiURL + "?sheet=Users&t=" + timestamp).then(r => r.json()).catch(() => null),
+                    fetch(apiURL + "?sheet=REDBUS&t=" + timestamp).then(r => r.json()).catch(() => null)
+                ];
+
+                let [confData, usersData, vlesData] = await Promise.all(promises);
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+                let loggedInUser = localStorage.getItem("userName") || "";
+                
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                    let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district'); 
+
+                    if (idxUid > -1 && idxDist > -1) {
+                        for(let i=1; i<usersData.length; i++) {
+                            let sheetUid = (usersData[i][idxUid] || '').toString().trim();
+                            if (sheetUid === loggedInUserId) {
+                                dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                                break; 
+                            }
+                        }
+                    }
+                }
+
+                if(confData && confData.length > 0) {
+                    processTargetData(confData, vlesData, loggedInUser, userDesignation);
+                } else {
+                    throw new Error("Empty Targets Data");
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='15' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ Error loading Target Config from server.</td></tr>";
+            }
+        }
+
+        // 🌟 ఈ బటన్ నొక్కితే క్యాచ్ క్లియర్ అయి కొత్త డేటా గూగుల్ షీట్ నుండి వస్తుంది 🌟
+        function refreshData() {
+            localStorage.removeItem("cscRedbusProcessedTargets");
+            dmAssignedOldDistrict = "";
+            window.dmNewDistrictsSet.clear();
+            fetchSheetData();
+        }
+
+        function processTargetData(confData, vlesData, loggedInUser, userDesignation) {
+            window.rawOldTargets = {};
+            let tHeaders = confData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let idxDist = tHeaders.findIndex(h => h.includes('distname') || h === 'district');
+            let idxProj = tHeaders.findIndex(h => h.includes('project') || h.includes('service'));
+            let idxTaxTarget = tHeaders.findIndex(h => h.includes('taxtarget') || h.includes('target') || h.includes('count'));
+            let idxRegCost = tHeaders.findIndex(h => h.includes('registrationcost') || h.includes('cost'));
+            let idxRev = tHeaders.findIndex(h => h.includes('revtarget') || h.includes('revenue') || h.includes('rev'));
+
+            for(let i=1; i<confData.length; i++) {
+                let dName = (confData[i][idxDist] || '').toString().trim();
+                let proj = (confData[i][idxProj] || '').toString().trim().toUpperCase();
+                if(!dName || dName === '-' || dName.toLowerCase() === 'all' || dName.toLowerCase() === 'grand total') continue;
+
+                // FILTER FOR REDBUS (BUS)
+                if(proj === "BUS" || proj === "REDBUS") {
+                    
+                    let countTar = 0;
+                    if (idxTaxTarget > -1) {
+                        let cleanCountStr = (confData[i][idxTaxTarget] || '0').toString().replace(/[^0-9.-]/g, '');
+                        countTar = parseInt(cleanCountStr) || 0;
+                    }
+                    if (countTar === 0 && idxRegCost > -1) {
+                        let cleanCostStr = (confData[i][idxRegCost] || '0').toString().replace(/[^0-9.-]/g, '');
+                        countTar = parseInt(cleanCostStr) || 0;
+                    }
+                    
+                    let revTar = 0;
+                    if (idxRev > -1) {
+                        let cleanRevStr = (confData[i][idxRev] || '0').toString().replace(/[^0-9.-]/g, '');
+                        revTar = parseFloat(cleanRevStr) || 0;
+                    }
+                    
+                    window.rawOldTargets[dName.toLowerCase()] = { name: dName, count: countTar, revenue: revTar };
+                }
+            }
+
+            window.vleDistributionMap = {};
+            window.dmNewDistrictsSet.clear(); 
+            let oldSets = new Set();
+            let newSets = new Set();
+
+            if (vlesData && vlesData.length > 1) {
+                let cHeaders = vlesData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                let idxNewDist = cHeaders.findIndex(h => h.includes('newdistrict'));
+                let idxOldDist = cHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+                let idxEmpName = cHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                
+                let idxTxns25 = cHeaders.findIndex(h => h.includes('2526') || h.includes('202526'));
+
+                for(let i=1; i<vlesData.length; i++) {
+                    let row = vlesData[i];
+
+                    let oldD = idxOldDist > -1 ? (row[idxOldDist] || '').toString().trim() : 'Unknown';
+                    let newD = idxNewDist > -1 ? (row[idxNewDist] || '').toString().trim() : 'Unknown';
+                    if(oldD === 'Unknown' || oldD === '-' || newD === 'Unknown' || newD === '-') continue;
+
+                    let dmName = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim() : '';
+
+                    if (userDesignation === "District Manager") {
+                        if (loggedInUser && isNameMatch(dmName, loggedInUser)) {
+                            window.dmNewDistrictsSet.add(newD);
+                        }
+                    }
+
+                    oldSets.add(oldD);
+                    newSets.add(newD);
+
+                    let oldKeyStr = oldD.toLowerCase();
+                    let newKeyStr = newD.toLowerCase();
+
+                    if(!window.vleDistributionMap[oldKeyStr]) {
+                        window.vleDistributionMap[oldKeyStr] = { totalOldActive: 0, children: {} };
+                    }
+                    
+                    let t25 = idxTxns25 > -1 ? parseInt(row[idxTxns25]) || 0 : 0;
+                    let isActive = (t25 > 0) ? 1 : 1; 
+
+                    window.vleDistributionMap[oldKeyStr].totalOldActive += isActive;
+                    if(!window.vleDistributionMap[oldKeyStr].children[newKeyStr]) {
+                        window.vleDistributionMap[oldKeyStr].children[newKeyStr] = { name: newD, activeCount: 0 };
+                    }
+                    window.vleDistributionMap[oldKeyStr].children[newKeyStr].activeCount += isActive;
+                }
+            }
+
+            oldDistrictsList = Array.from(oldSets).sort();
+            newDistrictsList = Array.from(newSets).sort();
+            if(oldDistrictsList.length === 0) {
+                oldDistrictsList = ["Ananthapuramu", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Sri Potti Sriramulu Nellore", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "Y.S.R."];
+            }
+
+            // 🌟 SMART COMPRESSION CACHE (Saves the processed data) 🌟
+            try {
+                let processedCache = {
+                    rawOldTargets: window.rawOldTargets,
+                    vleDistributionMap: window.vleDistributionMap,
+                    oldDistrictsList: oldDistrictsList,
+                    newDistrictsList: newDistrictsList,
+                    dmAssignedOldDistrict: dmAssignedOldDistrict,
+                    dmNewDistrictsArray: Array.from(window.dmNewDistrictsSet)
+                };
+                localStorage.setItem("cscRedbusProcessedTargets", JSON.stringify(processedCache));
+            } catch (e) { console.warn("Cache save failed", e); }
+
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value;
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            let list = type === 'old' ? oldDistrictsList : newDistrictsList;
+
+            if (userDesignation === "District Manager") {
+                if (type === 'old' && dmAssignedOldDistrict) {
+                    list = list.filter(d => d.toLowerCase() === dmAssignedOldDistrict.toLowerCase());
+                } else if (type === 'new') {
+                    list = list.filter(d => window.dmNewDistrictsSet.has(d));
+                }
+            }
+
+            list.forEach(dist => {
+                distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+
+            loadPerformanceReport();
+        }
+
+        function loadPerformanceReport() {
+            let selectedDist = document.getElementById("districtName").value;
+            let distType = document.getElementById("districtType").value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+            let bodyHtml = "";
+            let gt = { cAnn:0, cQ1:0, cQ2:0, cQ3:0, cQ4:0, cMon:0, cDay:0, rAnn:0, rQ1:0, rQ2:0, rQ3:0, rQ4:0, rMon:0, rDay:0 };
+
+            let chartLabels = [];
+            let chartCountData = [];
+            let chartRevData = [];
+
+            if (distType === "old") {
+                oldDistrictsList.forEach(dName => {
+                    if (selectedDist !== "All" && dName !== selectedDist) return;
+                    
+                    if (userDesignation === "District Manager" && dmAssignedOldDistrict && dName.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) return;
+
+                    let tgt = window.rawOldTargets[dName.toLowerCase()] || { name: dName, count: 0, revenue: 0 };
+                    calculateAndAppendRow(dName, tgt.count, tgt.revenue);
+                });
+            } else {
+                newDistrictsList.forEach(newDistName => {
+                    if (selectedDist !== "All" && newDistName !== selectedDist) return;
+                    
+                    if (userDesignation === "District Manager") {
+                        if (!window.dmNewDistrictsSet.has(newDistName)) return;
+                    }
+
+                    let finalCount = 0;
+                    let finalRevenue = 0;
+
+                    for (let oldKey in window.vleDistributionMap) {
+                        let parentObj = window.vleDistributionMap[oldKey];
+                        let childObj = parentObj.children[newDistName.toLowerCase()];
+                        if (childObj) {
+                            let parentTgt = window.rawOldTargets[oldKey];
+                            if (parentTgt && parentObj.totalOldActive > 0) {
+                                let ratio = childObj.activeCount / parentObj.totalOldActive;
+                                finalCount += parentTgt.count * ratio;
+                                finalRevenue += parentTgt.revenue * ratio;
+                            }
+                        }
+                    }
+                    calculateAndAppendRow(newDistName, finalCount, finalRevenue);
+                });
+            }
+
+            function calculateAndAppendRow(name, cTotal, rTotal) {
+                // RATIOS FOR BOOKINGS: Q1(20%), Q2(25%), Q3(35%), Q4(20%)
+                let cAnn = Math.round(cTotal);
+                let cQ1 = Math.round(cAnn * 0.20); 
+                let cQ2 = Math.round(cAnn * 0.25); 
+                let cQ3 = Math.round(cAnn * 0.35);
+                let cQ4 = cAnn - (cQ1 + cQ2 + cQ3); if(cQ4 < 0) cQ4 = 0;
+                let cMon = Math.round(cAnn / 12); 
+                let cDay = Math.ceil(cAnn / 365);
+
+                let rAnn = Math.round(rTotal);
+                let rQ1 = Math.round(rAnn * 0.20); 
+                let rQ2 = Math.round(rAnn * 0.25); 
+                let rQ3 = Math.round(rAnn * 0.35);
+                let rQ4 = rAnn - (rQ1 + rQ2 + rQ3); if(rQ4 < 0) rQ4 = 0;
+                let rMon = Math.round(rAnn / 12); 
+                let rDay = Math.round(rAnn / 365);
+
+                gt.cAnn += cAnn; gt.cQ1 += cQ1; gt.cQ2 += cQ2; gt.cQ3 += cQ3; gt.cQ4 += cQ4; gt.cMon += cMon; gt.cDay += cDay;
+                gt.rAnn += rAnn; gt.rQ1 += rQ1; gt.rQ2 += rQ2; gt.rQ3 += rQ3; gt.rQ4 += rQ4; gt.rMon += rMon; gt.rDay += rDay;
+
+                chartLabels.push(name);
+                chartCountData.push(cAnn);
+                chartRevData.push(rAnn);
+
+                bodyHtml += `<tr>
+                    <td class="col-dist" ondblclick="filterByDistrict('${name}')" title="Double click to filter">${name}</td>
+                    <td class="text-count">${cAnn.toLocaleString('en-IN')}</td>
+                    <td>${cQ1.toLocaleString('en-IN')}</td>
+                    <td>${cQ2.toLocaleString('en-IN')}</td>
+                    <td>${cQ3.toLocaleString('en-IN')}</td>
+                    <td>${cQ4.toLocaleString('en-IN')}</td>
+                    <td>${cMon.toLocaleString('en-IN')}</td>
+                    <td class="text-day">${cDay.toLocaleString('en-IN')}</td>
+                    <td class="text-rev">₹${Math.round(rAnn).toLocaleString('en-IN')}</td>
+                    <td>₹${rQ1.toLocaleString('en-IN')}</td>
+                    <td>₹${rQ2.toLocaleString('en-IN')}</td>
+                    <td>₹${rQ3.toLocaleString('en-IN')}</td>
+                    <td>₹${rQ4.toLocaleString('en-IN')}</td>
+                    <td>₹${rMon.toLocaleString('en-IN')}</td>
+                    <td class="text-day">₹${rDay.toLocaleString('en-IN')}</td>
+                </tr>`;
+            }
+
+            if(chartLabels.length === 0) {
+                bodyHtml = `<tr><td colspan="15" style="padding:40px; font-size:16px; text-align:center; color:#dc2626; font-weight:bold;">No Booking Target Data Found!</td></tr>`;
+                document.getElementById("chartsArea").style.display = "none";
+            } else {
+                document.getElementById("chartsArea").style.display = "flex";
+                renderCharts(chartLabels, chartCountData, chartRevData);
+            }
+
+            document.getElementById("reportTableBody").innerHTML = bodyHtml;
+
+            // Grand Total
+            document.getElementById("grandTotalRow").innerHTML = `
+                <td class="col-dist">GRAND TOTAL</td>
+                <td class="text-count">${gt.cAnn.toLocaleString('en-IN')}</td>
+                <td>${gt.cQ1.toLocaleString('en-IN')}</td>
+                <td>${gt.cQ2.toLocaleString('en-IN')}</td>
+                <td>${gt.cQ3.toLocaleString('en-IN')}</td>
+                <td>${gt.cQ4.toLocaleString('en-IN')}</td>
+                <td>${gt.cMon.toLocaleString('en-IN')}</td>
+                <td class="text-day">${Math.ceil(gt.cAnn/365).toLocaleString('en-IN')}</td>
+                <td class="text-rev">₹${Math.round(gt.rAnn).toLocaleString('en-IN')}</td>
+                <td>₹${gt.rQ1.toLocaleString('en-IN')}</td>
+                <td>₹${gt.rQ2.toLocaleString('en-IN')}</td>
+                <td>₹${gt.rQ3.toLocaleString('en-IN')}</td>
+                <td>₹${gt.rQ4.toLocaleString('en-IN')}</td>
+                <td>₹${gt.rMon.toLocaleString('en-IN')}</td>
+                <td class="text-day">₹${Math.round(gt.rAnn/365).toLocaleString('en-IN')}</td>
+            `;
+        }
+
+        function renderCharts(labels, countData, revData) {
+            let ctx = document.getElementById('targetChart').getContext('2d');
+            if(barChartInstance) barChartInstance.destroy();
+
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'REDBUS Txn Target (Count)',
+                            data: countData,
+                            backgroundColor: '#dc2626',
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'REDBUS Revenue Target (₹)',
+                            data: revData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    plugins: { legend: { position: 'top', labels: {font: {family: 'Segoe UI', weight: 'bold', size: 12}} } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } },
+                        y: { type: 'linear', display: true, position: 'left', beginAtZero: true },
+                        y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } else { distDropdown.value = distName; }
+            loadPerformanceReport();
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            updateDistrictsDropdown();
+        }
+
+        function toggleFullScreen() {
+            try {
+                let btn = document.getElementById("fullscreenBtn");
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        btn.innerHTML = "⛶ Full Screen";
+                        btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#475569"; btn.style.borderColor = "#cbd5e1";
+                    }
+                }
+            } catch (e) { console.log("Fullscreen not supported"); }
+        }
+
+        function downloadReportImage() {
+            let reportElement = document.getElementById('printableReport');
+            let btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            
+            btn.innerHTML = "⏳ Processing...";
+            btn.style.opacity = "0.7";
+            
+            let originalOverflow = reportElement.style.overflow;
+            let originalHeight = reportElement.style.height;
+            
+            reportElement.style.overflow = 'visible';
+            reportElement.style.height = 'auto';
+
+            setTimeout(() => {
+                html2canvas(reportElement, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    windowWidth: reportElement.scrollWidth,
+                    windowHeight: reportElement.scrollHeight
+                }).then(canvas => {
+                    let link = document.createElement('a'); 
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    link.download = `REDBUS_Targets_Matrix_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    reportElement.style.overflow = originalOverflow;
+                    reportElement.style.height = originalHeight;
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = "1";
+                });
+            }, 300);
+        }
+    </script>
+</body>
+</html>
