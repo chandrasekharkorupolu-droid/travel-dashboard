@@ -18,8 +18,10 @@
         }
         .page-heading { font-size: 18px; color: #ea580c; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
         
-        .filter-group { display: flex; gap: 10px; align-items: center; }
-        .filter-group select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .filter-group select, .filter-group input { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group input { background-color: #ffffff; cursor: text; min-width: 220px; }
+        .filter-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
         .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
@@ -50,8 +52,8 @@
         .kpi-card { 
             background-color: #ffffff; border-radius: 6px; padding: 8px 20px; 
             box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid; 
-            cursor: pointer; transition: 0.2s; min-width: 220px;
-            display: flex; align-items: center; justify-content: space-between; 
+            min-width: 220px; display: flex; align-items: center; justify-content: space-between; 
+            cursor: pointer; transition: 0.2s;
         }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
@@ -60,7 +62,8 @@
         .kpi-total { border-left-color: #3b82f6; } .kpi-total .kpi-value { color: #3b82f6; }
         .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #10b981; }
         .kpi-inactive { border-left-color: #ef4444; } .kpi-inactive .kpi-value { color: #ef4444; }
-        .kpi-card.selected-filter { border: 2px solid #333; }
+        
+        .selected-filter { border: 2px solid #333; border-left-width: 5px; }
 
         /* Table Settings */
         .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
@@ -93,7 +96,7 @@
         .col-district:hover { background-color: #e0f2fe !important; color: #0369a1; }
         tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
         
-        /* Action Buttons inside Table */
+        /* Action Buttons */
         .btn-whatsapp { background-color: #25d366; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0 auto; box-shadow: 0 2px 0 #1b9c4b; transition: 0.2s;}
         .btn-whatsapp:active { transform: translateY(2px); box-shadow: 0 0 0 #1b9c4b; }
         .btn-done { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: default; display: inline-block; }
@@ -129,6 +132,9 @@
                 <option value="basic">Basic Priority (1 to 9)</option>
             </select>
 
+            <!-- 🌟 SEARCH BOX 🌟 -->
+            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Search VLE Name, CSC ID, Mobile...">
+
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -142,6 +148,7 @@
             <p id="reportDate">Report Generated on: </p>
         </div>
 
+        <!-- 🌟 KPI CARDS 🌟 -->
         <div class="kpi-grid">
             <div class="kpi-card kpi-total" id="kpi-all" onclick="setKpiFilter('all')">
                 <span class="kpi-title">TOTAL TARGET VLEs</span>
@@ -151,6 +158,7 @@
                 <span class="kpi-title">ACTIVATED</span>
                 <span class="kpi-value" id="val-active">0</span>
             </div>
+            <!-- Default selected filter is PENDING as requested -->
             <div class="kpi-card kpi-inactive selected-filter" id="kpi-inactive" onclick="setKpiFilter('pending')">
                 <span class="kpi-title">STILL PENDING</span>
                 <span class="kpi-value" id="val-pending">0</span>
@@ -188,38 +196,38 @@
         let globalFollowUpData = [];
         let oldDistrictsSet = new Set();
         let newDistrictsSet = new Set();
-        
-        let dmMappedOldDistricts = new Set();
-        let dmMappedNewDistricts = new Set();
+
+        // 🌟 "పెండింగ్" ఉన్నవారి డేటానే రిపోర్ట్ లో డిఫాల్ట్ గా చూపించడానికి 🌟
         let currentKpiFilter = 'pending'; 
 
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
+        let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
+        let loggedInUserName = localStorage.getItem("userName") || ""; 
+        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+        let dmAssignedOldDistrict = "";
+
         const fallbackDmMap = {
-            "ravi kumar yepuri": "9581013300",
-            "chandra sekhara babu k": "9440115828",
-            "golla pandu rangaiah": "7989690495",
-            "d sathish kumar": "9014632647",
-            "chandrasekhar satya aditya ivaturi": "9542028420",
-            "dangeti vijaya krishna": "9666445777",
-            "kothapalli phani sai deepak": "9347588193",
-            "kakumanu raviteja": "7011930751",
-            "shaik roshan zameer": "7011759034",
-            "mohammed baji shaheed": "9951078608",
-            "devi lukka": "9949394296",
-            "vaduguru keshava": "9502889303",
-            "maddu vandanam": "9701831857",
-            "nelapati pramod kumar": "9849859358",
-            "sai teja suri": "9182721660",
-            "venkatesh gotta": "7337277422",
-            "b santosh kumar": "9989880363",
-            "allu jagadeesh": "8886926068",
-            "kada siva": "9010359568",
-            "chukka koteeswara rao": "8688337559",
-            "rajiv garikipudi": "8897991219",
-            "eerla hema sekhar": "7048966080",
-            "siga subramanyam": "9908969975"
+            "ravi kumar yepuri": "9581013300", "chandra sekhara babu k": "9440115828", "golla pandu rangaiah": "7989690495",
+            "d sathish kumar": "9014632647", "chandrasekhar satya aditya ivaturi": "9542028420", "dangeti vijaya krishna": "9666445777",
+            "kothapalli phani sai deepak": "9347588193", "kakumanu raviteja": "7011930751", "shaik roshan zameer": "7011759034",
+            "mohammed baji shaheed": "9951078608", "devi lukka": "9949394296", "vaduguru keshava": "9502889303",
+            "maddu vandanam": "9701831857", "nelapati pramod kumar": "9849859358", "sai teja suri": "9182721660",
+            "venkatesh gotta": "7337277422", "b santosh kumar": "9989880363", "allu jagadeesh": "8886926068",
+            "kada siva": "9010359568", "chukka koteeswara rao": "8688337559", "rajiv garikipudi": "8897991219",
+            "eerla hema sekhar": "7048966080", "siga subramanyam": "9908969975"
         };
+
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (sClean === lClean) return true;
+            if (lClean.length > 5 && sClean.includes(lClean)) return true;
+            if (sClean.length > 5 && lClean.includes(sClean)) return true;
+            return false;
+        }
 
         window.onload = function() {
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
@@ -257,28 +265,37 @@
                 try {
                     if(usersData && usersData.length > 0) {
                         let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        
+                        let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                        let idxDist = uHeaders.findIndex(h => h === 'district'); 
+
+                        if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
+                            for(let i=1; i<usersData.length; i++) {
+                                let sheetUid = (usersData[i][idxUid] || '').toString().trim();
+                                if (sheetUid === loggedInUserId) {
+                                    dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                                    break; 
+                                }
+                            }
+                        }
+
                         if (uHeaders.includes('userid') || uHeaders.includes('password') || uHeaders.includes('emailids')) {
                             let nIdx = uHeaders.findIndex(h => h === 'name' || h.includes('employee'));
                             let mIdx = uHeaders.findIndex(h => h === 'userid' || h.includes('user'));
                             
-                            if (nIdx === -1) nIdx = 4; // E
-                            if (mIdx === -1) mIdx = 0; // A
+                            if (nIdx === -1) nIdx = 4;
+                            if (mIdx === -1) mIdx = 0;
                             
                             if(nIdx > -1 && mIdx > -1) {
                                 for(let i=1; i<usersData.length; i++) {
                                     let empName = (usersData[i][nIdx] || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
                                     let empMob = (usersData[i][mIdx] || '').toString().replace(/\D/g, ''); 
-                                    
-                                    if(empName && empMob.length >= 10) {
-                                        dmMobileMap[empName] = empMob; 
-                                    }
+                                    if(empName && empMob.length >= 10) dmMobileMap[empName] = empMob; 
                                 }
                             }
                         }
                     }
                 } catch(e) {
-                    console.warn("Could not parse Users sheet for DM Mobiles", e);
+                    console.warn("Could not parse Users sheet", e);
                 }
 
                 if(rawData) {
@@ -303,58 +320,60 @@
             let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
-            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));
+            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks')); // HO_Remarks
 
-            let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
-            
-            let mIndices = [];
-            let idx27 = -1;
-            
-            if (idx26 > -1) {
-                for (let k = 1; k <= 12; k++) {
-                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
-                }
-                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
-            }
+            // 🌟 25-26 Total Column 🌟
+            let idx25_total = cleanHeaders.findIndex(h => (h.includes('25') && h.includes('txn') && !h.includes('target')));
+            if(idx25_total === -1) idx25_total = cleanHeaders.findIndex(h => h.includes('202526'));
+
+            // 🌟 మీరు పంపిన ఇమేజ్ లోని (Apr-26 to Mar-27) కాలమ్స్ ని మాత్రమే వెతకడానికి 🌟
+            const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
+            let indices2627 = months2627.map(m => cleanHeaders.findIndex(h => h === m)).filter(i => i > -1);
 
             globalFollowUpData = [];
             oldDistrictsSet.clear();
             newDistrictsSet.clear();
-            dmMappedOldDistricts.clear();
-            dmMappedNewDistricts.clear();
-
-            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
-            let loggedInUser = localStorage.getItem("userName") || "";
 
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
                 let cscId = idxcscid > -1 ? row[idxcscid] : '';
                 if(!cscId || cscId === '-') continue;
 
-                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+                // 🛑 రూల్ 2: HO వాళ్ళు బ్లాక్ చేసినా, సస్పెండ్ చేసినా వాళ్ళని లిస్ట్ లోంచి పీకేయాలి 🛑
+                let rawStatus = idxstatus > -1 ? (row[idxstatus] || '').toString().toUpperCase().trim() : '';
+                let isBlocked = rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK");
                 
-                if(fy26 > 0) {
+                if (isBlocked) {
+                    continue; // ⬅️ బ్లాక్ అయిన వాడు ఇక్కడే ఆగిపోతాడు. వాడి డేటా అసలు లిస్ట్ లోకి రాదు!
+                }
+
+                let fy26_txns = idx25_total > -1 ? (parseInt(row[idx25_total]) || 0) : 0;
+                
+                if(fy26_txns > 0) { // FY 25-26 లో యాక్టివ్ గా ఉన్నవారు మాత్రమే
+                    
+                    // 🌟 రూల్ 1: FY 26-27 యాక్టివేషన్ (Apr-26 to Mar-27 కాలమ్స్ ని కూడటం) 🌟
+                    let fy27Total = 0;
+                    indices2627.forEach(colIdx => {
+                        fy27Total += (parseInt(row[colIdx]) || 0);
+                    });
+
                     let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
                     let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
                     let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
 
-                    if(oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
-                    if(newDist !== 'Unknown') newDistrictsSet.add(newDist);
+                    let oldKey = oldDist.toLowerCase();
+                    let newKey = newDist.toLowerCase();
 
-                    if (userDesignation === "District Manager" && dmNameStr.toLowerCase() === loggedInUser.toLowerCase().trim()) {
-                        if(oldDist !== 'Unknown') dmMappedOldDistricts.add(oldDist);
-                        if(newDist !== 'Unknown') dmMappedNewDistricts.add(newDist);
+                    let allowedForOld = true;
+                    let allowedForNew = true;
+                    
+                    if (isDM) {
+                        allowedForOld = (dmAssignedOldDistrict && oldKey === dmAssignedOldDistrict.toLowerCase());
+                        allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
                     }
 
-                    let monthSum = 0;
-                    mIndices.forEach(colIdx => {
-                        if(colIdx > -1) monthSum += (parseInt(row[colIdx]) || 0);
-                    });
-
-                    let fy27Total = monthSum;
-                    if (fy27Total === 0 && idx27 > -1) {
-                        fy27Total = parseInt(row[idx27]) || 0;
-                    }
+                    if (allowedForOld && oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
+                    if (allowedForNew && newDist !== 'Unknown') newDistrictsSet.add(newDist);
 
                     let dmNameKey = dmNameStr.toLowerCase().replace(/\s+/g, ' ').trim();
                     let finalDmMobile = "";
@@ -364,17 +383,11 @@
                     } else if (dmNameKey !== 'district manager' && dmNameKey !== '') {
                         let mapKeys = Object.keys(dmMobileMap);
                         let matchedKey = mapKeys.find(k => k.includes(dmNameKey) || dmNameKey.includes(k));
-                        
                         if (!matchedKey) {
                             let firstName = dmNameKey.split(' ')[0];
-                            if (firstName.length > 3) {
-                                matchedKey = mapKeys.find(k => k.startsWith(firstName));
-                            }
+                            if (firstName.length > 3) matchedKey = mapKeys.find(k => k.startsWith(firstName));
                         }
-
-                        if (matchedKey) {
-                            finalDmMobile = dmMobileMap[matchedKey];
-                        }
+                        if (matchedKey) finalDmMobile = dmMobileMap[matchedKey];
                     }
 
                     globalFollowUpData.push({
@@ -387,9 +400,10 @@
                         vlemob: idxvlemob > -1 ? row[idxvlemob] : '-',
                         dmname: dmNameStr,
                         dmmob: finalDmMobile, 
-                        txns_25_26: fy26,
-                        txns_26_27: fy27Total,
-                        status: idxstatus > -1 ? (row[idxstatus] || '').toString().trim() : ''
+                        txns_25_26: fy26_txns,
+                        txns_26_27: fy27Total, // Apr-26 to Mar-27 Total
+                        allowedForOld: allowedForOld,
+                        allowedForNew: allowedForNew
                     });
                 }
             }
@@ -401,17 +415,10 @@
         function updateDistrictsDropdown() {
             const type = document.getElementById("districtType").value || "old"; 
             const distDropdown = document.getElementById("districtName");
-            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             
             distDropdown.innerHTML = '<option value="All">All Districts</option>';
             
             let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
-            
-            if (userDesignation === "District Manager") {
-                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                 arr = arr.filter(dist => mappedSet.has(dist));
-            }
-
             arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
             
             if(globalFollowUpData.length >= 0) {
@@ -419,6 +426,7 @@
             }
         }
 
+        // 🌟 KPI FILTER FUNCTION 🌟
         function setKpiFilter(status) {
             currentKpiFilter = status;
             document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
@@ -436,23 +444,17 @@
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
             let priorityLevel = document.getElementById('priorityLevel').value;
             
-            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
-            let loggedInUser = localStorage.getItem("userName") || "";
+            // Get Search Input Value
+            let searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
 
             let tbodyHtml = "";
             let counts = { total: 0, active: 0, pending: 0 };
 
             globalFollowUpData.forEach((row) => {
-                let dist = row[distKey];
-                
-                if (userDesignation === "District Manager") {
-                    if (distType === 'old') {
-                        if (!dmMappedOldDistricts.has(dist)) return; 
-                    } else {
-                        if (row.dmname.toLowerCase() !== loggedInUser.toLowerCase().trim()) return;
-                    }
-                }
+                if (isDM && distType === 'old' && !row.allowedForOld) return;
+                if (isDM && distType === 'new' && !row.allowedForNew) return;
 
+                let dist = row[distKey];
                 if (selectedDist !== "All" && dist !== selectedDist) return;
                 
                 if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
@@ -460,47 +462,40 @@
                 if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
                 if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
 
-                let isActivated = row.txns_26_27 > 0;
+                // 🌟 ACTIVE OR PENDING CHECK 🌟
+                // ఈ రిపోర్ట్ లో ఉన్న వారందరూ కచ్చితంగా నాన్-బ్లాక్డ్ (Non-Blocked) మాత్రమే.
+                // కాబట్టి, 26-27 లో కనీసం 1 టికెట్ ఉన్నా సరే వాడు ACTIVATED.
+                let isActivated = (row.txns_26_27 > 0);
+
+                // 1. Update KPI Card Values dynamically
                 counts.total++;
-                if(isActivated) counts.active++;
-                else counts.pending++;
-
-                if(currentKpiFilter === 'active' && !isActivated) return;
-                if(currentKpiFilter === 'pending' && isActivated) return;
-
-                let fy26Color = row.txns_26_27 > 0 ? '#10b981' : '#ef4444'; 
-                
-                // 🌟 ఇక్కడే మీ లాజిక్ అప్‌డేట్ చేశాను 🌟
-                let rawStatus = (row.status || '').toString().toUpperCase().trim();
-                let statusText = "";
-                let statusColor = "#333"; 
-                let statusBg = "transparent";
-
-                if(rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK")) {
-                    statusText = rawStatus;
-                    if(statusText === "BLACK" || statusText === "BLACKLIST") statusText = "BLACKLISTED";
-                    statusColor = "#ef4444";
-                    statusBg = "#fee2e2";
-                } else if (isActivated) {
-                    statusText = "ACTIVATED";
-                    statusColor = "#10b981";
-                    statusBg = "#d1fae5";
+                if(isActivated) {
+                    counts.active++;
                 } else {
-                    statusText = "PENDING";
-                    statusColor = "#ea580c"; 
-                    statusBg = "#ffedd5";
+                    counts.pending++;
                 }
 
+                // 2. FILTER TABLE DATA BASED ON KPI CLICK
+                if (currentKpiFilter === 'pending' && isActivated) return;
+                if (currentKpiFilter === 'active' && !isActivated) return;
+
+                // 3. APPLY SEARCH FILTER
+                if (searchValue !== "") {
+                    let searchableText = `${row.vlename} ${row.cscid} ${row.mobile} ${row.vlemob} ${dist}`.toLowerCase();
+                    if (!searchableText.includes(searchValue)) return; // Skip if search doesn't match
+                }
+
+                let fy26Color = isActivated ? '#10b981' : '#ef4444'; 
+                
+                let statusText = isActivated ? "ACTIVATED" : "PENDING";
+                let statusColor = isActivated ? "#10b981" : "#ea580c"; 
+                let statusBg = isActivated ? "#d1fae5" : "#ffedd5";
+                
                 let statusHtml = `<span style="background-color: ${statusBg}; color: ${statusColor}; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap;">${statusText}</span>`;
 
-                let actionBtn = "";
-                if (rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK")) {
-                    actionBtn = `<span class="btn-done" style="background-color: #ef4444;">🚫 Blocked</span>`;
-                } else if(!isActivated) {
-                    actionBtn = `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${row.cscid}')">💬 WhatsApp</button>`;
-                } else {
-                    actionBtn = `<span class="btn-done">✅ Activated</span>`;
-                }
+                let actionBtn = isActivated 
+                    ? `<span class="btn-done">✅ Activated</span>` 
+                    : `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${row.cscid}')">💬 WhatsApp</button>`;
 
                 tbodyHtml += `<tr>
                     <td class="col-district" ondblclick="filterByDistrict('${dist}')" style="font-weight:700;">${dist}</td>
@@ -518,7 +513,7 @@
             if(counts.total === 0) {
                  tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No VLEs Found matching the current criteria!</td></tr>`;
             } else if (tbodyHtml === "") {
-                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No Records match your KPI filter!</td></tr>`;
+                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #10b981; font-weight: bold; font-size: 16px;">No Records Found for the selected KPI filter! 🎉</td></tr>`;
             }
 
             document.getElementById("tableBody").innerHTML = tbodyHtml;
@@ -603,7 +598,8 @@
             document.getElementById("districtType").value = "old";
             document.getElementById("districtName").value = "All";
             document.getElementById("priorityLevel").value = "all";
-            setKpiFilter('pending'); 
+            document.getElementById("searchInput").value = ""; 
+            setKpiFilter('pending'); // Reset చేస్తే మళ్ళీ పెండింగ్ (Pending) కి వెళుతుంది
             updateDistrictsDropdown();
         }
 
@@ -628,7 +624,7 @@
             }
         });
 
-        /* 🌟 Image Download Bug Fix 🌟 */
+        /* 🌟 Image Download 🌟 */
         function downloadImage() {
             const btn = document.getElementById("downloadBtn");
             let originalText = btn.innerHTML;

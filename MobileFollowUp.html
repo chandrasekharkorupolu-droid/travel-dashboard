@@ -4,569 +4,461 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Priority Follow-Up | CSC AP</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        body { background-color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 450px; height: 100vh; background-color: #f1f5f9; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-        .app-container {
-            width: 100%; max-width: 450px; height: 100vh; background-color: #f1f5f9;
-            position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); overflow: hidden;
-        }
-
-        /* 🌟 LOGIN & PIN SCREENS 🌟 */
-        #loginScreen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; z-index: 100;
-        }
-        .login-logo { margin-bottom: 15px; display: flex; justify-content: center; }
-        .login-logo img { max-width: 90px; height: auto; object-fit: contain; }
-        .login-title { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 5px; text-align: center;}
-        .login-sub { font-size: 13px; color: #64748b; margin-bottom: 30px; font-weight: 600; text-align: center;}
+        /* LOGIN CSS */
+        #loginScreen { position: absolute; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; justify-content:center; padding:30px; z-index:100; align-items:center;}
+        .login-logo img { max-width: 90px; margin-bottom: 15px;}
+        .login-title { font-size: 22px; font-weight: 800; color: #0f172a; text-align: center;}
+        .input-group { width: 100%; margin-top: 15px; }
+        .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-weight: 600; outline: none;}
+        .pin-input { font-size: 24px!important; text-align: center; letter-spacing: 15px; font-weight: 900!important;}
+        .btn-login { width: 100%; padding: 15px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; margin-top:15px; cursor:pointer;}
+        .text-link { color: #3b82f6; font-size: 13px; font-weight: 700; display: block; text-align: center; margin-top: 15px; cursor: pointer;}
         
-        .input-group { width: 100%; margin-bottom: 15px; }
-        .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 15px; outline: none; font-weight: 600; transition: 0.3s;}
-        .input-group input:focus { border-color: #3b82f6; }
-        
-        .pin-input { font-size: 24px !important; text-align: center; letter-spacing: 15px; font-weight: 900 !important; }
-        .text-link { color: #3b82f6; font-size: 13px; text-decoration: none; cursor: pointer; display: block; text-align: center; margin-top: 20px; font-weight: 700; }
-        
-        .btn-login { width: 100%; padding: 15px; background-color: #10b981; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 10px rgba(16,185,129,0.3); transition: 0.2s;}
-        .btn-login:active { transform: scale(0.98); }
-        .login-error { color: #ef4444; font-size: 13px; font-weight: 700; margin-top: 15px; display: none; text-align: center;}
-
-        /* MAIN APP SCREEN */
-        #appScreen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; }
-
-        .app-header { background-color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        /* HEADER */
+        .app-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10;}
         .header-left h1 { font-size: 18px; font-weight: 800; color: #1e293b; }
-        .header-left span { font-size: 12px; color: #64748b; font-weight: 700; display: block;}
-        .live-time { font-size: 10px; color: #3b82f6; font-weight: 700; margin-top: 2px; }
-        .header-right { display: flex; align-items: center; gap: 8px; }
-        .progress-badge { background-color: #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .header-left span { font-size: 12px; font-weight: 700; color: #64748b; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size:11px; cursor:pointer;}
+
+        /* LOADER */
+        .loader-container { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; background:#f1f5f9; z-index:50;}
+        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom:10px;}
         
-        .fs-btn { background-color: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(59,130,246,0.4);}
-        .logout-btn { background-color: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
-        .conversion-banner { display: none; background: #ecfdf5; color: #065f46; text-align: center; padding: 8px; font-size: 11px; font-weight: 800; border-bottom: 1px solid #a7f3d0; z-index: 9;}
-
-        .global-stats { background-color: #1e293b; color: white; display: flex; justify-content: space-around; padding: 12px 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 9; }
-        .g-stat { text-align: center; flex: 1; }
-        .g-stat span { font-size: 8px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2px; display: block; margin-bottom: 2px;}
-        .g-stat b { display: block; font-size: 15px; font-weight: 800; line-height: 1.1; }
-        .c-tot { color: #facc15; } 
-        .c-act { color: #34d399; } 
-        .c-inact { color: #f87171; } 
-        .c-pend { color: #60a5fa; } 
-
-        .card-stack { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
+        /* SPOC DASHBOARD CSS */
+        #spocScreen { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 15px; background:#f8fafc;}
+        .dash-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+        .dash-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;}
         
-        .vle-card { background-color: #ffffff; width: calc(100% - 40px); height: calc(100% - 40px); max-height: 540px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; position: absolute; transition: transform 1s cubic-bezier(0.25, 0.8, 0.25, 1); transform: translateY(200%); z-index: 2; }
-        .card-active { transform: translateY(0) !important; z-index: 5;}
-        .card-done { transform: translateY(-200%) !important; z-index: 1;}
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
+        .stat-box { background: #f1f5f9; padding: 15px; border-radius: 10px; text-align: center;}
+        .stat-box h3 { font-size: 22px; font-weight: 900; color: #3b82f6;}
+        .stat-box p { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;}
+
+        .dm-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0;}
+        .dm-info h4 { font-size: 13px; font-weight: 800; color: #1e293b;}
+        .dm-info p { font-size: 11px; font-weight: 700; color: #64748b;}
+        .dm-status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 20px;}
+        .status-active { background: #dcfce7; color: #166534;}
+        .call-dm-btn { background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 800;}
         
-        .service-banner { text-align: center; padding: 12px; font-size: 20px; font-weight: 900; color: white; letter-spacing: 1px; border-radius: 20px 20px 0 0;}
-        .bg-irctc { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
-        .vle-info { padding: 15px 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; overflow-y: auto;}
-        .vle-name { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 5px; line-height: 1.2;}
-        .vle-id { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 10px; }
-        
-        .last-remark-badge { background-color: #fee2e2; color: #b91c1c; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 15px; display: inline-block; border: 1px dashed #f87171;}
-        .stats-box { background-color: #f8fafc; border-radius: 12px; padding: 10px; display: flex; justify-content: space-around; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        .stat-item { text-align: center; }
-        .stat-lbl { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
-        .stat-val { font-size: 20px; font-weight: 900; }
-        .val-good { color: #059669; } .val-bad { color: #dc2626; }
+        /* TARGET BADGES FOR DMs */
+        .tgt-badge { font-size:10px; margin-top:5px; padding:2px 6px; border-radius:4px; display:inline-block; font-weight: 700; margin-right: 5px;}
+        .tgt-irctc { background: #e0f2fe; color: #1e3a8a; border: 1px solid #bae6fd;}
+        .tgt-redbus { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
 
-        .action-area { padding: 0 20px 20px 20px; }
-        .call-btn { background-color: #10b981; color: white; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 800; text-align: center; border: none; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: 0.2s;}
-        .call-btn:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; }
-        .call-btn:active:not(:disabled) { transform: scale(0.98); }
+        /* MASTER CONTROL BUTTONS */
+        .master-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-irctc { flex: 1; background: #1e3a8a; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;}
+        .btn-redbus { flex: 1; background: #dc2626; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;}
 
-        .remark-select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 15px; outline: none; background-color: #f8fafc; appearance: none; }
-        .remark-select:focus { border-color: #3b82f6; }
-        .custom-remark-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 15px; outline: none; display: none; }
-
-        .submit-btn { background-color: #0f172a; color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
-        .submit-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
-        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
-
-        .done-screen { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; width: 100%; padding: 20px; overflow-y: auto; background-color: #f8fafc; }
-        .summary-section { width: 100%; display: flex; flex-direction: column; }
-        .summary-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;}
-        .summary-table { width: 100%; border-collapse: collapse; text-align: left; background: #ffffff; border-radius: 10px; }
-        .summary-table th { background-color: #1e293b; color: white; font-size: 11px; padding: 10px; }
-        .summary-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
-        .loader-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;}
-        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* DM CARD CSS (Hidden for SPOC) */
+        #appScreen { display: none; flex-direction: column; height: 100%; position:relative;}
+        .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:20px; overflow:hidden;}
+        .vle-card { width: 100%; height: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position:absolute; transition: 0.5s; transform: translateY(200%); display:flex; flex-direction:column;}
+        .card-active { transform: translateY(0); z-index:5;}
+        .card-done { transform: translateY(-200%); z-index:1;}
+        .vle-info { padding: 20px; text-align: center; flex:1;}
+        .call-btn { width: 100%; background: #10b981; color: #fff; padding: 15px; border-radius: 10px; font-weight: 800; border:none; margin-bottom:15px; font-size: 16px;}
+        .submit-btn { width: 100%; background: #0f172a; color: #fff; padding: 15px; border-radius: 10px; font-weight: 800; border:none;}
+        select, input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; margin-bottom: 15px; outline:none; font-weight:600;}
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="mainContainer">
-        
+    <div class="app-container">
+        <!-- LOGIN SECTION -->
         <div id="loginScreen">
-            <div class="login-logo"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC Logo" onerror="this.src='logo.png'"></div>
-            <div class="login-title">CSC AP Tour & Travels</div>
-            <div class="login-sub" id="loginSubText">Priority Follow-Up System</div>
+            <div class="login-logo"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC"></div>
+            <div class="login-title">Tour & Travels</div>
+            <p style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:20px;">Priority System</p>
             
-            <div id="idPasswordForm" style="width: 100%;">
-                <div class="input-group"><input type="tel" id="userId" placeholder="Enter User ID (Mobile No)" maxlength="10"></div>
-                <div class="input-group"><input type="password" id="password" placeholder="Enter Password"></div>
-                <button class="btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
+            <div id="idPasswordForm" style="width:100%;">
+                <input type="tel" id="userId" class="input-group" placeholder="Enter Mobile No" style="padding:15px; width:100%; border-radius:10px; border:2px solid #ccc; font-weight:bold;">
+                <input type="password" id="password" class="input-group" placeholder="Enter Password" style="padding:15px; width:100%; border-radius:10px; border:2px solid #ccc; font-weight:bold; margin-top:10px;">
+                <button class="btn-login" onclick="handleLogin()">Login</button>
             </div>
 
-            <div id="setPinForm" style="width: 100%; display: none;">
-                <div class="login-sub" style="color:#10b981; font-weight:800; font-size:14px;">✅ Login Success!</div>
-                <div style="font-size:12px; color:#64748b; margin-bottom:15px; text-align:center;">Set a 4-Digit PIN for quick access next time.</div>
-                <div class="input-group"><input type="tel" id="newPin" class="pin-input" placeholder="****" maxlength="4" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-                <button class="btn-login" onclick="saveNewPin()">Set PIN & Start</button>
+            <div id="setPinForm" style="width:100%; display:none;">
+                <p style="color:#10b981; font-weight:bold; text-align:center;">✅ Login Success!</p>
+                <p style="font-size:12px; text-align:center; color:#64748b; margin-bottom:10px;">Set 4-Digit PIN</p>
+                <input type="tel" id="newPin" class="input-group pin-input" placeholder="****" maxlength="4">
+                <button class="btn-login" onclick="savePin()">Save & Start</button>
             </div>
 
-            <div id="enterPinForm" style="width: 100%; display: none;">
-                <div class="login-sub" style="color:#3b82f6; font-weight:800; font-size:14px;">Welcome Back!</div>
-                <div style="font-size:12px; color:#64748b; margin-bottom:15px; text-align:center;">Enter your 4-Digit PIN to unlock.</div>
-                <div class="input-group"><input type="tel" id="authPin" class="pin-input" placeholder="****" maxlength="4" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+            <div id="enterPinForm" style="width:100%; display:none;">
+                <p style="color:#3b82f6; font-weight:bold; text-align:center;">Welcome Back!</p>
+                <input type="tel" id="authPin" class="input-group pin-input" placeholder="****" maxlength="4">
                 <button class="btn-login" onclick="loginWithPin()">Unlock 🔓</button>
                 <a class="text-link" onclick="forgotPin()">Forgot PIN? Login with ID</a>
             </div>
-
-            <div class="login-error" id="loginError">Invalid Credentials!</div>
+            <p id="loginError" style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center; margin-top:10px;"></p>
         </div>
 
+        <!-- HEADER -->
+        <div class="app-header" id="mainHeader" style="display:none;">
+            <div class="header-left">
+                <h1 id="userNameTxt">Name</h1>
+                <span id="userRoleTxt">Role</span>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+
+        <div id="loader" class="loader-container" style="display:none;">
+            <div class="spinner"></div>
+            <p id="loaderMsg" style="font-weight:700; color:#64748b; font-size:12px;">Syncing Data...</p>
+        </div>
+
+        <!-- 🌟 SPOC COMMAND CENTER 🌟 -->
+        <div id="spocScreen">
+            
+            <!-- MASTER CONTROL -->
+            <div class="dash-card" style="background: #e0f2fe; border: 1px solid #bae6fd;">
+                <div class="dash-title" style="margin-bottom: 5px;">⚙️ Master Control (Push Data)</div>
+                <p style="font-size: 10px; color: #475569;">Generate new targets for all DMs from backend.</p>
+                <div class="master-btn-group">
+                    <button class="btn-irctc" onclick="triggerBackendPush('IRCTC')">📲 Push IRCTC</button>
+                    <button class="btn-redbus" onclick="triggerBackendPush('REDBUS')">📲 Push REDBUS</button>
+                </div>
+            </div>
+
+            <!-- GLOBAL OVERVIEW 2x2 Grid -->
+            <div class="dash-card">
+                <div class="dash-title">📊 Today's Global Overview</div>
+                <div class="stat-grid">
+                    <div class="stat-box"><h3 id="spocCallsToday">0</h3><p>Calls Today</p></div>
+                    <div class="stat-box"><h3 id="spocActiveDMs" style="color:#10b981;">0</h3><p>Active DMs</p></div>
+                    <div class="stat-box" style="background:#e0f2fe;"><h3 id="spocIrctcPending" style="color:#1e3a8a;">0</h3><p>IRCTC Pend</p></div>
+                    <div class="stat-box" style="background:#fee2e2;"><h3 id="spocRedbusPending" style="color:#dc2626;">0</h3><p>REDBUS Pend</p></div>
+                </div>
+            </div>
+
+            <!-- ACTIVE DMs & TRACKER -->
+            <div class="dash-card">
+                <div class="dash-title">🟢 Active DMs (Logged In)</div>
+                <div id="activeDmList"></div>
+            </div>
+
+            <div class="dash-card" style="border: 2px solid #fee2e2;">
+                <div class="dash-title" style="color:#b91c1c;">🔴 Inactive DMs (Not Logged In)</div>
+                <div id="inactiveDmList"></div>
+            </div>
+        </div>
+
+        <!-- 🌟 DM CALLING SCREEN 🌟 -->
         <div id="appScreen">
-            <div class="app-header" id="mainHeader">
-                <div class="header-left">
-                    <h1 id="greetingTitle">Follow-Up</h1>
-                    <span id="dmNameLabel">DM Name</span>
-                    <div id="liveTimeLabel" class="live-time"></div>
-                </div>
-                <div class="header-right">
-                    <span class="progress-badge" id="progressTxt">Wait...</span>
-                    <button class="fs-btn" onclick="openFullscreen()" title="Fullscreen">⛶</button>
-                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
-                </div>
-            </div>
-
-            <div class="conversion-banner" id="convBanner">
-                🔥 Awesome! You called <span id="totalCalled7Days">0</span> VLEs recently, and <span id="convCount">0</span> are now ACTIVE!
-            </div>
-
-            <div class="global-stats" id="globalStats" style="display: none;">
-                <div class="g-stat"><span>Total Target</span><b class="c-tot" id="gStatTotal">0</b></div>
-                <div class="g-stat"><span>Active</span><b class="c-act" id="gStatAct">0</b></div>
-                <div class="g-stat"><span>Inactive</span><b class="c-inact" id="gStatInact">0</b></div>
-                <div class="g-stat"><span>Today's Target</span><b class="c-pend" id="gStatPend">0</b></div>
-            </div>
-
-            <div class="card-stack" id="cardStack">
-                <div class="loader-container" id="loader">
-                    <div class="spinner"></div>
-                    <div style="font-weight: 700; color: #64748b;" id="loadingTxt">Fetching Master Data...</div>
-                </div>
-            </div>
-
-            <div class="done-screen" id="doneScreen">
-                <div style="text-align:center; margin: 20px 0;">
-                    <div style="font-size: 50px;">🎊</div>
-                    <div style="font-size: 22px; font-weight: 800; color:#1e293b;">Awesome Job!</div>
-                    <div style="font-size: 13px; color:#64748b;">Queue Completed.</div>
-                </div>
-                <div class="summary-section">
-                    <div class="summary-title">📊 Today's Call Summary</div>
-                    <table class="summary-table">
-                        <thead><tr><th>VLE Details</th><th>Remark</th></tr></thead>
-                        <tbody id="summaryTbody"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div style="text-align:center; padding:10px; font-weight:bold; color:#3b82f6; font-size:12px;" id="progressTxt"></div>
+            <div class="card-stack" id="cardStack"></div>
         </div>
 
     </div>
 
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-        
-        let pendingQueue = [];
-        let currentIndex = 0;
-        let callStartTime = null;
-        let totalDmTargetVles = 0, totalDmActive = 0, totalDmInactive = 0;
+        let pendingQueue = [], currentIndex = 0, callStartTime = null;
 
-        function updateDateTime() {
-            let now = new Date();
-            let hr = now.getHours();
-            document.getElementById("greetingTitle").innerText = hr < 12 ? "Good Morning," : (hr < 17 ? "Good Afternoon," : "Good Evening,");
-            document.getElementById("liveTimeLabel").innerText = `📅 ${now.toLocaleDateString('en-GB')} • ⏰ ${now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}`;
-        }
-        setInterval(updateDateTime, 60000);
-
-        function openFullscreen() { try { document.documentElement.requestFullscreen(); } catch(e){} }
-
-        // 🌟 PIN & LOGIN LOGIC 🌟
         window.onload = () => {
-            updateDateTime(); 
-            
-            // యూజర్ ఆల్రెడీ యాప్ లో ఉంటే డైరెక్ట్ గా పంపేస్తాం
-            if (sessionStorage.getItem("isLoggedIn")) {
-                enterApp();
-            } 
-            // యూజర్ కి PIN సేవ్ అయ్యి ఉంటే... PIN అడుగుతాం
+            if (sessionStorage.getItem("isLoggedIn")) routeUser();
             else if (localStorage.getItem("userSavedPin")) {
-                document.getElementById("loginScreen").style.display = "flex";
                 document.getElementById("idPasswordForm").style.display = "none";
                 document.getElementById("enterPinForm").style.display = "block";
-                document.getElementById("loginSubText").style.display = "none";
-            } 
-            // ఫస్ట్ టైమ్ అయితే ఐడీ పాస్‌వర్డ్ అడుగుతాం
-            else {
-                document.getElementById("loginScreen").style.display = "flex";
-                document.getElementById("idPasswordForm").style.display = "block";
             }
         };
 
-        async function fetchWithRetry(url, retries = 3) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    let r = await fetch(url);
-                    if (r.ok) return await r.json();
-                } catch(e) { if(i === retries - 1) throw e; await new Promise(res => setTimeout(res, 2000)); }
-            }
+        async function fetchRetry(url) {
+            let r = await fetch(url); return await r.json();
         }
 
-        // 1. ఐడీ, పాస్‌వర్డ్ తో లాగిన్ చెకింగ్
         async function handleLogin() {
-            openFullscreen(); 
-            let uid = document.getElementById("userId").value.trim();
-            let pwd = document.getElementById("password").value.trim();
-            let btn = document.getElementById("loginBtn");
-            let err = document.getElementById("loginError");
-
+            let uid = document.getElementById("userId").value;
+            let pwd = document.getElementById("password").value;
             if(!uid || !pwd) return;
-            btn.innerText = "Authenticating..."; btn.disabled = true; err.style.display = "none";
-
-            try {
-                let usersData = await fetchWithRetry(apiURL + "?sheet=Users&t=" + new Date().getTime());
-                let user = usersData.find(u => u[0] == uid && u[1] == pwd);
-                if (user) {
-                    localStorage.setItem("userDesignation", user[2]);
-                    localStorage.setItem("userName", user[5]);
-                    
-                    // లాగిన్ సక్సెస్ అయ్యాక, యాప్ లోకి వెళ్లకుండా పిన్ సెట్ చేసుకోమంటాం
-                    document.getElementById("idPasswordForm").style.display = "none";
-                    document.getElementById("setPinForm").style.display = "block";
-                } else {
-                    err.innerText = "Invalid Credentials!"; err.style.display = "block";
-                }
-            } catch(e) { err.innerText = "Network Error!"; err.style.display = "block"; }
-            btn.innerText = "Login"; btn.disabled = false;
-        }
-
-        // 2. కొత్త PIN ని సేవ్ చేయడం
-        function saveNewPin() {
-            let pin = document.getElementById("newPin").value;
-            let err = document.getElementById("loginError");
             
-            if (pin.length === 4) {
-                localStorage.setItem("userSavedPin", pin);
-                sessionStorage.setItem("isLoggedIn", "true");
-                document.getElementById("loginScreen").style.display = "none";
-                err.style.display = "none";
-                enterApp();
-            } else {
-                err.innerText = "Please enter a 4-Digit PIN!";
-                err.style.display = "block";
-            }
-        }
-
-        // 3. కేవలం PIN తో అన్‌లాక్ చేయడం
-        function loginWithPin() {
-            let enteredPin = document.getElementById("authPin").value;
-            let savedPin = localStorage.getItem("userSavedPin");
-            let err = document.getElementById("loginError");
-            
-            if (enteredPin === savedPin) {
-                sessionStorage.setItem("isLoggedIn", "true");
-                document.getElementById("loginScreen").style.display = "none";
-                err.style.display = "none";
-                enterApp();
-            } else {
-                err.innerText = "Incorrect PIN! Try again.";
-                err.style.display = "block";
-            }
-        }
-
-        // ఒకవేళ PIN మర్చిపోతే.. మళ్ళీ మొదటినుండి ఐడీ పాస్‌వర్డ్ అడుగుతాం
-        function forgotPin() {
-            localStorage.removeItem("userSavedPin");
-            document.getElementById("enterPinForm").style.display = "none";
-            document.getElementById("idPasswordForm").style.display = "block";
-            document.getElementById("loginSubText").style.display = "block";
             document.getElementById("loginError").style.display = "none";
-        }
-
-        // లాగౌట్ చేసినప్పుడు.. సేవ్ చేసిన ఐడీ అలాగే ఉంటుంది, కానీ సెషన్ పోతుంది (అంటే మళ్ళీ పిన్ అడుగుతుంది)
-        function handleLogout() { 
-            sessionStorage.clear(); 
-            location.reload(); 
-        }
-
-        function enterApp() {
-            document.getElementById("appScreen").style.display = "flex";
-            document.getElementById("dmNameLabel").innerText = localStorage.getItem("userName");
-            fetchAndPrepareData();
-        }
-
-        // 🌟 FETCH & QUEUE LOGIC 🌟
-        async function fetchAndPrepareData() {
-            try {
-                let loggedInUser = (localStorage.getItem("userName") || "").toLowerCase().trim();
-                let userRole = (localStorage.getItem("userDesignation") || "").toLowerCase().trim();
-                let isDM = userRole.includes("manager");
-
-                document.getElementById("loadingTxt").innerHTML = "Downloading Targets...<br><small style='color:#3b82f6;'>From Central Database</small>";
-                let targetRaw = await fetchWithRetry(apiURL + "?sheet=App_Targets&t=" + new Date().getTime());
-                
-                document.getElementById("loadingTxt").innerHTML = "Checking Call History...<br><small style='color:#10b981;'>Analyzing Remarks</small>";
-                let logsData = await fetchWithRetry(apiURL + "?sheet=FollowUp_Logs&t=" + new Date().getTime());
-
-                buildFollowUpQueue(targetRaw, logsData, loggedInUser, isDM);
-            } catch(e) {
-                document.getElementById("loader").innerHTML = `<div style='color:red; font-weight:bold;'>❌ Connection Failed!</div>`;
-            }
-        }
-
-        function buildFollowUpQueue(targetRaw, logsData, loggedInUser, isDM) {
-            let vleMap = {};
+            let users = await fetchRetry(apiURL + "?sheet=Users");
+            let user = users.find(u => u[0] == uid && u[1] == pwd);
             
-            for (let i = 1; i < targetRaw.length; i++) {
-                let row = targetRaw[i];
-                let cid = (row[0] || "").toString().trim().toUpperCase();
-                let dmName = (row[3] || "").toString().toLowerCase().trim();
-                
-                if (isDM && dmName !== loggedInUser) continue;
-
-                if (!vleMap[cid]) vleMap[cid] = { cscId: cid, name: row[1], mobile: row[2], irctc: null, redbus: null };
-                
-                let srvObj = { lastYear: parseInt(row[5])||0, thisYear: parseInt(row[6])||0, status: row[7] };
-                if (row[4] === "IRCTC") vleMap[cid].irctc = srvObj;
-                if (row[4] === "REDBUS") vleMap[cid].redbus = srvObj;
+            if(user) {
+                localStorage.setItem("userRole", user[2]);
+                localStorage.setItem("userName", user[5]);
+                document.getElementById("idPasswordForm").style.display = "none";
+                document.getElementById("setPinForm").style.display = "block";
+            } else {
+                document.getElementById("loginError").innerText = "Invalid Details";
+                document.getElementById("loginError").style.display = "block";
             }
+        }
 
-            let vleHistory = {};
-            let myRecentCalls = new Set();
-            let now = new Date();
-
-            if(logsData && logsData.length > 1) {
-                for(let i=1; i<logsData.length; i++) {
-                    let logDate = new Date(logsData[i][0]);
-                    let cid = (logsData[i][1] || "").toString().trim().toUpperCase();
-                    let dm = (logsData[i][3] || "").toString().toLowerCase().trim();
-                    let rmk = logsData[i][4];
-                    
-                    if(!vleHistory[cid] || logDate > vleHistory[cid].lastDate) {
-                        vleHistory[cid] = { lastDate: logDate, lastRemark: rmk };
-                    }
-                    let diffDays = (now - logDate) / (1000 * 60 * 60 * 24);
-                    if (dm === loggedInUser && diffDays <= 7) myRecentCalls.add(cid);
-                }
+        function savePin() {
+            let p = document.getElementById("newPin").value;
+            if(p.length===4) {
+                localStorage.setItem("userSavedPin", p);
+                sessionStorage.setItem("isLoggedIn", "true");
+                recordLoginAndRoute();
             }
+        }
 
-            let comboList = [], irctcOnlyList = [], redbusOnlyList = [];
-            totalDmTargetVles = 0; totalDmActive = 0; totalDmInactive = 0;
-            let activatedFromMyCalls = 0;
+        function loginWithPin() {
+            if(document.getElementById("authPin").value === localStorage.getItem("userSavedPin")) {
+                sessionStorage.setItem("isLoggedIn", "true");
+                recordLoginAndRoute();
+            } else {
+                document.getElementById("loginError").innerText = "Wrong PIN";
+                document.getElementById("loginError").style.display = "block";
+            }
+        }
 
-            Object.values(vleMap).forEach(v => {
-                let hasI = v.irctc !== null;
-                let hasR = v.redbus !== null;
-                
-                if (hasI) { totalDmTargetVles++; if(v.irctc.thisYear > 0) totalDmActive++; else totalDmInactive++; }
-                if (hasR) { totalDmTargetVles++; if(v.redbus.thisYear > 0) totalDmActive++; else totalDmInactive++; }
+        function forgotPin() { localStorage.removeItem("userSavedPin"); location.reload(); }
+        function handleLogout() { sessionStorage.clear(); location.reload(); }
 
-                let isActiveNow = (hasI && v.irctc.thisYear > 0) || (hasR && v.redbus.thisYear > 0);
-                if (isActiveNow && myRecentCalls.has(v.cscId)) activatedFromMyCalls++;
-
-                let isIrctcPend = hasI && v.irctc.status === "PENDING";
-                let isRedbusPend = hasR && v.redbus.status === "PENDING";
-
-                if (!isIrctcPend && !isRedbusPend) return; 
-
-                let history = vleHistory[v.cscId];
-                if (history && ((now - history.lastDate) / (1000 * 60 * 60 * 24)) < 3) return; // Recently called skip
-
-                v.lastCallDate = history ? `${history.lastDate.getDate()}/${history.lastDate.getMonth()+1}` : "";
-                v.lastRemark = history ? history.lastRemark : "";
-                v.submittedRemark = "";
-
-                if (isIrctcPend && isRedbusPend) {
-                    v.service = "IRCTC, REDBUS"; v.sortVal = v.irctc.lastYear + v.redbus.lastYear; comboList.push(v);
-                } else if (isIrctcPend) {
-                    v.service = "IRCTC"; v.sortVal = v.irctc.lastYear; irctcOnlyList.push(v);
-                } else if (isRedbusPend) {
-                    v.service = "REDBUS"; v.sortVal = v.redbus.lastYear; redbusOnlyList.push(v);
-                }
+        function recordLoginAndRoute() {
+            fetch(apiURL, {
+                method:"POST", mode:"no-cors",
+                body: JSON.stringify({ action: "recordLogin", dmName: localStorage.getItem("userName"), role: localStorage.getItem("userRole") })
             });
+            routeUser();
+        }
 
-            comboList.sort((a,b) => b.sortVal - a.sortVal);
-            irctcOnlyList.sort((a,b) => b.sortVal - a.sortVal);
-            redbusOnlyList.sort((a,b) => b.sortVal - a.sortVal);
-
-            let isFriday = now.getDay() === 5; 
-            let iQuota = isFriday ? 15 : 5; 
-            let rQuota = isFriday ? 5 : 2;  
+        function routeUser() {
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("mainHeader").style.display = "flex";
+            document.getElementById("userNameTxt").innerText = localStorage.getItem("userName");
             
-            pendingQueue = [];
-            for(let i=0; i<comboList.length; i++) { if (iQuota<=0 && rQuota<=0) break; pendingQueue.push(comboList[i]); iQuota--; rQuota--; }
-            if (iQuota < 0) iQuota = 0; if (rQuota < 0) rQuota = 0;
-            for(let i=0; i<irctcOnlyList.length; i++) { if (iQuota<=0) break; pendingQueue.push(irctcOnlyList[i]); iQuota--; }
-            for(let i=0; i<redbusOnlyList.length; i++) { if (rQuota<=0) break; pendingQueue.push(redbusOnlyList[i]); rQuota--; }
+            let role = (localStorage.getItem("userRole")||"").toLowerCase();
+            document.getElementById("userRoleTxt").innerText = role.toUpperCase();
 
-            currentIndex = 0;
-
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("globalStats").style.display = "flex";
-            document.getElementById("gStatTotal").innerText = totalDmTargetVles;
-            document.getElementById("gStatAct").innerText = totalDmActive;
-            document.getElementById("gStatInact").innerText = totalDmInactive;
-            document.getElementById("gStatPend").innerText = pendingQueue.length;
-
-            if (myRecentCalls.size > 0) {
-                document.getElementById("convBanner").style.display = "block";
-                document.getElementById("totalCalled7Days").innerText = myRecentCalls.size;
-                document.getElementById("convCount").innerText = activatedFromMyCalls;
+            if(role.includes("manager")) {
+                document.getElementById("appScreen").style.display = "flex";
+                loadDMData();
+            } else {
+                document.getElementById("spocScreen").style.display = "flex";
+                loadSpocDashboard();
             }
+        }
 
-            if(pendingQueue.length === 0) showDoneScreen();
-            else { renderCards(); updateStatsBar(); }
+        // ================= SPOC DASHBOARD LOGIC (SEPARATE IRCTC/REDBUS) ================= //
+        async function loadSpocDashboard() {
+            document.getElementById("loader").style.display = "flex";
+            document.getElementById("loaderMsg").innerText = "Analyzing AP Data...";
+            try {
+                let [users, logins, logs, targetsRaw] = await Promise.all([
+                    fetchRetry(apiURL + "?sheet=Users"),
+                    fetchRetry(apiURL + "?sheet=DM_Logins"),
+                    fetchRetry(apiURL + "?sheet=FollowUp_Logs"),
+                    fetchRetry(apiURL + "?sheet=App_Targets")
+                ]);
+
+                let todayStr = new Date().toLocaleDateString('en-GB'); 
+                
+                // 1. DMs List Setup (Separated Targets)
+                let uniqueDMs = {};
+                users.forEach(u => {
+                    if((u[2]||"").toLowerCase().includes("manager") && u[0] && !uniqueDMs[u[0]]) {
+                        uniqueDMs[u[0]] = { name: u[5], mobile: u[0], irctcTarget: 0, irctcPending: 0, redbusTarget: 0, redbusPending: 0, calledToday: 0 };
+                    }
+                });
+                
+                // 2. Calculate Targets & Pending Separate for IRCTC & REDBUS
+                let totalIrctcPending = 0, totalRedbusPending = 0;
+                for(let i=1; i<targetsRaw.length; i++) {
+                    let dmName = (targetsRaw[i][3]||"").trim();
+                    let service = (targetsRaw[i][4]||"").trim().toUpperCase();
+                    let status = targetsRaw[i][7];
+                    
+                    let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
+                    
+                    if(dmKey) {
+                        if (service === "IRCTC") {
+                            uniqueDMs[dmKey].irctcTarget += 1;
+                            if(status === "PENDING") uniqueDMs[dmKey].irctcPending += 1;
+                        } else if (service === "REDBUS") {
+                            uniqueDMs[dmKey].redbusTarget += 1;
+                            if(status === "PENDING") uniqueDMs[dmKey].redbusPending += 1;
+                        }
+                    }
+                    
+                    // Global counts
+                    if(status === "PENDING") {
+                        if (service === "IRCTC") totalIrctcPending++;
+                        if (service === "REDBUS") totalRedbusPending++;
+                    }
+                }
+
+                let todayLogins = new Set();
+                let loginTimeDetails = {};
+                for(let i=1; i<logins.length; i++) {
+                    if(logins[i][0] && logins[i][0].includes(todayStr)) {
+                        let name = logins[i][1];
+                        todayLogins.add(name);
+                        loginTimeDetails[name] = logins[i][0].split(" ")[1]; 
+                    }
+                }
+
+                let totalCallsToday = 0;
+                let todayISODate = new Date().toISOString().split('T')[0];
+                
+                for(let i=1; i<logs.length; i++) {
+                    let d = new Date(logs[i][0]).toISOString().split('T')[0];
+                    if(d === todayISODate) {
+                        totalCallsToday++;
+                        let logDmName = (logs[i][3]||"").trim();
+                        let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === logDmName.toLowerCase());
+                        if(dmKey) uniqueDMs[dmKey].calledToday += 1;
+                    }
+                }
+
+                document.getElementById("spocCallsToday").innerText = totalCallsToday;
+                document.getElementById("spocActiveDMs").innerText = todayLogins.size;
+                document.getElementById("spocIrctcPending").innerText = totalIrctcPending;
+                document.getElementById("spocRedbusPending").innerText = totalRedbusPending;
+
+                let actHtml = "", inactHtml = "";
+                
+                Object.values(uniqueDMs).forEach(dm => {
+                    let irctcHtml = `<span class="tgt-badge tgt-irctc">IRCTC: ${dm.irctcPending}/${dm.irctcTarget}</span>`;
+                    let redbusHtml = `<span class="tgt-badge tgt-redbus">REDBUS: ${dm.redbusPending}/${dm.redbusTarget}</span>`;
+                    
+                    if(todayLogins.has(dm.name)) {
+                        actHtml += `
+                        <div class="dm-item">
+                            <div class="dm-info">
+                                <h4>${dm.name}</h4>
+                                <div style="margin-top:4px;">${irctcHtml} ${redbusHtml}</div>
+                                <p style="margin-top:4px; color:#10b981;">Calls Today: <b>${dm.calledToday}</b></p>
+                                <p style="font-size:9px; margin-top:2px;">Login: ${loginTimeDetails[dm.name]||'Today'}</p>
+                            </div>
+                            <span class="dm-status status-active">Online</span>
+                        </div>`;
+                    } else {
+                        inactHtml += `
+                        <div class="dm-item">
+                            <div class="dm-info">
+                                <h4>${dm.name}</h4>
+                                <div style="margin-top:4px;">${irctcHtml}</div>
+                                <div style="margin-top:2px;">${redbusHtml}</div>
+                            </div>
+                            <a href="tel:${dm.mobile}" class="call-dm-btn">📞 Alert DM</a>
+                        </div>`;
+                    }
+                });
+
+                document.getElementById("activeDmList").innerHTML = actHtml || "<p style='font-size:11px; text-align:center;'>No active DMs yet.</p>";
+                document.getElementById("inactiveDmList").innerHTML = inactHtml || "<p style='font-size:11px; text-align:center;'>All DMs are active! 🎉</p>";
+
+            } catch(e) {
+                alert("Error loading dashboard data.");
+            }
+            document.getElementById("loader").style.display = "none";
+        }
+
+        // MASTER CONTROL PUSH FUNCTION
+        function triggerBackendPush(serviceName) {
+            document.getElementById("loader").style.display = "flex";
+            document.getElementById("loaderMsg").innerText = `Pushing ${serviceName} Data...`;
+            
+            fetch(apiURL, {
+                method: "POST",
+                body: JSON.stringify({ action: "generateAppTargets", service: serviceName })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById("loader").style.display = "none";
+                if(data.success) {
+                    alert(`✅ Successfully assigned ${data.count} ${serviceName} targets to DMs!`);
+                    loadSpocDashboard(); 
+                } else {
+                    alert("❌ Backend Error: " + data.error);
+                }
+            })
+            .catch(e => {
+                document.getElementById("loader").style.display = "none";
+                alert("Request sent successfully! Background sync in progress.");
+            });
+        }
+
+        // ================= DM CALLING LOGIC ================= //
+        async function loadDMData() {
+            document.getElementById("loader").style.display = "flex";
+            let dmName = localStorage.getItem("userName").toLowerCase().trim();
+            try {
+                let targetRaw = await fetchRetry(apiURL + "?sheet=App_Targets");
+                pendingQueue = [];
+                
+                for(let i=1; i<targetRaw.length; i++) {
+                    if((targetRaw[i][3]||"").toLowerCase().trim() === dmName && targetRaw[i][7] === "PENDING") {
+                        pendingQueue.push({ cscId: targetRaw[i][0], name: targetRaw[i][1], mobile: targetRaw[i][2], service: targetRaw[i][4] });
+                    }
+                }
+                
+                document.getElementById("loader").style.display = "none";
+                if(pendingQueue.length === 0) {
+                    document.getElementById("cardStack").innerHTML = `<h3 style='text-align:center; color:#1e293b;'>🎉 All Targets Completed!</h3>`;
+                } else {
+                    renderCards(); updateUI();
+                }
+            } catch(e) {}
         }
 
         function renderCards() {
             let html = "";
-            for(let i = 0; i < pendingQueue.length; i++) {
-                let vle = pendingQueue[i];
-                let badgeHtml = vle.lastRemark ? `<div class="last-remark-badge">⚠️ Last Call (${vle.lastCallDate}): ${vle.lastRemark}</div>` : "";
-                
-                let banner = vle.service === "IRCTC, REDBUS" ? `<div class="service-banner" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);">🚄 IRCTC & 🚌 REDBUS</div>` 
-                           : vle.service === "REDBUS" ? `<div class="service-banner" style="background: linear-gradient(135deg, #dc2626, #ef4444);">🚌 REDBUS FOLLOW-UP</div>`
-                           : `<div class="service-banner bg-irctc">🚄 IRCTC FOLLOW-UP</div>`;
-                
-                let stats = vle.service === "IRCTC, REDBUS" ? 
-                    `<div class="stats-box" style="flex-direction:column; gap:5px;">
-                        <div style="font-size:11px; font-weight:800; color:#1e3a8a;">IRCTC &nbsp;➤&nbsp; FY26: <span class="val-good">${vle.irctc.lastYear}</span> &nbsp;|&nbsp; FY27: <span class="val-bad">${vle.irctc.thisYear}</span></div>
-                        <div style="height:1px; background:#cbd5e1;"></div>
-                        <div style="font-size:11px; font-weight:800; color:#dc2626;">REDBUS ➤&nbsp; FY26: <span class="val-good">${vle.redbus.lastYear}</span> &nbsp;|&nbsp; FY27: <span class="val-bad">${vle.redbus.thisYear}</span></div>
-                    </div>`
-                    : `<div class="stats-box">
-                        <div class="stat-item"><div class="stat-lbl">FY 25-26</div><div class="stat-val val-good">${vle.service === "IRCTC" ? vle.irctc.lastYear : vle.redbus.lastYear}</div></div>
-                        <div class="stat-item"><div class="stat-lbl">FY 26-27</div><div class="stat-val val-bad">${vle.service === "IRCTC" ? vle.irctc.thisYear : vle.redbus.thisYear}</div></div>
-                    </div>`;
-
+            pendingQueue.forEach((v, i) => {
                 html += `
-                <div class="vle-card ${i === 0 ? 'card-active' : ''}" id="card-${i}">
-                    ${banner}
+                <div class="vle-card" id="card-${i}">
+                    <div style="background:#1e3a8a; color:white; padding:15px; text-align:center; border-radius:20px 20px 0 0; font-weight:bold;">${v.service} Follow-Up</div>
                     <div class="vle-info">
-                        <div class="vle-name">${vle.name}</div>
-                        <div class="vle-id">CSC ID: ${vle.cscId}</div>
-                        ${badgeHtml}
-                        ${stats}
-                    </div>
-                    <div class="action-area">
-                        <button class="call-btn" id="callBtn-${i}" onclick="startCallTimer('${vle.mobile}')" ${i === 0 ? '' : 'disabled'}>📞 Call ${vle.mobile}</button>
-                        <select id="remarkSelect-${i}" class="remark-select" onchange="handleRemarkChange(${i})" ${i === 0 ? '' : 'disabled'}>
-                            <option value="" disabled selected>Select Reason for Inactivity...</option>
+                        <h2 style="font-size:20px; font-weight:800; color:#1e293b; margin-bottom:5px;">${v.name}</h2>
+                        <p style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:20px;">CSC ID: ${v.cscId}</p>
+                        
+                        <button class="call-btn" onclick="startCallTimer('${v.mobile}')">📞 Call ${v.mobile}</button>
+                        
+                        <select id="remark-${i}">
+                            <option value="" disabled selected>Select Reason...</option>
                             <option value="ACTIVATED">✅ ACTIVATED / Will do right now</option>
-                            <option value="Promised to do today/tomorrow">Promised to do today/tomorrow</option>
-                            <option value="Using Competitor / B2C">Using Competitor / B2C Portal</option>
-                            <option value="DSP e-KYC Problem">DSP e-KYC Problem</option>
-                            <option value="Password / ID Block / Technical Issue">Password / ID Block / Technical Issue</option>
-                            <option value="Wallet / Funds Issue">Wallet / Funds Issue</option>
-                            <option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option>
-                            <option value="Not Interested anymore">Not Interested anymore</option>
-                            <option value="Did not Lift / Not Reachable">Did not Lift / Not Reachable</option>
-                            <option value="Other">Other (Type your reason)</option>
+                            <option value="Technical Issue">Password / Technical Issue</option>
+                            <option value="Not Reachable">Not Reachable</option>
+                            <option value="Other">Other</option>
                         </select>
-                        <input type="text" id="customRemark-${i}" class="custom-remark-input" placeholder="Type reason here..." oninput="checkCustomRemark(${i})">
-                        <button id="submitBtn-${i}" class="submit-btn" disabled onclick="processSubmission(${i})">SUBMIT & NEXT ⏭</button>
+                        
+                        <button class="submit-btn" onclick="submitCall(${i})">Submit & Next</button>
                     </div>
                 </div>`;
-            }
+            });
             document.getElementById("cardStack").innerHTML = html;
         }
 
-        function updateCardStyles() {
-            for(let i = 0; i < pendingQueue.length; i++) {
-                let card = document.getElementById(`card-${i}`);
-                if(!card) continue;
-                if (i < currentIndex) { card.className = "vle-card card-done"; } 
-                else if (i === currentIndex) { 
-                    card.className = "vle-card card-active"; 
-                    document.getElementById(`callBtn-${i}`).disabled = false;
-                    document.getElementById(`remarkSelect-${i}`).disabled = false;
-                } else { card.className = "vle-card"; }
+        function updateUI() {
+            document.getElementById("progressTxt").innerText = `Pending: ${currentIndex + 1} / ${pendingQueue.length}`;
+            for(let i=0; i<pendingQueue.length; i++) {
+                let c = document.getElementById(`card-${i}`);
+                if(i < currentIndex) c.className = "vle-card card-done";
+                else if(i === currentIndex) c.className = "vle-card card-active";
+                else c.className = "vle-card";
             }
         }
 
-        function updateStatsBar() { document.getElementById("progressTxt").innerText = `${currentIndex + 1} / ${pendingQueue.length}`; }
         function startCallTimer(mob) { callStartTime = new Date(); window.location.href = `tel:${mob}`; }
 
-        function handleRemarkChange(index) {
-            let val = document.getElementById(`remarkSelect-${index}`).value;
-            let customInput = document.getElementById(`customRemark-${index}`);
-            let submitBtn = document.getElementById(`submitBtn-${index}`);
-            if (val === "Other") { customInput.style.display = "block"; submitBtn.disabled = customInput.value.trim() === ""; } 
-            else { customInput.style.display = "none"; submitBtn.disabled = !val; }
-        }
-
-        function checkCustomRemark(index) {
-            document.getElementById(`submitBtn-${index}`).disabled = document.getElementById(`customRemark-${index}`).value.trim() === "";
-        }
-
-        function processSubmission(index) {
-            let btn = document.getElementById(`submitBtn-${index}`);
-            btn.disabled = true; btn.innerText = "Saving...";
-
-            let remark = document.getElementById(`remarkSelect-${index}`).value;
-            if (remark === "Other") remark = "Other: " + document.getElementById(`customRemark-${index}`).value.trim();
-            pendingQueue[index].submittedRemark = remark;
-
-            let dur = callStartTime ? Math.round((new Date() - callStartTime) / 1000) : 0;
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    pos => saveDataAndSwipe(remark, dur, `${pos.coords.latitude}, ${pos.coords.longitude}`, index),
-                    err => saveDataAndSwipe(remark, dur, "Permission Denied", index), { timeout: 3000 }
-                );
-            } else saveDataAndSwipe(remark, dur, "Not Supported", index);
-        }
-
-        function saveDataAndSwipe(rem, dur, loc, idx) {
-            let vle = pendingQueue[idx];
-            let payload = { action: "saveFollowUp", cscId: vle.cscId, service: vle.service, dmName: localStorage.getItem("userName"), remark: rem, duration: dur, location: loc };
-            fetch(apiURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        function submitCall(idx) {
+            let rmk = document.getElementById(`remark-${idx}`).value;
+            if(!rmk) { alert("Please select a remark!"); return; }
+            
+            let dur = callStartTime ? Math.round((new Date() - callStartTime)/1000) : 0;
+            let v = pendingQueue[idx];
+            
+            fetch(apiURL, {
+                method: "POST", mode: "no-cors",
+                body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: v.service, dmName: localStorage.getItem("userName"), remark: rmk, duration: dur, location: "App" })
+            });
 
             currentIndex++;
-            if (currentIndex < pendingQueue.length) { updateStatsBar(); updateCardStyles(); } 
-            else { updateCardStyles(); setTimeout(showDoneScreen, 800); }
-        }
-
-        function showDoneScreen() {
-            document.getElementById("cardStack").style.display = "none";
-            document.getElementById("globalStats").style.display = "none";
-            document.getElementById("doneScreen").style.display = "flex";
-            document.getElementById("progressTxt").innerText = "Completed!";
-            
-            let html = "";
-            pendingQueue.forEach(v => {
-                let remClass = (v.submittedRemark.includes("ACTIVATED") || v.submittedRemark.includes("Promised")) ? "good" : "";
-                html += `<tr><td><span style="font-weight:700; color:#0f172a; font-size:12px;">${v.name}</span><br><span style="color:#64748b; font-size:10px;">${v.cscId}</span></td><td style="font-weight:600; color:${remClass?'#059669':'#dc2626'}">${v.submittedRemark}</td></tr>`;
-            });
-            document.getElementById("summaryTbody").innerHTML = html;
+            if(currentIndex < pendingQueue.length) updateUI();
+            else document.getElementById("cardStack").innerHTML = `<h3 style='text-align:center;'>🎉 All Done!</h3>`;
         }
     </script>
 </body>

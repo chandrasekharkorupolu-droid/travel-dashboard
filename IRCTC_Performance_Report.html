@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRCTC District Performance Report</title>
-    <!-- చార్ట్స్ మరియు ఇమేజ్ డౌన్‌లోడ్ కోసం లైబ్రరీలు -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -126,6 +125,7 @@
                 <option value="All">All Districts</option>
             </select>
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             <button class="btn-action" onclick="downloadReportImage()" id="downloadBtn">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
@@ -177,14 +177,13 @@
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         
-        let globalData = [];
+        let globalVleData = [];
         let oldDistrictsSet = new Set();
         let newDistrictsSet = new Set();
         let pieChartInstance = null;
         let barChartInstance = null;
-
-        let userDesignation = localStorage.getItem("userDesignation") || "State Head";
-        let loggedInUser = localStorage.getItem("userName") || "";
+        
+        let dmAssignedOldDistrict = ""; // 🌟 DM కి మ్యాప్ అయిన పాత జిల్లా ఇక్కడ సేవ్ అవుతుంది
 
         function setReportDate() {
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
@@ -192,86 +191,93 @@
             document.getElementById('reportDate').innerText = "Report Generated on: " + today;
         }
 
-        async function loadInitialData() {
+        // 🌟 పేరుని పక్కాగా మ్యాచ్ చేసే బ్రహ్మాస్త్రం లాజిక్ 🌟
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (sClean === lClean) return true;
+            if (lClean.length > 5 && sClean.includes(lClean)) return true;
+            if (sClean.length > 5 && lClean.includes(sClean)) return true;
+            return false;
+        }
+
+        window.onload = function() {
             setReportDate();
+            document.getElementById("districtType").value = "old";
+            fetchSheetData();
+        };
+
+        // 🌟 ఫాస్ట్ లోడింగ్ (GET) కోసం అప్డేటెడ్ ఫంక్షన్ 🌟
+        async function fetchSheetData() {
+            document.getElementById("reportTableBody").innerHTML = "<tr class='loader-row'><td colspan='9'><div class='spinner'></div> Fetching Live Data...</td></tr>";
+            
             try {
                 let cachedData = localStorage.getItem("cscGlobalData");
+                let cachedUsersData = localStorage.getItem("cscUsersData");
                 
-                if (cachedData) {
-                    globalData = JSON.parse(cachedData);
-                    updateDistrictsDropdown();
+                let rawData = null;
+                let usersData = null;
+
+                if (cachedData && cachedUsersData) {
+                    rawData = JSON.parse(cachedData);
+                    usersData = JSON.parse(cachedUsersData);
                 } else {
-                    let response = await fetch(apiURL);
-                    let rawData = await response.json();
+                    let [resData, resUsers] = await Promise.all([
+                        fetch(apiURL),
+                        fetch(apiURL + "?sheet=Users").catch(() => null)
+                    ]);
+                    
+                    rawData = await resData.json();
+                    usersData = resUsers ? await resUsers.json() : null;
+                    
                     localStorage.setItem("cscGlobalData", JSON.stringify(rawData));
-                    globalData = rawData;
-                    updateDistrictsDropdown();
+                    if(usersData) localStorage.setItem("cscUsersData", JSON.stringify(usersData));
+                }
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+                // 🌟 DM కి మ్యాప్ అయిన పాత జిల్లాని Users షీట్ నుండి తెచ్చుకోవడం 🌟
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                    let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district'); 
+
+                    if (idxUid > -1 && idxDist > -1) {
+                        for(let i=1; i<usersData.length; i++) {
+                            let sheetUid = (usersData[i][idxUid] || '').toString().trim();
+                            if (sheetUid === loggedInUserId) {
+                                dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                                break; 
+                            }
+                        }
+                    }
+                }
+
+                if(rawData && rawData.length > 0) {
+                    processDataOnce(rawData);
+                } else {
+                    throw new Error("Empty Data Found");
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding:20px;'>❌ Error loading data from server. Please refresh.</td></tr>";
+                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet. Please check the internet or API link.</td></tr>";
             }
         }
 
-        function updateDistrictsDropdown() {
-            const type = document.getElementById("districtType").value; 
-            const distDropdown = document.getElementById("districtName");
-            distDropdown.innerHTML = '<option value="All">All Districts</option>';
-            
-            let cleanHeaders = globalData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
-            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
-            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
-
-            let arr = [];
-            
-            if (userDesignation === "District Manager") {
-                let dmOld = new Set();
-                let dmNew = new Set();
-                for (let i = 1; i < globalData.length; i++) {
-                    let dmName = idxempname > -1 ? (globalData[i][idxempname] || '').toString().toLowerCase().trim() : '';
-                    if (dmName === loggedInUser.toLowerCase().trim()) {
-                        let o = idxolddist > -1 ? globalData[i][idxolddist] : '';
-                        let n = idxnewdist > -1 ? globalData[i][idxnewdist] : '';
-                        if(o && o !== '-' && o !== 'Unknown') dmOld.add(o.toString().trim());
-                        if(n && n !== '-' && n !== 'Unknown') dmNew.add(n.toString().trim());
-                    }
-                }
-                arr = type === "old" ? Array.from(dmOld).sort() : Array.from(dmNew).sort();
-            } else {
-                let allOld = new Set();
-                let allNew = new Set();
-                for (let i = 1; i < globalData.length; i++) {
-                    let o = idxolddist > -1 ? globalData[i][idxolddist] : '';
-                    let n = idxnewdist > -1 ? globalData[i][idxnewdist] : '';
-                    if(o && o !== '-' && o !== 'Unknown') allOld.add(o.toString().trim());
-                    if(n && n !== '-' && n !== 'Unknown') allNew.add(n.toString().trim());
-                }
-                arr = type === "old" ? Array.from(allOld).sort() : Array.from(allNew).sort();
-            }
-
-            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
-            loadPerformanceReport();
+        function refreshData() {
+            localStorage.removeItem("cscGlobalData");
+            localStorage.removeItem("cscUsersData");
+            dmAssignedOldDistrict = "";
+            fetchSheetData();
         }
 
-        function filterByDistrict(distName) {
-            let distDropdown = document.getElementById("districtName");
-            if (distDropdown.value === distName) { distDropdown.value = "All"; } else { distDropdown.value = distName; }
-            loadPerformanceReport();
-        }
-
-        function resetFilters() {
-            document.getElementById("districtType").value = "old";
-            updateDistrictsDropdown();
-        }
-
-        function loadPerformanceReport() {
-            let distType = document.getElementById("districtType").value;
-            let selectedDist = document.getElementById("districtName").value;
-            let cleanHeaders = globalData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+        function processDataOnce(rawData) {
+            let cleanHeaders = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
             
             let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
-            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
             let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
             let idxho = cleanHeaders.findIndex(h => h.includes('horemarks'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
@@ -285,51 +291,28 @@
             let idx27 = -1;
             if (idx26 > -1) {
                 for (let k = 1; k <= 12; k++) {
-                    if (idx26 + k < globalData[0].length) mIndices.push(idx26 + k);
+                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
                 }
-                if (idx26 + 13 < globalData[0].length) idx27 = idx26 + 13;
+                if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
             }
 
-            let dmAuthorizedOldDistricts = new Set();
-            if (userDesignation === "District Manager") {
-                for (let i = 1; i < globalData.length; i++) {
-                    let dmName = idxempname > -1 ? (globalData[i][idxempname] || '').toString().toLowerCase().trim() : '';
-                    if (dmName === loggedInUser.toLowerCase().trim()) {
-                        let o = idxolddist > -1 ? globalData[i][idxolddist] : '';
-                        if(o && o !== '-' && o !== 'Unknown') dmAuthorizedOldDistricts.add(o.toString().trim());
-                    }
-                }
-            }
+            globalVleData = [];
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
 
-            let summaryMap = {};
-
-            for (let i = 1; i < globalData.length; i++) {
-                let row = globalData[i];
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
                 let cscId = idxcscid > -1 ? row[idxcscid] : '';
                 if (!cscId || cscId === '-') continue;
 
-                let dmName = idxempname > -1 ? (row[idxempname] || '').toString().toLowerCase().trim() : '';
                 let oldD = idxolddist > -1 ? row[idxolddist] : '';
                 oldD = oldD ? oldD.toString().trim() : 'Unknown';
                 let newD = idxnewdist > -1 ? row[idxnewdist] : '';
                 newD = newD ? newD.toString().trim() : 'Unknown';
+                let dmName = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
 
-                let distKey = distType === "old" ? oldD : newD;
-                if (distKey === '' || distKey === '-') distKey = 'Unknown';
-
-                if (userDesignation === "District Manager") {
-                    if (distType === "old") {
-                        if (!dmAuthorizedOldDistricts.has(oldD)) continue; 
-                    } else {
-                        if (dmName !== loggedInUser.toLowerCase().trim()) continue;
-                    }
-                }
-
-                if (selectedDist !== "All" && distKey !== selectedDist) continue;
-
-                if (!summaryMap[distKey]) {
-                    summaryMap[distKey] = { totalIds: 0, act23: 0, act24: 0, act25: 0, act26: 0, act27_old: 0, act27_new: 0, act27_total: 0 };
-                }
+                if (oldD !== 'Unknown' && oldD !== '-') oldDistrictsSet.add(oldD);
+                if (newD !== 'Unknown' && newD !== '-') newDistrictsSet.add(newD);
 
                 let fy23 = idx23 > -1 ? (parseInt(row[idx23]) || 0) : 0;
                 let fy24 = idx24 > -1 ? (parseInt(row[idx24]) || 0) : 0;
@@ -346,78 +329,164 @@
                 let hoRemarks = idxho > -1 ? (row[idxho] || '').toString().toLowerCase().trim() : '';
                 let isBlocked = hoRemarks.includes('suspend') || hoRemarks.includes('blacklist') || hoRemarks.includes('block');
 
-                summaryMap[distKey].totalIds++;
+                let is_fy27_act = fy27Total > 0 ? 1 : 0;
+                let is_fy26_act = fy26 > 0 ? 1 : 0;
 
-                if (!isBlocked) {
-                    if (fy23 > 0) summaryMap[distKey].act23++; 
-                    if (fy24 > 0) summaryMap[distKey].act24++; 
-                    if (fy25 > 0) summaryMap[distKey].act25++; 
-                    if (fy26 > 0) summaryMap[distKey].act26++; 
+                globalVleData.push({
+                    district_old: oldD,
+                    district_new: newD,
+                    dmname: dmName,
+                    isBlocked: isBlocked,
+                    act23: fy23 > 0 ? 1 : 0,
+                    act24: fy24 > 0 ? 1 : 0,
+                    act25: fy25 > 0 ? 1 : 0,
+                    act26: is_fy26_act,
+                    act27_old: (is_fy27_act && is_fy26_act) ? 1 : 0,
+                    act27_new: (is_fy27_act && !is_fy26_act) ? 1 : 0,
+                    act27_total: is_fy27_act
+                });
+            }
+            updateDistrictsDropdown();
+        }
 
-                    if (fy27Total > 0) {
-                        summaryMap[distKey].act27_total++;
-                        
-                        // 🌟🌟🌟 ఇక్కడే మీ లాజిక్ మార్చాను 🌟🌟🌟
-                        // Month-wise రిపోర్ట్ తో పక్కాగా మ్యాచ్ అవ్వడానికి బేస్ ఇయర్ FY 25-26 ని తీసుకున్నాను.
-                        if (fy26 > 0) {
-                            summaryMap[distKey].act27_old++; 
-                        } else {
-                            summaryMap[distKey].act27_new++; 
+        // 🌟🌟🌟 THE ABSOLUTE DISPLAY FILTERING FIX 🌟🌟🌟
+        function isRowAllowedForDM(row, distType, loggedInUserName) {
+            if (distType === 'old') {
+                if (!dmAssignedOldDistrict) return false; 
+                return row.district_old.toLowerCase() === dmAssignedOldDistrict.toLowerCase();
+            } else {
+                return isNameMatch(row.dmname, loggedInUserName);
+            }
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            
+            let arr = [];
+            
+            if (userDesignation === "District Manager") {
+                 if (type === 'old') {
+                     if (dmAssignedOldDistrict) arr.push(dmAssignedOldDistrict);
+                 } else {
+                     let myNewDists = new Set();
+                     globalVleData.forEach(row => {
+                         if (isNameMatch(row.dmname, loggedInUser) && row.district_new !== 'Unknown' && row.district_new !== '-') {
+                             myNewDists.add(row.district_new);
+                         }
+                     });
+                     arr = Array.from(myNewDists).sort();
+                 }
+            } else {
+                 arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            }
+
+            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            
+            loadPerformanceReport(); 
+        }
+
+        function loadPerformanceReport() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value; 
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
+            let summaryMap = {};
+            let gt = { totalIds: 0, act23: 0, act24: 0, act25: 0, act26: 0, act27_old: 0, act27_new: 0, act27_total: 0 };
+
+            globalVleData.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown' || dist === '-') return;
+
+                // 🌟 DM ఫిల్టర్ అప్లై చేస్తున్నాం 🌟
+                if (userDesignation === "District Manager") {
+                    if (!isRowAllowedForDM(row, distType, loggedInUser)) return;
+                }
+
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+
+                if (!summaryMap[dist]) {
+                    summaryMap[dist] = { totalIds: 0, act23: 0, act24: 0, act25: 0, act26: 0, act27_old: 0, act27_new: 0, act27_total: 0 };
+                }
+
+                summaryMap[dist].totalIds++;
+                gt.totalIds++;
+
+                if (!row.isBlocked) {
+                    if (row.act23) { summaryMap[dist].act23++; gt.act23++; }
+                    if (row.act24) { summaryMap[dist].act24++; gt.act24++; }
+                    if (row.act25) { summaryMap[dist].act25++; gt.act25++; }
+                    if (row.act26) { summaryMap[dist].act26++; gt.act26++; }
+
+                    if (row.act27_total) {
+                        summaryMap[dist].act27_total++;
+                        gt.act27_total++;
+                        if (row.act27_old) {
+                            summaryMap[dist].act27_old++; 
+                            gt.act27_old++;
+                        } else if (row.act27_new) {
+                            summaryMap[dist].act27_new++; 
+                            gt.act27_new++;
                         }
                     }
                 }
-            }
+            });
 
             let sortedDistricts = Object.keys(summaryMap).sort();
             let html = "";
-            let grandTotals = { totalIds: 0, act23: 0, act24: 0, act25: 0, act26: 0, act27_old: 0, act27_new: 0, act27_total: 0 };
             
             sortedDistricts.forEach(dist => {
                 let s = summaryMap[dist];
-                if (dist === 'Unknown' && s.totalIds === 0) return;
-
                 html += `<tr>
                     <td ondblclick="filterByDistrict('${dist}')" title="Double click to filter">${dist}</td>
                     <td>${s.totalIds}</td>
                     <td>${s.act23}</td>
                     <td>${s.act24}</td>
                     <td>${s.act25}</td>
-                    <td style="color:#06b6d4;">${s.act26}</td>
-                    <td style="color:#f59e0b;">${s.act27_old}</td>
-                    <td style="color:#8b5cf6;">${s.act27_new}</td>
-                    <td style="color:#16a34a; font-weight:800; font-size:13px;">${s.act27_total}</td>
+                    <td style="color:#06b6d4; font-weight: 800;">${s.act26}</td>
+                    <td style="color:#f59e0b; font-weight: 800;">${s.act27_old}</td>
+                    <td style="color:#8b5cf6; font-weight: 800;">${s.act27_new}</td>
+                    <td style="color:#16a34a; font-weight:900; font-size:13px;">${s.act27_total}</td>
                 </tr>`;
-
-                grandTotals.totalIds += s.totalIds;
-                grandTotals.act23 += s.act23;
-                grandTotals.act24 += s.act24;
-                grandTotals.act25 += s.act25;
-                grandTotals.act26 += s.act26;
-                grandTotals.act27_old += s.act27_old;
-                grandTotals.act27_new += s.act27_new;
-                grandTotals.act27_total += s.act27_total;
             });
 
             if(sortedDistricts.length === 0) {
-                html = `<tr><td colspan="9" style="padding:30px; text-align:center; color:#dc2626; font-weight:bold;">No data found for your mapped districts!</td></tr>`;
+                html = `<tr><td colspan="9" style="padding:30px; text-align:center; color:#dc2626; font-weight:bold;">No data found matching your filter!</td></tr>`;
                 document.getElementById("chartsArea").style.display = "none";
             } else {
                 html += `<tr class="total-row">
                     <td>GRAND TOTAL</td>
-                    <td>${grandTotals.totalIds}</td>
-                    <td>${grandTotals.act23}</td>
-                    <td>${grandTotals.act24}</td>
-                    <td>${grandTotals.act25}</td>
-                    <td>${grandTotals.act26}</td>
-                    <td>${grandTotals.act27_old}</td>
-                    <td>${grandTotals.act27_new}</td>
-                    <td>${grandTotals.act27_total}</td>
+                    <td>${gt.totalIds}</td>
+                    <td>${gt.act23}</td>
+                    <td>${gt.act24}</td>
+                    <td>${gt.act25}</td>
+                    <td style="color:#06b6d4;">${gt.act26}</td>
+                    <td style="color:#f59e0b;">${gt.act27_old}</td>
+                    <td style="color:#8b5cf6;">${gt.act27_new}</td>
+                    <td style="color:#16a34a;">${gt.act27_total}</td>
                 </tr>`;
                 document.getElementById("chartsArea").style.display = "flex";
-                renderCharts(grandTotals);
+                renderCharts(gt);
             }
 
             document.getElementById("reportTableBody").innerHTML = html;
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } else { distDropdown.value = distName; }
+            loadPerformanceReport();
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            updateDistrictsDropdown();
         }
 
         function renderCharts(totals) {
@@ -476,7 +545,7 @@
                     windowHeight: reportElement.scrollHeight
                 }).then(canvas => {
                     let link = document.createElement('a'); 
-                    link.download = 'IRCTC_Performance_Summary.png';
+                    link.download = 'IRCTC_District_Performance_Summary.png';
                     link.href = canvas.toDataURL('image/png');
                     link.click();
 
@@ -504,8 +573,6 @@
                 }
             } catch (e) { console.log("Fullscreen not supported"); }
         }
-
-        window.onload = loadInitialData;
     </script>
 </body>
 </html>

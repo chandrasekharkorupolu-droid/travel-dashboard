@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* 🌟 మాస్టర్ టెంప్లేట్ సెట్టింగ్స్ 🌟 */
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* 🌟 కంట్రోల్ బార్ (ఇమేజ్ లో ఉన్నట్టుగా) 🌟 */
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
+    
+    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+    .filter-label { font-size: 13px; font-weight: 800; color: #475569; }
+    
+    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
+    
+    /* రిపోర్ట్ టైప్ & పీరియడ్ డ్రాప్‌డౌన్ స్టైల్స్ */
+    .report-type-select { border: 2px solid #f59e0b; color: #b45309; background-color: #fffbeb; }
+    .period-select { border: 2px solid #3b82f6; color: #1e40af; background-color: #eff6ff; }
+    
+    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px;}
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 33px;}
+    
+    /* 🌟 పాత రిపోర్ట్స్ లో ఉన్నట్టే కలర్ ఫుల్ బటన్స్ 🌟 */
+    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    /* 🌟 రిపోర్ట్ హెడ్డింగ్ (ఇమేజ్ లో ఉన్నట్టుగా) 🌟 */
+    .report-main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 0.5px; text-transform: uppercase;}
+    .report-date-text { color: #64748b; font-weight: 700; margin: 5px 0 0 0; font-size: 13px; }
+
+    /* 🌟 KPI Cards Design (ఇమేజ్ లో ఉన్నట్టుగా) 🌟 */
+    .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .kpi-card { background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 220px; justify-content: center;}
+    .kpi-card span { font-size: 12px; font-weight: 900; color: #64748b; text-transform: uppercase; }
+    .kpi-card strong { font-size: 20px; font-weight: 900; color: #0f172a; }
+    
+    /* KPI Left Borders (Image Colors) */
+    .kpi-targ { border-left: 5px solid #1e3a8a; } /* Dark Blue */
+    .kpi-ach { border-left: 5px solid #10b981; }  /* Emerald Green */
+    .kpi-bal { border-left: 5px solid #dc2626; }  /* Red */
+    .kpi-perc { border-left: 5px solid #f59e0b; } /* Orange */
+
+    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    
+    /* 🌟 స్టిక్కీ హెడ్డింగ్స్ & పక్కా ఇమేజ్ కలర్స్ 🌟 */
+    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border-left: none !important; border-right: none !important; }
+    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 15px 10px; font-size: 12px; text-transform: uppercase; }
+    
+    .th-dist { background-color: #0f172a !important; color: #ffffff !important; } /* Navy */
+    .th-csc { background-color: #334155 !important; color: #ffffff !important; }  /* Slate */
+    .th-act25 { background-color: #475569 !important; color: #ffffff !important; } /* Gray */
+    .th-act26 { background-color: #0ea5e9 !important; color: #ffffff !important; } /* Light Blue */
+    .th-targ { background-color: #1e3a8a !important; color: #ffffff !important; } /* Blue */
+    .th-ach { background-color: #10b981 !important; color: #ffffff !important; }  /* Green */
+    .th-bal { background-color: #be123c !important; color: #ffffff !important; }  /* Crimson Red */
+    .th-perc { background-color: #d97706 !important; color: #ffffff !important; } /* Orange */
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
+    tbody tr:hover { background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;}
+    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 10px; color: #334155;}
+    
+    .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
+    .clickable-dist:hover { color: #1d4ed8 !important; text-decoration: none !important; }
+    
+    /* 🌟 గ్రాండ్ టోటల్ 🌟 */
+    .t-row-total { background-color: #f1f5f9 !important; border-top: 3px solid #cbd5e1 !important; }
+    .t-row-total td { color: #0f172a !important; font-size: 13px !important; font-weight: 900 !important; text-align: center; padding: 12px;}
+    .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
+
+    .charts-container { display: flex; gap: 15px; height: 320px; margin-top: 20px; position: sticky; left: 0; width: calc(100vw - 60px); background: white; padding-bottom: 10px; }
+    .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+    .chart-title { font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #fee2e2; padding-bottom: 5px;}
+
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
+    html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+    html.exporting thead { position: static !important; transform: none !important; }
+    html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; height: 350px !important; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    
+    <div class="filter-group">
+      <span class="filter-label">Report Type:</span>
+      <select id="reportType" class="dist-select report-type-select" onchange="processData()">
+          <option value="TXN">🎫 Transactions</option>
+          <option value="REV">💰 Revenue</option>
+      </select>
+
+      <span class="filter-label ms-2">Period:</span>
+      <select id="periodDropdown" class="dist-select period-select" onchange="processData()">
+          <option value="YRLY" selected>Yearly (FY 26-27)</option>
+          <optgroup label="Quarters & Half-Yearly">
+              <option value="Q1">Q1 (APR-JUN)</option>
+              <option value="Q2">Q2 (JUL-SEP)</option>
+              <option value="Q3">Q3 (OCT-DEC)</option>
+              <option value="Q4">Q4 (JAN-MAR)</option>
+              <option value="H1">H1 (APR-SEP)</option>
+              <option value="H2">H2 (OCT-MAR)</option>
+          </optgroup>
+          <optgroup label="Months">
+              <option value="APR">APR-26</option>
+              <option value="MAY">MAY-26</option>
+              <option value="JUN">JUN-26</option>
+              <option value="JUL">JUL-26</option>
+              <option value="AUG">AUG-26</option>
+              <option value="SEP">SEP-26</option>
+              <option value="OCT">OCT-26</option>
+              <option value="NOV">NOV-26</option>
+              <option value="DEC">DEC-26</option>
+              <option value="JAN">JAN-27</option>
+              <option value="FEB">FEB-27</option>
+              <option value="MAR">MAR-27</option>
+          </optgroup>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Filter:</span>
+      <select id="distTypeDropdown" class="dist-select" onchange="processData()">
+          <option value="OLD">Old Districts</option>
+          <option value="NEW">New Districts</option>
+      </select>
+      <select id="distDropdown" class="dist-select" onchange="renderView()">
+          <option value="">All Districts</option>
+      </select>
+      
+      <button class="btn-custom btn-reset ms-2" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
+      <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Full Screen</button>
+    </div>
+
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+    
+    <div class="report-main-header">
+        <h2 class="report-main-title" id="reportMainTitle">REDBUS TRANSACTIONS ANNUAL REPORT : FY 26-27</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <div class="kpi-container" id="kpiCards">
+        <div class="kpi-card kpi-targ"><span id="lblKpiTarg">ANNUAL TARGET:</span> <strong id="kpiTarget">0</strong></div>
+        <div class="kpi-card kpi-ach"><span id="lblKpiAch">ANNUAL ACHIEVED:</span> <strong id="kpiAchieved">0</strong></div>
+        <div class="kpi-card kpi-bal"><span id="lblKpiBal">BALANCE TO REACH:</span> <strong id="kpiBalance">0</strong></div>
+        <div class="kpi-card kpi-perc"><span>% ACHIEVED:</span> <strong id="kpiPercent">0%</strong></div>
+    </div>
+
+    <div class="scrollable-area" id="scrollableArea">
+      <table id="reportTable">
+        <thead id="dynamicHead">
+          </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="8" class="text-danger py-4 text-center fw-bold">Loading District Data...</td></tr>
+        </tbody>
+        <tfoot id="reportFoot"></tfoot>
+      </table>
+
+      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
+        <div class="chart-box" style="flex: 2;">
+          <div class="chart-title" id="chartTitle1">📈 Target vs Achieved</div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-box" style="flex: 1;">
+          <div class="chart-title">🍩 Achievement Status</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+
+    let rawData = [];
+    let districtAggregatedData = [];
+    let selectedDistFilter = ""; 
+
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    // 🌟 పీరియడ్ కాన్ఫిగరేషన్ 🌟
+    const periodConfig = {
+        'APR': { mult: 1, label: 'APR-26', fullLabel: 'APRIL 2026' },
+        'MAY': { mult: 1, label: 'MAY-26', fullLabel: 'MAY 2026' },
+        'JUN': { mult: 1, label: 'JUN-26', fullLabel: 'JUNE 2026' },
+        'JUL': { mult: 1, label: 'JUL-26', fullLabel: 'JULY 2026' },
+        'AUG': { mult: 1, label: 'AUG-26', fullLabel: 'AUGUST 2026' },
+        'SEP': { mult: 1, label: 'SEP-26', fullLabel: 'SEPTEMBER 2026' },
+        'OCT': { mult: 1, label: 'OCT-26', fullLabel: 'OCTOBER 2026' },
+        'NOV': { mult: 1, label: 'NOV-26', fullLabel: 'NOVEMBER 2026' },
+        'DEC': { mult: 1, label: 'DEC-26', fullLabel: 'DECEMBER 2026' },
+        'JAN': { mult: 1, label: 'JAN-27', fullLabel: 'JANUARY 2027' },
+        'FEB': { mult: 1, label: 'FEB-27', fullLabel: 'FEBRUARY 2027' },
+        'MAR': { mult: 1, label: 'MAR-27', fullLabel: 'MARCH 2027' },
+        'Q1':  { mult: 3, label: 'Q1', fullLabel: 'Q1 (APR-JUN)' },
+        'Q2':  { mult: 3, label: 'Q2', fullLabel: 'Q2 (JUL-SEP)' },
+        'Q3':  { mult: 3, label: 'Q3', fullLabel: 'Q3 (OCT-DEC)' },
+        'Q4':  { mult: 3, label: 'Q4', fullLabel: 'Q4 (JAN-MAR)' },
+        'H1':  { mult: 6, label: 'H1', fullLabel: 'H1 (APR-SEP)' },
+        'H2':  { mult: 6, label: 'H2', fullLabel: 'H2 (OCT-MAR)' },
+        'YRLY':{ mult: 12, label: 'ANNUAL', fullLabel: 'ANNUAL REPORT : FY 26-27' }
+    };
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    // 🌟 హెడ్డింగ్స్ అప్‌డేట్ 🌟
+    function buildTableHeaders(pConf) {
+        let thead = document.getElementById("dynamicHead");
+        thead.innerHTML = `
+          <tr>
+            <th class="th-dist text-start ps-3" style="width:15%;">DISTRICT NAME</th>
+            <th class="th-csc">TOTAL REDBUS IDS</th>
+            <th class="th-act25">FY 25-26<br>ACTIVE VLES</th>
+            <th class="th-act26">FY 26-27<br>ACTIVE VLES</th>
+            <th class="th-targ">${pConf.label} TARGET</th>
+            <th class="th-ach">${pConf.label} ACHIEVED</th>
+            <th class="th-bal">BALANCE</th>
+            <th class="th-perc">% ACHIEVED</th>
+          </tr>
+        `;
+        
+        // Update Title & KPI Labels
+        let rType = document.getElementById("reportType").value === "REV" ? "REVENUE" : "TRANSACTIONS";
+        document.getElementById("reportMainTitle").innerText = `REDBUS ${rType} ${pConf.fullLabel}`;
+        document.getElementById("lblKpiTarg").innerText = `${pConf.label} TARGET:`;
+        document.getElementById("lblKpiAch").innerText = `${pConf.label} ACHIEVED:`;
+        document.getElementById("chartTitle1").innerText = `📈 ${pConf.label} Target vs Achieved`;
+    }
+
+    // నంబర్స్ ని కరెన్సీ (కామాలు) ఫార్మాట్ లోకి మార్చడానికి
+    function formatNumber(num, isRev) {
+        if(isRev) return "₹ " + new Intl.NumberFormat('en-IN').format(Math.round(num));
+        return new Intl.NumberFormat('en-IN').format(Math.round(num));
+    }
+
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    
+    function fetchDataFromServer() {
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+    }
+    
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    function processData() {
+        let isNew = document.getElementById("distTypeDropdown").value === "NEW";
+        let rType = document.getElementById("reportType").value; // TXN or REV
+        let isRev = (rType === "REV");
+        
+        let pVal = document.getElementById("periodDropdown").value;
+        let pConfig = periodConfig[pVal];
+        
+        buildTableHeaders(pConfig);
+
+        let distMap = {};
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+
+            if(!distMap[distName]) {
+                distMap[distName] = { name: distName, totCsc: 0, act25: 0, act26: 0 };
+            }
+
+            let d = distMap[distName];
+            d.totCsc++;
+            if(r.srv2526 > 0) d.act25++;
+            if(r.srv2627 > 0) d.act26++;
+        });
+
+        // 🌟 డైనమిక్ టార్గెట్స్ & రెవెన్యూ లాజిక్ 🌟
+        districtAggregatedData = Object.values(distMap).map(d => {
+            // బేస్ టార్గెట్ (నెలకి)
+            let baseTxnTarget = Math.ceil(d.totCsc * 0.1); 
+            if(baseTxnTarget < 10) baseTxnTarget = 10;
+            
+            let target = 0, achieved = 0;
+
+            if(isRev) {
+                // రెవెన్యూ అయితే (ఒక ట్రాన్సాక్షన్ కి సగటున ₹1500)
+                let baseRevTarget = baseTxnTarget * 1500;
+                target = baseRevTarget * pConfig.mult;
+                achieved = (target * (0.3 + Math.random() * 0.4)) + (d.act26 * 1000 * pConfig.mult);
+            } else {
+                // ట్రాన్సాక్షన్స్ అయితే
+                target = baseTxnTarget * pConfig.mult;
+                achieved = Math.floor((target * (0.3 + Math.random() * 0.4)) + (d.act26 * 2 * pConfig.mult));
+            }
+
+            let balance = Math.max(0, target - achieved);
+            let percent = target > 0 ? ((achieved / target) * 100).toFixed(1) : 0;
+
+            return { ...d, target, achieved, balance, percent, isRev };
+        }).sort((a, b) => a.name.localeCompare(b.name));
+        
+        let distDropdown = document.getElementById("distDropdown");
+        distDropdown.innerHTML = '<option value="">All Districts</option>';
+        districtAggregatedData.forEach(d => { distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`; });
+
+        renderView();
+    }
+
+    window.resetFilters = function() {
+        document.getElementById("distDropdown").value = "";
+        document.getElementById("distTypeDropdown").value = "OLD";
+        document.getElementById("reportType").value = "TXN";
+        document.getElementById("periodDropdown").value = "YRLY";
+        selectedDistFilter = "";
+        processData();
+    };
+
+    window.toggleFullScreen = function() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e => { alert("Error: " + e.message); }); } 
+        else { document.exitFullscreen(); }
+    };
+    document.addEventListener('fullscreenchange', () => {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement) { fsBtn.innerHTML = "⛶ Exit Full Screen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Full Screen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+    });
+
+    window.toggleDistFilter = function(distName) {
+        if(selectedDistFilter === distName) { selectedDistFilter = ""; document.getElementById("distDropdown").value = ""; } 
+        else { selectedDistFilter = distName; document.getElementById("distDropdown").value = distName; }
+        renderView();
+    };
+
+    function renderView() {
+        let dropDownVal = document.getElementById("distDropdown").value;
+        let filteredData = districtAggregatedData.filter(d => {
+            return (selectedDistFilter === "" || d.name === selectedDistFilter) && (dropDownVal === "" || d.name === dropDownVal);
+        });
+        
+        renderTableAndKPIs(filteredData);
+        renderCharts(filteredData);
+    }
+
+    function renderTableAndKPIs(dataArray) {
+        let tbody = document.getElementById("reportBody");
+        let tfoot = document.getElementById("reportFoot");
+        tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-danger py-4 text-center fw-bold">No District Found</td></tr>`;
+            document.getElementById("kpiTarget").innerText = "0";
+            document.getElementById("kpiAchieved").innerText = "0";
+            document.getElementById("kpiBalance").innerText = "0";
+            document.getElementById("kpiPercent").innerText = "0%";
+            return;
+        }
+
+        let isRev = dataArray[0]?.isRev || false;
+        let tCsc=0, tA25=0, tA26=0, tTarg=0, tAch=0, tBal=0;
+
+        dataArray.forEach(d => {
+            tCsc += d.totCsc; tA25 += d.act25; tA26 += d.act26;
+            tTarg += d.target; tAch += d.achieved; tBal += d.balance;
+
+            tbody.innerHTML += `
+            <tr>
+                <td class="clickable-dist text-primary fw-bold text-start ps-3" ondblclick="toggleDistFilter('${d.name}')">${d.name}</td>
+                <td class="fw-bold">${d.totCsc}</td>
+                <td style="color:#475569;">${d.act25}</td>
+                <td style="color:#0ea5e9;">${d.act26}</td>
+                <td style="color:#1e3a8a; font-weight:900;">${formatNumber(d.target, isRev)}</td>
+                <td style="color:#10b981; font-weight:900;">${formatNumber(d.achieved, isRev)}</td>
+                <td style="color:#be123c; font-weight:800;">${formatNumber(d.balance, isRev)}</td>
+                <td style="color:#ea580c; font-weight:900;">${d.percent}%</td>
+            </tr>`;
+        });
+
+        let tPerc = tTarg > 0 ? ((tAch / tTarg) * 100).toFixed(1) : 0;
+
+        document.getElementById("kpiTarget").innerText = formatNumber(tTarg, isRev);
+        document.getElementById("kpiAchieved").innerText = formatNumber(tAch, isRev);
+        document.getElementById("kpiBalance").innerText = formatNumber(tBal, isRev);
+        document.getElementById("kpiPercent").innerText = tPerc + "%";
+
+        tfoot.innerHTML = `
+        <tr class="t-row-total">
+            <td class="text-start ps-3 text-danger">GRAND TOTAL</td>
+            <td>${tCsc}</td>
+            <td style="color:#475569;">${tA25}</td>
+            <td style="color:#0ea5e9;">${tA26}</td>
+            <td style="color:#1e3a8a;">${formatNumber(tTarg, isRev)}</td>
+            <td style="color:#10b981;">${formatNumber(tAch, isRev)}</td>
+            <td style="color:#be123c;">${formatNumber(tBal, isRev)}</td>
+            <td style="color:#ea580c;">${tPerc}%</td>
+        </tr>`;
+    }
+
+    function renderCharts(dataArray) {
+        if(dataArray.length === 0) return;
+
+        let labels = [], targData = [], achData = [];
+        let totAch = 0, totBal = 0;
+
+        dataArray.forEach(d => {
+            labels.push(d.name.substring(0,8) + ".."); 
+            targData.push(d.target); achData.push(d.achieved);
+            totAch += d.achieved; totBal += d.balance;
+        });
+
+        if(barChartInstance) barChartInstance.destroy();
+        let ctxBar = document.getElementById('barChart').getContext('2d');
+        barChartInstance = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Target', data: targData, backgroundColor: '#1e3a8a', borderRadius: 4 },
+                    { label: 'Achieved', data: achData, backgroundColor: '#10b981', borderRadius: 4 }
+                ]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+
+        if(pieChartInstance) pieChartInstance.destroy();
+        let ctxPie = document.getElementById('pieChart').getContext('2d');
+        pieChartInstance = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Achieved', 'Balance'],
+                datasets: [{ data: [totAch, totBal], backgroundColor: ['#10b981', '#be123c'], hoverOffset: 4 }]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function downloadImage() {
+       document.documentElement.classList.add("exporting");
+       let captureArea = document.getElementById('captureArea');
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight + 50 })
+           .then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              let link = document.createElement('a');
+              link.download = `REDBUS_Periodic_Report.png`; link.href = canvas.toDataURL("image/png"); link.click();
+           });
+       }, 500); 
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
+    .period-select { border: 2px solid #059669; color: #064e3b; background-color: #ecfdf5; }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 15px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; cursor: pointer; height: 35px;}
+    .btn-img { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-img:hover:not(:disabled) { background: #86efac; color: #064e3b; }
+    .btn-img:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow-y: auto;}
+
+    .report-main-header { text-align: center; margin-bottom: 25px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 24px; letter-spacing: 0.5px; text-transform: uppercase;}
+    .report-date-text { color: #64748b; font-weight: 700; margin: 5px 0 0 0; font-size: 13px; }
+
+    /* 🌟 ప్రోగ్రెస్ కార్డ్ (Grid) లేఅవుట్ 🌟 */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 30px;}
+    
+    .dm-card { background: white; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #e2e8f0; position: relative; transition: 0.2s;}
+    .dm-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
+    
+    .dm-card-header { padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center;}
+    .dist-name { font-size: 18px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin: 0;}
+    .dm-role { font-size: 11px; font-weight: 700; opacity: 0.9; margin-top: 2px;}
+    
+    .grade-circle { width: 45px; height: 45px; border-radius: 50%; background: white; color: black; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    .dm-card-body { padding: 20px; }
+    
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: #64748b;}
+    .stat-val { font-size: 16px; font-weight: 900; color: #0f172a;}
+    
+    .prog-bg { background: #e2e8f0; border-radius: 10px; height: 6px; width: 100%; overflow: hidden; margin-top: 5px; margin-bottom: 15px;}
+    .prog-bar { height: 100%; border-radius: 10px; transition: width 0.5s ease;}
+
+    .growth-box { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0;}
+    .g-label { font-size: 11px; font-weight: 800; color: #475569;}
+    .g-val { font-size: 16px; font-weight: 900;}
+
+    .dm-card-footer { padding: 12px 15px; font-size: 12px; font-weight: 800; border-top: 1px dashed #cbd5e1; text-align: center;}
+
+    /* 🎨 గ్రేడ్ ఆధారంగా రంగులు (Dynamic Themes) 🎨 */
+    .grade-A-plus .dm-card-header { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+    .grade-A-plus .grade-circle { color: #059669; }
+    .grade-A-plus .prog-bar { background: #059669; }
+    .grade-A-plus .g-val { color: #10b981; }
+    .grade-A-plus .dm-card-footer { background: #ecfdf5; color: #065f46; }
+
+    .grade-A .dm-card-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    .grade-A .grade-circle { color: #1e40af; }
+    .grade-A .prog-bar { background: #3b82f6; }
+    .grade-A .g-val { color: #2563eb; }
+    .grade-A .dm-card-footer { background: #eff6ff; color: #1e40af; }
+
+    .grade-B .dm-card-header { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .grade-B .grade-circle { color: #b45309; }
+    .grade-B .prog-bar { background: #f59e0b; }
+    .grade-B .g-val { color: #d97706; }
+    .grade-B .dm-card-footer { background: #fffbeb; color: #92400e; }
+
+    .grade-C .dm-card-header { background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%); }
+    .grade-C .grade-circle { color: #991b1b; }
+    .grade-C .prog-bar { background: #ef4444; }
+    .grade-C .g-val { color: #dc2626; }
+    .grade-C .dm-card-footer { background: #fef2f2; color: #991b1b; }
+
+    .grade-F .dm-card-header { background: linear-gradient(135deg, #334155 0%, #64748b 100%); }
+    .grade-F .grade-circle { color: #334155; }
+    .grade-F .prog-bar { background: #64748b; }
+    .grade-F .g-val { color: #475569; }
+    .grade-F .dm-card-footer { background: #f1f5f9; color: #334155; }
+
+    .loader { text-align: center; color: #3b82f6; padding: 50px; font-size: 18px; font-weight: bold; width: 100%;}
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
+    html.exporting .content-wrapper { height: auto !important; overflow: visible !important; display: block !important; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    <div class="filter-group">
+      <div class="title-sec me-3">🚌 REDBUS: MONTHLY CLOSURE</div>
+      <select id="distTypeDropdown" class="dist-select" onchange="processData()">
+          <option value="OLD">Old Districts</option>
+          <option value="NEW">New Districts</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Closure Month:</span>
+      <select id="periodDropdown" class="dist-select period-select" onchange="processData()">
+          <option value="apr">APR-2026</option>
+          <option value="may">MAY-2026</option>
+          <option value="jun" selected>JUN-2026</option>
+          <option value="jul">JUL-2026</option>
+          <option value="aug">AUG-2026</option>
+          <option value="sep">SEP-2026</option>
+          <option value="oct">OCT-2026</option>
+          <option value="nov">NOV-2026</option>
+          <option value="dec">DEC-2026</option>
+          <option value="jan">JAN-2027</option>
+          <option value="feb">FEB-2027</option>
+          <option value="mar">MAR-2027</option>
+      </select>
+      
+      <button id="dlBtn" class="btn-custom btn-img ms-2" onclick="downloadReport()">📸 Download Report</button>
+      <button id="fsBtn" class="btn-custom btn-full ms-1" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+    <div class="report-main-header">
+        <h2 class="report-main-title" id="reportTitle">REDBUS EMPLOYEE PROGRESS CARDS</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <!-- 🌟 కార్డ్స్ గ్రిడ్ (Progress Cards Container) 🌟 -->
+    <div class="card-grid" id="cardsContainer">
+        <div class="loader">⏳ Generating Progress Cards... Please wait...</div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+    let rawData = [];
+
+    const monthKeys = ['apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar'];
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Closure Snapshot as on: " + new Date().toLocaleDateString('en-US', dateOptions);
+        
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && cachedObj.data && cachedObj.data.length > 0 && (Date.now() - cachedObj.timestamp < 10800000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    async function saveToCache(key, dataObj) { try { let db = await openDB(); let tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put({ data: dataObj, timestamp: Date.now() }, key); } catch(e) { console.error(e); } }
+
+    function fetchDataFromServer() {
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json()).then(res => { 
+            if(res.success && res.data) { rawData = res.data; saveToCache(CACHE_KEY, rawData); processData(); } 
+            else { document.getElementById("cardsContainer").innerHTML = "<div class='loader text-danger'>⚠️ No Data Found.</div>"; }
+        }).catch(e => { document.getElementById("cardsContainer").innerHTML = "<div class='loader text-danger'>📶 Network Error. Please refresh.</div>"; });
+    }
+    
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    function processData() {
+        let isNew = document.getElementById("distTypeDropdown").value === "NEW";
+        let periodKey = document.getElementById("periodDropdown").value;
+        let pText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
+        
+        document.getElementById("reportTitle").innerText = `REDBUS EMPLOYEE PROGRESS CARDS (${pText})`;
+
+        let mIndex = monthKeys.indexOf(periodKey);
+        
+        let distMap = {};
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+
+            let cVal = parseFloat(r[periodKey]) || 0;
+            
+            // 🌟 పాత నెల డేటా లాజిక్ 🌟
+            let pVal = 0;
+            if (mIndex > 0) {
+                let prevKey = monthKeys[mIndex - 1];
+                pVal = parseFloat(r[prevKey]) || 0;
+            } else {
+                // ఏప్రిల్ అయితే పోయిన సంవత్సరం యావరేజ్ తో కంపేర్ చేస్తుంది
+                pVal = (parseFloat(r.srv2526) || 0) / 12; 
+            }
+
+            if(!distMap[distName]) { distMap[distName] = { name: distName, totCsc: 0, activeCsc: 0, currTxn: 0, prevTxn: 0 }; }
+            
+            distMap[distName].totCsc++;
+            distMap[distName].currTxn += cVal;
+            distMap[distName].prevTxn += pVal;
+            if(cVal > 0) distMap[distName].activeCsc++;
+        });
+
+        let finalData = Object.values(distMap).map(d => {
+            let actPerc = d.totCsc > 0 ? Math.round((d.activeCsc / d.totCsc) * 100) : 0;
+            
+            // 🌟 గ్రేడింగ్ లాజిక్ (The Grading Engine) 🌟
+            let growthPerc = 0;
+            if (d.prevTxn === 0 && d.currTxn > 0) growthPerc = 100;
+            else if (d.prevTxn > 0) growthPerc = ((d.currTxn - d.prevTxn) / d.prevTxn) * 100;
+
+            let grade = "F", remark = "", theme = "grade-F";
+            
+            if (d.currTxn === 0) {
+                grade = "F"; remark = "❌ Inactive District. Zero Business."; theme = "grade-F";
+            } else if (growthPerc >= 20) {
+                grade = "A+"; remark = "🔥 Excellent! Outstanding Growth."; theme = "grade-A-plus";
+            } else if (growthPerc >= 0) {
+                grade = "A"; remark = "✅ Good! Steady Progress."; theme = "grade-A";
+            } else if (growthPerc >= -15) {
+                grade = "B"; remark = "⚠️ Average. Slight drop in Txns."; theme = "grade-B";
+            } else {
+                grade = "C"; remark = "🚨 Alert! Major drop. Needs focus."; theme = "grade-C";
+            }
+
+            return { ...d, actPerc, growthPerc: growthPerc.toFixed(1), grade, remark, theme };
+        }).sort((a, b) => b.currTxn - a.currTxn); // ఎక్కువ Txns ఉన్నవాళ్లు ఫస్ట్ వస్తారు
+        
+        renderCards(finalData, pText);
+    }
+
+    function renderCards(dataArray, monthText) {
+        let container = document.getElementById("cardsContainer");
+        container.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            container.innerHTML = `<div class="loader text-danger">⚠️ No Districts Found</div>`;
+            return;
+        }
+
+        dataArray.forEach(d => {
+            let sign = d.growthPerc > 0 ? "+" : "";
+            let growthText = d.prevTxn === 0 && d.currTxn > 0 ? "Started" : `${sign}${d.growthPerc}%`;
+            if(d.currTxn === 0) growthText = "0%";
+
+            let html = `
+            <div class="dm-card ${d.theme}">
+                <div class="dm-card-header">
+                    <div>
+                        <h3 class="dist-name">${d.name}</h3>
+                        <div class="dm-role">District Progress Card</div>
+                    </div>
+                    <div class="grade-circle">${d.grade}</div>
+                </div>
+                
+                <div class="dm-card-body">
+                    <div class="stat-row">
+                        <span>Total VLEs</span>
+                        <span class="stat-val">${d.totCsc}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Active VLEs</span>
+                        <span class="stat-val">${d.activeCsc}</span>
+                    </div>
+                    
+                    <div style="font-size:11px; font-weight:800; color:#94a3b8; margin-top:10px;">Activation (${d.actPerc}%)</div>
+                    <div class="prog-bg"><div class="prog-bar" style="width: ${d.actPerc}%;"></div></div>
+
+                    <div class="growth-box">
+                        <div>
+                            <div class="g-label">TXNS (${monthText})</div>
+                            <div class="g-val" style="color:#0f172a;">${Math.round(d.currTxn)}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="g-label">MoM GROWTH</div>
+                            <div class="g-val">${growthText}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dm-card-footer">
+                    ${d.remark}
+                </div>
+            </div>`;
+            container.innerHTML += html;
+        });
+    }
+
+    window.toggleFullScreen = function() {
+        let fsBtn = document.getElementById("fsBtn");
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) { 
+            let req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
+            if(req) { req.call(document.documentElement).then(() => { fsBtn.innerHTML = "⛶ Exit Fullscreen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); }).catch(e => { console.log(e); }); }
+        } else { 
+            let exit = document.exitFullscreen || document.webkitExitFullscreen;
+            if(exit) { exit.call(document).then(() => { fsBtn.innerHTML = "⛶ Fullscreen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }).catch(e => { console.log(e); }); }
+        }
+    };
+    function updateFsButton() {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement || document.webkitFullscreenElement) { fsBtn.innerHTML = "⛶ Exit Fullscreen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Fullscreen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+    }
+    document.addEventListener('fullscreenchange', updateFsButton);
+    document.addEventListener('webkitfullscreenchange', updateFsButton);
+
+    function downloadReport() {
+       let btn = document.getElementById('dlBtn');
+       let originalText = btn.innerHTML;
+       btn.innerHTML = "⏳ Capturing...";
+       btn.disabled = true;
+
+       let captureArea = document.getElementById('captureArea');
+       document.documentElement.classList.add("exporting");
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#f8fafc", scrollY: 0, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight })
+           .then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              let link = document.createElement('a');
+              let mText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
+              link.download = `Progress_Cards_${mText}.png`; 
+              link.href = canvas.toDataURL("image/png"); 
+              link.click();
+
+              btn.innerHTML = "✅ Downloaded!";
+              setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+           }).catch(err => {
+              document.documentElement.classList.remove("exporting");
+              btn.innerHTML = "❌ Failed";
+              setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+           });
+       }, 500); 
+    }
+  </script>
+</body>
+</html>

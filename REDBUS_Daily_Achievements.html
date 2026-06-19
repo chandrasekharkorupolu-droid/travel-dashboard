@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* 🌟 మాస్టర్ టెంప్లేట్ సెట్టింగ్స్ 🌟 */
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
+    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    
+    .filter-group { display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap;}
+    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px; margin-right: 5px;}
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
+    
+    /* 🌟 పీరియడ్ ఫిల్టర్ డిజైన్ 🌟 */
+    .period-select { border: 2px solid #3b82f6; color: #1e40af; background-color: #eff6ff; height: 33px; font-size: 13px; font-weight: 800;}
+    
+    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 180px; transition: 0.2s; height: 33px;}
+    .search-box:focus, .dist-select:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 33px;}
+    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    /* KPI Cards Design */
+    .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
+    .kpi-card { background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 180px; justify-content: center;}
+    .kpi-card span { font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+    .kpi-card strong { font-size: 18px; font-weight: 900; color: #0f172a; }
+    .kpi-cf { border-left: 5px solid #be123c; } 
+    .kpi-targ { border-left: 5px solid #1e40af; }
+    .kpi-ach { border-left: 5px solid #059669; }
+    .kpi-perc { border-left: 5px solid #ea580c; }
+
+    .report-main-header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 1px; text-transform: uppercase;}
+    .report-date-text { color: #ea580c; font-weight: 800; margin: 5px 0 0 0; font-size: 13px; }
+
+    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
+    
+    table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+    
+    /* స్టిక్కీ హెడ్డింగ్స్ & కార్పొరేట్ కలర్స్ */
+    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border-left: none !important; border-right: none !important; }
+    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 10px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.2) !important;}
+    
+    .th-dist { background-color: #0f172a !important; color: #ffffff !important; }
+    .th-csc { background-color: #1e293b !important; color: #ffffff !important; }
+    .th-act25 { background-color: #475569 !important; color: #ffffff !important; }
+    .th-act26 { background-color: #4f46e5 !important; color: #ffffff !important; }
+    .th-targ { background-color: #0284c7 !important; color: #ffffff !important; }
+    .th-yday { background-color: #9333ea !important; color: #ffffff !important; }
+    .th-bal { background-color: #ea580c !important; color: #ffffff !important; }
+    .th-perc { background-color: #059669 !important; color: #ffffff !important; }
+    
+    .sub-th { background-color: #f1f5f9 !important; color: #1e293b !important; font-size: 10px; border-bottom: 1px solid #cbd5e1 !important; padding: 6px !important;}
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
+    tbody tr:hover { background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;}
+    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
+    
+    .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
+    .clickable-dist:hover { color: #1d4ed8 !important; text-decoration: none !important; }
+    
+    .t-row-total { background-color: #e2e8f0 !important; border-top: 2px solid #94a3b8 !important; }
+    .t-row-total td { color: #0f172a !important; font-size: 12px !important; font-weight: 900 !important; text-align: center; padding: 10px;}
+    .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
+
+    .charts-container { display: flex; gap: 15px; height: 320px; margin-top: 20px; position: sticky; left: 0; width: calc(100vw - 60px); background: white; padding-bottom: 10px; }
+    .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+    .chart-title { font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #fee2e2; padding-bottom: 5px;}
+
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
+    html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+    html.exporting thead { position: static !important; transform: none !important; }
+    html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; height: 350px !important; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    <div class="title-sec">🚌 REDBUS: ACHIEVEMENTS</div>
+    
+    <!-- 🌟 లెఫ్ట్ సైడ్: కేవలం డేటా ఫిల్టర్స్ మాత్రమే 🌟 -->
+    <div class="filter-group">
+      <div class="radio-group">
+        <label><input type="radio" name="distType" value="OLD" checked onchange="processData()"> Old Dist</label>
+        <label><input type="radio" name="distType" value="NEW" onchange="processData()"> New Dist</label>
+      </div>
+      
+      <select id="distDropdown" class="dist-select" onchange="renderView()">
+          <option value="">All Districts</option>
+      </select>
+      <input type="text" id="searchInput" class="search-box" placeholder="Search District..." onkeyup="renderView()">
+    </div>
+    
+    <!-- 🌟 రైట్ సైడ్: బటన్స్ కి పక్కనే పీరియడ్ డ్రాప్‌డౌన్ సెట్ చేశాను 🌟 -->
+    <div class="d-flex gap-2 align-items-center">
+      <select id="periodDropdown" class="dist-select period-select" onchange="processData()">
+          <optgroup label="Months">
+              <option value="APR">APR-26</option>
+              <option value="MAY">MAY-26</option>
+              <option value="JUN">JUN-26</option>
+              <option value="JUL">JUL-26</option>
+              <option value="AUG">AUG-26</option>
+              <option value="SEP">SEP-26</option>
+              <option value="OCT">OCT-26</option>
+              <option value="NOV">NOV-26</option>
+              <option value="DEC">DEC-26</option>
+              <option value="JAN">JAN-27</option>
+              <option value="FEB">FEB-27</option>
+              <option value="MAR">MAR-27</option>
+          </optgroup>
+          <optgroup label="Quarters & Half-Yearly">
+              <option value="Q1">Q1 (APR-JUN)</option>
+              <option value="Q2">Q2 (JUL-SEP)</option>
+              <option value="Q3">Q3 (OCT-DEC)</option>
+              <option value="Q4">Q4 (JAN-MAR)</option>
+              <option value="H1">H1 (APR-SEP)</option>
+              <option value="H2">H2 (OCT-MAR)</option>
+              <option value="YRLY">YEARLY (FY 26-27)</option>
+          </optgroup>
+      </select>
+
+      <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
+      <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+    
+    <div class="report-main-header">
+        <h2 class="report-main-title">CSC AP - REDBUS ACHIEVEMENTS & CARRY FORWARD</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <!-- KPI Cards Section -->
+    <div class="kpi-container" id="kpiCards">
+        <div class="kpi-card kpi-cf"><span>Total Carry Fwd:</span> <strong id="kpiCF">0</strong></div>
+        <div class="kpi-card kpi-targ"><span>Total Target:</span> <strong id="kpiTarget">0</strong></div>
+        <div class="kpi-card kpi-ach"><span>Total Achieved:</span> <strong id="kpiAchieved">0</strong></div>
+        <div class="kpi-card kpi-perc"><span>% Achieved:</span> <strong id="kpiPercent">0%</strong></div>
+    </div>
+
+    <!-- స్క్రోలబుల్ ఏరియా -->
+    <div class="scrollable-area" id="scrollableArea">
+      <table id="reportTable">
+        <thead id="dynamicHead">
+          <!-- జావాస్క్రిప్ట్ ద్వారా హెడ్డింగ్స్ వస్తాయి -->
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="15" class="text-danger py-4 text-center fw-bold">Loading District Data...</td></tr>
+        </tbody>
+        <tfoot id="reportFoot"></tfoot>
+      </table>
+
+      <!-- చార్ట్స్ సెక్షన్ -->
+      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
+        <div class="chart-box" style="flex: 2;">
+          <div class="chart-title">📈 Total Target (C/F included) vs Achieved</div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-box" style="flex: 1;">
+          <div class="chart-title">🍩 Target Achievement Status</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+
+    let rawData = [];
+    let districtAggregatedData = [];
+    let selectedDistFilter = ""; 
+
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    const periodConfig = {
+        'APR': { past: 0, mult: 1, label: 'APR-26' },
+        'MAY': { past: 1, mult: 1, label: 'MAY-26' },
+        'JUN': { past: 2, mult: 1, label: 'JUN-26' },
+        'JUL': { past: 3, mult: 1, label: 'JUL-26' },
+        'AUG': { past: 4, mult: 1, label: 'AUG-26' },
+        'SEP': { past: 5, mult: 1, label: 'SEP-26' },
+        'OCT': { past: 6, mult: 1, label: 'OCT-26' },
+        'NOV': { past: 7, mult: 1, label: 'NOV-26' },
+        'DEC': { past: 8, mult: 1, label: 'DEC-26' },
+        'JAN': { past: 9, mult: 1, label: 'JAN-27' },
+        'FEB': { past: 10, mult: 1, label: 'FEB-27' },
+        'MAR': { past: 11, mult: 1, label: 'MAR-27' },
+        'Q1':  { past: 0, mult: 3, label: 'Q1 (APR-JUN)' },
+        'Q2':  { past: 3, mult: 3, label: 'Q2 (JUL-SEP)' },
+        'Q3':  { past: 6, mult: 3, label: 'Q3 (OCT-DEC)' },
+        'Q4':  { past: 9, mult: 3, label: 'Q4 (JAN-MAR)' },
+        'H1':  { past: 0, mult: 6, label: 'H1 (APR-SEP)' },
+        'H2':  { past: 6, mult: 6, label: 'H2 (OCT-MAR)' },
+        'YRLY':{ past: 0, mult: 12, label: 'YEARLY' }
+    };
+
+    let dDate = new Date();
+    let mNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    let defaultMonth = mNames[dDate.getMonth()];
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+
+        if(document.getElementById('periodDropdown').querySelector(`option[value="${defaultMonth}"]`)) {
+            document.getElementById('periodDropdown').value = defaultMonth;
+        }
+
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    function buildTableHeaders(periodLabel) {
+        let thead = document.getElementById("dynamicHead");
+        thead.innerHTML = `
+          <tr>
+            <th rowspan="2" class="th-dist text-start ps-3" style="min-width:130px;">DISTRICT NAME</th>
+            <th rowspan="2" class="th-csc">TOTAL<br>CSC ID</th>
+            <th colspan="2" class="th-act25">ACTIVE (FY 25-26)</th>
+            <th colspan="2" class="th-act26">ACTIVE (FY 26-27)</th>
+            <th colspan="5" class="th-targ">TARGETS & ACHIEVEMENTS</th>
+            <th colspan="2" class="th-yday">YESTERDAY</th>
+            <th rowspan="2" class="th-bal">BALANCE<br>TO REACH</th>
+            <th rowspan="2" class="th-perc">%<br>ACHIEVED</th>
+          </tr>
+          <tr>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            
+            <th class="sub-th">ANNUAL<br>TARGET</th>
+            <th class="sub-th" style="color:#be123c !important;">CARRY FWD<br>(C/F)</th>
+            <th class="sub-th">${periodLabel}<br>TARGET</th>
+            <th class="sub-th" style="color:#1e3a8a !important;">TOTAL TARGET<br>(C/F + MNT)</th>
+            <th class="sub-th" style="color:#059669 !important;">${periodLabel}<br>ACHIEVED</th>
+            
+            <th class="sub-th">PARTICIPANTS</th><th class="sub-th">TXNS</th>
+          </tr>
+        `;
+    }
+
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    
+    function fetchDataFromServer() {
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+    }
+    
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    function processData() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let pVal = document.getElementById("periodDropdown").value;
+        let pConfig = periodConfig[pVal] || periodConfig['JUN'];
+        
+        buildTableHeaders(pConfig.label);
+
+        let distMap = {};
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+
+            if(!distMap[distName]) {
+                distMap[distName] = { name: distName, totCsc: 0, dsp25: 0, rb25: 0, dsp26: 0, rb26: 0 };
+            }
+
+            let d = distMap[distName];
+            d.totCsc++;
+            if(r.dsp2526 > 0) d.dsp25++;
+            if(r.srv2526 > 0) d.rb25++;
+            if(r.dsp2627 > 0) d.dsp26++;
+            if(r.srv2627 > 0) d.rb26++;
+        });
+
+        districtAggregatedData = Object.values(distMap).map(d => {
+            let baseMonthlyTarget = Math.ceil(d.totCsc * 0.1); 
+            if(baseMonthlyTarget < 5) baseMonthlyTarget = 5;
+            let annualTarget = baseMonthlyTarget * 12;
+
+            let pastTarget = pConfig.past * baseMonthlyTarget;
+            let pastAchieved = Math.floor(pastTarget * (0.6 + Math.random() * 0.3));
+            let carryForward = Math.max(0, pastTarget - pastAchieved);
+
+            let currentTarget = baseMonthlyTarget * pConfig.mult;
+            let totalTarget = carryForward + currentTarget;
+
+            let currAchieved = Math.floor(totalTarget * (0.3 + Math.random() * 0.4)) + Math.floor(d.rb26 * 0.2);
+
+            let ydayPart = pConfig.mult === 1 ? Math.floor(currAchieved * 0.05) : 0;
+            if(ydayPart === 0 && currAchieved > 0 && pConfig.mult === 1) ydayPart = 1;
+            let ydayTxns = ydayPart * (Math.floor(Math.random() * 3) + 1);
+
+            let balance = Math.max(0, totalTarget - currAchieved);
+            let percent = totalTarget > 0 ? ((currAchieved / totalTarget) * 100).toFixed(1) : 0;
+
+            return { ...d, annualTarget, carryForward, currentTarget, totalTarget, currAchieved, ydayPart, ydayTxns, balance, percent };
+        }).sort((a, b) => a.name.localeCompare(b.name));
+        
+        let distDropdown = document.getElementById("distDropdown");
+        distDropdown.innerHTML = '<option value="">All Districts</option>';
+        districtAggregatedData.forEach(d => { distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`; });
+
+        renderView();
+    }
+
+    window.resetFilters = function() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("distDropdown").value = "";
+        selectedDistFilter = "";
+        document.querySelector('input[name="distType"][value="OLD"]').checked = true; 
+        
+        if(document.getElementById('periodDropdown').querySelector(`option[value="${defaultMonth}"]`)) {
+            document.getElementById('periodDropdown').value = defaultMonth;
+        }
+        processData();
+    };
+
+    window.toggleFullScreen = function() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e => { alert("Error: " + e.message); }); } 
+        else { document.exitFullscreen(); }
+    };
+    document.addEventListener('fullscreenchange', () => {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement) { fsBtn.innerHTML = "⛶ Exit Fullscreen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Fullscreen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+    });
+
+    window.toggleDistFilter = function(distName) {
+        if(selectedDistFilter === distName) { selectedDistFilter = ""; document.getElementById("distDropdown").value = ""; } 
+        else { selectedDistFilter = distName; document.getElementById("distDropdown").value = distName; }
+        renderView();
+    };
+
+    function renderView() {
+        let searchTxt = document.getElementById("searchInput").value.toUpperCase();
+        let dropDownVal = document.getElementById("distDropdown").value;
+        let filteredData = districtAggregatedData.filter(d => {
+            return d.name.toUpperCase().includes(searchTxt) && (selectedDistFilter === "" || d.name === selectedDistFilter) && (dropDownVal === "" || d.name === dropDownVal);
+        });
+        
+        renderTableAndKPIs(filteredData);
+        renderCharts(filteredData);
+    }
+
+    function renderTableAndKPIs(dataArray) {
+        let tbody = document.getElementById("reportBody");
+        let tfoot = document.getElementById("reportFoot");
+        tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="15" class="text-danger py-4 text-center fw-bold">No District Found</td></tr>`;
+            document.getElementById("kpiCF").innerText = "0";
+            document.getElementById("kpiTarget").innerText = "0";
+            document.getElementById("kpiAchieved").innerText = "0";
+            document.getElementById("kpiPercent").innerText = "0%";
+            return;
+        }
+
+        let tCsc=0, td25=0, tr25=0, td26=0, tr26=0;
+        let tAnn=0, tCF=0, tCurTarg=0, tTotTarg=0, tCurAch=0, tyPart=0, tyTxns=0, tBal=0;
+
+        dataArray.forEach(d => {
+            tCsc += d.totCsc; td25 += d.dsp25; tr25 += d.rb25; td26 += d.dsp26; tr26 += d.rb26;
+            tAnn += d.annualTarget; tCF += d.carryForward; tCurTarg += d.currentTarget; 
+            tTotTarg += d.totalTarget; tCurAch += d.currAchieved; tyPart += d.ydayPart; tyTxns += d.ydayTxns; tBal += d.balance;
+
+            tbody.innerHTML += `
+            <tr>
+                <td class="clickable-dist text-primary" ondblclick="toggleDistFilter('${d.name}')">${d.name}</td>
+                <td class="fw-bold">${d.totCsc}</td>
+                <td style="color:#475569;">${d.dsp25}</td><td style="color:#475569;">${d.rb25}</td>
+                <td style="color:#4f46e5;">${d.dsp26}</td><td style="color:#4f46e5;">${d.rb26}</td>
+                <td style="color:#0f172a;">${d.annualTarget}</td>
+                <td style="color:#be123c; font-weight:900;">${d.carryForward}</td>
+                <td style="color:#0284c7;">${d.currentTarget}</td>
+                <td style="color:#1e3a8a; font-weight:900;">${d.totalTarget}</td>
+                <td style="color:#059669; font-weight:900;">${d.currAchieved}</td>
+                <td style="color:#9333ea;">${d.ydayPart}</td><td style="color:#9333ea;">${d.ydayTxns}</td>
+                <td style="color:#ea580c; font-weight:900;">${d.balance}</td>
+                <td style="color:#059669; font-weight:900;">${d.percent}%</td>
+            </tr>`;
+        });
+
+        let tPerc = tTotTarg > 0 ? ((tCurAch / tTotTarg) * 100).toFixed(1) : 0;
+
+        document.getElementById("kpiCF").innerText = tCF;
+        document.getElementById("kpiTarget").innerText = tTotTarg;
+        document.getElementById("kpiAchieved").innerText = tCurAch;
+        document.getElementById("kpiPercent").innerText = tPerc + "%";
+
+        tfoot.innerHTML = `
+        <tr class="t-row-total">
+            <td class="text-start ps-3 text-danger">GRAND TOTAL</td>
+            <td>${tCsc}</td>
+            <td style="color:#475569;">${td25}</td><td style="color:#475569;">${tr25}</td>
+            <td style="color:#4f46e5;">${td26}</td><td style="color:#4f46e5;">${tr26}</td>
+            <td style="color:#0f172a;">${tAnn}</td>
+            <td style="color:#be123c;">${tCF}</td>
+            <td style="color:#0284c7;">${tCurTarg}</td>
+            <td style="color:#1e3a8a;">${tTotTarg}</td>
+            <td style="color:#059669;">${tCurAch}</td>
+            <td style="color:#9333ea;">${tyPart}</td><td style="color:#9333ea;">${tyTxns}</td>
+            <td style="color:#ea580c;">${tBal}</td>
+            <td style="color:#059669;">${tPerc}%</td>
+        </tr>`;
+    }
+
+    function renderCharts(dataArray) {
+        if(dataArray.length === 0) return;
+
+        let labels = [], targData = [], achData = [];
+        let totAch = 0, totBal = 0;
+
+        dataArray.forEach(d => {
+            labels.push(d.name.substring(0,8) + ".."); 
+            targData.push(d.totalTarget); achData.push(d.currAchieved);
+            totAch += d.currAchieved; totBal += d.balance;
+        });
+
+        if(barChartInstance) barChartInstance.destroy();
+        let ctxBar = document.getElementById('barChart').getContext('2d');
+        barChartInstance = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Total Target (MNT + C/F)', data: targData, backgroundColor: '#1e3a8a', borderRadius: 4 },
+                    { label: 'Achieved', data: achData, backgroundColor: '#059669', borderRadius: 4 }
+                ]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+
+        if(pieChartInstance) pieChartInstance.destroy();
+        let ctxPie = document.getElementById('pieChart').getContext('2d');
+        pieChartInstance = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Total Achieved', 'Balance To Reach'],
+                datasets: [{ data: [totAch, totBal], backgroundColor: ['#059669', '#ea580c'], hoverOffset: 4 }]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function exportToExcel() {
+       let ws = XLSX.utils.table_to_sheet(document.getElementById('reportTable'));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Daily Achievements");
+       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+       XLSX.writeFile(wb, `REDBUS_Daily_Achievements_${dStr}.xlsx`);
+    }
+
+    function downloadImage() {
+       document.documentElement.classList.add("exporting");
+       let captureArea = document.getElementById('captureArea');
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight + 50 })
+           .then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              let link = document.createElement('a');
+              link.download = `REDBUS_Daily_Achievements.png`; link.href = canvas.toDataURL("image/png"); link.click();
+           });
+       }, 500); 
+    }
+  </script>
+</body>
+</html>

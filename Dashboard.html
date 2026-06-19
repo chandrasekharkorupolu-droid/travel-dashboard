@@ -178,7 +178,7 @@
     let loggedInId = localStorage.getItem("userId") || "Unknown ID"; 
     
     const reportMenus = {
-      "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "Daily Transactions", "Daily Achievements", "New Registration Targets", "TXN & REV Targets", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor"],
+      "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "New Registration Targets", "TXN & REV Targets", "Daily Transactions", "Daily Achievements", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor"],
       "REDBUS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
       "AIRWAYS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
       "APSRTC": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"]
@@ -294,7 +294,8 @@
 
     function loadAccessDenied() { document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; }
     
-    function loadReport(moduleName, reportId, reportNameParam) {
+    
+function loadReport(moduleName, reportId, reportNameParam) {
       let iframeSrc = ""; let reportName = reportNameParam || reportId;
       
       if (moduleName === "E-STAMPING" && reportId === "VleRequestStock") iframeSrc = "VleRequestStock.html";
@@ -323,7 +324,20 @@
       else if (moduleName === "IRCTC" && reportId === "MoM Growth Matrix") iframeSrc = "IRCTC_MoM_Growth_Matrix.html";
       else if (moduleName === "IRCTC" && reportId === "Monthly Closure Report") iframeSrc = "IRCTC_Monthly_Closure_Report.html";
       else if (moduleName === "IRCTC" && reportId === "VLE Details Editor") iframeSrc = "IRCTC_VLE_Details_Editor.html";
+      else if (moduleName === "IRCTC" && reportId === "New Registration Targets") iframeSrc = "IRCTC_New_Registrations_Target.html";
+      else if (moduleName === "IRCTC" && reportId === "TXN & REV Targets") iframeSrc = "IRCTC_TXN & REV_Targets.html";
       
+      else if (moduleName === "REDBUS" && reportId === "VLE Performance") iframeSrc = "REDBUS_VLE_Performance.html";
+      else if (moduleName === "REDBUS" && reportId === "Performance Report") iframeSrc = "REDBUS_Performance_Report.html";
+      else if (moduleName === "REDBUS" && reportId === "Month-Wise Activations") iframeSrc = "REDBUS_Month_Wise_Activations.html";
+      else if (moduleName === "REDBUS" && reportId === "Daily Transactions") iframeSrc = "REDBUS_Daily_Transactions_Report.html";
+      else if (moduleName === "REDBUS" && reportId === "Daily Achievements") iframeSrc = "REDBUS_Daily_Achievements.html";
+      else if (moduleName === "REDBUS" && reportId === "Periodic Report") iframeSrc = "REDBUS_Periodic_Report.html";
+      else if (moduleName === "REDBUS" && reportId === "Priority Follow Up") iframeSrc = "REDBUS_Priority_FollowUp.html";
+      else if (moduleName === "REDBUS" && reportId === "MoM Growth Matrix") iframeSrc = "REDBUS_MoM_Growth_Matrix.html";
+      else if (moduleName === "REDBUS" && reportId === "Top Performance") iframeSrc = "REDBUS_Top_Performance.html";
+      else if (moduleName === "REDBUS" && reportId === "Monthly Closure Report") iframeSrc = "REDBUS_Monthly_Closure.html";
+    
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
       else if (moduleName === "HELPDESK" && reportId === "HelpdeskAdmin") iframeSrc = "HelpdeskAdmin.html";
       
@@ -332,17 +346,16 @@
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; return;
       }
 
-      let closeBar = `
-        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;">
-            <h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5>
-            <button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(239,68,68,0.3);">✖ Close Report (ESC)</button>
-        </div>`;
-      
+      // 🌟 ఇక్కడే ఆ Close Report బటన్ కోడ్ ని పూర్తిగా లేపేశాను 🌟
       document.getElementById('homeDisplay').style.display = 'none';
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('reportIframeContainer').style.display = 'flex';
-      document.getElementById('reportIframeContainer').innerHTML = closeBar + `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:0 0 12px 12px; background:white;"></iframe>`;
+      
+      // 🌟 డైరెక్ట్ గా ఫుల్ స్క్రీన్ Iframe మాత్రమే ఓపెన్ అవుతుంది 🌟
+      document.getElementById('reportIframeContainer').innerHTML = `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:12px; background:white;"></iframe>`;
     }
+
+
 
     // 🌟 Sync Popup & Logout Logic Restored 🌟
     function showLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'flex'; }
@@ -392,5 +405,76 @@
       document.body.appendChild(script);
     }
   </script>
+
+<!-- 🌟 REDBUS REPORT PRE-FETCHING LOGIC (SUPER FAST LOADING) 🌟 -->
+<script>
+    // పేజీ లోడ్ అయిన వెంటనే ఈ ఫంక్షన్ రన్ అవుతుంది
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. లాగిన్ అయిన యూజర్ వివరాలు localStorage నుండి తెచ్చుకోవడం
+        let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
+        let loggedInUserId = localStorage.getItem("userId") || ""; 
+        
+        // యూజర్ ఐడీ ఉంటేనే డేటా లాగుతాం
+        if(loggedInUserId && loggedInDesig) {
+            prefetchRedbusData(loggedInUserId, loggedInDesig);
+        }
+    });
+
+    // 2. బ్యాక్ గ్రౌండ్ లో డేటా లాగి IndexedDB లో దాచే మ్యాజిక్ ఫంక్షన్
+    function prefetchRedbusData(userId, designation) {
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+        
+        // REDBUS పేజీలో వాడిన సేమ్ క్యాచ్ కీ నే ఇక్కడ కూడా వాడాలి
+        const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + userId;
+
+        console.log("Background pre-fetching started for REDBUS...");
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: "getTravelVlePerformance", 
+                service: "REDBUS", 
+                role: designation, 
+                userId: userId 
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success && res.data) {
+                // సర్వర్ నుంచి వచ్చిన డేటాని IndexedDB లో సేవ్ చేస్తున్నాం
+                let req = indexedDB.open("CscTravelDB", 1);
+                req.onupgradeneeded = (e) => {
+                    let db = e.target.result;
+                    if (!db.objectStoreNames.contains("ReportsData")) {
+                        db.createObjectStore("ReportsData");
+                    }
+                };
+                req.onsuccess = (e) => {
+                    let db = e.target.result;
+                    let tx = db.transaction("ReportsData", "readwrite");
+                    tx.objectStore("ReportsData").put({ data: res.data, timestamp: Date.now() }, CACHE_KEY);
+                    console.log("✅ REDBUS Data Pre-fetched successfully! Report will load instantly.");
+                };
+                req.onerror = (e) => {
+                    console.log("IndexedDB Error:", e.target.error);
+                };
+            }
+        }).catch(err => console.log("Prefetch failed:", err));
+    }
+</script>
+<!-- 🌟 PRE-FETCHING LOGIC ENDS HERE 🌟 -->
+
+<!-- 🌟 Premium Fixed Footer Section (Ash Color) 🌟 -->
+    <div style="position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px 15px; font-size: 13px; font-weight: 700; color: #f8fafc; background-color: #334155; border-top: 2px solid #1e293b; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 99999;">
+        CSC AP Tour & Travel Analytics Platform &copy; <span id="currentYear">2026</span> 
+        <span style="margin: 0 12px; color: #64748b;">|</span> 
+        Designed & Developed with <span style="color: #ef4444; font-size: 14px;">❤️</span> by <span style="color: #60a5fa; font-weight: 900; letter-spacing: 0.5px;">Chandra Sekhara Babu K</span>
+    </div>
+
+    <script>
+        let yearSpan = document.getElementById("currentYear");
+        if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
+    </script>
+
 </body>
 </html>

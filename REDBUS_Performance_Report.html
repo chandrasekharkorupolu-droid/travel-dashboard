@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* మెయిన్ బాడీ సెట్టింగ్స్ */
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* కంట్రోల్ బార్ */
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    
+    .filter-group { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
+    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px; margin-right: 10px;}
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 180px; color: #1e293b; background-color: white; }
+    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 180px; transition: 0.2s; }
+    .search-box:focus, .dist-select:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer;}
+    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    /* కంటెంట్ ర్యాపర్ */
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    /* రిపోర్ట్ హెడ్డింగ్ */
+    .report-main-header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 1px; text-transform: uppercase;}
+    .report-date-text { color: #ea580c; font-weight: 800; margin: 5px 0 0 0; font-size: 13px; }
+
+    /* స్క్రోల్ అయ్యే ఏరియా */
+    .scrollable-area { flex: 1; overflow-y: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    
+    /* స్టిక్కీ హెడ్డింగ్స్ */
+    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border-left: none !important; border-right: none !important; }
+    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 10px; font-size: 12px; }
+    
+    .th-dist { background-color: #1e3a8a !important; color: #ffffff !important; }
+    .th-act25 { background-color: #475569 !important; color: #ffffff !important; }
+    .th-old { background-color: #059669 !important; color: #ffffff !important; }
+    .th-new { background-color: #d97706 !important; color: #ffffff !important; }
+    .th-tot { background-color: #dc2626 !important; color: #ffffff !important; }
+    .th-pend { background-color: #6366f1 !important; color: #ffffff !important; } 
+    
+    .sub-th { background-color: #f8fafc !important; color: #1e293b !important; font-size: 11px; text-transform: uppercase; font-weight: 900 !important; border-bottom: 1px solid #cbd5e1 !important;}
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
+    
+    /* రివ్యూ మీటింగ్స్ హైలైట్ ఎఫెక్ట్ */
+    tbody tr:hover { 
+        background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;
+    }
+    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
+    
+    /* 🌟 అండర్ లైన్ ఎఫెక్ట్ ఇక్కడ తీసేశాను 🌟 */
+    .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
+    .clickable-dist:hover { color: #1d4ed8 !important; text-decoration: none !important; }
+    
+    /* 🌟 గ్రాండ్ టోటల్ ప్రాబ్లమ్: "position: sticky" తీసేశాను 🌟 */
+    .t-row-total { background-color: #f1f5f9 !important; border-top: 2px solid #cbd5e1 !important; border-bottom: none !important; }
+    .t-row-total td { color: #0f172a !important; font-size: 13px !important; font-weight: 900 !important; text-align: center; padding: 8px; }
+    .t-row-total:hover { outline: none !important; transform: none !important; background-color: #f1f5f9 !important; cursor: default;}
+
+    /* చార్ట్స్ డిజైన్ (స్టిక్కీ) */
+    .charts-container { 
+        display: flex; gap: 15px; height: 320px; margin-top: 20px;
+        position: sticky; left: 0; width: 100%; background: white; padding-bottom: 10px;
+    }
+    .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+    .chart-title { font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #fee2e2; padding-bottom: 5px;}
+
+    /* ఇమేజ్ డౌన్‌లోడ్ లాజిక్ (ఎటువంటి బగ్స్ రాకుండా) */
+    html.exporting, html.exporting body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    html.exporting .content-wrapper, 
+    html.exporting .scrollable-area {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important; 
+    }
+    html.exporting .charts-container,
+    html.exporting thead {
+        position: static !important;
+        transform: none !important;
+    }
+    html.exporting .charts-container {
+        height: 350px !important; 
+        margin-bottom: 20px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- కంట్రోల్ బార్ -->
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    <div class="title-sec">🚌 REDBUS</div>
+    
+    <div class="filter-group">
+      <div class="radio-group">
+        <label><input type="radio" name="distType" value="OLD" checked onchange="processData()"> Old Dist</label>
+        <label><input type="radio" name="distType" value="NEW" onchange="processData()"> New Dist</label>
+      </div>
+      <select id="distDropdown" class="dist-select" onchange="renderView()">
+          <option value="">All Districts</option>
+      </select>
+      <input type="text" id="searchInput" class="search-box" placeholder="Search District..." onkeyup="renderView()">
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
+      <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+      
+    <div class="report-main-header">
+        <h2 class="report-main-title">CSC AP - REDBUS PERFORMANCE SUMMARY</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <!-- స్క్రోలబుల్ ఏరియా -->
+    <div class="scrollable-area" id="scrollableArea">
+      <table id="reportTable">
+        <thead>
+          <tr>
+            <th rowspan="2" class="th-dist text-start ps-3" style="width: 15%;" id="thDistName">DISTRICT NAME</th>
+            <th rowspan="2" class="th-dist">TOTAL CSC ID</th>
+            <th colspan="2" class="th-act25">ACTIVE (FY 25-26)</th>
+            <th colspan="2" class="th-old">OLD ACTIVE (FY 26-27)</th>
+            <th colspan="2" class="th-new">NEW ACTIVE (FY 26-27)</th>
+            <th colspan="2" class="th-tot">TOTAL ACTIVE (FY 26-27)</th>
+            <th colspan="2" class="th-pend">PENDING ACTIVE (FY 26-27)</th>
+          </tr>
+          <tr>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+            <th class="sub-th">DSP</th><th class="sub-th">REDBUS</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="12" class="text-danger py-4 text-center fw-bold">Loading District Data...</td></tr>
+        </tbody>
+        <!-- 🌟 TFOOT లో గ్రాండ్ టోటల్ పెడితే ఎలాంటి ఇబ్బందీ ఉండదు 🌟 -->
+        <tfoot id="reportFoot"></tfoot>
+      </table>
+
+      <!-- చార్ట్స్ సెక్షన్ -->
+      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
+        <div class="chart-box" style="flex: 2;">
+          <div class="chart-title">📈 District-Wise Active VLEs (26-27)</div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-box" style="flex: 1;">
+          <div class="chart-title">🍩 REDBUS: Old vs New Active</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div> <!-- End of scrollable area -->
+
+  </div> <!-- End of wrapper -->
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+
+    let rawData = [];
+    let districtAggregatedData = [];
+    let selectedDistFilter = ""; 
+    
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    const DB_NAME = "CscTravelDB";
+    const STORE_NAME = "ReportsData";
+    
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            let req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function getCachedData(key) {
+        try { let db = await openDB(); return new Promise((resolve) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => resolve(req.result); req.onerror = () => resolve(null); }); } catch(e) { return null; }
+    }
+
+    function fetchDataFromServer() {
+        document.getElementById("reportBody").innerHTML = `<tr><td colspan="12" class="text-danger py-4 text-center fw-bold">Fetching Live Data from Server...</td></tr>`;
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json())
+        .then(res => { if(res.success && res.data) { rawData = res.data; processData(); } else { alert("Data fetch failed."); } })
+        .catch(e => { alert("Network Error"); });
+    }
+
+    function toProperCase(str) {
+        if (!str || str.trim() === "") return "Unknown";
+        return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+    }
+
+    function processData() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        document.getElementById("thDistName").innerText = isNew ? "NEW DISTRICT NAME" : "OLD DISTRICT NAME";
+        
+        let distMap = {};
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+
+            if(!distMap[distName]) {
+                distMap[distName] = { 
+                    name: distName, totCsc: 0, 
+                    dsp25: 0, rb25: 0, 
+                    dspOld: 0, rbOld: 0, dspNew: 0, rbNew: 0, 
+                    dspTot: 0, rbTot: 0,
+                    dspPend: 0, rbPend: 0
+                };
+            }
+
+            let d = distMap[distName];
+            d.totCsc++;
+            if(r.dsp2526 > 0) d.dsp25++;
+            if(r.srv2526 > 0) d.rb25++;
+            if(r.dsp2526 > 0 && r.dsp2627 > 0) d.dspOld++;
+            if(r.srv2526 > 0 && r.srv2627 > 0) d.rbOld++;
+            if(r.dsp2526 === 0 && r.dsp2627 > 0) d.dspNew++;
+            if(r.srv2526 === 0 && r.srv2627 > 0) d.rbNew++;
+            if(r.dsp2627 > 0) d.dspTot++;
+            if(r.srv2627 > 0) d.rbTot++;
+            
+            if(r.dsp2526 > 0 && r.dsp2627 === 0) d.dspPend++;
+            if(r.srv2526 > 0 && r.srv2627 === 0) d.rbPend++;
+        });
+
+        districtAggregatedData = Object.values(distMap).sort((a, b) => a.name.localeCompare(b.name));
+        
+        let distDropdown = document.getElementById("distDropdown");
+        distDropdown.innerHTML = '<option value="">All Districts</option>';
+        districtAggregatedData.forEach(d => {
+            distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+        });
+
+        renderView();
+    }
+
+    // 🌟 అప్‌డేటెడ్ రీసెట్ లాజిక్ 🌟
+    window.resetFilters = function() {
+        // 1. సెర్చ్ బాక్స్ మరియు డ్రాప్ డౌన్ క్లియర్ చేయడం
+        document.getElementById("searchInput").value = "";
+        document.getElementById("distDropdown").value = "";
+        selectedDistFilter = "";
+        
+        // 2. రేడియో బటన్ ని 'Old District' కి డీఫాల్ట్ గా సెట్ చేయడం
+        document.querySelector('input[name="distType"][value="OLD"]').checked = true;
+        
+        // 3. డిస్ట్రిక్ట్ టైప్ (Old) కి మారింది కాబట్టి డేటా మొత్తం రీఫ్రెష్ అవ్వాలి
+        processData();
+    };
+
+    window.toggleFullScreen = function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable fullscreen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    document.addEventListener('fullscreenchange', (event) => {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement) {
+            fsBtn.innerHTML = "⛶ Exit Fullscreen";
+            fsBtn.classList.remove("btn-full");
+            fsBtn.classList.add("btn-exit-full");
+        } else {
+            fsBtn.innerHTML = "⛶ Fullscreen";
+            fsBtn.classList.remove("btn-exit-full");
+            fsBtn.classList.add("btn-full");
+        }
+    });
+
+    window.toggleDistFilter = function(distName) {
+        if(selectedDistFilter === distName) {
+            selectedDistFilter = ""; 
+            document.getElementById("distDropdown").value = ""; 
+        } else {
+            selectedDistFilter = distName; 
+            document.getElementById("distDropdown").value = distName; 
+        }
+        renderView();
+    };
+
+    function renderView() {
+        let searchTxt = document.getElementById("searchInput").value.toUpperCase();
+        let dropDownVal = document.getElementById("distDropdown").value;
+        
+        let filteredData = districtAggregatedData.filter(d => {
+            let matchSearch = d.name.toUpperCase().includes(searchTxt);
+            let matchClick = (selectedDistFilter === "" || d.name === selectedDistFilter);
+            let matchDrop = (dropDownVal === "" || d.name === dropDownVal);
+            return matchSearch && matchClick && matchDrop;
+        });
+
+        renderTable(filteredData);
+        renderCharts(filteredData);
+    }
+
+    function renderTable(dataArray) {
+        let tbody = document.getElementById("reportBody");
+        let tfoot = document.getElementById("reportFoot");
+        
+        tbody.innerHTML = "";
+        tfoot.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="12" class="text-danger py-4 text-center fw-bold">No District Found</td></tr>`;
+            return;
+        }
+
+        let tTot = 0, tD25 = 0, tR25 = 0, tDOld = 0, tROld = 0, tDNew = 0, tRNew = 0, tDTot = 0, tRTot = 0, tDPen = 0, tRPen = 0;
+
+        dataArray.forEach(d => {
+            tTot += d.totCsc; tD25 += d.dsp25; tR25 += d.rb25;
+            tDOld += d.dspOld; tROld += d.rbOld; tDNew += d.dspNew; tRNew += d.rbNew;
+            tDTot += d.dspTot; tRTot += d.rbTot; tDPen += d.dspPend; tRPen += d.rbPend; 
+
+            tbody.innerHTML += `
+            <tr>
+                <td class="clickable-dist" ondblclick="toggleDistFilter('${d.name}')" title="Double click to filter">${d.name}</td>
+                <td>${d.totCsc}</td>
+                <td style="color:#475569;">${d.dsp25}</td><td style="color:#475569;">${d.rb25}</td>
+                <td style="color:#059669;">${d.dspOld}</td><td style="color:#059669;">${d.rbOld}</td>
+                <td style="color:#d97706;">${d.dspNew}</td><td style="color:#d97706;">${d.rbNew}</td>
+                <td style="color:#dc2626;">${d.dspTot}</td><td style="color:#dc2626;">${d.rbTot}</td>
+                <td style="color:#6366f1;">${d.dspPend}</td><td style="color:#6366f1;">${d.rbPend}</td>
+            </tr>`;
+        });
+
+        // గ్రాండ్ టోటల్ ఇప్పుడు tfoot లోకి మార్చాను, అన్ని జిల్లాల తర్వాతే వస్తుంది.
+        tfoot.innerHTML = `
+        <tr class="t-row-total">
+            <td class="text-start ps-3 text-danger">GRAND TOTAL</td>
+            <td>${tTot}</td>
+            <td style="color:#475569;">${tD25}</td><td style="color:#475569;">${tR25}</td>
+            <td style="color:#059669;">${tDOld}</td><td style="color:#059669;">${tROld}</td>
+            <td style="color:#d97706;">${tDNew}</td><td style="color:#d97706;">${tRNew}</td>
+            <td class="text-danger">${tDTot}</td><td class="text-danger">${tRTot}</td>
+            <td style="color:#6366f1;">${tDPen}</td><td style="color:#6366f1;">${tRPen}</td>
+        </tr>`;
+    }
+
+    function renderCharts(dataArray) {
+        if(dataArray.length === 0) return;
+
+        let labels = [], dspTotData = [], rbTotData = [];
+        let totalRbOld = 0, totalRbNew = 0;
+
+        dataArray.forEach(d => {
+            labels.push(d.name.substring(0,8) + ".."); 
+            dspTotData.push(d.dspTot); rbTotData.push(d.rbTot);
+            totalRbOld += d.rbOld; totalRbNew += d.rbNew;
+        });
+
+        if(barChartInstance) barChartInstance.destroy();
+        let ctxBar = document.getElementById('barChart').getContext('2d');
+        barChartInstance = new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: labels, datasets: [ { label: 'DSP Active', data: dspTotData, backgroundColor: '#3b82f6', borderRadius: 4 }, { label: 'REDBUS Active', data: rbTotData, backgroundColor: '#dc2626', borderRadius: 4 } ] },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+
+        if(pieChartInstance) pieChartInstance.destroy();
+        let ctxPie = document.getElementById('pieChart').getContext('2d');
+        pieChartInstance = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: { labels: ['Old Active VLEs', 'New Active VLEs'], datasets: [{ data: [totalRbOld, totalRbNew], backgroundColor: ['#059669', '#d97706'], hoverOffset: 4 }] },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function exportToExcel() {
+       let ws = XLSX.utils.table_to_sheet(document.getElementById('reportTable'));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "District Performance");
+       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+       XLSX.writeFile(wb, `REDBUS_District_Performance_${dStr}.xlsx`);
+    }
+
+    function downloadImage() {
+       document.documentElement.classList.add("exporting");
+       let captureArea = document.getElementById('captureArea');
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { 
+               scale: 2, 
+               useCORS: true,
+               scrollY: -window.scrollY, 
+               windowHeight: captureArea.scrollHeight + 100 
+           }).then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              
+              let link = document.createElement('a');
+              link.download = `REDBUS_District_Performance.png`; 
+              link.href = canvas.toDataURL("image/png"); 
+              link.click();
+           });
+       }, 800); 
+    }
+  </script>
+</body>
+</html>

@@ -151,7 +151,9 @@
                 <option value="All">All Districts</option>
             </select>
             <input type="text" id="searchInput" class="search-box" placeholder="Search Name, CSC ID, IRCTC ID..." onkeyup="applyFilters()">
+            <button class="btn-action" id="pushAppBtn" onclick="pushToMobileApp()" style="background:#10b981; color:white;">📱 Push to App</button>
             <button class="btn-action" onclick="resetAllFilters()">↺ Reset</button>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
     </div>
@@ -244,6 +246,8 @@
         let globalData = [];
         let oldDistrictsSet = new Set();
         let newDistrictsSet = new Set();
+        
+        let dmAssignedOldDistrict = ""; // 🌟 DM కి మ్యాప్ అయిన పాత జిల్లా ఇక్కడ సేవ్ అవుతుంది
         let currentKpiFilter = 'all';
 
         const fallbackDmMap = {
@@ -263,72 +267,115 @@
 
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 ఫాస్ట్ లోడింగ్ కోసం ఆప్టిమైజ్ చేసిన ఫంక్షన్ 🌟
-       async function fetchSheetData() {
-    try {
-        let dmMobileMap = { ...fallbackDmMap };
-
-        // 🌟 ఇక్కడ localStorage వాడుతున్నాం (Dashboard నుండి డైరెక్ట్ గా వస్తుంది)
-        let cachedData = localStorage.getItem("cscGlobalData");
-        if (cachedData) {
-            // మెమరీలో డేటా ఉంటే మళ్ళీ గూగుల్ షీట్ ని అడగకుండా డైరెక్ట్ గా చూపిస్తుంది!
-            processDataOnce(JSON.parse(cachedData), dmMobileMap);
-            return; 
+        // 🌟 పేరుని పక్కాగా మ్యాచ్ చేసే బ్రహ్మాస్త్రం లాజిక్ 🌟
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            let lClean = loginName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            if (sClean === lClean || sClean.includes(lClean) || lClean.includes(sClean)) return true;
+            return false;
         }
 
-        // 🌟 ఒకవేళ మెమరీలో లేకపోతే అప్పుడు గూగుల్ షీట్ ని అడుగుతుంది
-        let responsePromise = fetch(apiURL);
-        let usersPromise = fetch(apiURL + "?sheet=Users").catch(() => null);
+        window.onload = function() {
+            document.getElementById("districtType").value = "old";
+            fetchSheetData(); 
+        };
 
-        let response = await responsePromise;
-        let rawData = await response.json();
-        
-        try {
-            let usersRes = await usersPromise;
-            if(usersRes) {
-                let usersData = await usersRes.json();
-                if(usersData && usersData.length > 0) {
+        // 🌟 ఫాస్ట్ లోడింగ్ (GET) కోసం అప్డేటెడ్ ఫంక్షన్ 🌟
+        async function fetchSheetData() {
+            document.getElementById("dataTable").innerHTML = "<tr><td colspan='11'><div class='loader'><div class='spinner'></div> Fetching Live Data...</div></td></tr>";
+            
+            try {
+                let dmMobileMap = { ...fallbackDmMap };
+
+                let cachedData = localStorage.getItem("cscGlobalData");
+                let cachedUsersData = localStorage.getItem("cscUsersData");
+                
+                let rawData = null;
+                let usersData = null;
+
+                if (cachedData && cachedUsersData) {
+                    rawData = JSON.parse(cachedData);
+                    usersData = JSON.parse(cachedUsersData);
+                } else {
+                    let [resData, resUsers] = await Promise.all([
+                        fetch(apiURL),
+                        fetch(apiURL + "?sheet=Users").catch(() => null)
+                    ]);
+                    
+                    rawData = await resData.json();
+                    usersData = resUsers ? await resUsers.json() : null;
+                    
+                    localStorage.setItem("cscGlobalData", JSON.stringify(rawData));
+                    if(usersData) localStorage.setItem("cscUsersData", JSON.stringify(usersData));
+                }
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+                // 🌟 DM కి మ్యాప్ అయిన పాత జిల్లాని Users షీట్ నుండి తెచ్చుకోవడం 🌟
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
                     let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                    if (uHeaders.includes('userid') || uHeaders.includes('password') || uHeaders.includes('emailids')) {
-                        let nIdx = uHeaders.findIndex(h => h === 'name' || h.includes('employee'));
-                        let mIdx = uHeaders.findIndex(h => h === 'userid' || h.includes('user'));
-                        if (nIdx === -1) nIdx = 4;
-                        if (mIdx === -1) mIdx = 0;
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district'); 
+                    let nIdx = uHeaders.findIndex(h => h === 'name' || h.includes('employee'));
+                    let mIdx = uHeaders.findIndex(h => h === 'userid' || h.includes('user'));
+
+                    if (nIdx === -1) nIdx = 4;
+                    if (mIdx === -1) mIdx = 0;
+
+                    for(let i=1; i<usersData.length; i++) {
+                        // మొబైల్ మ్యాపింగ్ కోసం
                         if(nIdx > -1 && mIdx > -1) {
-                            for(let i=1; i<usersData.length; i++) {
-                                let empName = (usersData[i][nIdx] || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
-                                let empMob = (usersData[i][mIdx] || '').toString().replace(/\D/g, ''); 
-                                if(empName && empMob.length >= 10) dmMobileMap[empName] = empMob; 
+                            let empName = (usersData[i][nIdx] || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
+                            let empMob = (usersData[i][mIdx] || '').toString().replace(/\D/g, ''); 
+                            if(empName && empMob.length >= 10) dmMobileMap[empName] = empMob; 
+                        }
+
+                        // DM జిల్లాని లాక్ చేయడం కోసం
+                        if (idxUid > -1 && idxDist > -1) {
+                            let sheetUid = (usersData[i][idxUid] || '').toString().trim();
+                            if (sheetUid === loggedInUserId) {
+                                dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
                             }
                         }
                     }
                 }
+                
+                if(rawData && rawData.length > 0) {
+                    processDataOnce(rawData, dmMobileMap);
+                } else {
+                    throw new Error("Empty Data Found");
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById("dataTable").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet. Please check the internet or API link.</td></tr>";
             }
-        } catch(e) { console.warn("Could not fetch Users sheet for DM Mobiles", e); }
-        
-        // 🌟 తెచ్చుకున్న డేటాని మళ్ళీ localStorage లో సేవ్ చేస్తుంది
-        localStorage.setItem("cscGlobalData", JSON.stringify(rawData));
-        processDataOnce(rawData, dmMobileMap);
-    } catch (error) {
-        console.error("Error loading data:", error);
-        document.getElementById("dataTable").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet. Please check the internet or API link.</td></tr>";
-    }
-}
+        }
+
+        function refreshData() {
+            localStorage.removeItem("cscGlobalData");
+            localStorage.removeItem("cscUsersData");
+            dmAssignedOldDistrict = "";
+            document.getElementById("dataTable").innerHTML = "<tr><td colspan='11'><div class='loader'><div class='spinner'></div> Fetching Fresh Live Data...</div></td></tr>";
+            fetchSheetData();
+        }
 
         function processDataOnce(rawData, dmMobileMap) {
             const monthKeys = ['apr','may','jun','jul','aug','sep','oct','nov','dec','jan','feb','mar'];
-            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let cleanHeaders = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
             
             let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
             let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
             let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
-            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
             let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
             let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxho = cleanHeaders.findIndex(h => h.includes('horemarks'));
-            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('dmname') || h.includes('districtmanager'));
+
             let idx23 = cleanHeaders.findIndex(h => h.includes('202223') || h.includes('2223'));
             let idx24 = cleanHeaders.findIndex(h => h.includes('202324') || h.includes('2324'));
             let idx25 = cleanHeaders.findIndex(h => h.includes('202425') || h.includes('2425')); 
@@ -345,6 +392,8 @@
             }
 
             globalData = [];
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
 
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
@@ -408,12 +457,22 @@
                     statusLogic: statusLogic, hoRemark: idxho > -1 ? (row[idxho] || '') : '', monthsData: monthsDataArr
                 };
 
-                if(vObj.olddist && vObj.olddist !== 'Unknown') oldDistrictsSet.add(vObj.olddist.trim());
-                if(vObj.newdist && vObj.newdist !== 'Unknown') newDistrictsSet.add(vObj.newdist.trim());
+                if(vObj.olddist && vObj.olddist !== 'Unknown' && vObj.olddist !== '-') oldDistrictsSet.add(vObj.olddist.trim());
+                if(vObj.newdist && vObj.newdist !== 'Unknown' && vObj.newdist !== '-') newDistrictsSet.add(vObj.newdist.trim());
 
                 globalData.push(vObj);
             }
             updateDistrictsDropdown();
+        }
+
+        // 🌟🌟🌟 THE ABSOLUTE DISPLAY FILTERING FIX 🌟🌟🌟
+        function isRowAllowedForDM(row, distType, loggedInUserName) {
+            if (distType === 'old') {
+                if (!dmAssignedOldDistrict) return false; 
+                return row.olddist.toLowerCase() === dmAssignedOldDistrict.toLowerCase();
+            } else {
+                return isNameMatch(row.dmname, loggedInUserName);
+            }
         }
 
         function updateDistrictsDropdown() {
@@ -422,33 +481,28 @@
             
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUser = localStorage.getItem("userName") || "";
-            let userDistrict = localStorage.getItem("userDistrict") || "";
 
             distDropdown.innerHTML = '<option value="All">All Districts</option>';
             
             let arr = [];
             
             if (userDesignation === "District Manager") {
-                let dmOldDists = new Set();
-                let dmNewDists = new Set();
-                globalData.forEach(row => {
-                    if (row.dmname && row.dmname.toLowerCase().trim() === loggedInUser.toLowerCase().trim()) {
-                        if(row.olddist && row.olddist !== 'Unknown') dmOldDists.add(row.olddist.trim());
-                        if(row.newdist && row.newdist !== 'Unknown') dmNewDists.add(row.newdist.trim());
-                    }
-                });
-                arr = type === "old" ? Array.from(dmOldDists).sort() : Array.from(dmNewDists).sort();
+                 if (type === 'old') {
+                     if (dmAssignedOldDistrict) arr.push(dmAssignedOldDistrict);
+                 } else {
+                     let myNewDists = new Set();
+                     globalData.forEach(row => {
+                         if (isNameMatch(row.dmname, loggedInUser) && row.newdist !== 'Unknown' && row.newdist !== '-') {
+                             myNewDists.add(row.newdist);
+                         }
+                     });
+                     arr = Array.from(myNewDists).sort();
+                 }
             } else {
-                arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+                 arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
             }
             
             arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
-            
-            if (arr.length === 1) {
-                distDropdown.value = arr[0];
-            } else if (userDistrict && arr.includes(userDistrict)) {
-                distDropdown.value = userDistrict;
-            }
             
             if(globalData.length > 0) applyFilters(); 
         }
@@ -461,27 +515,15 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUser = localStorage.getItem("userName") || "";
 
-            let dmAuthorizedOldDistricts = new Set();
-            if (userDesignation === "District Manager") {
-                globalData.forEach(row => {
-                    if (row.dmname && row.dmname.toLowerCase().trim() === loggedInUser.toLowerCase().trim()) {
-                        if (row.olddist && row.olddist !== 'Unknown') dmAuthorizedOldDistricts.add(row.olddist.trim());
-                    }
-                });
-            }
-
             let counts = { total: 0, target: 0, act26: 0, inact26: 0, act25: 0, inact25: 0, never: 0, blocked: 0 };
             let html = "";
             let displayedRows = 0;
             let distKey = distType === "old" ? "olddist" : "newdist";
 
             globalData.forEach((row, index) => {
+                // 🌟 THE FIX: Applying the combined logic for DM Records 🌟
                 if (userDesignation === "District Manager") {
-                    if (distType === "old") {
-                        if (!dmAuthorizedOldDistricts.has(row.olddist.trim())) return; 
-                    } else {
-                        if (!row.dmname || row.dmname.toLowerCase().trim() !== loggedInUser.toLowerCase().trim()) return; 
-                    }
+                    if (!isRowAllowedForDM(row, distType, loggedInUser)) return;
                 }
 
                 let dist = row[distKey] || '-';
@@ -723,10 +765,30 @@
             });
         }
 
-        window.onload = function() {
-            document.getElementById("districtType").value = "old";
-            fetchSheetData(); 
-        };
+        function pushToMobileApp() {
+            let btn = document.getElementById("pushAppBtn");
+            btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
+
+            let targetUrl = typeof apiURL !== 'undefined' ? apiURL : (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : "");
+
+            fetch(targetUrl, {
+                method: "POST",
+                body: JSON.stringify({ action: "generateAppTargets", service: "IRCTC" })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    alert(`✅ IRCTC Targets Generated! (${data.count} VLEs pushed to App)`);
+                } else {
+                    alert("❌ Backend Error: " + data.error);
+                }
+                btn.innerText = "📱 Push to App"; btn.disabled = false;
+            })
+            .catch(e => {
+                alert("❌ Network Timeout. But check Google Sheet, data might be there.");
+                btn.innerText = "📱 Push to App"; btn.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>

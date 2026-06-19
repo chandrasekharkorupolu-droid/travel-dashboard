@@ -126,8 +126,8 @@
                 <option value="All">All Districts</option>
             </select>
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadReportImage()">📸 Download Image</button>
-            <!-- 🌟 ఫుల్ స్క్రీన్ బటన్ 🌟 -->
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
     </div>
@@ -170,12 +170,22 @@
         let trendChartInstance = null;
         let breakdownChartInstance = null;
         
-        let userDesignation = localStorage.getItem("userDesignation") || "State Head";
-        let loggedInUser = localStorage.getItem("userName") || "";
+        let dmAssignedOldDistrict = ""; // 🌟 DM Old District
 
         function setReportDate() {
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
             document.getElementById('reportDate').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', options);
+        }
+
+        // 🌟 పేరు మ్యాచ్ చేసే బ్రహ్మాస్త్రం 🌟
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (sClean === lClean) return true;
+            if (lClean.length > 5 && sClean.includes(lClean)) return true;
+            if (sClean.length > 5 && lClean.includes(sClean)) return true;
+            return false;
         }
 
         window.onload = function() {
@@ -183,7 +193,7 @@
             document.getElementById("districtType").value = "old";
             calculateDynamicColumns();
             buildTableHeader();
-            loadInitialData(); 
+            fetchSheetData(); 
         };
 
         function calculateDynamicColumns() {
@@ -229,28 +239,75 @@
             document.getElementById("tableHead").innerHTML = theadHtml1 + theadHtml2;
         }
 
-        async function loadInitialData() {
+        // 🌟🌟🌟 THE FAST LOADING (CACHE) FIX 🌟🌟🌟
+        async function fetchSheetData() {
+            document.getElementById("tableBody").innerHTML = "<tr class='loader-row'><td colspan='40'><div class='spinner'></div> Fetching Live Data...</td></tr>";
+            
             try {
                 let cachedData = localStorage.getItem("cscGlobalData");
-                if (cachedData) {
-                    processActivationData(JSON.parse(cachedData));
+                let cachedUsersData = localStorage.getItem("cscUsersData");
+                
+                let rawData = null;
+                let usersData = null;
+
+                if (cachedData && cachedUsersData) {
+                    rawData = JSON.parse(cachedData);
+                    usersData = JSON.parse(cachedUsersData);
                 } else {
-                    let response = await fetch(apiURL);
-                    let rawData = await response.json();
+                    let [resData, resUsers] = await Promise.all([
+                        fetch(apiURL),
+                        fetch(apiURL + "?sheet=Users").catch(() => null)
+                    ]);
+                    
+                    rawData = await resData.json();
+                    usersData = resUsers ? await resUsers.json() : null;
+                    
                     localStorage.setItem("cscGlobalData", JSON.stringify(rawData));
+                    if(usersData) localStorage.setItem("cscUsersData", JSON.stringify(usersData));
+                }
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                    let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district'); 
+
+                    if (idxUid > -1 && idxDist > -1) {
+                        for(let i=1; i<usersData.length; i++) {
+                            let sheetUid = (usersData[i][idxUid] || '').toString().trim();
+                            if (sheetUid === loggedInUserId) {
+                                dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                                break; 
+                            }
+                        }
+                    }
+                }
+
+                if(rawData && rawData.length > 0) {
                     processActivationData(rawData);
+                } else {
+                    throw new Error("Empty Data Found");
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = `<tr><td colspan="40" style='color:red; text-align:center; padding: 20px;'>❌ Error loading data from server.</td></tr>`;
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='40' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet. Please check the internet or API link.</td></tr>";
             }
+        }
+
+        function refreshData() {
+            localStorage.removeItem("cscGlobalData");
+            localStorage.removeItem("cscUsersData");
+            dmAssignedOldDistrict = "";
+            fetchSheetData();
         }
 
         function processActivationData(rawData) {
             let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
             let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
             let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
-            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
             let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             let idx26 = cleanHeaders.findIndex(h => h.includes('202526') || h.includes('2526')); 
@@ -271,7 +328,7 @@
 
                 let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
                 let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
-                let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
+                let dmNameStr = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
 
                 if(oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
                 if(newDist !== 'Unknown') newDistrictsSet.add(newDist);
@@ -298,32 +355,55 @@
                 let isAct27Unique = (fy27TotalVal > 0 || fy27TotalCol > 0) ? 1 : 0;
 
                 globalActData.push({
-                    hasIrctc: (irctcId && irctcId !== '-') ? 1 : 0, olddist: oldDist, newdist: newDist, dmname: dmNameStr, 
-                    isAct26: isAct26, months: monthData, totUnique: isAct27Unique,
-                    totOld: (isAct27Unique && isAct26) ? 1 : 0, totNew: (isAct27Unique && !isAct26) ? 1 : 0,
-                    yetToAct: (isAct26 && !isAct27Unique) ? 1 : 0, totInact: (!isAct27Unique) ? 1 : 0
+                    hasIrctc: (irctcId && irctcId !== '-') ? 1 : 0, 
+                    olddist: oldDist, 
+                    newdist: newDist, 
+                    dmname: dmNameStr, 
+                    isAct26: isAct26, 
+                    months: monthData, 
+                    totUnique: isAct27Unique,
+                    totOld: (isAct27Unique && isAct26) ? 1 : 0, 
+                    totNew: (isAct27Unique && !isAct26) ? 1 : 0,
+                    yetToAct: (isAct26 && !isAct27Unique) ? 1 : 0, 
+                    totInact: (!isAct27Unique) ? 1 : 0
                 });
             }
             updateDistrictsDropdown();
         }
 
+        // 🌟🌟🌟 THE ABSOLUTE DISPLAY FILTERING FIX 🌟🌟🌟
+        function isRowAllowedForDM(row, distType, loggedInUserName) {
+            if (distType === 'old') {
+                if (!dmAssignedOldDistrict) return false; 
+                return row.olddist.toLowerCase() === dmAssignedOldDistrict.toLowerCase();
+            } else {
+                return isNameMatch(row.dmname, loggedInUserName);
+            }
+        }
+
         function updateDistrictsDropdown() {
             const type = document.getElementById("districtType").value || "old"; 
             const distDropdown = document.getElementById("districtName");
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
+
             distDropdown.innerHTML = '<option value="All">All Districts</option>';
             let arr = [];
             
             if (userDesignation === "District Manager") {
-                let dmOldDists = new Set(); let dmNewDists = new Set();
-                globalActData.forEach(row => {
-                    if (row.dmname && row.dmname.toLowerCase().trim() === loggedInUser.toLowerCase().trim()) {
-                        if(row.olddist && row.olddist !== 'Unknown') dmOldDists.add(row.olddist.trim());
-                        if(row.newdist && row.newdist !== 'Unknown') dmNewDists.add(row.newdist.trim());
-                    }
-                });
-                arr = type === "old" ? Array.from(dmOldDists).sort() : Array.from(dmNewDists).sort();
+                 if (type === 'old') {
+                     if (dmAssignedOldDistrict) arr.push(dmAssignedOldDistrict);
+                 } else {
+                     let myNewDists = new Set();
+                     globalActData.forEach(row => {
+                         if (isNameMatch(row.dmname, loggedInUser) && row.newdist !== 'Unknown' && row.newdist !== '-') {
+                             myNewDists.add(row.newdist);
+                         }
+                     });
+                     arr = Array.from(myNewDists).sort();
+                 }
             } else {
-                arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+                 arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
             }
             
             arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
@@ -334,27 +414,23 @@
             let distType = document.getElementById('districtType').value;
             let selectedDist = document.getElementById('districtName').value;
             let distKey = distType === 'old' ? 'olddist' : 'newdist';
-
-            let dmAuthorizedOldDistricts = new Set();
-            if (userDesignation === "District Manager") {
-                globalActData.forEach(row => {
-                    if (row.dmname && row.dmname.toLowerCase().trim() === loggedInUser.toLowerCase().trim()) {
-                        if (row.olddist && row.olddist !== 'Unknown') dmAuthorizedOldDistricts.add(row.olddist.trim());
-                    }
-                });
-            }
+            
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUser = localStorage.getItem("userName") || "";
             
             let reportMap = {};
             let gt = { ids: 0, act26: 0, dynamicCols: [], totUniq: 0, totOld: 0, totNew: 0, yet: 0, inact: 0 };
             columnsToShow.forEach(() => gt.dynamicCols.push({part:0, old:0, newAct:0}));
 
             globalActData.forEach(row => {
+                let dist = row[distKey] || "Unknown";
+                if (dist === '-' || dist === '') dist = 'Unknown';
+
+                // 🌟 DM ఫిల్టర్ అప్లై చేస్తున్నాం 🌟
                 if (userDesignation === "District Manager") {
-                    if (distType === "old") { if (!dmAuthorizedOldDistricts.has(row.olddist.trim())) return; } 
-                    else { if (!row.dmname || row.dmname.toLowerCase().trim() !== loggedInUser.toLowerCase().trim()) return; }
+                    if (!isRowAllowedForDM(row, distType, loggedInUser)) return;
                 }
 
-                let dist = row[distKey] || "Unknown";
                 if (selectedDist !== "All" && dist !== selectedDist) return;
                 
                 if (!reportMap[dist]) {
@@ -379,7 +455,7 @@
             let tbodyHtml = "";
             
             if(sortedDistricts.length === 0) {
-                 tbodyHtml = `<tr><td colspan="40" style="padding: 30px; color: #dc2626; font-weight: bold;">No Data Found!</td></tr>`;
+                 tbodyHtml = `<tr><td colspan="40" style="padding: 30px; color: #dc2626; font-weight: bold;">No Data Matches Filter!</td></tr>`;
                  document.getElementById("tableFooter").innerHTML = ""; document.getElementById("chartsArea").style.display = "none";
             } else {
                 sortedDistricts.forEach(dist => {
@@ -438,7 +514,6 @@
             let originalText = btn.innerHTML;
             btn.innerHTML = "⏳ Processing...";
             
-            // పక్కాగా ఇమేజ్ కట్ కాకుండా ఉండటానికి విడ్త్ ఫిక్స్ చేస్తున్నాం
             let originalWidth = el.style.width;
             el.style.width = el.scrollWidth + 'px';
             el.classList.add('capture-mode');
@@ -447,7 +522,9 @@
                 html2canvas(el, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
                     let link = document.createElement('a'); 
                     let typeText = document.getElementById("districtType").value;
-                    link.download = `IRCTC_Monthly_Activations_${typeText}.png`;
+                    let d = new Date();
+                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    link.download = `IRCTC_Monthwise_Activations_${typeText}_${dateStr}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
 
@@ -458,7 +535,6 @@
             }, 500);
         }
 
-        /* 🌟 ఆరెంజ్ కలర్ తో కూడిన ఫుల్ స్క్రీన్ బటన్ లాజిక్ 🌟 */
         function toggleFullScreen() {
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
@@ -474,7 +550,6 @@
             }
         }
 
-        // కీబోర్డ్ లో 'ESC' నొక్కినప్పుడు బటన్ మళ్ళీ నార్మల్ అవ్వడానికి ఇది ముఖ్యం!
         document.addEventListener('fullscreenchange', (event) => {
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {

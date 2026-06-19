@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    /* 🌟 మాస్టర్ టెంప్లేట్ సెట్టింగ్స్ 🌟 */
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
+    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    
+    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+    
+    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
+    .priority-select { border: 2px solid #ea580c; color: #9a3412; background-color: #fff7ed; }
+    
+    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 160px; transition: 0.2s; height: 33px;}
+    .search-box:focus, .dist-select:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 33px;}
+    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
+    
+    .report-main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 0.5px; text-transform: uppercase;}
+    .report-date-text { color: #64748b; font-weight: 700; margin: 5px 0 0 0; font-size: 13px; }
+
+    /* 🌟 క్లిక్ చేసేవిధంగా ఉన్న KPI Cards Design 🌟 */
+    .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .kpi-card { background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: center; cursor: pointer; transition: all 0.2s ease; user-select: none;}
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+    .kpi-card span { font-size: 13px; font-weight: 900; color: #64748b; text-transform: uppercase; }
+    .kpi-card strong { font-size: 22px; font-weight: 900; }
+    
+    /* 🌟 డబ్బా ని సెలెక్ట్ చేసినప్పుడు వచ్చే హైలైట్ ఎఫెక్ట్స్ 🌟 */
+    .kpi-targ { border-left: 5px solid #3b82f6; } .kpi-targ strong { color: #3b82f6; }
+    .kpi-targ.active { border: 2px solid #3b82f6; border-left: 6px solid #3b82f6; background-color: #eff6ff; transform: scale(1.03); box-shadow: 0 5px 15px rgba(59,130,246,0.2);}
+    
+    .kpi-ach { border-left: 5px solid #10b981; }  .kpi-ach strong { color: #10b981; }
+    .kpi-ach.active { border: 2px solid #10b981; border-left: 6px solid #10b981; background-color: #ecfdf5; transform: scale(1.03); box-shadow: 0 5px 15px rgba(16,185,129,0.2);}
+    
+    .kpi-bal { border-left: 5px solid #ef4444; }  .kpi-bal strong { color: #ef4444; }
+    .kpi-bal.active { border: 2px solid #ef4444; border-left: 6px solid #ef4444; background-color: #fef2f2; transform: scale(1.03); box-shadow: 0 5px 15px rgba(239,68,68,0.2);}
+
+    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    
+    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border-left: none !important; border-right: none !important; }
+    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 12px 10px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.2) !important;}
+    
+    .th-dist { background-color: #0f172a !important; color: #ffffff !important; }
+    .th-name { background-color: #1e3a8a !important; color: #ffffff !important; }
+    .th-id { background-color: #2563eb !important; color: #ffffff !important; }
+    .th-mob { background-color: #475569 !important; color: #ffffff !important; }
+    .th-tx25 { background-color: #f97316 !important; color: #ffffff !important; }
+    .th-tx26 { background-color: #dc2626 !important; color: #ffffff !important; }
+    .th-stat { background-color: #8b5cf6 !important; color: #ffffff !important; }
+    .th-act { background-color: #059669 !important; color: #ffffff !important; }
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
+    tbody tr:hover { background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;}
+    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
+    
+    .vle-name { text-align: left !important; color: #1e40af; font-weight: 900;}
+    .csc-id { font-family: monospace; font-size: 13px; color: #dc2626;}
+    
+    .stat-pend { background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 11px;}
+    .stat-act { background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-size: 11px;}
+    
+    .btn-wa { background: #25D366; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block;}
+    .btn-wa:hover { background: #128C7E; color: white; }
+
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
+    html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+    html.exporting thead { position: static !important; transform: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    
+    <div class="filter-group">
+      <div class="title-sec me-3">🚌 REDBUS: FOLLOW UP</div>
+      
+      <select id="distTypeDropdown" class="dist-select" onchange="processData()">
+          <option value="OLD">Old Districts</option>
+          <option value="NEW">New Districts</option>
+      </select>
+      
+      <select id="distDropdown" class="dist-select" onchange="renderView()">
+          <option value="">All Districts</option>
+      </select>
+      
+      <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name / ID..." onkeyup="renderView()">
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      <select id="priorityDropdown" class="dist-select priority-select" onchange="renderView()">
+          <option value="ALL">All Targets (>= 1)</option>
+          <option value="SUPER">Super Priority (>= 100)</option>
+          <option value="HIGH">High Priority (50 to 99)</option>
+          <option value="MEDIUM">Medium Priority (10 to 49)</option>
+          <option value="BASIC">Basic Priority (1 to 9)</option>
+      </select>
+
+      <button class="btn-custom btn-reset ms-2" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
+      <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    </div>
+
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+    
+    <div class="report-main-header">
+        <h2 class="report-main-title">CSC AP - REDBUS PRIORITY FOLLOW UP REPORT (FY 26-27)</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <!-- 🌟 క్లిక్ చేయడానికి వీలుగా మార్చిన KPI Cards 🌟 -->
+    <div class="kpi-container" id="kpiCards">
+        <div class="kpi-card kpi-targ active" id="cardALL" onclick="filterByBox('ALL')" title="Click to show All VLEs">
+            <span>TOTAL TARGET VLES:</span> <strong id="kpiTarget">0</strong>
+        </div>
+        <div class="kpi-card kpi-ach" id="cardACTIVATED" onclick="filterByBox('ACTIVATED')" title="Click to show only Activated VLEs">
+            <span>ACTIVATED VLES:</span> <strong id="kpiAchieved">0</strong>
+        </div>
+        <div class="kpi-card kpi-bal" id="cardPENDING" onclick="filterByBox('PENDING')" title="Click to show only Pending VLEs">
+            <span>STILL PENDING VLES:</span> <strong id="kpiPending">0</strong>
+        </div>
+    </div>
+
+    <div class="scrollable-area" id="scrollableArea">
+      <table id="reportTable">
+        <thead>
+          <tr>
+            <th class="th-dist text-start ps-3" style="width: 12%;">DISTRICT</th>
+            <th class="th-name text-start ps-3" style="width: 18%;">VLE NAME</th>
+            <th class="th-id">CSC ID</th>
+            <th class="th-mob">MOBILE NO</th>
+            <th class="th-tx25">FY 25-26 TXNS</th>
+            <th class="th-tx26">FY 26-27 TXNS</th>
+            <th class="th-stat">STATUS</th>
+            <th class="th-act">ACTION (FOLLOW-UP)</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="8" class="text-danger py-4 text-center fw-bold">Loading Follow Up Data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+
+    let rawData = [];
+    let processedVleData = [];
+    let currentTableData = []; // Excel export కోసం
+    let selectedDistFilter = ""; 
+    
+    let currentBoxFilter = "ALL"; // 🌟 డబ్బా ఫిల్టర్ స్టేటస్ 🌟
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    
+    function fetchDataFromServer() {
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+    }
+    
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    function processData() {
+        let isNew = document.getElementById("distTypeDropdown").value === "NEW";
+        
+        let distSet = new Set();
+        processedVleData = [];
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+            
+            let tx25 = r.srv2526 || 0;
+            let tx26 = r.srv2627 || 0;
+            
+            if(tx25 > 0) {
+                distSet.add(distName);
+                
+                processedVleData.push({
+                    dist: distName,
+                    name: r.vleName || "CSC VLE",
+                    cscId: r.cscId,
+                    mobile: r.mobile || "N/A",
+                    tx25: tx25,
+                    tx26: tx26,
+                    status: tx26 > 0 ? "ACTIVATED" : "PENDING" 
+                });
+            }
+        });
+
+        processedVleData.sort((a, b) => {
+            if(a.status === "PENDING" && b.status !== "PENDING") return -1;
+            if(a.status !== "PENDING" && b.status === "PENDING") return 1;
+            return b.tx25 - a.tx25;
+        });
+        
+        let distArr = Array.from(distSet).sort();
+        let distDropdown = document.getElementById("distDropdown");
+        distDropdown.innerHTML = '<option value="">All Districts</option>';
+        distArr.forEach(d => { distDropdown.innerHTML += `<option value="${d}">${d}</option>`; });
+
+        renderView();
+    }
+
+    // 🌟 డబ్బా నొక్కినప్పుడు ఆక్టివ్ అయ్యే ఫంక్షన్ 🌟
+    window.filterByBox = function(boxType) {
+        currentBoxFilter = boxType;
+        
+        // పాత హైలైట్స్ తీసేసి, క్లిక్ చేసిన డబ్బాకి హైలైట్ యాడ్ చేయడం
+        document.getElementById("cardALL").classList.remove("active");
+        document.getElementById("cardACTIVATED").classList.remove("active");
+        document.getElementById("cardPENDING").classList.remove("active");
+        
+        document.getElementById("card" + boxType).classList.add("active");
+        
+        // డేటా రీ-రెండర్
+        renderView();
+    };
+
+    window.resetFilters = function() {
+        document.getElementById("distDropdown").value = "";
+        document.getElementById("distTypeDropdown").value = "OLD";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("priorityDropdown").value = "ALL";
+        selectedDistFilter = "";
+        
+        // ఫిల్టర్స్ రీసెట్ చేసినప్పుడు డబ్బా కూడా All కి వచ్చేయాలి
+        filterByBox("ALL"); 
+        
+        processData();
+    };
+
+    window.toggleFullScreen = function() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e => { alert("Error: " + e.message); }); } 
+        else { document.exitFullscreen(); }
+    };
+    
+    document.addEventListener('fullscreenchange', () => {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement) { fsBtn.innerHTML = "⛶ Full Screen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Full Screen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+    });
+
+    function renderView() {
+        let searchTxt = document.getElementById("searchInput").value.toUpperCase();
+        let dropDownVal = document.getElementById("distDropdown").value;
+        let priorityVal = document.getElementById("priorityDropdown").value;
+        
+        // 1. ముందు బేసిక్ ఫిల్టర్స్ అప్లై చేస్తాం
+        let baseFilteredData = processedVleData.filter(d => {
+            let matchSearch = d.name.toUpperCase().includes(searchTxt) || d.cscId.toUpperCase().includes(searchTxt);
+            let matchDist = (dropDownVal === "" || d.dist === dropDownVal);
+            
+            let matchPriority = true;
+            if(priorityVal === "SUPER") matchPriority = d.tx25 >= 100;
+            else if(priorityVal === "HIGH") matchPriority = d.tx25 >= 50 && d.tx25 <= 99;
+            else if(priorityVal === "MEDIUM") matchPriority = d.tx25 >= 10 && d.tx25 <= 49;
+            else if(priorityVal === "BASIC") matchPriority = d.tx25 >= 1 && d.tx25 <= 9;
+
+            return matchSearch && matchDist && matchPriority;
+        });
+        
+        // 2. డబ్బాల కోసం కౌంట్స్ క్యాలిక్యులేట్ చేయడం (ఇవి డబ్బా నొక్కినా మారవు)
+        let tTarg = baseFilteredData.length;
+        let tAch = 0, tPend = 0;
+        baseFilteredData.forEach(d => { if(d.status === "ACTIVATED") tAch++; else tPend++; });
+
+        document.getElementById("kpiTarget").innerText = tTarg;
+        document.getElementById("kpiAchieved").innerText = tAch;
+        document.getElementById("kpiPending").innerText = tPend;
+
+        // 3. ఇప్పుడు కింద టేబుల్ లో చూపించడానికి మీరు క్లిక్ చేసిన డబ్బాను బట్టి డేటా ఫిల్టర్
+        let tableData = baseFilteredData.filter(d => {
+            return (currentBoxFilter === "ALL" || d.status === currentBoxFilter);
+        });
+
+        currentTableData = tableData; // ఎక్సెల్ లో డౌన్‌లోడ్ అవ్వడానికి స్టోర్ చేసుకున్నాం
+        renderTableOnly(tableData);
+    }
+
+    function renderTableOnly(dataArray) {
+        let tbody = document.getElementById("reportBody");
+        tbody.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-danger py-4 text-center fw-bold">No VLE Found</td></tr>`;
+            return;
+        }
+
+        let displayLimit = 200;
+        let renderCount = 0;
+
+        dataArray.forEach((d) => {
+            if(renderCount < displayLimit) {
+                let statClass = d.status === "ACTIVATED" ? "stat-act" : "stat-pend";
+                
+                let waMsg = encodeURIComponent(`Dear VLE (${d.name}), You have done ${d.tx25} REDBUS transactions last year. Please login to CSC portal and start doing REDBUS bookings for this year to achieve your target.`);
+                let waLink = d.mobile.length >= 10 ? `https://wa.me/91${d.mobile}?text=${waMsg}` : `#`;
+                let btnHtml = d.status === "PENDING" ? `<a href="${waLink}" target="_blank" class="btn-wa">💬 Send Alert</a>` : `<span style="color:#16a34a; font-size:11px;">✔️ Done</span>`;
+
+                tbody.innerHTML += `
+                <tr>
+                    <td class="text-start ps-3 fw-bold" style="color:#475569;">${d.dist}</td>
+                    <td class="vle-name ps-3">${d.name}</td>
+                    <td class="csc-id">${d.cscId}</td>
+                    <td style="color:#0f172a;">${d.mobile}</td>
+                    <td style="color:#f97316;">${d.tx25}</td>
+                    <td style="color:#dc2626;">${d.tx26}</td>
+                    <td><span class="${statClass}">${d.status}</span></td>
+                    <td>${btnHtml}</td>
+                </tr>`;
+                
+                renderCount++;
+            }
+        });
+
+        if(dataArray.length > displayLimit) {
+            tbody.innerHTML += `<tr><td colspan="8" class="text-muted py-2 text-center" style="font-size:11px;">Showing top ${displayLimit} records. Please use filters to see more.</td></tr>`;
+        }
+    }
+
+    // ఎక్సెల్ బటన్ నొక్కితే కరెక్ట్ గా ఏది చూస్తున్నారో అదే డౌన్‌లోడ్ అవుతుంది
+    function exportToExcel() {
+       let ws = XLSX.utils.json_to_sheet(currentTableData.map(d => ({
+           "DISTRICT": d.dist, "VLE NAME": d.name, "CSC ID": d.cscId, "MOBILE NO": d.mobile,
+           "FY 25-26 TXNS": d.tx25, "FY 26-27 TXNS": d.tx26, "STATUS": d.status
+       })));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Priority Follow Up");
+       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+       XLSX.writeFile(wb, `REDBUS_Priority_FollowUp_${dStr}.xlsx`);
+    }
+
+    function downloadImage() {
+       document.documentElement.classList.add("exporting");
+       let captureArea = document.getElementById('captureArea');
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight + 50 })
+           .then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              let link = document.createElement('a');
+              link.download = `REDBUS_Priority_FollowUp.png`; link.href = canvas.toDataURL("image/png"); link.click();
+           });
+       }, 500); 
+    }
+  </script>
+</body>
+</html>
