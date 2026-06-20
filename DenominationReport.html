@@ -1,18 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Stamping Denomination Sales</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
   <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
+    /* 🌟 Master Clean Background 🌟 */
+    body { 
+        background: #f1f5f9; 
+        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
+        padding: 20px 15px; 
+        min-height: 100vh;
+        color: #334155;
+    }
+
+    /* 🌟 Premium Card Container 🌟 */
+    .premium-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        border-top: 5px solid #6366f1; 
+        margin-bottom: 20px;
+    }
     
-    /* Clickable Summary Cards Styles */
-    .stat-card { background: white; border-radius: 8px; padding: 15px 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; border-top: 4px solid #ccc; height: 100%; }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .stat-card.active { background-color: #f8faff; border-color: #6d28d9 !important; box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
-    .stat-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-    .stat-value { font-size: 22px; font-weight: 900; color: #1e293b; margin: 0; }
+    .card-header-custom {
+        background: #ffffff;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .card-title {
+        color: #0f172a;
+        font-weight: 900;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    /* 🌟 Clickable Summary Cards Styles (Premium Look) 🌟 */
+    .stat-card { 
+        background: #ffffff; 
+        border-radius: 12px; 
+        padding: 15px 10px; 
+        text-align: center; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        cursor: pointer; 
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        border-top: 4px solid #cbd5e1; 
+        height: 100%; 
+        border-left: 1px solid #f1f5f9;
+        border-right: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .stat-card.active { transform: translateY(-2px); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+    
+    .stat-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .stat-value { font-size: 24px; font-weight: 900; color: #1e293b; margin: 0; line-height: 1; }
     
     /* Card Top Colors */
     .border-vles { border-top-color: #f97316; } .active.border-vles { border-color: #f97316 !important; background-color: #fff7ed; }
@@ -23,33 +77,127 @@
     .border-100 { border-top-color: #a855f7; } .active.border-100 { border-color: #a855f7 !important; background-color: #faf5ff; }
     .border-oth { border-top-color: #64748b; } .active.border-oth { border-color: #64748b !important; background-color: #f8fafc; }
 
-    /* Controls & Table Styles */
-    .controls-bar { background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .view-btn { border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: bold; padding: 6px 15px; font-size: 13px; transition: 0.2s; }
-    .view-btn.active { background: #6d28d9; color: white; border-color: #6d28d9; }
-    .view-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
-    .view-btn:last-child { border-radius: 0 6px 6px 0; }
-    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; width: 250px; outline: none; }
+    /* 🌟 Controls & Search 🌟 */
+    .controls-bar { 
+        background: #ffffff; 
+        padding: 12px 20px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 20px; 
+        border: 1px solid #e2e8f0;
+    }
     
-    .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
-    .table-header { background: #f8fafc; padding: 12px 20px; font-weight: bold; font-size: 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; color: #334155; }
-    .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #a7f3d0; }
+    .view-btn { 
+        border: 1px solid #cbd5e1; 
+        background: #f8fafc; 
+        color: #475569; 
+        font-weight: 800; 
+        padding: 8px 18px; 
+        font-size: 13px; 
+        transition: 0.3s; 
+    }
+    .view-btn.active { background: #6366f1; color: white; border-color: #6366f1; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+    .view-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
+    .view-btn:last-child { border-radius: 0 8px 8px 0; }
+    
+    .search-box { 
+        width: 300px; 
+        border: 2px solid #cbd5e1; 
+        border-radius: 8px; 
+        padding: 8px 16px; 
+        outline: none; 
+        font-size: 13px; 
+        font-weight: 600;
+        color: #1e293b;
+        background: #f8fafc;
+        transition: 0.3s;
+    }
+    .search-box:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+
+    /* 🌟 High Contrast Single-Line Table Design (No Scrolling) 🌟 */
+    .table-container { padding: 0; width: 100%; }
+    
+    .table { margin-bottom: 0; white-space: nowrap; width: 100%; table-layout: auto; }
+    
+    .table thead th { 
+        background: #1e293b !important; 
+        color: #ffffff !important; 
+        font-size: 10.5px; 
+        font-weight: 800;
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        padding: 12px 6px;
+        border: none;
+    }
+    
+    .table tbody tr td { 
+        padding: 12px 6px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+        font-size: 12px; 
+        font-weight: 700;
+    }
+
+    /* 🌟 Zebra Striping 🌟 */
+    .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
+    .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
+    .table-hover tbody tr:hover td { background-color: #e0e7ff !important; cursor: pointer; }
 
     /* Grand Total Row Sticky */
-    .grand-total-row td { background-color: #e2e8f0 !important; font-weight: 900 !important; color: #1e293b !important; border-top: 2px solid #94a3b8 !important; position: sticky; bottom: 0; z-index: 10; font-size: 14px; }
+    .grand-total-row td { 
+        background-color: #cbd5e1 !important; 
+        font-weight: 900 !important; 
+        color: #0f172a !important; 
+        border-top: 3px solid #64748b !important; 
+        position: sticky; 
+        bottom: 0; 
+        z-index: 10; 
+        font-size: 13px; 
+    }
+
+    /* 🌟 Buttons & Selects 🌟 */
+    .btn-outline-custom { color: #6366f1; background: #eff6ff; font-weight: 800; padding: 6px 14px; border-radius: 8px; border: 1px solid #c7d2fe; transition: 0.3s;}
+    .btn-outline-custom:hover { background: #e0e7ff; color: #4f46e5; }
+    
+    .form-select-custom {
+        background-color: #ffffff;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 6px 36px 6px 12px;
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .form-select-custom:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+
+    /* 🌟 Badges 🌟 */
+    .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 6px; border: 1px solid #a7f3d0; }
+    .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 10px; text-transform: uppercase; border: 1px solid #d8b4fe; }
+
+    /* Scrollbar */
+    .table-responsive::-webkit-scrollbar { width: 6px; height: 8px; }
+    .table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
+    .table-responsive::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
 </head>
 <body>
 
-  <div class="container-fluid" id="captureArea">
+  <div class="container-fluid px-3" id="captureArea">
+    
     <!-- Top Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
       <div>
-        <h5 class="fw-bold text-dark mb-1">📊 E-Stamping Denomination Sales</h5>
-        <span class="badge bg-light text-secondary border" id="lblScope">Access Level: Loading...</span>
+        <h4 class="fw-bold m-0" style="color: #0f172a;">📊 E-Stamping Denomination Sales</h4>
+        <span class="badge-soft mt-1 d-inline-block" id="lblScope">Access Level: Loading...</span>
       </div>
-      <div class="d-flex align-items-center" data-html2canvas-ignore="true">
-        <select id="dateFilter" class="form-select form-select-sm fw-bold me-3" style="width:200px; cursor:pointer;" onchange="fetchReportData()">
+      <div class="d-flex align-items-center gap-2" data-html2canvas-ignore="true">
+        <select id="dateFilter" class="form-select-custom" style="width:220px;" onchange="fetchReportData()">
           <option value="ALL">All Time (Overall)</option>
           <optgroup label="Monthly (Current FY)">
             <option value="APR">April</option>
@@ -77,19 +225,19 @@
             <option value="FY">Current Financial Year</option>
           </optgroup>
         </select>
-        <button class="btn btn-sm btn-outline-primary fw-bold" onclick="downloadImage()">📸 Download</button>
+        <button class="btn-outline-custom" onclick="downloadImage()">📸 Download Image</button>
       </div>
     </div>
 
     <!-- Clickable Summary Cards -->
-    <div class="row g-2 mb-3">
-      <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title text-orange" style="color:#ea580c;">Total VLEs</div><div class="stat-value text-orange" style="color:#ea580c;" id="totVles">0</div></div></div>
-      <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title text-danger" style="color:#ef4444;">Total Papers</div><div class="stat-value text-danger" style="color:#ef4444;" id="totPapers">0</div></div></div>
-      <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title text-success" style="color:#16a34a;">₹ 10</div><div class="stat-value text-success" style="color:#16a34a;" id="tot10">0</div></div></div>
-      <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title text-info" style="color:#0284c7;">₹ 20</div><div class="stat-value text-info" style="color:#0284c7;" id="tot20">0</div></div></div>
-      <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title text-warning" style="color:#ca8a04;">₹ 50</div><div class="stat-value text-warning" style="color:#ca8a04;" id="tot50">0</div></div></div>
-      <div class="col"><div class="stat-card border-100" id="card-D100" onclick="filterVles('D100')"><div class="stat-title text-purple" style="color:#9333ea;">₹ 100</div><div class="stat-value text-purple" style="color:#9333ea;" id="tot100">0</div></div></div>
-      <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title text-secondary">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
+    <div class="row g-3 mb-3">
+      <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ea580c;">Total VLEs</div><div class="stat-value" style="color:#ea580c;" id="totVles">0</div></div></div>
+      <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ef4444;">Total Papers</div><div class="stat-value" style="color:#ef4444;" id="totPapers">0</div></div></div>
+      <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title" style="color:#16a34a;">₹ 10</div><div class="stat-value" style="color:#16a34a;" id="tot10">0</div></div></div>
+      <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title" style="color:#0284c7;">₹ 20</div><div class="stat-value" style="color:#0284c7;" id="tot20">0</div></div></div>
+      <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title" style="color:#ca8a04;">₹ 50</div><div class="stat-value" style="color:#ca8a04;" id="tot50">0</div></div></div>
+      <div class="col"><div class="stat-card border-100" id="card-D100" onclick="filterVles('D100')"><div class="stat-title" style="color:#9333ea;">₹ 100</div><div class="stat-value" style="color:#9333ea;" id="tot100">0</div></div></div>
+      <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
     </div>
 
     <!-- Controls: Toggle Buttons & Search -->
@@ -99,49 +247,57 @@
         <button id="btnVleView" class="view-btn active" onclick="switchView('VLE')">🧑‍💻 VLE Breakdown</button>
       </div>
       <div>
-        <input type="text" id="searchBox" class="search-box" placeholder="Search Name, CSC ID or District..." onkeyup="searchTable()">
+        <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search Name, CSC ID or District..." onkeyup="searchTable()">
       </div>
     </div>
 
-    <!-- Table Area -->
-    <div class="table-container">
-      <div class="table-header">
-        <span id="tableTitle">🧑‍💻 Active VLEs Breakdown</span>
-        <span id="lblFilterText" class="badge bg-purple" style="background:#6d28d9;">Loading...</span>
+    <!-- Premium Table Area -->
+    <div class="premium-card">
+      <div class="card-header-custom">
+        <div class="card-title">
+           <span id="tableTitle" style="font-size: 16px;">🧑‍💻 Active VLEs Breakdown</span>
+        </div>
+        <span id="lblFilterText" class="badge bg-primary text-white" style="font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 8px;">Loading...</span>
       </div>
-      <div class="table-responsive" style="max-height: 400px; background:white;">
-        <table class="table table-hover align-middle text-center mb-0" style="font-size: 13px;">
-          <thead class="table-light sticky-top" id="theadDist" style="display:none; z-index: 11;">
-            <tr>
-              <th class="text-start ps-4">District Name</th>
-              <th class="text-secondary">Issued Stock</th>
-              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-              <th class="text-info">Used Stock</th>
-              <th class="text-primary">Avail. Stock</th>
-              <th class="text-primary">Target (₹)</th>
-              <th class="text-success">Total Sales(₹)</th>
-              <th class="text-danger">Pending (₹)</th>
-            </tr>
-          </thead>
-          <thead class="table-light sticky-top" id="theadVle" style="z-index: 11;">
-            <tr>
-              <th class="text-start ps-4">VLE Details</th>
-              <th>District</th>
-              <th class="text-secondary">Issued Stock</th>
-              <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-              <th class="text-info">Used Stock</th>
-              <th class="text-primary">Avail. Stock</th>
-              <th class="text-primary">Target (₹)</th>
-              <th class="text-success">Total Sales(₹)</th>
-              <th class="text-danger">Pending (₹)</th>
-            </tr>
-          </thead>
-          <tbody id="reportTbody">
-            <tr><td colspan="14" class="text-muted py-4">Loading Data...</td></tr>
-          </tbody>
-        </table>
+      
+      <div class="table-container">
+        <!-- 🌟 Table Responsive 🌟 -->
+        <div class="table-responsive" style="max-height: calc(100vh - 280px); overflow-y: auto; overflow-x: auto;">
+          <table class="table table-hover table-striped align-middle text-center mb-0" id="salesTable">
+            <thead class="sticky-top" id="theadDist" style="display:none; z-index: 11;">
+              <tr>
+                <th class="text-start ps-3">District Name</th>
+                <th class="text-secondary">Issued Stock</th>
+                <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
+                <th style="color: #38bdf8 !important;">Used Stock</th> <!-- లైట్ బ్లూ తీసేసి డార్క్ సయాన్ కింద మారుస్తాం -->
+                <th style="color: #60a5fa !important;">Avail. Stock</th>
+                <th style="color: #818cf8 !important;">Target (₹)</th>
+                <th style="color: #34d399 !important;">Total Sales(₹)</th>
+                <th style="color: #f87171 !important;">Pending (₹)</th>
+              </tr>
+            </thead>
+            <thead class="sticky-top" id="theadVle" style="z-index: 11;">
+              <tr>
+                <th class="text-start ps-3" style="width: 250px; max-width: 250px;">VLE Name & CSC ID</th>
+                <th>District</th>
+                <th class="text-secondary">Issued Stock</th>
+                <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
+                <!-- 🌟 Used Stock Heading డార్క్ చేసాను 🌟 -->
+                <th style="color: #0284c7 !important;">Used Stock</th>
+                <th style="color: #60a5fa !important;">Avail. Stock</th>
+                <th style="color: #818cf8 !important;">Target (₹)</th>
+                <th style="color: #34d399 !important;">Total Sales(₹)</th>
+                <th class="pe-3" style="color: #f87171 !important;">Pending (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="reportTbody">
+              <tr><td colspan="14" class="text-muted py-5 fw-bold" style="color: #6366f1 !important; font-size: 14px;">Loading Data...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -171,7 +327,7 @@
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
        document.getElementById("lblFilterText").innerText = filterText;
 
-       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-muted py-4">Fetching live sales data...</td></tr>`;
+       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">Fetching live sales data...</td></tr>`;
 
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
        .then(res => res.json()).then(res => {
@@ -181,7 +337,7 @@
              calculateTotals(masterVleData);
              renderCurrentView();
           }
-       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-4">Network Error.</td></tr>`; });
+       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold">❌ Network Error.</td></tr>`; });
     }
 
     function calculateTotals(data) {
@@ -210,13 +366,25 @@
        if(view === 'DIST') {
           document.getElementById("btnDistView").classList.add("active");
           document.getElementById("theadDist").style.display = "table-header-group";
+          // ఇక్కడ కూడా Heading అప్‌డేట్ చేస్తున్నా
+          document.getElementById("theadDist").innerHTML = `
+              <tr>
+                <th class="text-start ps-3">District Name</th>
+                <th class="text-secondary">Issued Stock</th>
+                <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
+                <th style="color: #0284c7 !important;">Used Stock</th>
+                <th style="color: #60a5fa !important;">Avail. Stock</th>
+                <th style="color: #818cf8 !important;">Target (₹)</th>
+                <th style="color: #34d399 !important;">Total Sales(₹)</th>
+                <th style="color: #f87171 !important;">Pending (₹)</th>
+              </tr>`;
           document.getElementById("tableTitle").innerText = "🏢 District-Wise Overall Summary";
-          document.getElementById("searchBox").placeholder = "Search District...";
+          document.getElementById("searchBox").placeholder = "🔍 Search District...";
        } else {
           document.getElementById("btnVleView").classList.add("active");
           document.getElementById("theadVle").style.display = "table-header-group";
           document.getElementById("tableTitle").innerText = "🧑‍💻 Active VLEs Breakdown";
-          document.getElementById("searchBox").placeholder = "Search Name, CSC ID or District...";
+          document.getElementById("searchBox").placeholder = "🔍 Search Name, CSC ID or District...";
        }
        renderCurrentView();
     }
@@ -267,28 +435,29 @@
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
-                let pendingHtml = ext.pending > 0 ? `<span class="text-danger fw-bold">₹ ${ext.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
+                let pendingHtml = ext.pending > 0 ? `<span class="text-danger">₹ ${ext.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success">Achieved</span>`;
 
                 tbody.innerHTML += `<tr class="data-row">
                     <td class="text-start ps-4 fw-bold text-dark search-target">${item.district}</td>
                     <td class="text-secondary fw-bold">${ext.issued}</td>
-                    <td><span class="badge-qty">${item.data.d10}</span></td>
-                    <td><span class="badge-qty">${item.data.d20}</span></td>
-                    <td><span class="badge-qty">${item.data.d50}</span></td>
-                    <td><span class="badge-qty">${item.data.d100}</span></td>
-                    <td class="text-muted fw-bold">${otherHtml}</td>
-                    <td class="text-secondary fw-bold">${dsdHtml}</td>
-                    <td class="text-info fw-bold">${usedStock}</td>
-                    <td><span class="badge bg-primary">${ext.avail}</span></td>
-                    <td class="text-secondary fw-bold">₹ ${ext.target.toLocaleString('en-IN')}</td>
-                    <td class="fw-bold text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td><span class="badge-qty text-success border-success" style="background:#f0fdf4;">${item.data.d10}</span></td>
+                    <td><span class="badge-qty text-info border-info" style="background:#f0f9ff;">${item.data.d20}</span></td>
+                    <td><span class="badge-qty text-warning border-warning" style="background:#fefce8;">${item.data.d50}</span></td>
+                    <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
+                    <td class="text-muted">${otherHtml}</td>
+                    <td class="text-secondary">${dsdHtml}</td>
+                    <!-- 🌟 Used Stock డార్క్ బ్లూ లో పెట్టి, ఫాంట్ సైజు పెంచాను 🌟 -->
+                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
+                    <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${ext.avail}</span></td>
+                    <td class="text-secondary">₹ ${ext.target.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
                     <td>${pendingHtml}</td>
                 </tr>`;
              });
              
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
-                    <td class="text-end pe-4">GRAND TOTAL</td>
+                    <td class="text-end pe-4 text-uppercase">Grand Total</td>
                     <td class="text-secondary">${gtIssued}</td>
                     <td style="color:#16a34a;">${gt10}</td>
                     <td style="color:#0284c7;">${gt20}</td>
@@ -296,13 +465,14 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <td class="text-info">${gtUsed}</td>
+                    <!-- 🌟 Grand Total లో కూడా Used Stock ని డార్క్ బ్లూ చేశాను 🌟 -->
+                    <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
                     <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-4 fw-bold">No sales data found.</td></tr>`; }
+          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-5 fw-bold fs-6">❌ No sales data found.</td></tr>`; }
        } 
        else {
           if(currentFilter === 'ALL') dataToRender = masterVleData;
@@ -331,29 +501,35 @@
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
-                let pendingHtml = pendingAmt > 0 ? `<span class="text-danger fw-bold">₹ ${pendingAmt.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved</span>`;
+                let pendingHtml = pendingAmt > 0 ? `<span class="text-danger">₹ ${pendingAmt.toLocaleString('en-IN')}</span>` : `<span class="text-success">Achieved</span>`;
 
                 tbody.innerHTML += `<tr class="data-row">
-                    <td class="text-start ps-4 fw-bold search-target">${item.data.name} <br><span class="text-primary" style="font-size:11px;">${item.id}</span></td>
-                    <td class="search-target"><span class="badge bg-secondary">${item.data.district}</span></td>
+                    <td class="search-target ps-3" style="max-width: 250px;">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                          <span class="text-dark text-start text-truncate flex-grow-1" style="min-width: 0;" title="${item.data.name}">${item.data.name}</span>
+                          <span class="badge bg-light text-primary border border-primary text-end flex-shrink-0 ms-2" style="font-size:10.5px;">${item.id}</span>
+                        </div>
+                    </td>
+                    <td class="search-target"><span class="badge-soft border-0" style="background:#f1f5f9; color:#475569;">${item.data.district}</span></td>
                     <td class="text-secondary fw-bold">${assignedStock}</td>
-                    <td><span class="badge-qty">${item.data.d10}</span></td>
-                    <td><span class="badge-qty">${item.data.d20}</span></td>
-                    <td><span class="badge-qty">${item.data.d50}</span></td>
-                    <td><span class="badge-qty">${item.data.d100}</span></td>
-                    <td class="text-muted fw-bold">${otherHtml}</td>
-                    <td class="text-secondary fw-bold">${dsdHtml}</td>
-                    <td class="text-info fw-bold">${usedStock}</td>
-                    <td><span class="badge bg-primary">${availStock}</span></td>
-                    <td class="text-secondary fw-bold">₹ ${targetAmt.toLocaleString('en-IN')}</td>
-                    <td class="fw-bold text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
-                    <td>${pendingHtml}</td>
+                    <td><span class="badge-qty text-success border-success" style="background:#f0fdf4;">${item.data.d10}</span></td>
+                    <td><span class="badge-qty text-info border-info" style="background:#f0f9ff;">${item.data.d20}</span></td>
+                    <td><span class="badge-qty text-warning border-warning" style="background:#fefce8;">${item.data.d50}</span></td>
+                    <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
+                    <td class="text-muted">${otherHtml}</td>
+                    <td class="text-secondary">${dsdHtml}</td>
+                    <!-- 🌟 Used Stock డార్క్ బ్లూ లో పెట్టి, ఫాంట్ సైజు పెంచాను 🌟 -->
+                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
+                    <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${availStock}</span></td>
+                    <td class="text-secondary">₹ ${targetAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td class="pe-3">${pendingHtml}</td>
                 </tr>`;
              });
              
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
-                    <td colspan="2" class="text-end pe-4">GRAND TOTAL</td>
+                    <td colspan="2" class="text-end pe-4 text-uppercase">Grand Total</td>
                     <td class="text-secondary">${gtIssued}</td>
                     <td style="color:#16a34a;">${gt10}</td>
                     <td style="color:#0284c7;">${gt20}</td>
@@ -361,13 +537,14 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <td class="text-info">${gtUsed}</td>
+                    <!-- 🌟 Grand Total లో కూడా Used Stock ని డార్క్ బ్లూ చేశాను 🌟 -->
+                    <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
+                    <td class="text-danger pe-3">₹ ${gtPending.toLocaleString('en-IN')}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-4 fw-bold">No VLEs found for this selection.</td></tr>`; }
+          } else { tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold fs-6">❌ No VLEs found for this selection.</td></tr>`; }
        }
        searchTable(); 
     }
@@ -390,7 +567,7 @@
 
     function downloadImage() {
        const captureElement = document.getElementById('captureArea');
-       html2canvas(captureElement, { scale: 2, backgroundColor: '#f4f6f9' }).then(canvas => {
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f4f7fe' }).then(canvas => {
           let link = document.createElement('a');
           link.download = 'Sales_Report.png'; link.href = canvas.toDataURL("image/png"); link.click();
        });

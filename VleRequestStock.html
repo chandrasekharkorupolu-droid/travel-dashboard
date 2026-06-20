@@ -1,26 +1,194 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request New Stock</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>body { background-color: #f8fafc; padding: 20px; font-family: 'Segoe UI', Tahoma, sans-serif; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <style>
+    /* 🌟 Master Clean Background 🌟 */
+    body { 
+        background: #f4f7fe; 
+        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
+        padding: 40px 20px; 
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    /* 🌟 Premium Solid Card 🌟 */
+    .premium-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(112, 144, 176, 0.12), 0 5px 15px rgba(112, 144, 176, 0.05);
+        width: 100%;
+        max-width: 550px;
+        position: relative;
+        animation: slideUp 0.4s ease-out;
+        border-top: 6px solid #6366f1;
+    }
+
+    @keyframes slideUp { 
+        from { transform: translateY(20px); opacity: 0; } 
+        to { transform: translateY(0); opacity: 1; } 
+    }
+
+    /* 🌟 Header Section 🌟 */
+    .card-header-custom {
+        padding: 25px 30px 15px 30px;
+        border-bottom: 2px solid #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .title-icon {
+        background: #e0e7ff;
+        padding: 10px;
+        border-radius: 12px;
+        font-size: 20px;
+        color: #4f46e5;
+    }
+
+    .card-title {
+        color: #0f172a;
+        font-weight: 900;
+        font-size: 22px;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    /* 🌟 Form Body & Inputs 🌟 */
+    .card-body-custom { padding: 30px; }
+
+    .form-group { margin-bottom: 25px; }
+    
+    .form-label-custom {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        color: #475569;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 14px 16px;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-control-custom:focus {
+        background: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .form-control-custom::placeholder { color: #94a3b8; font-weight: 500; }
+
+    /* 🌟 Submit Button 🌟 */
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 15px rgba(99, 102, 241, 0.25);
+        margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-submit:active {
+        transform: translateY(1px);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-submit:disabled {
+        background: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* 🌟 Custom Alert Modal 🌟 */
+    .modal-content-innovative {
+        background: #ffffff;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+        text-align: center;
+        padding: 30px;
+    }
+    
+    .icon-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 35px; }
+    .icon-circle.success { background-color: #ecfdf5; color: #10b981; } 
+    .icon-circle.error { background-color: #fef2f2; color: #ef4444; }
+
+    .btn-modal {
+        border-radius: 10px; padding: 12px 30px; font-weight: 800; font-size: 15px; transition: all 0.3s ease; border: none; width: 100%;
+    }
+    .btn-modal.success { background: #10b981; color: white; }
+    .btn-modal.error { background: #ef4444; color: white; }
+  </style>
 </head>
 <body>
-  <div class="card shadow-sm border-0 border-top border-4 border-primary">
-    <div class="card-body p-4">
-      <h5 class="fw-bold text-primary mb-4">📦 Request New Stock</h5>
-      
-      <div class="mb-3">
-        <label class="form-label fw-bold text-secondary">Stock Holding Request No (SHQ)</label>
-        <input type="text" id="shqNo" class="form-control form-control-lg" placeholder="Ex: SHQ12345ABC">
+
+  <!-- 🌟 Custom Alert Modal 🌟 -->
+  <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content modal-content-innovative">
+        <div id="alertIconContainer" class="icon-circle success">✅</div>
+        <h4 id="alertTitle" class="fw-bold text-dark mb-2" style="font-size: 22px;">Success!</h4>
+        <p id="alertMessage" class="text-secondary mb-4" style="font-size: 14px; font-weight: 600;">Message goes here.</p>
+        <button type="button" id="alertBtn" class="btn-modal success" data-bs-dismiss="modal">OK, Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="premium-card">
+    <div class="card-header-custom">
+      <div class="title-icon">📦</div>
+      <h2 class="card-title">Request New Stock</h2>
+    </div>
+    
+    <div class="card-body-custom">
+      <div class="form-group">
+        <label class="form-label-custom">Stock Holding Request No (SHQ)</label>
+        <input type="text" id="shqNo" class="form-control-custom" placeholder="Ex: SHQ12345ABC" oninput="this.value = this.value.toUpperCase()">
       </div>
       
-      <div class="mb-4">
-        <label class="form-label fw-bold text-secondary">Required Quantity (Papers)</label>
-        <input type="number" id="reqQty" class="form-control form-control-lg" placeholder="Ex: 100">
+      <div class="form-group">
+        <label class="form-label-custom">Required Quantity (Papers)</label>
+        <input type="number" id="reqQty" class="form-control-custom" placeholder="Ex: 100">
       </div>
       
-      <button id="btnReqStock" class="btn btn-primary w-100 fw-bold py-2 fs-5" onclick="submitRequest()">Submit Request</button>
+      <button id="btnReqStock" class="btn-submit" onclick="submitRequest()">Submit Request</button>
     </div>
   </div>
 
@@ -29,26 +197,61 @@
     let loggedInId = localStorage.getItem("userId") || "";
     let loggedInUser = localStorage.getItem("userName") || "";
 
+    // 🌟 పాతకాలపు alert() బదులు మన కొత్త స్మూత్ అలర్ట్ 🌟
+    function customAlert(msg, isSuccess) {
+        let safeMsg = msg ? String(msg) : (isSuccess ? "Request Submitted Successfully." : "Request Failed!");
+        const iconContainer = document.getElementById("alertIconContainer");
+        const title = document.getElementById("alertTitle");
+        const message = document.getElementById("alertMessage");
+        const btn = document.getElementById("alertBtn");
+
+        if (isSuccess) {
+            iconContainer.className = "icon-circle success"; iconContainer.innerHTML = "✅"; 
+            title.innerText = "Success!"; 
+            btn.className = "btn-modal success"; btn.innerText = "OK, Great!";
+        } else {
+            iconContainer.className = "icon-circle error"; iconContainer.innerHTML = "❌"; 
+            title.innerText = "Validation Failed"; 
+            btn.className = "btn-modal error"; btn.innerText = "Try Again";
+        }
+        
+        message.innerHTML = safeMsg.replace(/\n/g, '<br>');
+        var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
+        alertModal.show();
+    }
+
     function submitRequest() {
         var shqNo = document.getElementById('shqNo').value.trim(); 
         var qty = document.getElementById('reqQty').value;
-        if(!shqNo) { alert("దయచేసి Stock Holding Request No ఎంటర్ చేయండి!"); return; } 
-        if(!qty || qty <= 0) { alert("దయచేసి ఎన్ని పేపర్లు కావాలో ఎంటర్ చేయండి!"); return; }
+        
+        if(!shqNo) { customAlert("దయచేసి Stock Holding Request No ఎంటర్ చేయండి!", false); return; } 
+        if(!qty || qty <= 0) { customAlert("దయచేసి ఎన్ని పేపర్లు కావాలో కరెక్ట్ గా ఎంటర్ చేయండి!", false); return; }
         
         var btn = document.getElementById('btnReqStock'); 
-        btn.innerText = "⏳ Submitting..."; btn.disabled = true;
+        btn.innerText = "⏳ Submitting..."; 
+        btn.disabled = true;
         
         fetch(SCRIPT_URL, { 
             method: "POST", 
             body: JSON.stringify({ action: 'vleRequestStock', vleId: loggedInId, vleName: loggedInUser, quantity: qty, shqNo: shqNo }) 
         })
-        .then(res => res.json()).then(res => { 
-            btn.innerText = "Submit Request"; btn.disabled = false; 
+        .then(res => res.json())
+        .then(res => { 
+            btn.innerText = "Submit Request"; 
+            btn.disabled = false; 
             if(res.success) { 
-                alert("✅ " + res.message); 
-                document.getElementById('shqNo').value = ''; document.getElementById('reqQty').value = ''; 
-            } else { alert("❌ Error: " + res.message); } 
-        }).catch(err => { btn.innerText = "Submit Request"; btn.disabled = false; alert("Network Error!"); });
+                customAlert(res.message, true); 
+                document.getElementById('shqNo').value = ''; 
+                document.getElementById('reqQty').value = ''; 
+            } else { 
+                customAlert("Error: " + res.message, false); 
+            } 
+        })
+        .catch(err => { 
+            btn.innerText = "Submit Request"; 
+            btn.disabled = false; 
+            customAlert("Network Error! Please check your connection.", false); 
+        });
     }
   </script>
 </body>

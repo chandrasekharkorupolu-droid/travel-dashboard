@@ -1,50 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DM Master Stock</title>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 25px; box-sizing: border-box; display: flex; justify-content: center; }
-    .form-box { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.08); padding: 30px; width: 100%; max-width: 550px; animation: popIn 0.3s ease-out; border-top: 5px solid #8b5cf6; }
-    @keyframes popIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    /* 🌟 Colorful Background to make Glass Effect Pop 🌟 */
+    body { 
+        margin: 0; 
+        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
+        /* అందమైన బ్యాక్ గ్రౌండ్ కలర్స్ */
+        background-color: #e0e7ff;
+        background-image: 
+            radial-gradient(at 18% 12%, hsla(242, 100%, 82%, 0.5) 0px, transparent 50%),
+            radial-gradient(at 85% 81%, hsla(328, 100%, 75%, 0.5) 0px, transparent 50%),
+            radial-gradient(at 90% 10%, hsla(190, 100%, 75%, 0.5) 0px, transparent 50%),
+            radial-gradient(at 10% 90%, hsla(280, 100%, 75%, 0.5) 0px, transparent 50%);
+        background-attachment: fixed;
+        padding: 40px 20px; 
+        box-sizing: border-box; 
+        display: flex; 
+        justify-content: center; 
+        align-items: flex-start;
+        min-height: 100vh;
+    }
     
-    .title-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f5f3ff; }
-    .title-row h2 { margin: 0; color: #5b21b6; font-size: 20px; font-weight: 800; }
-    
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    .custom-input, .custom-select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; color: #1e293b; box-sizing: border-box; outline: none; background: #f8fafc; transition: 0.2s; font-weight: 600; }
-    .custom-input:focus, .custom-select:focus { border-color: #8b5cf6; background: #ffffff; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15); }
-    
-    .row-2 { display: flex; gap: 15px; }
-    .row-2 .form-group { flex: 1; }
-    
-    .qty-box { background: #f5f3ff; border: 1px dashed #c4b5fd; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-    .qty-box span { font-size: 13px; color: #6d28d9; font-weight: 800; display: block; margin-bottom: 5px; }
-    .qty-box input { background: transparent; border: none; font-size: 26px; font-weight: 900; color: #4c1d95; text-align: center; width: 100px; outline: none; }
-    
-    .submit-btn { width: 100%; background: #8b5cf6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
-    .submit-btn:hover { background: #7c3aed; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+    /* 🌟 Glassmorphism Form Box (అద్దం లాంటి ఎఫెక్ట్) 🌟 */
+    .form-box { 
+        /* గ్లాస్ ఎఫెక్ట్ కోడ్ */
+        background: rgba(255, 255, 255, 0.4); 
+        backdrop-filter: blur(16px); 
+        -webkit-backdrop-filter: blur(16px); 
+        border: 1px solid rgba(255, 255, 255, 0.6); 
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        
+        border-radius: 20px; 
+        padding: 40px; 
+        width: 100%; 
+        max-width: 600px; 
+        position: relative;
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
 
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-    .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #8b5cf6; }
+    @keyframes slideUp { 
+        from { transform: translateY(30px); opacity: 0; } 
+        to { transform: translateY(0); opacity: 1; } 
+    }
+    
+    /* 🌟 Title Section 🌟 */
+    .title-row { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 12px; 
+        margin-bottom: 30px; 
+    }
+    .title-icon {
+        background: rgba(255, 255, 255, 0.6);
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #7c3aed;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.1);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    .title-row h2 { 
+        margin: 0; 
+        color: #1e293b; 
+        font-size: 24px; 
+        font-weight: 900; 
+        letter-spacing: -0.5px;
+        text-shadow: 0px 1px 2px rgba(255,255,255,0.8);
+    }
+    
+    /* 🌟 Input Groups 🌟 */
+    .row-2 { 
+        display: flex; 
+        gap: 20px; 
+        flex-wrap: wrap;
+    }
+    .row-2 .form-group { 
+        flex: 1 1 200px; 
+    }
+    
+    .form-group { margin-bottom: 24px; position: relative; }
+    .form-group label { 
+        display: block; 
+        font-size: 13px; 
+        font-weight: 800; 
+        color: #334155; 
+        margin-bottom: 8px; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+    
+    /* ఇన్‌పుట్ బాక్స్ లకు కూడా సగం గ్లాస్ ఎఫెక్ట్ */
+    .custom-input, .custom-select { 
+        width: 100%; 
+        padding: 14px 16px; 
+        border: 1px solid rgba(255, 255, 255, 0.8); 
+        border-radius: 12px; 
+        font-size: 15px; 
+        color: #0f172a; 
+        box-sizing: border-box; 
+        outline: none; 
+        background: rgba(255, 255, 255, 0.5); 
+        transition: all 0.3s ease; 
+        font-weight: 700; 
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    /* Focus Animation */
+    .custom-input:focus, .custom-select:focus { 
+        border-color: #8b5cf6; 
+        background: rgba(255, 255, 255, 0.9); 
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2); 
+        transform: translateY(-1px);
+    }
+    
+    /* 🌟 Digital Counter Box (Total Quantity) 🌟 */
+    .qty-box { 
+        background: rgba(255, 255, 255, 0.4); 
+        border: 2px dashed rgba(139, 92, 246, 0.5); 
+        padding: 20px; 
+        border-radius: 16px; 
+        text-align: center; 
+        margin-bottom: 25px;
+        transition: all 0.3s ease;
+    }
+    .qty-box:hover {
+        border-color: #a78bfa;
+        background: rgba(255, 255, 255, 0.6); 
+    }
+    .qty-box span { 
+        font-size: 12px; 
+        color: #475569; 
+        font-weight: 800; 
+        display: block; 
+        margin-bottom: 5px; 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .qty-box input { 
+        background: transparent; 
+        border: none; 
+        font-size: 42px; 
+        font-weight: 900; 
+        text-align: center; 
+        width: 100%; 
+        outline: none; 
+        /* Gradient Text */
+        background: linear-gradient(90deg, #4f46e5, #c026d3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* 🌟 Submit Button 🌟 */
+    .submit-btn { 
+        width: 100%; 
+        background: linear-gradient(135deg, #7c3aed, #4f46e5); 
+        color: white; 
+        border: none; 
+        padding: 16px; 
+        border-radius: 12px; 
+        font-weight: 800; 
+        font-size: 16px; 
+        cursor: pointer; 
+        transition: all 0.3s ease; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+    }
+    .submit-btn:hover { 
+        background: linear-gradient(135deg, #6d28d9, #4338ca); 
+        transform: translateY(-3px); 
+        box-shadow: 0 15px 25px rgba(124, 58, 237, 0.4); 
+    }
+    .submit-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 5px 10px rgba(124, 58, 237, 0.25);
+    }
+
+    /* 🌟 Modern Alert Modal (గ్లాస్ ఎఫెక్ట్ తో) 🌟 */
+    .modal-overlay { 
+        display: none; 
+        position: fixed; 
+        top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(15, 23, 42, 0.4); 
+        z-index: 1000; 
+        align-items: center; 
+        justify-content: center; 
+        backdrop-filter: blur(8px); /* బ్యాక్ గ్రౌండ్ బ్లర్ */
+        animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .modal-content { 
+        background: rgba(255, 255, 255, 0.85); 
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 35px 30px; 
+        border-radius: 20px; 
+        text-align: center; 
+        width: 100%;
+        max-width: 340px; 
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); 
+        animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .modal-btn {
+        background: #f1f5f9; color: #0f172a; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s;
+    }
+    .modal-btn:hover { background: #e2e8f0; }
   </style>
 </head>
 <body>
 
+  <!-- Custom Alert Modal -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-content">
-      <div id="alertIcon" style="font-size: 45px; margin-bottom: 10px;">✅</div>
-      <h3 id="alertTitle" style="margin: 0 0 10px 0; color: #4c1d95;">Success</h3>
-      <p id="alertMsg" style="color: #475569; font-size: 14px; margin-bottom: 20px;">Message</p>
-      <button onclick="document.getElementById('alertModal').style.display='none'" style="background: #8b5cf6; color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">OK</button>
+      <div id="alertIcon" style="font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">✅</div>
+      <h3 id="alertTitle" style="margin: 0 0 10px 0; color: #0f172a; font-size: 22px;">Success</h3>
+      <p id="alertMsg" style="color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.5;">Message</p>
+      <button class="modal-btn" onclick="document.getElementById('alertModal').style.display='none'">Got it</button>
     </div>
   </div>
 
   <div class="form-box">
     <div class="title-row">
-      <span style="font-size: 28px;">📥</span>
-      <h2>Add DM Master Stock</h2>
+      <div class="title-icon">📥</div>
+      <h2>DM Master Stock</h2>
     </div>
 
     <div class="row-2">
@@ -85,15 +275,14 @@
     </div>
 
     <div class="qty-box">
-      <span>TOTAL RECEIVED QUANTITY</span>
-      <input type="number" id="totalQty" value="0" min="1" readonly style="cursor: not-allowed;">
+      <span>Total Received Quantity</span>
+      <input type="text" id="totalQty" value="0" readonly style="cursor: not-allowed;">
     </div>
 
-    <button class="submit-btn" id="btnSubmit" onclick="addMasterStock()">📥 Save Master Stock</button>
+    <button class="submit-btn" id="btnSubmit" onclick="addMasterStock()">Save Master Stock</button>
   </div>
 
   <script>
-    // 🌟 మీ క్రొత్త SCRIPT_URL ఇక్కడ పేస్ట్ చేయండి 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     
     document.getElementById('endSerial').addEventListener('blur', function() {
@@ -102,7 +291,8 @@
        let startNum = parseInt(start.replace(/[^0-9]/g, ''));
        let endNum = parseInt(end.replace(/[^0-9]/g, ''));
        if(!isNaN(startNum) && !isNaN(endNum) && endNum >= startNum) {
-           document.getElementById('totalQty').value = (endNum - startNum) + 1;
+           let qty = (endNum - startNum) + 1;
+           document.getElementById('totalQty').value = new Intl.NumberFormat('en-IN').format(qty);
        } else {
            document.getElementById('totalQty').value = 0;
        }
@@ -113,7 +303,8 @@
       let dmName = document.getElementById('dmName').value.trim();
       let startSerial = document.getElementById('startSerial').value.trim();
       let endSerial = document.getElementById('endSerial').value.trim();
-      let qty = document.getElementById('totalQty').value;
+      let qtyStr = document.getElementById('totalQty').value.replace(/,/g, '');
+      let qty = parseInt(qtyStr) || 0;
 
       if(!district || !dmName || !startSerial || !endSerial || qty <= 0) {
          showAlert("⚠️", "Validation Failed", "దయచేసి అన్ని వివరాలు సరిగ్గా నింపండి.");
@@ -121,7 +312,7 @@
       }
 
       let btn = document.getElementById('btnSubmit');
-      btn.innerHTML = "⏳ Saving... Please wait";
+      btn.innerHTML = "⏳ Saving...";
       btn.style.opacity = "0.7";
       btn.style.pointerEvents = "none";
 
@@ -130,13 +321,12 @@
       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
       .then(res => res.json())
       .then(res => {
-         btn.innerHTML = "📥 Save Master Stock";
+         btn.innerHTML = "Save Master Stock";
          btn.style.opacity = "1";
          btn.style.pointerEvents = "auto";
          
          if(res.success) {
             showAlert("🎉", "Saved Successfully!", res.message);
-            // 🌟 ఇక్కడ అన్నీ ఖాళీ అయ్యేలా మార్చాను 🌟
             document.getElementById('districtName').value = "";
             document.getElementById('dmName').value = "";
             document.getElementById('startSerial').value = "";
@@ -147,7 +337,7 @@
          }
       })
       .catch(err => {
-         btn.innerHTML = "📥 Save Master Stock";
+         btn.innerHTML = "Save Master Stock";
          btn.style.opacity = "1";
          btn.style.pointerEvents = "auto";
          showAlert("🌐", "Network Error", "సర్వర్‌కి కనెక్ట్ అవ్వడం లేదు.");
@@ -158,6 +348,17 @@
       document.getElementById('alertIcon').innerText = icon;
       document.getElementById('alertTitle').innerText = title;
       document.getElementById('alertMsg').innerText = msg;
+      
+      if(icon === "❌" || icon === "⚠️") {
+          document.querySelector('.modal-btn').style.background = 'rgba(254, 226, 226, 0.8)';
+          document.querySelector('.modal-btn').style.color = '#dc2626';
+          document.querySelector('.modal-btn').style.border = '1px solid rgba(220, 38, 38, 0.3)';
+      } else {
+          document.querySelector('.modal-btn').style.background = 'rgba(241, 245, 249, 0.8)';
+          document.querySelector('.modal-btn').style.color = '#0f172a';
+          document.querySelector('.modal-btn').style.border = '1px solid rgba(15, 23, 42, 0.2)';
+      }
+      
       document.getElementById('alertModal').style.display = 'flex';
     }
   </script>

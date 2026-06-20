@@ -1,165 +1,291 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pending Stock Requests</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <style>
-    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
-    .card-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); color: white; font-weight: bold; border-radius: 8px 8px 0 0 !important; }
-    .table-hover tbody tr:hover { background-color: #f5f3ff; cursor: pointer; }
-    .btn-purple { background-color: #6d28d9; color: white; font-weight: bold; border: none; }
-    .btn-purple:hover { background-color: #5b21b6; color: white; }
-    .btn-purple-outline { color: #6d28d9; border-color: #6d28d9; background: transparent; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 4px; }
-    .btn-purple-outline:hover { background: #6d28d9; color: white; }
-    .text-purple { color: #6d28d9 !important; }
-    .eligibility-badge { background-color: #dbeafe; color: #1e40af; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; border: 1px dashed #93c5fd; font-size: 13px; }
-    
-    .serial-preview-box { background-color: #fbfaff; border: 2px dashed #8b5cf6 !important; border-radius: 10px; padding: 15px; text-align: center; box-shadow: 0 4px 12px rgba(109, 40, 217, 0.08); }
+    /* 🌟 Master Clean Background 🌟 */
+    body { 
+        background: #f1f5f9; 
+        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
+        padding: 20px; 
+        min-height: 100vh;
+        color: #334155;
+    }
 
-    .corp-modal-content { border-radius: 16px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
-    .icon-circle { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-    .icon-circle.success { background-color: #f5f3ff; color: #6d28d9; } 
-    .icon-circle.error { background-color: #fee2e2; color: #ef4444; }
+    /* 🌟 Clean White Cards 🌟 */
+    .premium-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+    }
     
-    .corp-btn { border-radius: 8px; padding: 10px 30px; font-weight: 700; letter-spacing: 0.5px; font-size: 14px; transition: all 0.3s ease; }
-    .corp-btn-success { background-color: #6d28d9; color: white; border: none; }
-    .corp-btn-success:hover { background-color: #5b21b6; color: white; box-shadow: 0 6px 15px rgba(109,40,217,0.3); transform: translateY(-2px); }
-    .corp-btn-error { background-color: #ef4444; color: white; border: none; }
-    .corp-btn-error:hover { background-color: #dc2626; color: white; box-shadow: 0 6px 15px rgba(239,68,68,0.3); transform: translateY(-2px); }
-    .alert-title { font-size: 22px; font-weight: 800; margin-bottom: 12px; color: #1e293b; }
-    .alert-text { font-size: 14px; color: #475569; line-height: 1.6; font-weight: 500; }
+    .card-header-custom {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+    }
+    
+    .card-title {
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    /* 🌟 Table Design 🌟 */
+    .table thead th { 
+        background: #f8fafc; 
+        color: #64748b; 
+        font-size: 11px; 
+        font-weight: 800;
+        text-transform: uppercase; 
+        letter-spacing: 0.5px;
+        padding: 12px 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table tbody tr td { 
+        padding: 12px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+    .table-hover tbody tr:hover { background-color: #f8fafc; }
+
+    /* 🌟 Compact Buttons 🌟 */
+    .btn-action { 
+        font-weight: 700; 
+        border: none; 
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        transition: 0.2s;
+    }
+    .btn-primary-custom { background: #6366f1; color: white; }
+    .btn-primary-custom:hover { background: #4f46e5; color: white; transform: translateY(-1px); }
+    
+    .btn-outline-custom { color: #6366f1; background: #eff6ff; font-weight: 700; padding: 6px 12px; border-radius: 8px; border: 1px solid #c7d2fe; }
+    .btn-outline-custom:hover { background: #e0e7ff; color: #4f46e5; }
+
+    /* 🌟 Right Panel Adjustments (Space Saving) 🌟 */
+    #approvalPanel .premium-card { border-top: 4px solid #6366f1; }
+    
+    .vle-info-box { border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px; margin-bottom: 12px; }
+    
+    /* 🌟 Stock Boxes Side-by-Side 🌟 */
+    .stock-box {
+        flex: 1;
+        padding: 12px 10px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .stock-box.avail { background: #f8fafc; }
+    .stock-box.req { background: #fef2f2; border-color: #fecaca; }
+    
+    .stock-label { font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 4px; }
+    .stock-value { font-size: 22px; font-weight: 900; line-height: 1; }
+
+    /* 🌟 Compact Scorecard 🌟 */
+    .scorecard-container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
+    .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .score-item { background: #f8fafc; border-radius: 6px; padding: 6px; text-align: center; border: 1px solid #f1f5f9; }
+    .score-title { font-size: 9px; color: #64748b; font-weight: 800; display: block; text-transform: uppercase; }
+    .score-val { font-size: 14px; font-weight: 900; color: #0ea5e9; }
+
+    /* 🌟 Inline Approval Input 🌟 */
+    .approval-input-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 15px;
+    }
+    .form-control-custom {
+        width: 120px;
+        background: #ffffff;
+        border: 2px solid #94a3b8;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 900;
+        color: #6366f1;
+        text-align: center;
+        padding: 4px;
+        outline: none;
+    }
+    .form-control-custom:focus { border-color: #6366f1; }
+
+    /* 🌟 Modals 🌟 */
+    .modal-content-innovative { border: none; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+    .badge-gray { background: #f1f5f9; color: #475569; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
   </style>
 </head>
 <body>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-7">
-        <div class="card shadow-sm border-0 mb-4">
-          <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <span>📥 Pending Stock Requests Panel</span>
-            <button class="btn-purple-outline" style="color:white; border-color:white;" onclick="refreshLiveRequests()">🔄 Refresh List</button>
+
+  <div class="container-fluid p-0">
+    <div class="row g-3">
+      
+      <!-- 🌟 Left Panel (Main Table) 🌟 -->
+      <div class="col-lg-7">
+        <div class="premium-card">
+          <div class="card-header-custom">
+            <h2 class="card-title">📥 Pending Stock Requests Panel</h2>
+            <button class="btn-outline-custom" onclick="refreshLiveRequests()">🔄 Refresh List</button>
           </div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 500px;">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light sticky-top"><tr><th>Date</th><th>CSC ID</th><th>VLE Name</th><th>District</th><th>Qty</th><th>Action</th></tr></thead>
-                <tbody id="pendingTableBody"><tr><td colspan="6" class="text-center py-4 text-muted">Loading requests...</td></tr></tbody>
-              </table>
-            </div>
+          <div class="table-responsive" style="max-height: calc(100vh - 100px); overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="sticky-top">
+                <tr><th>Date</th><th>CSC ID</th><th>VLE Name</th><th>District</th><th>Qty</th><th>Action</th></tr>
+              </thead>
+              <tbody id="pendingTableBody">
+                <tr><td colspan="6" class="text-center py-5 text-muted fw-bold">Loading requests...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
       
-      <div class="col-md-5" id="approvalPanel" style="display: none;">
-        <div class="card shadow-sm border-0 border-top border-4 border-violet" style="border-top-color: #6d28d9 !important;">
-          <div class="card-body">
-            <h5 class="fw-bold text-purple mb-3" id="approvalPanelTitle">💜 Review & Verify Request</h5>
-            <div class="p-3 rounded mb-3 border text-purple" style="background-color: #f5f3ff;">
-              <div class="d-flex justify-content-between align-items-start">
-                 <div>
-                    <span class="fw-bold" style="font-size: 16px;" id="lblVleName">Name</span> (<span class="fw-bold" id="lblVleId">ID</span>)<br>
-                    <span class="badge bg-purple mt-1" style="background-color:#7c3aed;" id="lblVleDistrict">District</span>
-                 </div>
-                 <button class="btn btn-sm btn-outline-danger fw-bold" onclick="showRejectModal()">✖ Reject</button>
-              </div>
-              
-              <div id="divAvailStockBox" class="mt-3 p-2 bg-white rounded border border-purple text-center shadow-sm">
-                <span class="fw-bold text-dark" style="font-size: 13px;">📦 జిల్లాలో మిగిలి ఉన్న స్టాక్ (Available): </span>
-                <span id="lblAvailableStock" class="fw-bold text-secondary" style="font-size: 15px;">⏳ Loading..</span>
-              </div>
-
-              <h4 class="mt-3 mb-0 text-danger fw-bold text-center">Requested Qty: <span id="lblReqQty">0</span> Papers</h4>
+      <!-- 🌟 Right Panel (Compact Review Area) 🌟 -->
+      <div class="col-lg-5" id="approvalPanel" style="display: none;">
+        <div class="premium-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0 text-purple" id="approvalPanelTitle" style="color: #6d28d9; font-size: 16px;">💜 Review & Verify Request</h5>
+                <button class="btn btn-sm btn-outline-danger fw-bold rounded-2 px-2 py-1" style="font-size: 11px;" onclick="showRejectModal()">✖ Reject</button>
             </div>
             
-            <div class="card shadow-sm border-0 mb-3" style="background-color: #f8fafc; border-top: 4px solid #3b82f6 !important;">
-              <div class="card-body p-3">
+            <!-- 🌟 Name & ID on Same Line 🌟 -->
+            <div class="vle-info-box" style="background-color: #f5f3ff; padding: 10px; border-radius: 8px;">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <span class="fw-bold text-dark" style="font-size: 16px;" id="lblVleName">Name</span>
+                    <span class="text-secondary fw-bold" style="font-size: 14px;" id="lblVleId">(ID)</span>
+                    <span class="badge-soft ms-auto text-white" style="background-color:#7c3aed;" id="lblVleDistrict">District</span>
+                </div>
+            </div>
+            
+            <!-- 🌟 Stock Side-by-Side (Space Saver) 🌟 -->
+            <div class="d-flex gap-2 mb-3">
+                <div class="stock-box avail shadow-sm">
+                    <span class="stock-label">📦 జిల్లాలో మిగిలి ఉన్న స్టాక్ (Available):</span>
+                    <span class="stock-value text-success" id="lblAvailableStock">⏳ Loading..</span>
+                </div>
+                <div class="stock-box req shadow-sm">
+                    <span class="stock-label text-danger">Requested Qty:</span>
+                    <span class="stock-value text-danger" id="lblReqQty">0</span>
+                    <span style="font-size: 10px; font-weight: bold; color: #ef4444;">Papers</span>
+                </div>
+            </div>
+            
+            <!-- 🌟 Compact Scorecards 🌟 -->
+            <div class="scorecard-container shadow-sm" style="background-color: #f8fafc; border-top: 4px solid #3b82f6 !important;">
                 <h6 class="text-center fw-bold mb-3" style="color: #1e293b; font-size: 13px;">📊 VLE Performance Scorecard (Prime Services)</h6>
-                <div class="row g-2 text-center mb-3">
-                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">DIGIPAY</div><div style="font-size: 15px; font-weight: 900; color: #0284c7;" id="score-digipay">-</div></div></div>
-                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">TRAVEL</div><div style="font-size: 15px; font-weight: 900; color: #ea580c;" id="score-travel">-</div></div></div>
-                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">INSURANCE</div><div style="font-size: 15px; font-weight: 900; color: #16a34a;" id="score-insurance">-</div><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div></div>
-                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">AADHAAR</div><div style="font-size: 15px; font-weight: 900; color: #9333ea;" id="score-aadhaar">-</div></div></div>
-                  <div class="col-4"><div class="p-2 border bg-white rounded"><div style="font-size: 10px; color: #64748b; font-weight: 800;">NPS</div><div style="font-size: 15px; font-weight: 900; color: #dc2626;" id="score-nps">-</div></div></div>
-                  <div class="col-4"><div class="p-2 border rounded" style="background-color: #fffbeb; border-color: #fde047 !important;"><div style="font-size: 10px; color: #854d0e; font-weight: 800;">⭐ TOTAL TXNS</div><div style="font-size: 15px; font-weight: 900; color: #ca8a04;" id="score-total">-</div></div></div>
+                <div class="score-grid">
+                  <div class="score-item bg-white"><span class="score-title">DIGIPAY</span><span class="score-val" id="score-digipay">-</span></div>
+                  <div class="score-item bg-white"><span class="score-title">TRAVEL</span><span class="score-val text-warning" style="color: #ea580c !important;" id="score-travel">-</span></div>
+                  <div class="score-item bg-white"><span class="score-title">INSURANCE</span><span class="score-val text-success" style="color: #16a34a !important;" id="score-insurance">-</span><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div>
+                  <div class="score-item bg-white"><span class="score-title">AADHAAR</span><span class="score-val" style="color:#9333ea !important;" id="score-aadhaar">-</span></div>
+                  <div class="score-item bg-white"><span class="score-title">NPS</span><span class="score-val text-danger" style="color: #dc2626 !important;" id="score-nps">-</span></div>
+                  <div class="score-item" style="background:#fffbeb; border-color:#fef08a;"><span class="score-title" style="color: #854d0e;">⭐ TOTAL TXNS</span><span class="score-val" style="color: #ca8a04 !important;" id="score-total">-</span></div>
                 </div>
-                <button type="button" class="btn btn-sm w-100" style="background-color: #e2e8f0; color: #334155; font-weight: bold; border: 1px solid #cbd5e1; font-size: 12px;" onclick="showAllServicesModal()">👁️ View Detailed Breakdown (45 Services)</button>
-              </div>
+                <button type="button" class="btn btn-sm w-100 mt-3" style="background-color: #e2e8f0; color: #334155; font-weight: bold; border: 1px solid #cbd5e1; font-size: 12px; padding: 8px;" onclick="showAllServicesModal()">👁️ View Detailed Breakdown (45 Services)</button>
             </div>
             
-            <div class="eligibility-badge mb-4" id="lblEligibility">Loading Eligibility...</div>
+            <!-- 🌟 Compact Eligibility 🌟 -->
+            <div class="p-2 rounded mb-3 text-center" style="background-color: #dbeafe; color: #1e40af; border: 1px dashed #93c5fd; font-size: 13px;" id="lblEligibility">
+                Loading Eligibility...
+            </div>
 
+            <!-- 🌟 Form 🌟 -->
             <form id="dispatchForm" onsubmit="approveRequest(event)">
-              <div class="row g-3">
-                <div class="col-12" id="divAppQty">
-                  <label class="form-label fw-bold text-secondary">Approved Quantity <span class="text-danger">*</span></label>
-                  <input type="number" id="appQty" class="form-control fw-bold text-purple form-control-lg" required>
-                </div>
+              
+              <!-- Inline Input -->
+              <div id="divAppQty" class="approval-input-group">
+                <label class="mb-0 fw-bold text-secondary" style="font-size: 13px;">Approved Quantity <span class="text-danger">*</span></label>
+                <input type="number" id="appQty" class="form-control-custom text-purple" style="color: #6d28d9;" required>
+              </div>
                 
-                <div class="col-12" id="divSerialPreview" style="display:none;">
-                  <div class="serial-preview-box">
-                    <div style="font-size: 11px; color: #6d28d9; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">📋 Allocated Stationary Serials</div>
-                    <div class="row g-2 align-items-center justify-content-center">
-                      <div class="col-5"><span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">START SERIAL</span><strong style="font-size:13px; color:#1e293b;" id="previewStart">-</strong></div>
-                      <div class="col-2 text-purple fw-bold" style="font-size:16px;">➔</div>
-                      <div class="col-5"><span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">END SERIAL</span><strong style="font-size:13px; color:#1e293b;" id="previewEnd">-</strong></div>
-                    </div>
+              <div id="divSerialPreview" style="display:none;" class="mb-3">
+                <div class="p-2 text-center rounded" style="background-color: #fbfaff; border: 2px dashed #8b5cf6;">
+                  <div style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 8px;">📋 Allocated Stationary Serials</div>
+                  <div class="d-flex justify-content-center align-items-center gap-3">
+                    <div class="text-start"><span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">START SERIAL</span><strong style="font-size:13px; color:#1e293b;" id="previewStart">-</strong></div>
+                    <div class="text-purple fw-bold fs-5" style="color: #6d28d9;">➔</div>
+                    <div class="text-end"><span style="font-size:10px; color:#64748b; display:block; font-weight:bold;">END SERIAL</span><strong style="font-size:13px; color:#1e293b;" id="previewEnd">-</strong></div>
                   </div>
                 </div>
               </div>
 
-              <button type="button" id="btnPreviewSerials" class="btn btn-purple w-100 mt-4 py-2 fw-bold" style="display:none;" onclick="generateSerialsPreview()">🔍 Generate Serial Numbers</button>
-              <button type="submit" id="btnApprove" class="btn btn-purple w-100 mt-4 py-2">Confirm Action</button>
-              <button type="button" class="btn btn-light border w-100 mt-2 text-muted" onclick="hideApprovalPanel()">Cancel</button>
+              <button type="button" id="btnPreviewSerials" class="btn-action w-100 mb-2 py-2" style="display:none; background-color: #6d28d9; color: white; font-size: 14px;" onclick="generateSerialsPreview()">🔍 Generate Serial Numbers</button>
+              
+              <div class="d-flex gap-2">
+                  <button type="button" class="btn w-100 fw-bold text-muted border bg-light" onclick="hideApprovalPanel()">Cancel</button>
+                  <button type="submit" id="btnApprove" class="btn-action w-100 py-2" style="background-color: #6d28d9; color: white; font-size: 14px;">Confirm Action</button>
+              </div>
             </form>
-          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- 🌟 All Services Modal (Retaining exact Original Columns) 🌟 -->
+  <div class="modal fade" id="allServicesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-content-innovative">
+        <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 15px 20px;">
+          <h6 class="modal-title fw-bold m-0">📋 VLE Detailed Service Report</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+            <thead class="sticky-top table-light text-center">
+                <tr><th class="text-start ps-3">Service Name</th><th>Total Txns</th><th>Amount (₹)</th></tr>
+            </thead>
+            <tbody id="allServicesList" class="text-center"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🌟 Alert & Reject Modals (Retaining exact Text) 🌟 -->
   <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content corp-modal-content">
-        <div class="modal-body text-center p-4">
-          <div id="alertIconContainer" class="icon-circle success"></div>
-          <h5 id="alertTitle" class="alert-title">Success!</h5>
-          <p id="alertMessage" class="alert-text mb-4">Message goes here.</p>
-          <button type="button" id="alertBtn" class="btn corp-btn corp-btn-success w-100" data-bs-dismiss="modal">OK, Great!</button>
-        </div>
+      <div class="modal-content modal-content-innovative p-4 text-center">
+        <div id="alertIconContainer" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px;">✅</div>
+        <h4 id="alertTitle" class="fw-bold text-dark mb-2">Success!</h4>
+        <p id="alertMessage" class="text-secondary mb-4 fs-6">Message goes here.</p>
+        <button type="button" id="alertBtn" class="btn-action w-100 py-2" data-bs-dismiss="modal">OK, Great!</button>
       </div>
     </div>
   </div>
 
   <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content corp-modal-content">
-        <div class="modal-header border-0 bg-danger text-white" style="border-radius: 16px 16px 0 0;">
+      <div class="modal-content modal-content-innovative">
+        <div class="modal-header bg-danger text-white pb-3 border-0" style="border-radius: 20px 20px 0 0; padding: 15px 20px;">
           <h5 class="modal-title fw-bold">✖ Reject Stock Request</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-4">
-          <label class="form-label fw-bold text-secondary">Reason for Rejection: <span class="text-danger">*</span></label>
-          <textarea id="rejectReasonInput" class="form-control" rows="3" placeholder="Ex: Poor performance, Pending reports, Stock not available..."></textarea>
-          <button type="button" id="btnSubmitReject" class="btn btn-danger w-100 mt-4 py-2 fw-bold" onclick="submitRejection()">Confirm Rejection</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="allServicesModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow">
-        <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white;">
-          <h6 class="modal-title fw-bold">📋 VLE Detailed Service Report</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-0">
-          <table class="table table-hover align-middle text-center mb-0" style="font-size: 13px;">
-            <thead class="table-light"><tr><th class="text-start ps-3">Service Name</th><th>Total Txns</th><th>Amount (₹)</th></tr></thead>
-            <tbody id="allServicesList"></tbody>
-          </table>
+        <div class="modal-body p-4 pt-3">
+          <label class="form-label fw-bold text-secondary mb-2">Reason for Rejection: <span class="text-danger">*</span></label>
+          <textarea id="rejectReasonInput" class="form-control bg-light mb-3" rows="3" style="border: 1px solid #cbd5e1; border-radius:8px; resize:none;" placeholder="Ex: Poor performance, Pending reports, Stock not available..."></textarea>
+          <button type="button" id="btnSubmitReject" class="btn-action w-100 py-2 fs-6" style="background:#ef4444; color:white;" onclick="submitRejection()">Confirm Rejection</button>
         </div>
       </div>
     </div>
@@ -177,27 +303,21 @@
 
     window.onload = function() { checkCacheAndLoadRequests(); };
 
-    // 🌟 ఎర్రర్ రాకుండా SAFEGUARD చేసిన customAlert 🌟
     function customAlert(msg, isSuccess) {
-        // ఇక్కడే మ్యాజిక్! ఒకవేళ మెసేజ్ లేకపోతే undefined ఎర్రర్ రాకుండా స్టాప్ చేస్తుంది
         let safeMsg = msg ? String(msg) : (isSuccess ? "Action Completed Successfully." : "Action Failed!");
-        
-        const iconContainer = document.getElementById("alertIconContainer");
-        const title = document.getElementById("alertTitle");
-        const message = document.getElementById("alertMessage");
-        const btn = document.getElementById("alertBtn");
-
-        const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>`;
-        const errorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/></svg>`;
+        let iconCont = document.getElementById("alertIconContainer");
+        let btn = document.getElementById("alertBtn");
 
         if (isSuccess) {
-            iconContainer.className = "icon-circle success"; iconContainer.innerHTML = successSvg; title.innerText = "Success!"; btn.className = "btn corp-btn corp-btn-success w-100"; btn.innerText = "OK, Great!";
+            iconCont.innerHTML = "✅"; iconCont.style.background = "#f5f3ff"; 
+            document.getElementById("alertTitle").innerText = "Success!"; 
+            btn.style.background = "#6d28d9"; btn.style.color = "white"; btn.innerText = "OK, Great!";
         } else {
-            iconContainer.className = "icon-circle error"; iconContainer.innerHTML = errorSvg; title.innerText = "Action Failed"; btn.className = "btn corp-btn corp-btn-error w-100"; btn.innerText = "Try Again";
+            iconCont.innerHTML = "❌"; iconCont.style.background = "#fee2e2"; 
+            document.getElementById("alertTitle").innerText = "Action Failed"; 
+            btn.style.background = "#ef4444"; btn.style.color = "white"; btn.innerText = "Try Again";
         }
-        
-        message.innerHTML = safeMsg.replace(/\n/g, '<br>');
-        
+        document.getElementById("alertMessage").innerHTML = safeMsg.replace(/\n/g, '<br>');
         var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
         alertModal.show();
     }
@@ -211,7 +331,7 @@
 
     function refreshLiveRequests() {
        localStorage.removeItem("pendingRequestsCache");
-       document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Refreshing live data...</td></tr>`;
+       document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 fw-bold" style="color:#6d28d9;">Refreshing live data...</td></tr>`;
        fetchPendingRequests();
     }
 
@@ -223,7 +343,7 @@
             localStorage.setItem("pendingRequestsTime", new Date().getTime().toString());
             renderRequestsTable(res.data);
          } else { renderRequestsTable([]); }
-      }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data.</td></tr>`; });
+      }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">Error loading data.</td></tr>`; });
     }
 
     function renderRequestsTable(data) {
@@ -237,25 +357,32 @@
              let currentStatus = req.status ? req.status.trim() : "";
              
              if (isDM && currentStatus === "Pending") {
-                 btnHtml = `<button class="btn btn-sm btn-purple" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1)">Recommend</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#6d28d9; color:white;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1)">Recommend</button>`;
              } else if (!isDM && currentStatus === "Pending with SPOC") {
-                 btnHtml = `<button class="btn btn-sm btn-warning text-dark fw-bold" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 2)">Approve</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#f59e0b; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 2)">Approve</button>`;
                } else if (isDM && currentStatus === "Approved by SPOC") {
-                 btnHtml = `<button class="btn btn-sm btn-success fw-bold" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 3)">Dispatch</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#10b981; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 3)">Dispatch</button>`;
              } else {
-                 btnHtml = `<span class="badge bg-secondary">${currentStatus}</span>`;
+                 btnHtml = `<span class="badge-gray">${currentStatus}</span>`;
              }
 
-             tbody.innerHTML += `<tr><td style="font-size:12px; color:#64748b;">${req.date}</td><td class="fw-bold text-purple">${req.cscId}</td><td class="fw-bold">${req.vleName}</td><td><span class="badge bg-purple" style="background-color:#7c3aed;">${req.district}</span></td><td class="fw-bold text-danger">${req.reqQty}</td><td>${btnHtml}</td></tr>`;
+             tbody.innerHTML += `<tr>
+                <td style="font-size:12px; color:#64748b;">${req.date}</td>
+                <td class="fw-bold" style="color:#6d28d9; font-size:13px;">${req.cscId}</td>
+                <td class="fw-bold text-dark">${req.vleName}</td>
+                <td><span class="badge-soft" style="background-color:#7c3aed; color:white;">${req.district}</span></td>
+                <td class="fw-bold text-danger" style="font-size:14px;">${req.reqQty}</td>
+                <td>${btnHtml}</td>
+             </tr>`;
           });
-       } else { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-success fw-bold">🎉 No pending stock requests found!</td></tr>`; }
+       } else { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-success fw-bold fs-6">🎉 No pending stock requests found!</td></tr>`; }
     }
 
     function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
        activeRowIdx = rowIdx; currentStep = stepType;
        document.getElementById("approvalPanel").style.display = "block";
        document.getElementById("lblVleName").innerText = vleName;
-       document.getElementById("lblVleId").innerText = cscId;
+       document.getElementById("lblVleId").innerText = "("+cscId+")";
        document.getElementById("lblVleDistrict").innerText = district;
        document.getElementById("lblReqQty").innerText = reqQty;
        
@@ -272,9 +399,9 @@
        btnApprove.disabled = false;
 
        let lblAvail = document.getElementById("lblAvailableStock");
-       lblAvail.innerText = "⏳ Fetching...";
-       lblAvail.className = "fw-bold text-secondary";
-
+       lblAvail.innerText = "⏳ Loading..";
+       lblAvail.className = "stock-value text-secondary";
+       
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDistrictStockSummary", role: loggedInDesig, userId: loggedInUserId }) })
        .then(res => res.json()).then(res => {
            if(res.success && res.summary) {
@@ -283,16 +410,10 @@
                    let d = res.summary[distKey];
                    let avail = d.inward - d.outward;
                    lblAvail.innerText = avail + " Papers";
-                   lblAvail.className = avail > 0 ? "fw-bold text-success" : "fw-bold text-danger";
-               } else {
-                   lblAvail.innerText = "0 Papers (Not Assigned)";
-                   lblAvail.className = "fw-bold text-danger";
-               }
-           } else {
-               lblAvail.innerText = "0 Papers";
-               lblAvail.className = "fw-bold text-danger";
-           }
-       }).catch(e => { lblAvail.innerText = "Network Error"; lblAvail.className = "fw-bold text-danger"; });
+                   lblAvail.className = avail > 0 ? "stock-value text-success" : "stock-value text-danger";
+               } else { lblAvail.innerText = "0 Papers (Not Assigned)"; lblAvail.className = "stock-value text-danger"; }
+           } else { lblAvail.innerText = "0 Papers"; lblAvail.className = "stock-value text-danger"; }
+       }).catch(e => { lblAvail.innerText = "Network Error"; lblAvail.className = "stock-value text-danger"; });
 
        if (stepType === 3) { 
            title.innerText = "📦 Auto-Dispatch Physical Stock"; 
@@ -300,21 +421,26 @@
            btnApprove.style.display = "none"; 
            btnPreview.style.display = "block"; 
            btnPreview.innerText = "🔍 Generate Serial Numbers";
-           btnPreview.className = "btn btn-purple w-100 mt-4 py-2 fw-bold";
        } else if (stepType === 1) { 
-           title.innerText = "📝 Recommend to SPOC"; qtyInput.readOnly = false; btnApprove.innerText = "Recommend Quantity"; btnApprove.className = "btn btn-purple w-100 mt-4 py-2";
+           title.innerText = "📝 Recommend to SPOC"; 
+           qtyInput.readOnly = false; 
+           btnApprove.innerText = "Recommend Quantity"; 
+           btnApprove.style.background = "#6d28d9";
        } else if (stepType === 2) { 
-           title.innerText = "⭐ Final Approval (SPOC)"; qtyInput.readOnly = false; btnApprove.innerText = "Approve Quantity"; btnApprove.className = "btn btn-warning w-100 mt-4 py-2 fw-bold text-dark";
+           title.innerText = "⭐ Final Approval (SPOC)"; 
+           qtyInput.readOnly = false; 
+           btnApprove.innerText = "Approve Quantity"; 
+           btnApprove.style.background = "#f59e0b";
        } 
 
-       document.getElementById("score-digipay").innerText = "⏳";
-       document.getElementById("score-travel").innerText = "⏳";
-       document.getElementById("score-insurance").innerText = "⏳";
-       document.getElementById("amt-insurance").innerText = "(⏳)";
-       document.getElementById("score-aadhaar").innerText = "⏳";
-       document.getElementById("score-nps").innerText = "⏳";
-       document.getElementById("score-total").innerText = "⏳";
-       document.getElementById("lblEligibility").innerText = "Calculating Eligibility...";
+       document.getElementById("score-digipay").innerText = "-";
+       document.getElementById("score-travel").innerText = "-";
+       document.getElementById("score-insurance").innerText = "-";
+       document.getElementById("amt-insurance").innerText = "(₹ 0)";
+       document.getElementById("score-aadhaar").innerText = "-";
+       document.getElementById("score-nps").innerText = "-";
+       document.getElementById("score-total").innerText = "-";
+       document.getElementById("lblEligibility").innerHTML = "Calculating Eligibility...";
 
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId }) }).then(res => res.json()).then(res => {
           if(res.success && res.performance) {
@@ -330,9 +456,11 @@
              let listHtml = "";
              for(let srv in p.allServices) {
                  let srvData = p.allServices[srv];
-                 if(srvData.txn > 0 || srvData.amt > 0) { listHtml += `<tr><td class="text-start ps-3 fw-bold text-secondary">${srv}</td><td class="fw-bold text-primary">${srvData.txn}</td><td class="text-success fw-bold">₹ ${Math.round(srvData.amt).toLocaleString('en-IN')}</td></tr>`; }
+                 if(srvData.txn > 0 || srvData.amt > 0) { 
+                     listHtml += `<tr><td class="text-start ps-3 fw-bold text-secondary">${srv}</td><td class="fw-bold text-primary">${srvData.txn}</td><td class="text-success fw-bold text-end pe-3">₹ ${Math.round(srvData.amt).toLocaleString('en-IN')}</td></tr>`; 
+                 }
              }
-             document.getElementById("allServicesList").innerHTML = listHtml || '<tr><td colspan="3" class="text-danger py-3">No active services found.</td></tr>';
+             document.getElementById("allServicesList").innerHTML = listHtml || '<tr><td colspan="3" class="text-danger text-center py-3">No active services found.</td></tr>';
 
              let totalScore = p.totalScore;
              let eligibleQty = 10; 
@@ -341,7 +469,7 @@
              else if(totalScore >= 100) eligibleQty = 50;
              else if(totalScore >= 50) eligibleQty = 25;
 
-             document.getElementById("lblEligibility").innerHTML = `⭐ <b>Overall Total Score:</b> ${totalScore} Txns <br> 📦 <b>System Recommended Eligibility:</b> ~${eligibleQty} Papers`;
+             document.getElementById("lblEligibility").innerHTML = `⭐ <b style="color: #1e40af;">Overall Total Score:</b> <span style="color: #1e40af; font-weight: bold;">${totalScore} Txns</span> &nbsp; | &nbsp; 📦 <b style="color: #1e40af;">System Recommended Eligibility:</b> <span style="color: #1e40af; font-weight: bold;">~${eligibleQty} Papers</span>`;
           }
        }).catch(e => { document.getElementById("lblEligibility").innerHTML = "<span class='text-danger'>Error loading data!</span>"; });
     }
@@ -361,8 +489,8 @@
                 document.getElementById("divSerialPreview").style.display = "block";
                 btnPreview.style.display = "none";
                 var btnApprove = document.getElementById("btnApprove");
-                btnApprove.style.display = "block"; btnApprove.innerText = "🚀 Confirm & Submit Dispatch";
-                btnApprove.className = "btn btn-purple w-100 mt-4 py-2 fw-bold";
+                btnApprove.style.display = "block"; btnApprove.innerText = "Confirm Action";
+                btnApprove.style.background = "#10b981";
             } else { customAlert(res.message, false); }
         }).catch(err => { btnPreview.disabled = false; btnPreview.innerText = "🔍 Generate Serial Numbers"; customAlert("Network Error!", false); });
     }
@@ -371,22 +499,25 @@
        e.preventDefault(); if(!activeRowIdx) return;
        let dist = document.getElementById("lblVleDistrict").innerText.trim();
        let vName = document.getElementById("lblVleName").innerText.trim();
-       let vId = document.getElementById("lblVleId").innerText.trim();
+       
+       // Remove brackets from ID
+       let vIdText = document.getElementById("lblVleId").innerText.trim();
+       let vId = vIdText.replace('(', '').replace(')', '');
+       
        let aQty = document.getElementById("appQty").value;
        var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: vId, vleName: vName, district: dist, appQty: aQty, approvedBy: loggedInUser };
        var btn = document.getElementById("btnApprove"); btn.disabled = true; 
        if (currentStep === 1) { btn.innerText = "Processing Recommendation..."; }
        else if (currentStep === 2) { btn.innerText = "Processing Approval..."; }
        else { btn.innerText = "Processing Auto-Dispatch..."; }
+       
        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
           btn.disabled = false;
           if(res.success) { 
              if (currentStep === 3) {
                  let sStart = document.getElementById("previewStart").innerText;
                  let sEnd = document.getElementById("previewEnd").innerText;
-                 
                  let waMsg = `🔔 *CSC AP - E-Stamping Stock Update* 🔔\n\nప్రియమైన *${vName}* గారు (CSC ID: *${vId}*),\n\nమీ E-Stamping స్టాక్ రిక్వెస్ట్ ఆమోదించబడింది. మీకు ఈరోజు ఈ కింది స్టాక్ డిస్పాచ్ చేయబడింది:\n\n📦 *మంజూరైన క్వాంటిటీ:* ${aQty} Papers\n🔢 *సీరియల్ నెంబర్లు:* ${sStart} నుండి ${sEnd} వరకు\n\n📄 *ముఖ్య గమనిక:* దయచేసి మీ పోర్టల్‌లో లాగిన్ అయి, "Track Request" సెక్షన్ నుండి *'Acknowledgement Form'* ప్రింట్ తీసుకుని, దానిపై మీ సంతకం చేసి మా ఆఫీస్‌లో సబ్మిట్ చేసి మీ స్టాక్ ని కలెక్ట్ చేసుకోగలరు.\n\nధన్యవాదాలు,\nCSC Team,\n${dist} District.`;
-                 
                  navigator.clipboard.writeText(waMsg).then(() => {
                      customAlert(res.message + "\n\n✅ వాట్సాప్ మెసేజ్ మీ క్లిప్‌బోర్డ్ లో కాపీ అయ్యింది! వాట్సాప్ లో పేస్ట్ (Ctrl + V) చేసి పంపించండి.", true);
                  }).catch(err => { customAlert(res.message, true); });
@@ -406,9 +537,10 @@
     function submitRejection() {
         if(!activeRowIdx) return;
         let reason = document.getElementById("rejectReasonInput").value.trim();
-        if(!reason) { alert("దయచేసి రిజెక్ట్ చేయడానికి కారణం ఎంటర్ చేయండి!"); return; }
+        if(!reason) { customAlert("దయచేసి రిజెక్ట్ చేయడానికి కారణం ఎంటర్ చేయండి!", false); return; }
         
-        let vId = document.getElementById("lblVleId").innerText.trim();
+        let vIdText = document.getElementById("lblVleId").innerText.trim();
+        let vId = vIdText.replace('(', '').replace(')', '');
         let btn = document.getElementById("btnSubmitReject");
         btn.disabled = true; btn.innerText = "⏳ Rejecting...";
         
@@ -420,23 +552,13 @@
         .then(res => {
             btn.disabled = false; btn.innerText = "Confirm Rejection";
             if(myRejectModalInstance) { myRejectModalInstance.hide(); }
-            
             setTimeout(() => {
                 if(res.success) {
                     customAlert("Request Rejected Successfully.", true);
-                    localStorage.removeItem("pendingRequestsCache"); 
-                    hideApprovalPanel(); 
-                    fetchPendingRequests(); 
-                } else {
-                    customAlert(res.message || "Failed to reject. Check Code.gs Deployment.", false);
-                }
+                    localStorage.removeItem("pendingRequestsCache"); hideApprovalPanel(); fetchPendingRequests(); 
+                } else { customAlert(res.message || "Failed to reject.", false); }
             }, 500);
-        })
-        .catch(err => {
-            btn.disabled = false; btn.innerText = "Confirm Rejection";
-            if(myRejectModalInstance) { myRejectModalInstance.hide(); }
-            setTimeout(() => { customAlert("Network Error! (Did you do 'New Deployment' in Code.gs properly?)", false); }, 500);
-        });
+        }).catch(err => { btn.disabled = false; btn.innerText = "Confirm Rejection"; if(myRejectModalInstance) myRejectModalInstance.hide(); setTimeout(() => customAlert("Network Error!", false), 500); });
     }
 
     function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }

@@ -1,137 +1,237 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Request Status</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>body { background-color: #f8fafc; padding: 20px; font-family: 'Segoe UI', Tahoma, sans-serif; }</style>
+  
+  <style>
+    /* 🌟 Master Clean Background 🌟 */
+    body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 25px 20px; min-height: 100vh; color: #334155; }
+    .split-container { display: flex; gap: 20px; align-items: flex-start; transition: all 0.4s ease; }
+    .left-panel { flex: 1; max-width: 800px; margin: 0 auto; transition: all 0.4s ease; }
+    .split-container.active .left-panel { flex: 0 0 45%; max-width: 45%; margin: 0; }
+    .right-panel { flex: 0 0 calc(55% - 20px); max-width: calc(55% - 20px); position: sticky; top: 25px; display: none; opacity: 0; transform: translateX(20px); transition: all 0.4s ease; }
+    .right-panel.show-panel { display: block; opacity: 1; transform: translateX(0); animation: fadeInRight 0.4s ease-out forwards; }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    .premium-card { background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); overflow: hidden; }
+    .card-header-custom { background: #ffffff; padding: 20px 25px 15px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .req-item-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 15px; transition: all 0.3s ease; border-left: 4px solid transparent; }
+    .req-item-card:hover { background: #ffffff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transform: translateY(-2px); }
+    .req-item-card.active { background: #eff6ff; border-color: #bfdbfe; border-left-color: #3b82f6; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1); }
+    .status-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; border: 1px solid transparent; }
+    .btn-action { font-weight: 800; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; transition: all 0.3s ease; }
+    .btn-primary-custom { background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: white; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); }
+    .btn-primary-custom:hover { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(14, 165, 233, 0.3); }
+    .btn-view-doc { background: #ffffff; color: #3b82f6; border: 1px solid #bfdbfe; font-weight: 800; padding: 6px 14px; font-size: 12px; border-radius: 6px; transition: 0.2s; }
+    .btn-view-doc:hover { background: #eff6ff; color: #2563eb; }
+    .btn-view-doc.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .btn-close-panel { background: #f1f5f9; color: #475569; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .btn-close-panel:hover { background: #e2e8f0; color: #0f172a; }
+    .doc-viewer-wrapper { background: #e2e8f0; border-radius: 12px; padding: 10px; height: calc(100vh - 180px); display: flex; align-items: center; justify-content: center; flex-direction: column; border: 2px dashed #cbd5e1; }
+    .doc-iframe { width: 100%; height: 100%; border: none; border-radius: 8px; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    @media (max-width: 991px) { .split-container.active { flex-direction: column; } .split-container.active .left-panel, .right-panel { flex: 0 0 100%; max-width: 100%; } .right-panel { position: relative; top: 0; margin-top: 20px; } .doc-viewer-wrapper { height: 600px; } }
+  </style>
 </head>
 <body>
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold text-info mb-0" style="color: #0ea5e9 !important;">🔍 Track Request Status</h5>
-    <button id="btnFetchTrack" class="btn btn-info text-white fw-bold px-4" style="background-color: #0ea5e9; border-color: #0ea5e9;" onclick="fetchMyStatus()">🔄 Refresh Status</button>
-  </div>
 
-  <div id="trackResultArea">
-    <!-- Results load here -->
+  <div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-1 flex-wrap gap-2">
+      <h4 class="fw-bold m-0" style="color: #0f172a;">🔍 Track Request Status</h4>
+      <button id="btnFetchTrack" class="btn-action btn-primary-custom" onclick="fetchMyStatus()">🔄 Refresh Status</button>
+    </div>
+
+    <div class="split-container" id="mainContainer">
+        <div class="left-panel">
+            <div class="premium-card">
+                <div class="card-header-custom border-bottom-0 pb-2">
+                    <h6 class="fw-bold text-secondary m-0" style="font-size: 13px; text-transform: uppercase;">📋 Recent Requests</h6>
+                </div>
+                <div class="card-body p-3" id="trackResultArea" style="max-height: calc(100vh - 160px); overflow-y: auto;">
+                    <div class="text-center text-muted fw-bold py-5">లోడ్ అవుతోంది...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel" id="docPanel">
+            <div class="premium-card h-100 border-top-0" style="border: 1px solid #e2e8f0;">
+                <div class="card-header-custom bg-light py-2">
+                    <h6 class="fw-bold m-0" style="color: #0f172a; font-size: 14px;">📄 Document Preview</h6>
+                    <div class="d-flex gap-2">
+                        <button class="btn-action btn-primary-custom py-1 px-3 d-none" id="btnPrintCurrent" onclick="printCurrentDoc()" style="font-size: 11px;">🖨️ Print Doc</button>
+                        <button class="btn-close-panel" onclick="closeDocPanel()">✖ Close</button>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <div class="doc-viewer-wrapper" id="docViewerWrapper"></div>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     let loggedInId = localStorage.getItem("userId") || "";
     let loggedInUser = localStorage.getItem("userName") || "";
+    let generatedDocsMemory = {}; 
+    let currentDocHtml = ""; 
 
     window.onload = function() { fetchMyStatus(); };
 
     function fetchMyStatus() {
          let btn = document.getElementById('btnFetchTrack');
          let resultArea = document.getElementById('trackResultArea');
-         btn.disabled = true; btn.innerText = "⏳ Fetching..."; 
-         resultArea.innerHTML = `<div class="text-center text-muted fw-bold py-5">లోడ్ అవుతోంది...</div>`;
+         
+         btn.disabled = true; btn.innerHTML = "⏳ Fetching..."; 
+         resultArea.innerHTML = `<div class="text-center text-muted fw-bold py-5">Refreshing data...</div>`;
+         
+         closeDocPanel();
+         generatedDocsMemory = {}; 
          
          fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "checkVleStatus", vleId: loggedInId }) })
          .then(res => res.json()).then(res => {
-            btn.disabled = false; btn.innerText = "🔄 Refresh Status";
+            btn.disabled = false; btn.innerHTML = "🔄 Refresh Status";
 
             if(res.success && res.data.length > 0) {
-               let html = `<h6 class="text-success fw-bold mb-3">Recent Requests for ${loggedInId}:</h6>`;
-               
-               res.data.forEach(req => {
-                  let bg = "#f8fafc", col = "#475569";
+               let html = ``;
+               res.data.forEach((req, index) => {
+                  let bg = "#f8fafc", col = "#475569", borderCol = "transparent";
                   let st = req.status;
-                  if(st.includes("Pending with SPOC")) { bg = "#e0f2fe"; col = "#0369a1"; }
-                  else if(st === "Pending") { bg = "#fef9c3"; col = "#854d0e"; }
-                  else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; }
-                  else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; }
-                  else if(st.includes("Rejected")) { bg = "#fee2e2"; col = "#b91c1c"; }
+                  
+                  if(st.includes("Pending with SPOC")) { bg = "#e0f2fe"; col = "#0369a1"; borderCol = "#bae6fd"; }
+                  else if(st === "Pending") { bg = "#fef9c3"; col = "#854d0e"; borderCol = "#fde047"; }
+                  else if(st === "Approved by SPOC") { bg = "#ffedd5"; col = "#c2410c"; borderCol = "#fed7aa"; }
+                  else if(st === "Dispatched") { bg = "#dcfce7"; col = "#15803d"; borderCol = "#bbf7d0"; }
+                  else if(st.includes("Rejected")) { bg = "#fee2e2"; col = "#b91c1c"; borderCol = "#fecaca"; }
 
                   let rawRemarks = req.remarks || "-";
                   let finalRemarks = rawRemarks;
-                  let serialsHtml = "";
-                  let remarkColor = st.includes("Rejected") ? "#b91c1c" : "#475569";
+                  let docBtnHtml = "";
                   
-                  let rawDate = new Date(req.date);
-                  let formattedDateStr = "";
-                  if (!isNaN(rawDate)) {
-                      let yy = rawDate.getFullYear();
-                      let mm = String(rawDate.getMonth() + 1).padStart(2, '0');
-                      let dd = String(rawDate.getDate()).padStart(2, '0');
-                      let hrs = String(rawDate.getHours()).padStart(2, '0');
-                      let mins = String(rawDate.getMinutes()).padStart(2, '0');
-                      formattedDateStr = `${yy}${mm}${dd}${hrs}${mins}`;
-                  } else { formattedDateStr = Math.floor(Math.random() * 90000) + 10000; }
-                  let dynamicReqNo = `ACK-${formattedDateStr}-${loggedInId.slice(-4)}`;
-                  
+                  // 🌟 బ్యాకెండ్ నుండి వచ్చే req.reqNo ఉంటే అది, లేదంటే N/A 🌟
+                  let finalReqNo = req.reqNo ? req.reqNo : "N/A";
+
                   if(rawRemarks.includes("(Serials:")) {
                       let splitPart = rawRemarks.split("(Serials:");
                       finalRemarks = splitPart[0].trim();
                       let serialsPart = splitPart[1].replace(")", "").trim();
                       
-                      serialsHtml = `
-                        <div class="mt-3 p-3 rounded" style="background: #fff1f2; border: 1px dashed #fda4af;">
-                           <span style="font-size: 11px; color: #e11d48; font-weight: bold; text-transform: uppercase;">📋 Allocated Serials:</span><br>
-                           <span style="font-size: 15px; font-weight: 900; color: #be123c;">${serialsPart}</span>
-                        </div>
-                        <div class="mt-3">
-                           <button onclick="printAckNewTab('${req.date}', '${req.qty}', '${serialsPart}', '${dynamicReqNo}')" class="btn btn-success w-100 fw-bold py-2 shadow-sm">🖨️ Download / Print Acknowledgement Form</button>
-                        </div>
-                      `;
+                      generatedDocsMemory[index] = generateDocHtml(req.date, req.qty, serialsPart, finalReqNo);
+                      docBtnHtml = `<div class="mt-3 text-end"><button onclick="viewDocInRightPanel(${index}, this)" class="btn-view-doc">👁️ View Document</button></div>`;
                   }
 
                   html += `
-                    <div class="card shadow-sm border-0 mb-3">
-                      <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                          <span style="font-size:12px; color:#64748b; font-weight:bold;">📅 ${req.date}</span>
-                          <span style="background:${bg}; color:${col}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; border:1px solid ${col}40;">${st}</span>
+                    <div class="req-item-card" id="card-${index}">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-light">
+                          <span style="font-size:12px; color:#64748b; font-weight:700;">📅 ${req.date}</span>
+                          <span class="status-badge" style="background:${bg}; color:${col}; border-color:${borderCol};">${st}</span>
                         </div>
-                        <div style="font-size:14px;"><span class="text-secondary fw-bold">Req Qty:</span> <strong style="font-size:16px;">${req.qty} Papers</strong></div>
-                        <div style="font-size:13px; margin-top:8px; color: ${remarkColor};">📝 <b>Status:</b> ${finalRemarks}</div>
-                        ${serialsHtml}
-                      </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div><span class="text-secondary fw-bold" style="font-size:12px;">Req Qty:</span> <strong style="font-size:15px; color:#0f172a;">${req.qty} P</strong></div>
+                        </div>
+                        <div style="font-size:12px; margin-top:6px; color: #475569; font-weight:600; background: #ffffff; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            ${finalRemarks}
+                        </div>
+                        ${docBtnHtml}
                     </div>
                   `;
                });
                resultArea.innerHTML = html;
             } else {
-               resultArea.innerHTML = `<div class="alert alert-danger text-center fw-bold">❌ No stock requests found.</div>`;
+               resultArea.innerHTML = `<div class="text-center py-4"><span style="font-size:30px;">📭</span><br><span class="fw-bold text-danger">No stock requests found.</span></div>`;
             }
          }).catch(e => {
-            btn.disabled = false; btn.innerText = "Check Status Now";
-            resultArea.innerHTML = `<div class="alert alert-danger text-center fw-bold">⚠️ Network Error.</div>`;
+            btn.disabled = false; btn.innerText = "🔄 Refresh Status";
+            resultArea.innerHTML = `<div class="text-center py-4 fw-bold text-danger">⚠️ Network Error.</div>`;
          });
     }
 
-    function printAckNewTab(date, qty, serials, generatedReqNo) {
-          let userName = loggedInUser;
-          let userId = loggedInId;
-          let printHtml = `
+    function generateDocHtml(date, qty, serials, generatedReqNo) {
+        let userName = loggedInUser;
+        let userId = loggedInId;
+        return `
             <html><head><title>ACK_${userId}</title><style>
-                  body { font-family: 'Times New Roman', serif; padding: 30px; color: #000; margin: 0 auto; max-width: 800px; }
-                  .header { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
-                  .header img { height: 65px; margin-bottom: 5px; }
-                  .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
-                  .header h3 { margin: 5px 0 0 0; font-size: 16px; text-decoration: underline; }
-                  .details-table { width: 100%; margin-bottom: 20px; font-size: 15px; } .details-table td { padding: 5px; }
-                  .section { margin-bottom: 20px; } .section h4 { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; font-size: 15px; } .section p { margin: 5px 0; font-size: 15px; }
-                  .serial-highlight { display: inline-block; padding: 6px 12px; margin-top: 5px; border: 2px solid #000; background-color: #f8f9fa; font-weight: 900; font-size: 17px; letter-spacing: 1px; border-radius: 4px; }
-                  .declaration { font-style: italic; line-height: 1.6; margin-bottom: 40px; font-size: 15px; text-align: justify; }
-                  .signature-box { display: flex; justify-content: space-between; margin-bottom: 50px; }
-                  .office-use { border-top: 2px dashed black; padding-top: 20px; } .office-use h4 { text-align: center; margin-top: 0; font-size: 15px;}
-                  @media print { @page { margin: 10mm; size: A4; } body { padding: 0; max-width: 100%; } }
-                </style></head>
-              <body>
-                <div class="header"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC Logo"><h2>COMMON SERVICE CENTRES (CSC) - ANDHRA PRADESH</h2><h3>E-STAMPING STATIONARY ACKNOWLEDGEMENT FORM</h3></div>
-                <table class="details-table"><tr><td><strong>Date of Dispatch:</strong> ${date}</td><td><strong>Acknowledgement No:</strong> <span style="font-weight:bold; color:#be123c;">${generatedReqNo}</span></td></tr></table>
-                <div class="section"><h4>VLE DETAILS</h4><p><strong>Name:</strong> ${userName}</p><p><strong>CSC ID:</strong> ${userId}</p></div>
-                <div class="section"><h4>ALLOCATED STOCK DETAILS</h4><p><strong>Quantity Sanctioned:</strong> ${qty} Papers</p><p><strong>Serial Numbers:</strong></p><div class="serial-highlight">${serials}</div></div>
-                <div class="section declaration"><h4 style="font-style:normal;">DECLARATION</h4><p>I, <strong>${userName}</strong>, hereby acknowledge that I have received the physical e-Stamping stationary mentioned above from the District Manager's office. I ensure that these stamp papers will be used strictly for authorized CSC e-Stamping purposes.</p></div>
-                <div class="signature-box"><div><p>____________________________________</p><p><strong>(VLE Signature & Stamp)</strong></p><p>Date: ______________</p></div></div>
-                <div class="office-use"><h4>FOR OFFICE USE ONLY</h4><div class="signature-box" style="margin-top:40px; margin-bottom:0;"><div><p>____________________________________</p><p><strong>Stock Handed Over By</strong> (DM Name / Sign)</p><p>Date: ______________</p></div></div></div>
-                <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); }; window.onafterprint = function() { window.close(); };<\/script>
-              </body></html>`;
-          let printWindow = window.open('', '_blank');
-          printWindow.document.write(printHtml); printWindow.document.close();
+                body { font-family: 'Arial', sans-serif; padding: 20px; color: #1e293b; margin: 0; background: white; }
+                .header { text-align: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; margin-bottom: 20px; }
+                .header img { height: 50px; margin-bottom: 10px; }
+                .header h2 { margin: 0; font-size: 18px; font-weight: 900; color: #0f172a; }
+                .header h3 { margin: 5px 0 0 0; font-size: 14px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; }
+                .details-table { width: 100%; margin-bottom: 20px; font-size: 13px; border-collapse: collapse; } 
+                .details-table td { padding: 8px; border: 1px solid #e2e8f0; }
+                .details-table td strong { color: #475569; }
+                .section { margin-bottom: 20px; } 
+                .section h4 { background: #f8fafc; padding: 8px 12px; margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; color: #0f172a; border-radius: 4px; border: 1px solid #e2e8f0; } 
+                .section p { margin: 5px 0; font-size: 13px; padding-left: 12px; }
+                .serial-highlight { display: block; padding: 10px 15px; margin: 10px 12px; border: 2px dashed #94a3b8; background-color: #f8fafc; font-weight: 800; font-size: 14px; letter-spacing: 0.5px; border-radius: 6px; text-align: center; color: #6d28d9; }
+                .declaration { font-style: italic; line-height: 1.6; margin-bottom: 40px; font-size: 12px; text-align: justify; color: #475569; padding: 15px; background: #fffbeb; border-radius: 6px; border-left: 4px solid #facc15; }
+                .signature-box { display: flex; justify-content: space-between; margin-top: 50px; padding: 0 20px; font-size: 13px; }
+                .office-use { border-top: 2px dashed #cbd5e1; padding-top: 20px; margin-top: 30px; } 
+                .office-use h4 { text-align: center; margin-top: 0; font-size: 14px; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; }
+                @media print { @page { margin: 10mm; size: A4; } body { padding: 0; max-width: 100%; background: white; } .serial-highlight { border: 2px solid black !important; color: black !important; } }
+            </style></head>
+            <body>
+                <div class="header">
+                    <h2>COMMON SERVICE CENTRES (CSC) - ANDHRA PRADESH</h2>
+                    <h3>E-STAMPING STATIONARY ACKNOWLEDGEMENT FORM</h3>
+                </div>
+                <table class="details-table">
+                    <tr><td><strong>Date of Dispatch:</strong> ${date}</td><td><strong>Request ID:</strong> <span style="font-weight:900; color:#ef4444;">${generatedReqNo}</span></td></tr>
+                </table>
+                <div class="section">
+                    <h4>VLE DETAILS</h4>
+                    <p><strong>Name:</strong> <span style="font-weight:900; font-size: 14px;">${userName}</span></p>
+                    <p><strong>CSC ID:</strong> <span style="font-weight:900; font-size: 14px;">${userId}</span></p>
+                </div>
+                <div class="section">
+                    <h4>ALLOCATED STOCK DETAILS</h4>
+                    <p><strong>Quantity Sanctioned:</strong> <span style="font-weight:900; font-size: 14px;">${qty} Papers</span></p>
+                    <div class="serial-highlight">${serials}</div>
+                </div>
+                <div class="section declaration">I, <strong>${userName}</strong>, hereby acknowledge that I have received the physical e-Stamping stationary mentioned above from the District Manager's office. I ensure that these stamp papers will be used strictly for authorized CSC e-Stamping purposes.</div>
+                <div class="signature-box"><div><p>___________________________</p><p><strong>(VLE Signature & Stamp)</strong></p><p>Date: ______________</p></div></div>
+                <div class="office-use"><h4>FOR OFFICE USE ONLY</h4><div class="signature-box" style="margin-bottom:0;"><div><p>___________________________</p><p><strong>Stock Handed Over By</strong></p><p>Date: ______________</p></div></div></div>
+                <script>window.onafterprint = function() { window.close(); };<\/script>
+            </body></html>`;
+    }
+
+    function viewDocInRightPanel(index, btnElement) {
+        let rawHtml = generatedDocsMemory[index];
+        if(!rawHtml) return;
+        currentDocHtml = rawHtml; 
+        document.querySelectorAll('.btn-view-doc').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.req-item-card').forEach(c => c.classList.remove('active'));
+        btnElement.classList.add('active');
+        btnElement.closest('.req-item-card').classList.add('active');
+        document.getElementById('mainContainer').classList.add('active');
+        document.getElementById('docPanel').classList.add('show-panel');
+        let wrapper = document.getElementById('docViewerWrapper');
+        wrapper.innerHTML = `<iframe class="doc-iframe" id="printIframe"></iframe>`;
+        let iframe = document.getElementById('printIframe');
+        let doc = iframe.contentWindow.document;
+        doc.open(); doc.write(rawHtml); doc.close();
+        document.getElementById('btnPrintCurrent').classList.remove('d-none');
+    }
+
+    function closeDocPanel() {
+        document.getElementById('mainContainer').classList.remove('active');
+        document.getElementById('docPanel').classList.remove('show-panel');
+        document.querySelectorAll('.btn-view-doc').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.req-item-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('docViewerWrapper').innerHTML = '';
+        document.getElementById('btnPrintCurrent').classList.add('d-none');
+        currentDocHtml = "";
+    }
+
+    function printCurrentDoc() {
+        if(!currentDocHtml) return;
+        let printWindow = window.open('', '_blank');
+        printWindow.document.write(currentDocHtml); printWindow.document.close();
+        let script = printWindow.document.createElement('script');
+        script.innerHTML = "window.onload = function() { setTimeout(function() { window.print(); }, 500); };";
+        printWindow.document.body.appendChild(script);
     }
   </script>
 </body>
