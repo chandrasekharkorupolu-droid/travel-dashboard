@@ -6,14 +6,12 @@
     <title>Priority Follow-Up | CSC AP</title>
     <meta name="theme-color" content="#ffffff">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- 🌟 HTML2CANVAS LIBRARY FOR FULL IMAGE DOWNLOAD 🌟 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* 🌟 MASTER MOBILE & DESKTOP UI SETUP 🌟 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        /* Changed max-width to 100% to allow Desktop Expansion */
         .app-container { 
             width: 100%; max-width: 100%; height: 100vh; background-color: #f8fafc; 
             position: relative; display: flex; flex-direction: column; 
@@ -110,8 +108,6 @@
         .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; background: #fff;}
         .report-table th { background: #f1f5f9; color: #334155; padding: 10px; font-weight: 800; border-bottom: 2px solid #cbd5e1; white-space: nowrap; text-align:center;}
         .report-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 600; white-space: nowrap; text-align:center;}
-        
-        /* Aligning Employee Name to Left for readability */
         .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; }
         .report-table tr:last-child td { border-bottom: none; }
 
@@ -217,20 +213,14 @@
 
         /* 🌟 RESPONSIVE DESKTOP DESIGN 🌟 */
         @media (min-width: 768px) {
-            body { background-color: #cbd5e1; } /* Darker background outside container */
+            body { background-color: #cbd5e1; }
             .app-container { max-width: 1200px; height: 95vh; margin-top: 2.5vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-            
-            /* SPOC Dashboard Grid Adjustments */
             #spocScreen { padding: 30px; }
             .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
             .master-btn-group { max-width: 400px; margin: 15px auto 0 auto;}
             #activeDmList, #liveCallFeed, #dmFollowUpList { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
             .dm-item, .live-feed-item, .dm-action-item { margin-bottom: 0; }
-            
-            /* Table Adjustments */
             .report-table th, .report-table td { padding: 15px; font-size: 13px; }
-            
-            /* App (DM) Screen Centering */
             .vle-card { max-width: 500px; left: 0; right: 0; margin: 0 auto; }
             .top-stats-wrapper { max-width: 600px; margin: 0 auto; }
             .progress-bar-container { max-width: 600px; margin: 0 auto; border-radius: 4px; }
@@ -347,14 +337,14 @@
                 </div>
             </div>
 
-            <!-- 🌟 SMART DROPDOWN TO SWITCH VIEWS 🌟 -->
+            <!-- 🌟 SMART DROPDOWN TO SWITCH VIEWS (Live Feed Default) 🌟 -->
             <select id="spocViewSelector" class="view-selector" onchange="switchSpocView()">
                 <option value="view-livefeed" selected>🟢 Live Feed & Active DMs</option>
                 <option value="view-statehead">📊 State Head Report</option>
                 <option value="view-dmfollowup">🚀 DM Follow-Up Center</option>
             </select>
 
-            <!-- 🌟 VIEW 1: ACTIVE DMs & LIVE FEED 🌟 -->
+            <!-- 🌟 VIEW 1: ACTIVE DMs & LIVE FEED (DEFAULT) 🌟 -->
             <div id="view-livefeed" class="spoc-view-section" style="display:block;">
                 <div class="dash-card" style="border: 1px solid #e2e8f0; background: #f8fafc;">
                     <div class="dash-title" style="color: #475569;">🟢 Active DMs (Logged In)</div>
@@ -438,6 +428,14 @@
         let globalUniqueDMs = {}; 
         let spocAutoRefreshTimer = null; 
 
+        // 🌟 TIME-BASED GREETING 🌟
+        function getGreeting() {
+            let hour = new Date().getHours();
+            if (hour < 12) return "Good morning";
+            if (hour < 17) return "Good afternoon";
+            return "Good evening";
+        }
+
         window.onload = () => {
             if (sessionStorage.getItem("isLoggedIn")) {
                 enterFullscreen(); routeUser();
@@ -490,7 +488,10 @@
                 let users = await fetchRetry(apiURL + "?sheet=Users");
                 let user = users.find(u => u[0] == uid && u[1] == pwd);
                 if(user) {
-                    localStorage.setItem("userRole", user[2]); localStorage.setItem("userName", user[5]);
+                    localStorage.setItem("userRole", user[2]); 
+                    localStorage.setItem("userName", user[5]);
+                    localStorage.setItem("userMobile", user[0]); // 🌟 Save Mobile
+                    
                     document.getElementById("idPasswordForm").style.display = "none"; document.getElementById("newPinUserName").innerText = user[5]; document.getElementById("setPinForm").style.display = "block";
                 } else {
                     document.getElementById("loginError").innerText = "Invalid Mobile No or Password!"; document.getElementById("loginError").style.display = "block";
@@ -550,7 +551,6 @@
             }
         }
 
-        // 🌟 SMART IMAGE DOWNLOAD LOGIC (FIXES CROPPED TABLE) 🌟
         window.downloadStateHeadReport = function() {
             let card = document.getElementById("captureCard");
             let btn = document.getElementById("dlBtn");
@@ -589,20 +589,25 @@
             });
         }
 
+        // 🌟 SPOC TO DM WHATSAPP MESSAGE (STRICTLY ENGLISH FORMAT) 🌟
         window.dmWhatsApp = function(mobile, dmName, irctcTgt, redbusTgt) {
-            let cleanMob = mobile.replace(/\D/g, ''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
-            let day = new Date().getDay(); let isFriday = (day === 5);
-            let iLimit = isFriday ? 15 : 5; let rLimit = isFriday ? 5 : 3;
+            let cleanMob = mobile.replace(/\D/g, ''); 
+            if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+            
+            let day = new Date().getDay(); 
+            let isFriday = (day === 5);
+            let iLimit = isFriday ? 15 : 5; 
+            let rLimit = isFriday ? 5 : 3;
+            
             let totalInactive = irctcTgt + redbusTgt;
             let dailyAssigned = Math.min(irctcTgt, iLimit) + Math.min(redbusTgt, rLimit);
-            let msg = "";
             
-            if (isFriday) { 
-                msg = `నమస్కారం ${dmName} గారు,\n\nఈరోజు మనకు *Travel Login Drive!* 🚀\n\nPriority Follow-up సిస్టమ్‌లో మీకు మొత్తం *${totalInactive}* (IRCTC & RedBus) టార్గెట్స్ పెండింగ్ ఉన్నాయి. అందులో ఈరోజు డ్రైవ్ కోసం మీకు *${dailyAssigned}* టార్గెట్స్ కేటాయించడం జరిగింది. \n\nదయచేసి ప్రత్యేకంగా సమయం కేటాయించి, ప్రతి VLE కి కాల్ చేసి వెంటనే సర్వీస్ యాక్టివేట్ చేయించండి. All the best!\n\n- Sri.Y. Ravi Kumar, State Head`;
-            } else { 
-                msg = `నమస్కారం ${dmName} గారు,\n\nPriority Follow-up సిస్టమ్‌లో మీకు మొత్తం *${totalInactive}* (IRCTC & RedBus) టార్గెట్స్ పెండింగ్ ఉన్నాయి. అందులో ఈరోజు ఫాలో-అప్ కోసం మీకు *${dailyAssigned}* టార్గెట్స్ అసైన్ చేయబడ్డాయి.\n\nదయచేసి మీ వీలు చూసుకుని ఈరోజు తప్పకుండా వీరికి కాల్ చేసి సర్వీసెస్ యాక్టివేట్ చేయించగలరు.\n\n- Sri.Y. Ravi Kumar, State Head`;
-            }
-            let encodedMsg = encodeURIComponent(msg); let isAndroid = /Android/i.test(navigator.userAgent);
+            let greeting = getGreeting();
+            
+            let msg = `Dear Mr. ${dmName},\n${greeting}!\n\nYou have a total of *${totalInactive}* pending Inactive VLEs (IRCTC & RedBus) in the priority follow-up system. Out of these, *${dailyAssigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail and get the services activated.\n\nhttps://new.travelcloud.in/MobileFollowUp.html\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,\nState Head\nCSC Andhra Pradesh*`;
+            
+            let encodedMsg = encodeURIComponent(msg); 
+            let isAndroid = /Android/i.test(navigator.userAgent);
             let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
             window.location.href = waLink;
         };
@@ -668,12 +673,25 @@
                     } 
                 });
 
-                let vleMobileMap = {}; let totalIrctcPending = 0, totalRedbusPending = 0;
+                let vleMobileMap = {}; let vleLastYearMap = {}; 
+                // 🌟 ADDED NAME MAP FOR CORRECT LIVE FEED DISPLAY 🌟
+                let vleNameMap = {}; 
+                let vleIrctcTxnMap = {}; let vleRedbusTxnMap = {};
+                
+                let totalIrctcPending = 0, totalRedbusPending = 0;
 
                 if (baseTargetsRaw && baseTargetsRaw.length > 1) {
                     for(let i=1; i<baseTargetsRaw.length; i++) {
-                        let cId = baseTargetsRaw[i][0]; if (cId) vleMobileMap[cId] = baseTargetsRaw[i][2]; 
-                        let dmName = (baseTargetsRaw[i][3]||"").trim(); let service = (baseTargetsRaw[i][4]||"").trim().toUpperCase();
+                        let cId = baseTargetsRaw[i][0]; 
+                        let service = (baseTargetsRaw[i][4]||"").trim().toUpperCase();
+                        if (cId) {
+                            vleNameMap[cId] = baseTargetsRaw[i][1] || cId;
+                            vleMobileMap[cId] = baseTargetsRaw[i][2]; 
+                            vleLastYearMap[cId] = baseTargetsRaw[i][5] || "0"; 
+                            if(service === "IRCTC") vleIrctcTxnMap[cId] = baseTargetsRaw[i][5] || "0";
+                            if(service === "REDBUS") vleRedbusTxnMap[cId] = baseTargetsRaw[i][5] || "0";
+                        }
+                        let dmName = (baseTargetsRaw[i][3]||"").trim(); 
                         let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
                         if(dmKey) { if (service === "IRCTC") uniqueDMs[dmKey].irctcBaseTarget += 1; else if (service === "REDBUS") uniqueDMs[dmKey].redbusBaseTarget += 1; }
                     }
@@ -682,7 +700,13 @@
                 if (targetsRaw && targetsRaw.length > 1) {
                     for(let i=1; i<targetsRaw.length; i++) {
                         let dmName = (targetsRaw[i][3]||"").trim(); let service = (targetsRaw[i][4]||"").trim().toUpperCase(); let status = targetsRaw[i][7]; let cId = targetsRaw[i][0];
-                        if (cId && !vleMobileMap[cId]) vleMobileMap[cId] = targetsRaw[i][2]; 
+                        if (cId) {
+                            if(!vleNameMap[cId]) vleNameMap[cId] = targetsRaw[i][1] || cId;
+                            if(!vleMobileMap[cId]) vleMobileMap[cId] = targetsRaw[i][2]; 
+                            if(!vleLastYearMap[cId]) vleLastYearMap[cId] = targetsRaw[i][5] || "0";
+                            if(service === "IRCTC" && !vleIrctcTxnMap[cId]) vleIrctcTxnMap[cId] = targetsRaw[i][5] || "0";
+                            if(service === "REDBUS" && !vleRedbusTxnMap[cId]) vleRedbusTxnMap[cId] = targetsRaw[i][5] || "0";
+                        }
                         let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
                         if(dmKey && status === "PENDING") {
                             if (service === "IRCTC") { uniqueDMs[dmKey].irctcPending += 1; totalIrctcPending++; } 
@@ -719,8 +743,18 @@
                                 totalCallsToday++; uniqueDMs[dmKey].calledToday += 1; 
                                 if(srv === "IRCTC") uniqueDMs[dmKey].irctcCalled += 1; else if(srv === "REDBUS") uniqueDMs[dmKey].redbusCalled += 1; 
                             }
-                            let timeStr = String(logs[i][0]).split(" ")[1] || ""; let cscIdLog = logs[i][1]; let vleName = logs[i][2] === "IRCTC" || logs[i][2] === "REDBUS" ? cscIdLog : logs[i][1]; let rmk = logs[i][4]; let mobile = vleMobileMap[cscIdLog] || "";
-                            globalLiveFeedData.push({ dmName: logDmName, vleName: vleName, service: srv, time: timeStr, remark: rmk, mobile: mobile });
+                            
+                            let timeStr = String(logs[i][0]).split(" ")[1] || ""; 
+                            let cscIdLog = logs[i][1]; 
+                            let rmk = logs[i][4]; 
+                            
+                            // 🌟 GET ACCURATE NAME & TXNS FOR LIVE FEED 🌟
+                            let vleName = vleNameMap[cscIdLog] || cscIdLog;
+                            let mobile = vleMobileMap[cscIdLog] || "";
+                            let iTxn = vleIrctcTxnMap[cscIdLog] || "0";
+                            let rTxn = vleRedbusTxnMap[cscIdLog] || "0";
+                            
+                            globalLiveFeedData.push({ dmName: logDmName, vleName: vleName, service: srv, time: timeStr, remark: rmk, mobile: mobile, iTxn: iTxn, rTxn: rTxn });
                         }
                     }
                     globalLiveFeedData.reverse();
@@ -732,7 +766,6 @@
                 document.getElementById("reportDateTxt").innerText = `(${todayStr})`;
                 filterSelect.innerHTML = `<option value="ALL">All DMs</option>`; 
                 
-                // 🌟 STATE HEAD HTML TABLE BUILDER 🌟
                 let headReportHtml = `
                 <div class="report-table-container">
                     <table class="report-table">
@@ -813,17 +846,40 @@
             } catch(e) { console.error("Auto Sync Error:", e); }
         }
 
+        // 🌟 SPOC TO VLE WHATSAPP MESSAGE (STRICT DYNAMIC LOGIC) 🌟
         function renderLiveFeed(filterDM) {
             let feedContainer = document.getElementById("liveCallFeed"); let html = ""; let isAndroid = /Android/i.test(navigator.userAgent);
             let filteredData = globalLiveFeedData; if(filterDM !== "ALL") { filteredData = globalLiveFeedData.filter(item => item.dmName === filterDM); }
             if(filteredData.length === 0) { feedContainer.innerHTML = "<p style='font-size:12px; text-align:center; color:#64748b; padding:10px;'>No calls found.</p>"; return; }
+
+            let greeting = getGreeting();
+            let myName = localStorage.getItem("userName") || "State Office";
+            let myMobile = localStorage.getItem("userMobile") || "9440115828";
 
             filteredData.forEach(item => {
                 let badgeColor = item.remark === "Activated" ? "background:#dcfce7; color:#166534;" : (item.remark.includes("Not Reachable") || item.remark.includes("Shop Closed") ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
                 let btnHtml = "";
                 if(item.mobile && item.mobile !== "-" && item.mobile !== "0") {
                     let cleanMob = item.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
-                    let msg = `నమస్కారం సార్,\n\nCSC స్టేట్ ఆఫీస్ (SPOC) నుండి మాట్లాడుతున్నాము. మీ CSC ఐడీలో (${item.service}) సర్వీస్ ఇంకా పెండింగ్ లో ఉంది. దయచేసి వెంటనే యాక్టివేట్ చేసుకోగలరు.`;
+                    
+                    // 🌟 DYNAMIC TXN & SERVICE LOGIC 🌟
+                    let srvText = item.service === "BOTH" ? "IRCTC & REDBUS" : item.service;
+                    let txnText = "";
+                    
+                    if (item.service === "BOTH") {
+                        let iT = parseInt(item.iTxn||0); let rT = parseInt(item.rTxn||0);
+                        if(iT === 0 && rT === 0) txnText = "కొన్ని";
+                        else txnText = `(IRCTC: ${iT}, REDBUS: ${rT})`;
+                    } else if (item.service === "IRCTC") {
+                        let iT = parseInt(item.iTxn||0);
+                        txnText = iT > 0 ? iT : "కొన్ని";
+                    } else {
+                        let rT = parseInt(item.rTxn||0);
+                        txnText = rT > 0 ? rT : "కొన్ని";
+                    }
+
+                    let msg = `Dear ${item.vleName} గారు,\n${greeting}\n\nగత ఫైనాన్షియల్ ఇయర్‌ (FY 25-26) లో మీరు ${srvText} ద్వారా ${txnText} టికెట్లు బుక్ చేసి అద్భుతమైన ప్రదర్శన కనబరిచారు. అందుకు మా ధన్యవాదాలు!\n\nకానీ ఈ ఫైనాన్షియల్ ఇయర్‌ (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.\n\nదయచేసి వెంటనే ఒక టికెట్ బుక్ చేసి, మీ ID ను యాక్టివ్‌గా ఉంచుకోండి.\n\nధన్యవాదాలు\n${myName}\nట్రావెల్ టీం – ఆంధ్రప్రదేశ్\nMobile: ${myMobile}`;
+                    
                     let encodedMsg = encodeURIComponent(msg);
                     let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
                     btnHtml = `<div class="feed-actions"><a href="tel:${item.mobile}" class="feed-btn f-call">📞 Call</a><a href="${waLink}" class="feed-btn f-wa">💬 WhatsApp</a></div>`;
@@ -854,6 +910,7 @@
                 for(let i=1; i<targetRaw.length; i++) {
                     if((targetRaw[i][3]||"").toLowerCase().trim() === dmName && targetRaw[i][7] === "PENDING") {
                         let srv = targetRaw[i][4]; if (srv === "IRCTC") grandTotalIrctc++; if (srv === "REDBUS") grandTotalRedbus++;
+                        // 🌟 NAME IS FETCHED CORRECTLY HERE 🌟
                         rawQueue.push({ cscId: targetRaw[i][0], name: targetRaw[i][1], mobile: targetRaw[i][2], service: srv, lastYear: targetRaw[i][5] || "0", thisYear: targetRaw[i][6] || "0", history: historyMap[targetRaw[i][0]] || null });
                     }
                 }
@@ -887,14 +944,34 @@
 
         function handleRemarkChange(selElement, idx) { let inputId = "otherRemark-" + idx; let inputBox = document.getElementById(inputId); if(selElement.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); } else { inputBox.style.display = "none"; inputBox.value = ""; } }
 
+        // 🌟 DM TO VLE WHATSAPP MESSAGE (STRICT DYNAMIC LOGIC) 🌟
         function renderCards() {
             let html = ""; let isAndroid = /Android/i.test(navigator.userAgent);
+            let greeting = getGreeting();
+            let myName = localStorage.getItem("userName") || "State Office";
+            let myMobile = localStorage.getItem("userMobile") || "9440115828";
+
             pendingQueue.forEach((v, i) => {
                 let isBoth = (v.service === "BOTH"); let headerClass = isBoth ? "bg-both" : (v.service === "IRCTC" ? "bg-irctc" : "bg-redbus"); let emoji = isBoth ? "🤝" : (v.service === "IRCTC" ? "🚆" : "🚌"); let titleText = isBoth ? "IRCTC & REDBUS COMBINED FOLLOW-UP" : `${v.service} Follow-Up`;
                 let txnBoxHtml = isBoth ? `<div class="txn-container"><div class="txn-row"><span>🚆 Last Year IRCTC Txns:</span> <span class="txn-count-badge">${v.irctcLastYear}</span></div><div class="txn-row" style="margin-top: 5px;"><span>🚌 Last Year REDBUS Txns:</span> <span class="txn-count-badge">${v.redbusLastYear}</span></div></div>` : `<div class="txn-container"><div class="txn-row"><span>📊 Last Year Txns Count:</span> <span class="txn-count-badge">${v.lastYear}</span></div></div>`;
                 let historyHtml = ""; if (v.history) { historyHtml = `<div class="history-badge">🕰️ Last Call: ${v.history.dateStr} <br><span>💬 "${v.history.remark}"</span></div>`; }
                 let cleanMob = v.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
-                let msg = `నమస్కారం ${v.name} గారు,\n\nCSC AP ఆఫీస్ నుండి మాట్లాడుతున్నాము. మీ CSC ఐడీలో Tour & Travels (IRCTC/REDBUS) సర్వీస్ ఇంకా పెండింగ్ లో ఉంది. దయచేసి వెంటనే యాక్టివేట్ చేసుకోగలరు.\n\nఏమైనా సందేహాలు ఉంటే ఈ నెంబర్ కి రిప్లై ఇవ్వగలరు.`;
+                
+                // 🌟 DYNAMIC TXN & SERVICE LOGIC 🌟
+                let srvText = v.service === "BOTH" ? "IRCTC & REDBUS" : v.service;
+                let txnText = "";
+                if(v.service === "BOTH") {
+                    let iTxn = parseInt(v.irctcLastYear||0);
+                    let rTxn = parseInt(v.redbusLastYear||0);
+                    if(iTxn === 0 && rTxn === 0) txnText = "కొన్ని";
+                    else txnText = `(IRCTC: ${iTxn}, REDBUS: ${rTxn})`;
+                } else {
+                    let sTxn = parseInt(v.lastYear||0);
+                    txnText = sTxn > 0 ? sTxn : "కొన్ని";
+                }
+
+                let msg = `Dear ${v.name} గారు,\n${greeting}\n\nగత ఫైనాన్షియల్ ఇయర్‌ (FY 25-26) లో మీరు ${srvText} ద్వారా ${txnText} టికెట్లు బుక్ చేసి అద్భుతమైన ప్రదర్శన కనబరిచారు. అందుకు మా ధన్యవాదాలు!\n\nకానీ ఈ ఫైనాన్షియల్ ఇయర్‌ (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.\n\nదయచేసి వెంటనే ఒక టికెట్ బుక్ చేసి, మీ ID ను యాక్టివ్‌గా ఉంచుకోండి.\n\nధన్యవాదాలు\n${myName}\nట్రావెల్ టీం – ఆంధ్రప్రదేశ్\nMobile: ${myMobile}`;
+                
                 let encodedMsg = encodeURIComponent(msg); let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
                 html += `<div class="vle-card" id="card-${i}"><div class="vle-card-header ${headerClass}">${emoji} ${titleText}</div><div class="vle-info"><div class="vle-details"><h2>${v.name}</h2><p>CSC ID: ${v.cscId}</p><div class="action-btn-group"><button class="call-btn" onclick="startCallTimer('${v.mobile}')"><span>📞</span> Call</button><a href="${waLink}" class="wa-btn"><span>💬</span> WhatsApp</a></div>${historyHtml}${txnBoxHtml}</div><div class="vle-action"><select id="remark-${i}" onchange="handleRemarkChange(this, ${i})"><option value="" disabled selected>Tap to Select Outcome...</option><option value="Activated">Activated</option><option value="Promised to do today / tomorrow">Promised to do today / tomorrow</option><option value="Did not Lift / Not Reachable">Did not Lift / Not Reachable</option><option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option><option value="DSP e-KYC Problem">DSP e-KYC Problem</option><option value="Aadhaar Recovery Pending">ID Recovery Pending</option><option value="Password Reset / Login Issue">Password Reset / Login Issue</option><option value="Mobile No Change">Mobile No Change</option><option value="Others">Others (Type reason below)</option></select><input type="text" id="otherRemark-${i}" class="other-input-box" placeholder="Type actual reason here..."><button class="submit-btn" onclick="submitCall(${i})">Submit & View Next</button></div></div></div>`;
             });
