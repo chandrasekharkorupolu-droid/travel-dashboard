@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* 🌟 మాస్టర్ టెంప్లేట్ సెట్టింగ్స్ - AIRWAYS BLUE THEME 🌟 */
+    body { background-color: #f0f9ff; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.05); border: 1px solid #bae6fd; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
+    .title-sec { font-size: 16px; font-weight: 900; color: #0284c7; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    
+    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
+    .filter-label { font-size: 13px; font-weight: 800; color: #475569; }
+    
+    .dist-select { border: 1px solid #7dd3fc; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #0f172a; background-color: white; cursor: pointer; }
+    .month-select { border: 2px solid #0284c7; color: #0369a1; background-color: #e0f2fe; height: 33px;}
+    
+    .search-box { border: 1px solid #7dd3fc; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 160px; transition: 0.2s; height: 33px;}
+    .search-box:focus, .dist-select:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 33px;}
+    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
+    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+
+    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.05); border: 1px solid #bae6fd; overflow: hidden; }
+    
+    .report-main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 0.5px; text-transform: uppercase;}
+    .report-date-text { color: #ea580c; font-weight: 700; margin: 5px 0 0 0; font-size: 13px; }
+
+    .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .kpi-card { background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: center;}
+    .kpi-card span { font-size: 12px; font-weight: 900; color: #64748b; text-transform: uppercase; }
+    .kpi-card strong { font-size: 20px; font-weight: 900; color: #0f172a; }
+    
+    .kpi-prev { border-left: 5px solid #64748b; } 
+    .kpi-curr { border-left: 5px solid #0284c7; } /* Airways Blue */
+    .kpi-var { border-left: 5px solid #8b5cf6; }  
+    .kpi-grw { border-left: 5px solid #10b981; } 
+
+    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    
+    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { border-left: none !important; border-right: none !important; }
+    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 10px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.2) !important;}
+    
+    .th-dist { background-color: #0f172a !important; color: #ffffff !important; }
+    .th-csc { background-color: #334155 !important; color: #ffffff !important; }
+    .th-prev { background-color: #475569 !important; color: #ffffff !important; }
+    .th-curr { background-color: #0284c7 !important; color: #ffffff !important; } /* Airways Blue */
+    .th-var { background-color: #6d28d9 !important; color: #ffffff !important; }
+    .th-perc { background-color: #0f766e !important; color: #ffffff !important; }
+    .th-stat { background-color: #1e293b !important; color: #ffffff !important; }
+    
+    /* 🌟 కొత్త సబ్-హెడ్డింగ్స్ కోసం (Part & Txns) 🌟 */
+    .sub-th { background-color: #f1f5f9 !important; color: #1e293b !important; font-size: 10px; border-bottom: 1px solid #cbd5e1 !important; padding: 6px !important;}
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
+    
+    /* 🌟 Blue Hover Effect for Airways 🌟 */
+    tbody tr:hover { 
+        background-color: #e0f2fe !important; outline: 2px solid #0284c7; outline-offset: -2px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;
+    }
+    
+    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
+    
+    .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #0284c7 !important; cursor: pointer; user-select: none; }
+    .clickable-dist:hover { color: #0369a1 !important; text-decoration: none !important; }
+    
+    .text-pos { color: #16a34a !important; font-weight: 900;}
+    .text-neg { color: #dc2626 !important; font-weight: 900;}
+    .text-neu { color: #64748b !important; font-weight: 900;}
+    
+    .badge-pos { background: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
+    .badge-neg { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
+    .badge-neu { background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
+
+    .t-row-total { background-color: #e2e8f0 !important; border-top: 3px solid #cbd5e1 !important; }
+    .t-row-total td { color: #0f172a !important; font-size: 12px !important; font-weight: 900 !important; text-align: center; padding: 12px;}
+    .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
+
+    .charts-container { display: flex; gap: 15px; height: 320px; margin-top: 20px; position: sticky; left: 0; width: calc(100vw - 60px); background: white; padding-bottom: 10px; }
+    .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.05); border: 1px solid #bae6fd; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+    .chart-title { font-size: 14px; font-weight: 900; color: #0284c7; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #e0f2fe; padding-bottom: 5px;}
+
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
+    html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+    html.exporting thead { position: static !important; transform: none !important; }
+    html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; height: 350px !important; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    
+    <div class="filter-group">
+      <div class="title-sec me-3">✈️ AIRWAYS: MoM MATRIX</div>
+      
+      <select id="distTypeDropdown" class="dist-select" onchange="processData()">
+          <option value="OLD">Old Districts</option>
+          <option value="NEW">New Districts</option>
+      </select>
+      
+      <select id="distDropdown" class="dist-select" onchange="renderView()">
+          <option value="">All Districts</option>
+      </select>
+      
+      <input type="text" id="searchInput" class="search-box" placeholder="Search District..." onkeyup="renderView()">
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label ms-2">Compare:</span>
+      <select id="monthDropdown" class="dist-select month-select" onchange="processData()">
+          <option value="1">MAY-26 vs APR-26</option>
+          <option value="2" selected>JUN-26 vs MAY-26</option>
+          <option value="3">JUL-26 vs JUN-26</option>
+          <option value="4">AUG-26 vs JUL-26</option>
+          <option value="5">SEP-26 vs AUG-26</option>
+          <option value="6">OCT-26 vs SEP-26</option>
+          <option value="7">NOV-26 vs OCT-26</option>
+          <option value="8">DEC-26 vs NOV-26</option>
+          <option value="9">JAN-27 vs DEC-26</option>
+          <option value="10">FEB-27 vs JAN-27</option>
+          <option value="11">MAR-27 vs FEB-27</option>
+      </select>
+
+      <button class="btn-custom btn-reset ms-2" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Image</button>
+      <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Full Screen</button>
+    </div>
+
+  </div>
+
+  <div class="content-wrapper" id="captureArea">
+    
+    <div class="report-main-header">
+        <h2 class="report-main-title">CSC AP - AIRWAYS MONTH ON MONTH (MoM) GROWTH MATRIX</h2>
+        <p class="report-date-text" id="reportDateTxt"></p>
+    </div>
+
+    <!-- 🌟 KPI Cards Section 🌟 -->
+    <div class="kpi-container" id="kpiCards">
+        <div class="kpi-card kpi-prev"><span id="lblPrevMnt">PREV MONTH TXNS:</span> <strong id="kpiPrev">0</strong></div>
+        <div class="kpi-card kpi-curr"><span id="lblCurrMnt">CURR MONTH TXNS:</span> <strong id="kpiCurr">0</strong></div>
+        <div class="kpi-card kpi-var"><span>NET TXN VARIANCE:</span> <strong id="kpiVar" class="text-neu">0</strong></div>
+        <div class="kpi-card kpi-grw"><span>OVERALL GROWTH:</span> <strong id="kpiGrw" class="text-neu">0%</strong></div>
+    </div>
+
+    <div class="scrollable-area" id="scrollableArea">
+      <table id="reportTable">
+        <thead id="dynamicHead">
+          <!-- జావాస్క్రిప్ట్ ద్వారా హెడ్డింగ్స్ వస్తాయి -->
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="9" class="text-danger py-4 text-center fw-bold">Loading Data...</td></tr>
+        </tbody>
+        <tfoot id="reportFoot"></tfoot>
+      </table>
+
+      <!-- చార్ట్స్ సెక్షన్ -->
+      <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
+        <div class="chart-box" style="flex: 2;">
+          <div class="chart-title">📈 District-Wise Variance (Current vs Previous)</div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-box" style="flex: 1;">
+          <div class="chart-title">🍩 Districts Performance Status</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    // 🌟 Cache Key Updated for Airways 🌟
+    const CACHE_KEY = "TRAVEL_CACHE_V6_AIRWAYS_MOM_" + loggedInUserId;
+
+    let rawData = [];
+    let districtAggregatedData = [];
+    let selectedDistFilter = ""; 
+
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    const mNames = ['APR-26', 'MAY-26', 'JUN-26', 'JUL-26', 'AUG-26', 'SEP-26', 'OCT-26', 'NOV-26', 'DEC-26', 'JAN-27', 'FEB-27', 'MAR-27'];
+
+    window.onload = async function() {
+        const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+
+        let cachedObj = await getCachedData(CACHE_KEY);
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            processData();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    // 🌟 2-Level హెడ్డింగ్ (Part & Txns) 🌟
+    function buildTableHeaders(prevMnt, currMnt) {
+        let thead = document.getElementById("dynamicHead");
+        thead.innerHTML = `
+          <tr>
+            <th rowspan="2" class="th-dist text-start ps-3" style="width:16%;">DISTRICT NAME</th>
+            <th rowspan="2" class="th-csc">TOTAL<br>VLES</th>
+            <th colspan="2" class="th-prev">${prevMnt}</th>
+            <th colspan="2" class="th-curr">${currMnt}</th>
+            <th rowspan="2" class="th-var">TXN<br>VARIANCE (+/-)</th>
+            <th rowspan="2" class="th-perc">GROWTH %</th>
+            <th rowspan="2" class="th-stat">STATUS</th>
+          </tr>
+          <tr>
+            <th class="sub-th" style="color:#64748b !important;">PARTICIPANTS</th><th class="sub-th" style="color:#0f172a !important;">TXNS</th>
+            <th class="sub-th" style="color:#0284c7 !important;">PARTICIPANTS</th><th class="sub-th" style="color:#0369a1 !important;">TXNS</th>
+          </tr>
+        `;
+        document.getElementById("lblPrevMnt").innerText = `${prevMnt} TXNS:`;
+        document.getElementById("lblCurrMnt").innerText = `${currMnt} TXNS:`;
+    }
+
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    
+    function fetchDataFromServer() {
+        // 🌟 Changed service to "AIRWAYS" 🌟
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "AIRWAYS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+    }
+    
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    function processData() {
+        let isNew = document.getElementById("distTypeDropdown").value === "NEW";
+        let mIndex = parseInt(document.getElementById("monthDropdown").value);
+        
+        let prevMntName = mNames[mIndex - 1];
+        let currMntName = mNames[mIndex];
+        
+        const monthKeys = ['apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar'];
+        let prevKey = monthKeys[mIndex - 1]; 
+        let currKey = monthKeys[mIndex];     
+        
+        buildTableHeaders(prevMntName, currMntName);
+
+        let distMap = {};
+
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            if(distName === "Unknown") return;
+
+            if(!distMap[distName]) {
+                distMap[distName] = { name: distName, totCsc: 0, prevPart: 0, prevTxns: 0, currPart: 0, currTxns: 0 };
+            }
+
+            let d = distMap[distName];
+            d.totCsc++;
+            
+            // 🌟 అసలైన మ్యాజిక్: ట్రాన్సాక్షన్స్ ఉంటే పార్టిసిపెంట్స్ కౌంట్ పెంచుతున్నాం 🌟
+            let pVal = parseFloat(r[prevKey]) || 0;
+            let cVal = parseFloat(r[currKey]) || 0;
+
+            d.prevTxns += pVal;
+            if(pVal > 0) d.prevPart++; // పోయిన నెల బుకింగ్ చేసిన VLE
+
+            d.currTxns += cVal;
+            if(cVal > 0) d.currPart++; // ఈ నెల బుకింగ్ చేసిన VLE
+        });
+
+        districtAggregatedData = Object.values(distMap).map(d => {
+            let variance = d.currTxns - d.prevTxns;
+            
+            let growthPerc = 0;
+            if(d.prevTxns === 0 && d.currTxns > 0) growthPerc = 100;
+            else if(d.prevTxns > 0) growthPerc = ((variance / d.prevTxns) * 100).toFixed(1);
+
+            let status = "NEUTRAL";
+            if(variance > 0) status = "GROWTH";
+            else if(variance < 0) status = "DECLINE";
+
+            return { ...d, variance, growthPerc, status };
+        }).sort((a, b) => a.name.localeCompare(b.name));
+        
+        let distDropdown = document.getElementById("distDropdown");
+        distDropdown.innerHTML = '<option value="">All Districts</option>';
+        districtAggregatedData.forEach(d => { distDropdown.innerHTML += `<option value="${d.name}">${d.name}</option>`; });
+
+        renderView();
+    }
+
+    window.resetFilters = function() {
+        document.getElementById("distDropdown").value = "";
+        document.getElementById("distTypeDropdown").value = "OLD";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("monthDropdown").value = "2"; 
+        selectedDistFilter = "";
+        processData();
+    };
+
+    window.toggleFullScreen = function() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e => { alert("Error: " + e.message); }); } 
+        else { document.exitFullscreen(); }
+    };
+    document.addEventListener('fullscreenchange', () => {
+        let fsBtn = document.getElementById("fsBtn");
+        if (document.fullscreenElement) { fsBtn.innerHTML = "⛶ Exit Fullscreen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Fullscreen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+    });
+
+    window.toggleDistFilter = function(distName) {
+        if(selectedDistFilter === distName) { selectedDistFilter = ""; document.getElementById("distDropdown").value = ""; } 
+        else { selectedDistFilter = distName; document.getElementById("distDropdown").value = distName; }
+        renderView();
+    };
+
+    function renderView() {
+        let searchTxt = document.getElementById("searchInput").value.toUpperCase();
+        let dropDownVal = document.getElementById("distDropdown").value;
+        
+        let filteredData = districtAggregatedData.filter(d => {
+            return (selectedDistFilter === "" || d.name === selectedDistFilter) && 
+                   (dropDownVal === "" || d.name === dropDownVal) &&
+                   d.name.toUpperCase().includes(searchTxt);
+        });
+        
+        renderTableAndKPIs(filteredData);
+        renderCharts(filteredData);
+    }
+
+    // 🌟 కొత్త కాలమ్స్ తో టేబుల్ రెండరింగ్ 🌟
+    function renderTableAndKPIs(dataArray) {
+        let tbody = document.getElementById("reportBody");
+        let tfoot = document.getElementById("reportFoot");
+        tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+        if(dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-4 text-center fw-bold">No District Found</td></tr>`;
+            document.getElementById("kpiPrev").innerText = "0";
+            document.getElementById("kpiCurr").innerText = "0";
+            document.getElementById("kpiVar").innerText = "0";
+            document.getElementById("kpiGrw").innerText = "0%";
+            return;
+        }
+
+        let tCsc=0, tPrevPart=0, tPrevTxn=0, tCurrPart=0, tCurrTxn=0, tVar=0;
+
+        dataArray.forEach(d => {
+            tCsc += d.totCsc; 
+            tPrevPart += d.prevPart; tPrevTxn += d.prevTxns; 
+            tCurrPart += d.currPart; tCurrTxn += d.currTxns; 
+            tVar += d.variance;
+
+            let varClass = "text-neu"; let varSign = "";
+            let badgeClass = "badge-neu"; let badgeIcon = "➖";
+            if(d.variance > 0) { varClass = "text-pos"; varSign = "+"; badgeClass = "badge-pos"; badgeIcon = "📈 UP"; }
+            else if(d.variance < 0) { varClass = "text-neg"; badgeClass = "badge-neg"; badgeIcon = "📉 DOWN"; }
+
+            tbody.innerHTML += `
+            <tr>
+                <td class="clickable-dist text-primary fw-bold text-start ps-3" ondblclick="toggleDistFilter('${d.name}')">${d.name}</td>
+                <td class="fw-bold">${d.totCsc}</td>
+                <td style="color:#64748b;">${d.prevPart}</td>
+                <td style="color:#0f172a; font-weight:900;">${d.prevTxns}</td>
+                <td style="color:#0284c7;">${d.currPart}</td>
+                <td style="color:#0369a1; font-weight:900;">${d.currTxns}</td>
+                <td class="${varClass}">${varSign}${d.variance}</td>
+                <td class="${varClass}">${varSign}${d.growthPerc}%</td>
+                <td><span class="${badgeClass}">${badgeIcon}</span></td>
+            </tr>`;
+        });
+
+        let tGrw = tPrevTxn > 0 ? ((tVar / tPrevTxn) * 100).toFixed(1) : 0;
+        
+        let tVarClass = "text-neu"; let tVarSign = ""; let tBorderClass = "kpi-var";
+        if(tVar > 0) { tVarClass = "text-pos"; tVarSign = "+"; tBorderClass = "kpi-grw"; }
+        else if(tVar < 0) { tVarClass = "text-neg"; tBorderClass = "kpi-prev"; document.getElementById("kpiVar").parentNode.style.borderLeftColor = "#dc2626"; }
+
+        document.getElementById("kpiPrev").innerText = tPrevTxn;
+        document.getElementById("kpiCurr").innerText = tCurrTxn;
+        
+        let elVar = document.getElementById("kpiVar");
+        elVar.innerText = tVarSign + tVar;
+        elVar.className = tVarClass;
+        
+        let elGrw = document.getElementById("kpiGrw");
+        elGrw.innerText = tVarSign + tGrw + "%";
+        elGrw.className = tVarClass;
+
+        tfoot.innerHTML = `
+        <tr class="t-row-total">
+            <td class="text-start ps-3 text-danger">GRAND TOTAL</td>
+            <td>${tCsc}</td>
+            <td style="color:#64748b;">${tPrevPart}</td>
+            <td style="color:#0f172a;">${tPrevTxn}</td>
+            <td style="color:#0284c7;">${tCurrPart}</td>
+            <td style="color:#0369a1;">${tCurrTxn}</td>
+            <td class="${tVarClass}">${tVarSign}${tVar}</td>
+            <td class="${tVarClass}">${tVarSign}${tGrw}%</td>
+            <td>--</td>
+        </tr>`;
+    }
+
+    function renderCharts(dataArray) {
+        if(dataArray.length === 0) return;
+
+        let labels = [], varData = [];
+        let growCount = 0, declineCount = 0, neuCount = 0;
+
+        dataArray.forEach(d => {
+            labels.push(d.name.substring(0,8) + ".."); 
+            varData.push(d.variance);
+            
+            if(d.status === "GROWTH") growCount++;
+            else if(d.status === "DECLINE") declineCount++;
+            else neuCount++;
+        });
+
+        let bgColors = varData.map(v => v >= 0 ? '#10b981' : '#ef4444');
+
+        if(barChartInstance) barChartInstance.destroy();
+        let ctxBar = document.getElementById('barChart').getContext('2d');
+        barChartInstance = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Txn Variance (+/-)', data: varData, backgroundColor: bgColors, borderRadius: 4 }]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        if(pieChartInstance) pieChartInstance.destroy();
+        let ctxPie = document.getElementById('pieChart').getContext('2d');
+        pieChartInstance = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Growing 📈', 'Declining 📉'],
+                datasets: [{ data: [growCount, declineCount], backgroundColor: ['#10b981', '#ef4444'], hoverOffset: 4 }]
+            },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function exportToExcel() {
+       let ws = XLSX.utils.table_to_sheet(document.getElementById('reportTable'));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "MoM Growth Matrix");
+       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+       XLSX.writeFile(wb, `AIRWAYS_MoM_Growth_${dStr}.xlsx`);
+    }
+
+    function downloadImage() {
+       document.documentElement.classList.add("exporting");
+       let captureArea = document.getElementById('captureArea');
+       
+       setTimeout(() => {
+           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight + 50 })
+           .then(canvas => {
+              document.documentElement.classList.remove("exporting");
+              let link = document.createElement('a');
+              let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+              link.download = `AIRWAYS_MoM_Growth_${dStr}.png`; link.href = canvas.toDataURL("image/png"); link.click();
+           });
+       }, 500); 
+    }
+  </script>
+</body>
+</html>

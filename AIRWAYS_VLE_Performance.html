@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body { background-color: #f0f9ff; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0; }
+    
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.05); border: 1px solid #bae6fd; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    
+    .title-sec { font-size: 16px; font-weight: 900; color: #0284c7; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    .filter-group { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
+    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px;}
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    .form-select, .search-box { border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; }
+    .search-box { width: 200px; }
+    
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap;}
+    .btn-reset { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; } .btn-reset:hover { background: #fca5a5; color: white; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-full:hover { background: #cbd5e1; }
+
+    .kpi-container { display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0; }
+    .kpi-card { flex: 1; min-width: 130px; background: white; padding: 12px 5px; border-radius: 10px; border-top: 4px solid #ccc; text-align: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: 0.2s; display: flex; flex-direction: column; justify-content: center; }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 5px 12px rgba(0,0,0,0.08); }
+    .kpi-card.active { background: #f0f9ff; border-color: #0284c7 !important; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.3); }
+    .kpi-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; line-height: 1.2;}
+    .kpi-val { font-size: 18px; font-weight: 900; margin: 0; }
+    
+    .k-tot { border-color: #3b82f6; } .k-tot .kpi-val { color: #2563eb; }
+    .k-d25 { border-color: #f59e0b; } .k-d25 .kpi-val { color: #d97706; }
+    .k-a25 { border-color: #0284c7; } .k-a25 .kpi-val { color: #0369a1; }
+    .k-d26 { border-color: #10b981; } .k-d26 .kpi-val { color: #059669; }
+    .k-a26 { border-color: #06b6d4; } .k-a26 .kpi-val { color: #0891b2; }
+    .k-pd25 { border-color: #8b5cf6; } .k-pd25 .kpi-val { color: #7c3aed; }
+    .k-pa25 { border-color: #ec4899; } .k-pa25 .kpi-val { color: #db2777; }
+
+    .sub-stats { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 2px; }
+
+    .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.05); border: 1px solid #bae6fd; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .table-responsive { flex: 1; overflow-y: auto; }
+    
+    #airwaysTable thead th { background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border-bottom: none; font-size: 13px; font-weight: bold; padding: 12px 10px; white-space: nowrap; }
+    
+    .status-badge { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 900; min-width: 40px; display: inline-block;}
+    .s-act { background-color: #dcfce7; color: #16a34a; }
+    .s-inact { background-color: #fee2e2; color: #dc2626; }
+    
+    .btn-wa { background-color: #25D366; color: white; border: none; font-weight: bold; font-size: 11px; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; margin: auto; transition: 0.2s;}
+    .btn-wa:hover { background-color: #1ea952; transform: scale(1.05); }
+
+    .clickable-dist { cursor: pointer; color: #0284c7; font-weight: 800; text-decoration: none; padding: 2px 5px; border-radius: 4px; transition: 0.2s; }
+    .clickable-dist:hover { color: #0369a1; background-color: #f0f9ff; }
+    
+    .pagination-bar { padding: 10px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  </style>
+</head>
+<body id="captureArea">
+
+  <div class="controls-bar" data-html2canvas-ignore="true">
+    <div class="title-sec">✈️ AIRWAYS PERFORMANCE</div>
+    
+    <div class="filter-group">
+      <div class="radio-group">
+        <label><input type="radio" name="distType" value="OLD" checked onchange="handleDistTypeChange()"> Old District</label>
+        <label><input type="radio" name="distType" value="NEW" onchange="handleDistTypeChange()"> New District</label>
+      </div>
+      <select id="distSelect" class="form-select" style="width: 180px;" onchange="applyFilters()">
+        <option value="ALL">All Districts</option>
+      </select>
+      <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name or ID..." onkeyup="applyFilters()">
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button class="btn-action" id="pushAppBtn" onclick="pushToMobileApp()" style="background:#10b981; color:white;">📱 Push to App</button>
+      <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
+      <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
+      <button id="btnFullScreen" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    </div>
+  </div>
+
+  <div class="kpi-container">
+    <div class="kpi-card k-tot active" id="kpi-ALL" onclick="setKpiFilter('ALL')"><div class="kpi-title">Total VLEs</div><div class="kpi-val" id="val-tot">0</div></div>
+    <div class="kpi-card k-d25" id="kpi-DSP25" onclick="setKpiFilter('DSP25')"><div class="kpi-title">DSP Active 25-26</div><div class="kpi-val" id="val-d25">0</div></div>
+    <div class="kpi-card k-a25" id="kpi-AIR25" onclick="setKpiFilter('AIR25')"><div class="kpi-title">AIRWAYS Active 25-26</div><div class="kpi-val" id="val-a25">0</div></div>
+    
+    <!-- 🌟 NEW: BREAKDOWN FOR 26-27 ACTIVE 🌟 -->
+    <div class="kpi-card k-d26" id="kpi-DSP26" onclick="setKpiFilter('DSP26')">
+        <div class="kpi-title">DSP Active 26-27</div>
+        <div class="kpi-val" id="val-d26">0</div>
+        <div class="sub-stats" id="sub-d26">(Old: 0 | New: 0)</div>
+    </div>
+    <div class="kpi-card k-a26" id="kpi-AIR26" onclick="setKpiFilter('AIR26')">
+        <div class="kpi-title">AIRWAYS Active 26-27</div>
+        <div class="kpi-val" id="val-a26">0</div>
+        <div class="sub-stats" id="sub-a26">(Old: 0 | New: 0)</div>
+    </div>
+    
+    <div class="kpi-card k-pd25" id="kpi-PDSP25" onclick="setKpiFilter('PDSP25')"><div class="kpi-title">DSP Pending Active 25-26</div><div class="kpi-val" id="val-pd25">0</div></div>
+    <div class="kpi-card k-pa25" id="kpi-PAIR25" onclick="setKpiFilter('PAIR25')"><div class="kpi-title">AIRWAYS Pending Active 25-26</div><div class="kpi-val" id="val-pa25">0</div></div>
+  </div>
+
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center mb-0" id="airwaysTable" style="font-size:12px;">
+        <thead class="sticky-top" style="z-index: 2;">
+          <tr>
+            <th class="text-start ps-3" id="thDist">Old District</th>
+            <th>CSC ID</th>
+            <th class="text-start">VLE Name</th>
+            <th>Mobile No</th>
+            <th>DSP 25-26</th>
+            <th>AIRWAYS 25-26</th>
+            <th>DSP 26-27</th>
+            <th>AIRWAYS 26-27</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <tr><td colspan="9" class="text-muted py-4">Waiting for data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-bar" data-html2canvas-ignore="true">
+      <span class="fw-bold text-muted" style="font-size:13px;" id="pageInfo">Showing 0 to 0 of 0</span>
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-light text-danger border" id="lblStatus">Initializing...</span>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="changePage(-1)" id="btnPrev">Prev</button>
+            <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="changePage(1)" id="btnNext">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    const SERVICE_NAME = "AIRWAYS"; 
+    
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    
+    const CACHE_KEY = "TRAVEL_CACHE_V6_" + SERVICE_NAME + "_" + loggedInUserId;
+
+    let rawData = [];
+    let processedData = [];
+    let currentKpiFilter = "ALL";
+    let currentPage = 1;
+    const ROWS_PER_PAGE = 100;
+
+    function toProperCase(str) {
+        if (!str || str.trim() === "") return "-";
+        return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+    }
+
+    const DB_NAME = "CscTravelDB";
+    const STORE_NAME = "ReportsData";
+    
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            let req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+                let db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) { db.createObjectStore(STORE_NAME); }
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async function getCachedData(key) {
+        try {
+            let db = await openDB();
+            return new Promise((resolve) => {
+                let tx = db.transaction(STORE_NAME, "readonly");
+                let store = tx.objectStore(STORE_NAME);
+                let req = store.get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(null);
+            });
+        } catch(e) { return null; }
+    }
+
+    async function setCachedData(key, data) {
+        try {
+            let db = await openDB();
+            let tx = db.transaction(STORE_NAME, "readwrite");
+            let store = tx.objectStore(STORE_NAME);
+            store.put({ data: data, timestamp: Date.now() }, key);
+        } catch(e) {}
+    }
+
+    window.onload = async function() {
+        document.getElementById("lblStatus").innerText = "Checking cache...";
+        let cachedObj = await getCachedData(CACHE_KEY);
+        
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
+            rawData = cachedObj.data;
+            document.getElementById("lblStatus").innerText = "Loaded from Local Storage";
+            initApp();
+        } else {
+            fetchDataFromServer();
+        }
+    };
+
+    function fetchDataFromServer() {
+        let tbody = document.getElementById("reportBody");
+        if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from server... Please wait...</td></tr>`;
+
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "getTravelVlePerformance", service: SERVICE_NAME, role: loggedInDesig, userId: loggedInUserId }) 
+        })
+        .then(res => res.json())
+        .then(res => { 
+            if(res.success && res.data && res.data.length > 0) { 
+                rawData = res.data; 
+                saveToCache(CACHE_KEY, rawData); 
+                processData(); 
+            } else {
+                let errMsg = res.message ? "Backend Error: " + res.message : "No data found for this District.";
+                if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold" style="font-size:16px;">⚠️ ${errMsg}</td></tr>`;
+            }
+        })
+        .catch(e => { 
+            console.error("Fetch Error:", e);
+            if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
+            setTimeout(fetchDataFromServer, 3000); 
+        });
+    }
+
+    async function saveToCache(key, dataObj) {
+        try {
+            let db = await openDB();
+            let tx = db.transaction(STORE_NAME, "readwrite");
+            let store = tx.objectStore(STORE_NAME);
+            store.put({ data: dataObj, timestamp: Date.now() }, key);
+        } catch(e) { console.error("Cache Save Error", e); }
+    }
+
+    function initApp() {
+        populateDistrictDropdown();
+        applyFilters();
+    }
+
+    function processData() {
+        populateDistrictDropdown();
+        applyFilters();
+        document.getElementById("lblStatus").innerText = "Live Data Synced ✅";
+    }
+
+    function handleDistTypeChange() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        document.getElementById("thDist").innerText = isNew ? "New District" : "Old District";
+        populateDistrictDropdown();
+        applyFilters();
+    }
+
+    function populateDistrictDropdown() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let distSet = new Set();
+        
+        rawData.forEach(r => {
+            if (isNew && isDM && !r.isMyNewDist) return; 
+            let d = isNew ? r.newDist : r.oldDist;
+            if (d && d !== "UNKNOWN") distSet.add(toProperCase(d.trim()));
+        });
+        
+        let distArr = Array.from(distSet).sort();
+        let select = document.getElementById("distSelect");
+        select.innerHTML = '<option value="ALL">All Districts</option>';
+        distArr.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; });
+    }
+
+    function setKpiFilter(filterCode) {
+        currentKpiFilter = filterCode;
+        document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('kpi-' + filterCode).classList.add('active');
+        applyFilters();
+    }
+
+    window.filterByDistDblClick = function(oldD, newD) {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let targetDist = toProperCase((isNew ? newD : oldD).trim());
+        document.getElementById("distSelect").value = targetDist;
+        applyFilters();
+    };
+
+    function applyFilters() {
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+        let selDist = document.getElementById("distSelect").value;
+        let searchTxt = document.getElementById("searchInput").value.toUpperCase();
+
+        let baseData = rawData.filter(r => {
+            if (isNew && isDM) {
+                if (!r.isMyNewDist) return false;
+            }
+
+            let rowDist = toProperCase((isNew ? r.newDist : r.oldDist).trim());
+            let matchDist = (selDist === "ALL" || rowDist === selDist);
+            let matchSearch = (r.vleName.toUpperCase().includes(searchTxt) || r.cscId.toUpperCase().includes(searchTxt));
+            return matchDist && matchSearch;
+        });
+
+        // 🌟 NEW KPI LOGIC INCORPORATING "OLD vs NEW" 🌟
+        let tTot = baseData.length, tD25 = 0, tA25 = 0, tD26 = 0, tA26 = 0, tPD25 = 0, tPA25 = 0;
+        let tD26_Old = 0, tD26_New = 0, tA26_Old = 0, tA26_New = 0;
+
+        baseData.forEach(r => {
+            if(r.dsp2526 > 0) tD25++;
+            if(r.srv2526 > 0) tA25++;
+            
+            if(r.dsp2627 > 0) {
+                tD26++;
+                if(r.dsp2526 > 0) tD26_Old++; else tD26_New++; // Old vs New split for DSP
+            }
+            if(r.srv2627 > 0) {
+                tA26++;
+                if(r.srv2526 > 0) tA26_Old++; else tA26_New++; // Old vs New split for Airways
+            }
+            
+            if(r.dsp2526 > 0 && r.dsp2627 === 0) tPD25++;
+            if(r.srv2526 > 0 && r.srv2627 === 0) tPA25++;
+        });
+
+        document.getElementById("val-tot").innerText = tTot;
+        document.getElementById("val-d25").innerText = tD25;
+        document.getElementById("val-a25").innerText = tA25;
+        
+        document.getElementById("val-d26").innerText = tD26;
+        document.getElementById("sub-d26").innerText = `(Old: ${tD26_Old} | New: ${tD26_New})`;
+        
+        document.getElementById("val-a26").innerText = tA26;
+        document.getElementById("sub-a26").innerText = `(Old: ${tA26_Old} | New: ${tA26_New})`;
+        
+        document.getElementById("val-pd25").innerText = tPD25;
+        document.getElementById("val-pa25").innerText = tPA25;
+
+        processedData = baseData.filter(r => {
+            if(currentKpiFilter === "DSP25") return r.dsp2526 > 0;
+            if(currentKpiFilter === "AIR25") return r.srv2526 > 0;
+            if(currentKpiFilter === "DSP26") return r.dsp2627 > 0;
+            if(currentKpiFilter === "AIR26") return r.srv2627 > 0;
+            if(currentKpiFilter === "PDSP25") return (r.dsp2526 > 0 && r.dsp2627 === 0);
+            if(currentKpiFilter === "PAIR25") return (r.srv2526 > 0 && r.srv2627 === 0);
+            return true;
+        });
+
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    function changePage(step) {
+        let maxPage = Math.ceil(processedData.length / ROWS_PER_PAGE);
+        currentPage += step;
+        if(currentPage < 1) currentPage = 1;
+        if(currentPage > maxPage) currentPage = maxPage;
+        renderTablePage();
+    }
+
+    function renderTablePage() {
+        const tbody = document.getElementById("reportBody");
+        tbody.innerHTML = "";
+        
+        let total = processedData.length;
+        if(total === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-4 fw-bold">No records matched your filters.</td></tr>`;
+            document.getElementById("pageInfo").innerText = "Showing 0 to 0 of 0";
+            return;
+        }
+
+        let startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+        let endIdx = Math.min(startIdx + ROWS_PER_PAGE, total);
+        let sliceData = processedData.slice(startIdx, endIdx);
+
+        let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
+
+        sliceData.forEach(item => {
+            let rowDist = toProperCase((isNew ? item.newDist : item.oldDist).trim());
+            let dspClass = item.dsp2627 > 0 ? "s-act" : "s-inact";
+            let srvClass = item.srv2627 > 0 ? "s-act" : "s-inact";
+
+            tbody.innerHTML += `
+            <tr>
+                <td class="text-start ps-3 clickable-dist" title="Double click to filter" ondblclick="filterByDistDblClick('${item.oldDist}', '${item.newDist}')">${rowDist}</td>
+                <td class="fw-bold text-primary">${item.cscId}</td>
+                <td class="text-start fw-bold text-dark">${toProperCase(item.vleName)}</td>
+                <td class="fw-bold text-muted">${item.mobile}</td>
+                <td class="fw-bold text-dark">${item.dsp2526}</td>
+                <td class="fw-bold text-dark">${item.srv2526}</td>
+                <td><span class="status-badge ${dspClass}">${item.dsp2627}</span></td>
+                <td><span class="status-badge ${srvClass}">${item.srv2627}</span></td>
+                <td>
+                <button class="btn-wa" onclick="sendWhatsApp('${item.mobile}', '${toProperCase(item.vleName)}', '${rowDist}')">💬 WA</button>
+                </td>
+            </tr>`;
+        });
+
+        document.getElementById("pageInfo").innerText = `Showing ${startIdx + 1} to ${endIdx} of ${total}`;
+        document.getElementById("btnPrev").disabled = (currentPage === 1);
+        document.getElementById("btnNext").disabled = (endIdx >= total);
+    }
+
+    function resetFilters() {
+        document.querySelector('input[name="distType"][value="OLD"]').checked = true;
+        document.getElementById("thDist").innerText = "Old District";
+        document.getElementById("searchInput").value = "";
+        
+        localStorage.removeItem(CACHE_KEY);
+        fetchDataFromServer();
+        
+        populateDistrictDropdown();
+        setKpiFilter('ALL');
+    }
+
+    function sendWhatsApp(mobile, name, district) {
+       if(!mobile || mobile === "-" || mobile.length < 10) { alert("Invalid Mobile Number!"); return; }
+       
+       let hrs = new Date().getHours();
+       let greeting = "Good Morning";
+       if (hrs >= 12 && hrs < 17) greeting = "Good Afternoon";
+       else if (hrs >= 17) greeting = "Good Evening";
+
+       let message = `ప్రియమైన *${name}* గారు,\n*${greeting}* 👋\nDistrict Name : *${district}*\n\nమీరు ఈ ఫైనాన్షియల్ ఇయర్ లో ఇంకా *Flight ticket booking (AIRWAYS service)* ప్రారంభించలేదు. మీ ID ఇంకా *inactive* లో ఉంది.\n\n👉 వెంటనే ఒక flight ticket బుక్ చేసి మీ ID ని *active* గా మార్చండి.\n\n📌 *Sample Booking Details:*\nFlight: *Air India / IndiGo*\nFrom: *Visakhapatnam (VTZ)*\nTo: *Hyderabad (HYD)*\n\n⚠️ Regular bookings చేయడం ద్వారా మీ ఆదాయం కూడా పెరుగుతుంది.\n\n📌 వెంటనే AIRWAYS service లో activate అవ్వండి.\n\nధన్యవాదాలు,\n*CSC Tour & Travels*\n*SPOC || Andhra Pradesh*\n*9440115828*`;
+       
+       let appUrl = `whatsapp://send?phone=91${mobile}&text=${encodeURIComponent(message)}`;
+       window.location.href = appUrl;
+    }
+
+    function exportToExcel() {
+       let ws = XLSX.utils.json_to_sheet(processedData);
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Performance");
+       let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+       XLSX.writeFile(wb, `${SERVICE_NAME}_Performance_${dStr}.xlsx`);
+    }
+
+    function downloadImage() {
+       html2canvas(document.getElementById('captureArea'), { scale: 2 }).then(canvas => {
+          let link = document.createElement('a');
+          link.download = `${SERVICE_NAME}_Report.png`; 
+          link.href = canvas.toDataURL("image/png"); 
+          link.click();
+       });
+    }
+
+    function toggleFullScreen() {
+       let btn = document.getElementById("btnFullScreen");
+       if (!document.fullscreenElement) { 
+           document.documentElement.requestFullscreen(); 
+           btn.innerHTML = "❌ Exit Full Screen";
+           btn.classList.add("text-danger");
+           btn.classList.replace("btn-full", "btn-reset");
+       } else { 
+           if (document.exitFullscreen) { document.exitFullscreen(); } 
+       }
+    }
+    
+    document.addEventListener("fullscreenchange", function() {
+       let btn = document.getElementById("btnFullScreen");
+       if (!document.fullscreenElement) {
+           btn.innerHTML = "⛶ Fullscreen";
+           btn.classList.remove("text-danger");
+           btn.classList.replace("btn-reset", "btn-full");
+       }
+    });
+
+    function pushToMobileApp() {
+        let btn = document.getElementById("pushAppBtn");
+        btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
+
+        let targetUrl = typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : (typeof apiURL !== 'undefined' ? apiURL : "");
+
+        fetch(targetUrl, {
+            method: "POST",
+            body: JSON.stringify({ action: "generateAppTargets", service: SERVICE_NAME })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) {
+                alert(`✅ AIRWAYS Targets Generated! (${data.count} VLEs pushed to App)`);
+            } else {
+                alert("❌ Backend Error: " + data.error);
+            }
+            btn.innerText = "📱 Push to App"; btn.disabled = false;
+        })
+        .catch(e => {
+            alert("❌ Network Timeout. But check Google Sheet, data might be there.");
+            btn.innerText = "📱 Push to App"; btn.disabled = false;
+        });
+    }
+  </script>
+</body>
+</html>
