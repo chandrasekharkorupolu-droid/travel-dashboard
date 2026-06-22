@@ -4,461 +4,935 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Priority Follow-Up | CSC AP</title>
-    <meta name="theme-color" content="#0f172a">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#ffffff">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- 🌟 HTML2CANVAS LIBRARY FOR FULL IMAGE DOWNLOAD 🌟 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 450px; height: 100vh; background-color: #f1f5f9; position: relative; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* LOGIN CSS */
-        #loginScreen { position: absolute; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; justify-content:center; padding:30px; z-index:100; align-items:center;}
-        .login-logo img { max-width: 90px; margin-bottom: 15px;}
-        .login-title { font-size: 22px; font-weight: 800; color: #0f172a; text-align: center;}
-        .input-group { width: 100%; margin-top: 15px; }
-        .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-weight: 600; outline: none;}
-        .pin-input { font-size: 24px!important; text-align: center; letter-spacing: 15px; font-weight: 900!important;}
-        .btn-login { width: 100%; padding: 15px; background: #10b981; color: #fff; border: none; border-radius: 10px; font-weight: 800; margin-top:15px; cursor:pointer;}
-        .text-link { color: #3b82f6; font-size: 13px; font-weight: 700; display: block; text-align: center; margin-top: 15px; cursor: pointer;}
+        /* 🌟 MASTER MOBILE & DESKTOP UI SETUP 🌟 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         
+        /* Changed max-width to 100% to allow Desktop Expansion */
+        .app-container { 
+            width: 100%; max-width: 100%; height: 100vh; background-color: #f8fafc; 
+            position: relative; display: flex; flex-direction: column; 
+            overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        /* 🌟 PREMIUM GLASSMORPHISM LOGIN SCREEN 🌟 */
+        #loginScreen { 
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0e7ff 100%); 
+            display:flex; flex-direction:column; 
+            justify-content:center; padding:25px; z-index:100; align-items:center;
+            transition: all 0.5s ease; overflow: hidden;
+        }
+
+        /* Animated Background Blobs */
+        .bg-shape { position: absolute; filter: blur(70px); z-index: 1; border-radius: 50%; animation: float 8s infinite ease-in-out alternate; }
+        .shape1 { width: 300px; height: 300px; background: rgba(59, 130, 246, 0.4); top: -50px; left: -100px; }
+        .shape2 { width: 350px; height: 350px; background: rgba(16, 185, 129, 0.3); bottom: -100px; right: -100px; animation-delay: -4s; }
+
+        @keyframes float { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(40px) scale(1.1); } }
+
+        /* The Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 40px rgba(31, 38, 135, 0.1);
+            border-radius: 30px; padding: 40px 25px; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; z-index: 10;
+        }
+
+        .login-logo img { max-width: 130px; margin-bottom: 20px; animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); drop-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .login-title { font-size: 24px; font-weight: 900; color: #0f172a; text-align: center; letter-spacing: -0.5px; margin-bottom: 5px; }
+        .login-subtitle { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 30px; text-align: center; background: rgba(255,255,255,0.6); padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.9);}
+        
+        .welcome-text { font-size: 16px; font-weight: 800; color: #1e293b; text-align: center; }
+        .user-name-text { font-size: 18px; font-weight: 900; color: #10b981; text-align: center; margin-bottom: 20px; display: block; text-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);}
+
+        .input-group { width: 100%; margin-top: 12px; position: relative; }
+        .input-group input { width: 100%; padding: 18px 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.9); font-weight: 600; font-size: 15px; color: #1e293b; background: rgba(255, 255, 255, 0.7); outline: none; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        .input-group input:focus { border-color: #10b981; background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); }
+        .pin-input { font-size: 32px !important; text-align: center; letter-spacing: 25px; font-weight: 900 !important; color: #10b981 !important; padding: 15px !important;}
+        
+        .btn-login { width: 100%; padding: 18px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; margin-top: 25px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4); }
+        .btn-login:active { transform: scale(0.97); }
+        .text-link { color: #3b82f6; font-size: 13px; font-weight: 700; display: block; text-align: center; margin-top: 25px; cursor: pointer; text-decoration: none; padding: 8px; border-radius: 8px; transition: 0.2s;}
+        
+        @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
         /* HEADER */
-        .app-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10;}
-        .header-left h1 { font-size: 18px; font-weight: 800; color: #1e293b; }
-        .header-left span { font-size: 12px; font-weight: 700; color: #64748b; }
-        .logout-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size:11px; cursor:pointer;}
+        .app-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(226, 232, 240, 0.8); z-index: 10; }
+        .header-logo { display: flex; align-items: center; gap: 10px; }
+        .header-logo img { width: 45px; height: auto; }
+        .header-left { display: flex; flex-direction: column; }
+        .header-left h1 { font-size: 15px; font-weight: 900; color: #0f172a; margin-bottom: 0px; text-transform: uppercase;}
+        .header-left .sub-tag { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px;}
+        .header-left span { font-size: 14px; font-weight: 800; color: #4f46e5; text-transform: capitalize;}
+        .header-right { display: flex; gap: 8px; align-items: center; }
+        .fs-btn { background: #e0e7ff; color: #4f46e5; border: none; width: 32px; height: 32px; border-radius: 8px; font-weight: 900; font-size: 14px; cursor: pointer; }
+        .logout-btn { background: #fee2e2; color: #dc2626; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s;}
+        
+        /* WELCOME MODAL */
+        #welcomeModalOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; }
+        .welcome-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); width: 85%; max-width: 360px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: bounceIn 0.5s ease; border: 1px solid rgba(255,255,255,0.5); border-top: 6px solid #10b981; }
+        .welcome-box h2 { color: #0f172a; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+        .welcome-box p { color: #475569; font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
+        .welcome-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 14px 25px; border-radius: 14px; font-weight: 800; font-size: 15px; cursor: pointer; width: 100%; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+        .welcome-btn:active { transform: scale(0.95); }
 
         /* LOADER */
-        .loader-container { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; background:#f1f5f9; z-index:50;}
-        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom:10px;}
-        
+        .loader-container { display:flex; flex-direction:column; justify-content:center; align-items:center; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255, 255, 255, 0.8); backdrop-filter:blur(10px); z-index:50;}
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(16, 185, 129, 0.2); border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom:15px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* SPOC DASHBOARD CSS */
-        #spocScreen { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 15px; background:#f8fafc;}
-        .dash-card { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
-        .dash-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;}
+        #spocScreen { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 20px; background:#f4f7fe; padding-bottom: 40px; }
+        .dash-card { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08); border: none; }
+        .dash-title { font-size: 15px; font-weight: 900; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 8px;}
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px;}
+        .stat-box { background: #f8fafc; padding: 18px 10px; border-radius: 16px; text-align: center; border: 1px solid #e2e8f0;}
+        .stat-box h3 { font-size: 26px; font-weight: 900; color: #0f172a; margin-bottom: 4px; line-height: 1;}
+        .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        .master-btn-group { display: flex; gap: 12px; margin-top: 15px; }
+        .btn-master { flex: 1; padding: 14px 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-irctc { background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: white; }
+        .btn-redbus { background: linear-gradient(135deg, #fb7185, #e11d48); color: white; }
+        .btn-master:active { transform: scale(0.96); }
+
+        /* 🌟 TABLE CSS FOR STATE HEAD REPORT 🌟 */
+        .copy-btn { background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; display:flex; align-items:center; gap:4px; position:absolute; right:15px; top:15px; z-index:10;}
+        .copy-btn:active { transform: scale(0.95); }
         
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
-        .stat-box { background: #f1f5f9; padding: 15px; border-radius: 10px; text-align: center;}
-        .stat-box h3 { font-size: 22px; font-weight: 900; color: #3b82f6;}
-        .stat-box p { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;}
-
-        .dm-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0;}
-        .dm-info h4 { font-size: 13px; font-weight: 800; color: #1e293b;}
-        .dm-info p { font-size: 11px; font-weight: 700; color: #64748b;}
-        .dm-status { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 20px;}
-        .status-active { background: #dcfce7; color: #166534;}
-        .call-dm-btn { background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 800;}
+        .report-table-container { overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff;}
+        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; background: #fff;}
+        .report-table th { background: #f1f5f9; color: #334155; padding: 10px; font-weight: 800; border-bottom: 2px solid #cbd5e1; white-space: nowrap; text-align:center;}
+        .report-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 600; white-space: nowrap; text-align:center;}
         
-        /* TARGET BADGES FOR DMs */
-        .tgt-badge { font-size:10px; margin-top:5px; padding:2px 6px; border-radius:4px; display:inline-block; font-weight: 700; margin-right: 5px;}
-        .tgt-irctc { background: #e0f2fe; color: #1e3a8a; border: 1px solid #bae6fd;}
-        .tgt-redbus { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;}
+        /* Aligning Employee Name to Left for readability */
+        .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; }
+        .report-table tr:last-child td { border-bottom: none; }
 
-        /* MASTER CONTROL BUTTONS */
-        .master-btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-irctc { flex: 1; background: #1e3a8a; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;}
-        .btn-redbus { flex: 1; background: #dc2626; color: white; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;}
+        /* DM FOLLOW-UP CARD STYLES */
+        .dm-action-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #10b981; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .dm-action-item h4 { font-size: 15px; font-weight: 900; color: #0f172a; margin-bottom: 4px;}
+        .dm-action-item p { font-size: 12px; font-weight: 700; color: #64748b;}
+        .action-buttons-sm { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-sm-call { flex: 1; text-align: center; padding: 10px; background: #dcfce7; color: #166534; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none; border: 1px solid #bbf7d0;}
+        .btn-sm-wa { flex: 1; text-align: center; padding: 10px; background: #d1fae5; color: #15803d; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none; border: 1px solid #a7f3d0; cursor: pointer;}
 
-        /* DM CARD CSS (Hidden for SPOC) */
-        #appScreen { display: none; flex-direction: column; height: 100%; position:relative;}
-        .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:20px; overflow:hidden;}
-        .vle-card { width: 100%; height: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position:absolute; transition: 0.5s; transform: translateY(200%); display:flex; flex-direction:column;}
-        .card-active { transform: translateY(0); z-index:5;}
-        .card-done { transform: translateY(-200%); z-index:1;}
-        .vle-info { padding: 20px; text-align: center; flex:1;}
-        .call-btn { width: 100%; background: #10b981; color: #fff; padding: 15px; border-radius: 10px; font-weight: 800; border:none; margin-bottom:15px; font-size: 16px;}
-        .submit-btn { width: 100%; background: #0f172a; color: #fff; padding: 15px; border-radius: 10px; font-weight: 800; border:none;}
-        select, input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; margin-bottom: 15px; outline:none; font-weight:600;}
+        /* SMART VIEW SELECTOR */
+        .view-selector {
+            width: 100%; padding: 14px 16px; border-radius: 16px; border: 2px solid #10b981; 
+            font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; 
+            outline: none; appearance: none; margin-bottom: 20px;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); 
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.2em; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+        }
+
+        .spoc-view-section { display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* OLD ACTIVE DMS & LIVE FEED */
+        .dm-item { padding: 16px; background: #ffffff; border-radius: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);}
+        .dm-info h4 { font-size: 14px; font-weight: 800; color: #0f172a;}
+        .dm-info p { font-size: 12px; font-weight: 700; color: #64748b; margin-top: 2px;}
+        .dm-status { font-size: 10px; font-weight: 900; padding: 6px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .status-active { background: #dcfce7; color: #166534; }
+        .tgt-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; display: inline-block; font-weight: 800; margin-right: 6px; margin-top: 8px;}
+        .tgt-irctc { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;}
+        .tgt-redbus { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;}
+
+        .live-feed-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #3b82f6; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .live-feed-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
+        .live-feed-header h4 { font-size: 14px; font-weight: 900; color: #0f172a; line-height: 1.2;}
+        .feed-dm { font-size: 10px; font-weight: 800; color: #4f46e5; background: #e0e7ff; padding: 3px 8px; border-radius: 6px;}
+        .live-feed-item p { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px;}
+        .feed-rmk { display: inline-block; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: #f1f5f9; color: #334155;}
+        .dm-filter-select { padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 700; color: #334155; outline: none; background:#fff;}
+        .live-indicator { display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 5px; animation: pulse 1.5s infinite;}
+
+        /* 🌟 HOLIDAY SCREEN 🌟 */
+        #holidayScreen { display: none; flex-direction: column; height: 100%; position:relative; background: linear-gradient(135deg, #f0fdf4 0%, #e0e7ff 100%); padding: 25px; justify-content: center; align-items: center; text-align: center; overflow: hidden;}
+        .festival-text { font-size: 32px !important; background: linear-gradient(90deg, #ff007f, #7928ca, #ff007f); background-size: 200% auto; color: transparent; -webkit-background-clip: text; animation: shine 3s linear infinite; margin-bottom: 15px; }
+        @keyframes shine { to { background-position: 200% center; } }
+        .confetti { position: absolute; z-index: 100; animation: fallAndSpin linear forwards; user-select: none; pointer-events: none;}
+        @keyframes fallAndSpin { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+        /* DM CALLING SCREEN */
+        #appScreen { display: none; flex-direction: column; height: 100%; position:relative; background: #f4f7fe;}
+        .progress-bar-container { background: #e2e8f0; height: 6px; width: 100%; position: relative; }
+        .progress-bar-fill { background: linear-gradient(90deg, #10b981, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 0 4px 4px 0;}
+        .top-stats-wrapper { padding: 15px 20px 0 20px; width: 100%; z-index: 10; }
+        .stats-dashboard { background: #ffffff; border-radius: 20px; padding: 12px 16px; box-shadow: 0 10px 25px rgba(112, 144, 176, 0.15); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+        .stat-main { text-align: center; padding-right: 15px; border-right: 2px dashed #e2e8f0; flex: 1;}
+        .stat-main p { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 2px;}
+        .stat-main h2 { font-size: 28px; font-weight: 900; color: #10b981; line-height: 1; }
+        .stat-sub { display: flex; flex-direction: column; gap: 6px; flex: 1.2; padding-left: 15px; }
+        .sub-box { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 4px 10px; border-radius: 8px; border: 1px solid #f1f5f9;}
+        .sub-box span { font-size: 10px; font-weight: 800; color: #475569; }
+        .sub-box strong { font-size: 13px; font-weight: 900; }
+        .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:15px; overflow:hidden;}
+        
+        .vle-card { width: 100%; height: auto; max-height: 98%; background: #fff; border-radius: 24px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); position:absolute; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); display:flex; flex-direction:column; overflow-y: auto; border: 1px solid #f1f5f9; }
+        .card-active { transform: translateY(0) scale(1); opacity: 1; z-index:5;}
+        .card-next { transform: translateY(100%); opacity: 0; z-index:4;} 
+        .card-done { transform: translateY(-100%) scale(0.9); opacity: 0; z-index:1;} 
+        .vle-card-header { padding: 18px; text-align: center; color: white; font-weight: 900; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;}
+        .bg-irctc { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+        .bg-redbus { background: linear-gradient(135deg, #fb7185, #e11d48); }
+        .bg-both { background: linear-gradient(135deg, #4f46e5, #312e81); } 
+        .vle-info { padding: 20px; text-align: center; flex:1; display: flex; flex-direction: column; justify-content: space-between;}
+        .vle-details h2 { font-size: 22px; font-weight: 900; color: #0f172a; margin-bottom: 6px; line-height: 1.2;}
+        .vle-details p { font-size: 12px; font-weight: 700; color: #64748b; background: #f1f5f9; display: inline-block; padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #e2e8f0;}
+        .history-badge { background:#fef2f2; border:1px dashed #fca5a5; padding:10px; border-radius:12px; margin-bottom:15px; font-size:11px; color:#b91c1c; font-weight:800; text-align: left; }
+        .history-badge span { color:#7f1d1d; font-weight: 900; display: block; margin-top: 4px; }
+        .txn-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 15px; text-align: left; }
+        .txn-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #475569; padding: 3px 0; }
+        .txn-count-badge { background: #e2e8f0; color: #0f172a; padding: 3px 10px; border-radius: 8px; font-weight: 900; }
+        .action-btn-group { display: flex; gap: 12px; margin-top: 10px; margin-bottom: 15px; }
+        .call-btn { flex: 1; background: linear-gradient(135deg, #34d399, #10b981); color: #fff; padding: 14px; border-radius: 14px; font-weight: 900; border:none; font-size: 14px; box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .call-btn:active { transform: scale(0.95); }
+        .wa-btn { flex: 1; background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff; padding: 14px; border-radius: 14px; font-weight: 900; border:none; font-size: 14px; box-shadow: 0 8px 15px rgba(34, 197, 94, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .wa-btn:active { transform: scale(0.95); }
+        .vle-info select { width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px solid #cbd5e1; margin-bottom: 12px; outline:none; font-weight:700; font-size: 13px; color: #1e293b; background: #f8fafc; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .other-input-box { width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px dashed #94a3b8; margin-bottom: 12px; outline:none; font-weight:600; font-size: 13px; color: #0f172a; background: #ffffff; display: none; transition: 0.3s; }
+        .submit-btn { width: 100%; background: #0f172a; color: #fff; padding: 16px; border-radius: 14px; font-weight: 800; border:none; font-size: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 15px rgba(15, 23, 42, 0.2);}
+        .submit-btn:active { transform: scale(0.97); }
+        .app-footer { text-align: center; padding: 12px; font-size: 10px; font-weight: 700; color: #94a3b8; background: #f4f7fe; width: 100%; z-index: 10; }
+        .app-footer span { color: #10b981; font-weight: 900;}
+        .summary-container { width: 100%; height: 100%; overflow-y: auto; padding: 20px; text-align: center; }
+        .summary-header { margin-bottom: 25px; }
+        .summary-header span { font-size: 50px; }
+        .summary-header h3 { font-weight: 900; font-size: 22px; color: #0f172a; margin-top: 10px; }
+        .summary-header p { font-size: 13px; font-weight: 600; color: #64748b; margin-top: 5px; }
+        .summary-list { text-align: left; }
+        .summary-card { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+        .summary-info h4 { font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+        .summary-info p { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; }
+        .summary-remark { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        .summary-call-btn { background: #10b981; color: white; padding: 10px; border-radius: 50%; font-size: 16px; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; text-decoration: none;}
+
+        /* 🌟 RESPONSIVE DESKTOP DESIGN 🌟 */
+        @media (min-width: 768px) {
+            body { background-color: #cbd5e1; } /* Darker background outside container */
+            .app-container { max-width: 1200px; height: 95vh; margin-top: 2.5vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+            
+            /* SPOC Dashboard Grid Adjustments */
+            #spocScreen { padding: 30px; }
+            .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+            .master-btn-group { max-width: 400px; margin: 15px auto 0 auto;}
+            #activeDmList, #liveCallFeed, #dmFollowUpList { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+            .dm-item, .live-feed-item, .dm-action-item { margin-bottom: 0; }
+            
+            /* Table Adjustments */
+            .report-table th, .report-table td { padding: 15px; font-size: 13px; }
+            
+            /* App (DM) Screen Centering */
+            .vle-card { max-width: 500px; left: 0; right: 0; margin: 0 auto; }
+            .top-stats-wrapper { max-width: 600px; margin: 0 auto; }
+            .progress-bar-container { max-width: 600px; margin: 0 auto; border-radius: 4px; }
+            .app-footer { max-width: 600px; margin: 0 auto; border-radius: 12px 12px 0 0; border: 1px solid #e2e8f0; border-bottom: none;}
+            .summary-container { max-width: 700px; margin: 0 auto; }
+            #holidayScreen .glass-card { max-width: 600px; }
+            .view-selector { max-width: 400px; margin: 0 auto 20px auto; display: block; }
+        }
     </style>
 </head>
 <body>
 
+    <div id="welcomeModalOverlay">
+        <div class="welcome-box">
+            <span style="font-size: 40px; margin-bottom: 10px; display: block;">🎯</span>
+            <h2 id="welcomeTitle">Welcome</h2>
+            <p id="welcomeMsg"></p>
+            <button class="welcome-btn" onclick="closeWelcomeModal()">Start Calling 🚀</button>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- LOGIN SECTION -->
         <div id="loginScreen">
-            <div class="login-logo"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC"></div>
-            <div class="login-title">Tour & Travels</div>
-            <p style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:20px;">Priority System</p>
-            
-            <div id="idPasswordForm" style="width:100%;">
-                <input type="tel" id="userId" class="input-group" placeholder="Enter Mobile No" style="padding:15px; width:100%; border-radius:10px; border:2px solid #ccc; font-weight:bold;">
-                <input type="password" id="password" class="input-group" placeholder="Enter Password" style="padding:15px; width:100%; border-radius:10px; border:2px solid #ccc; font-weight:bold; margin-top:10px;">
-                <button class="btn-login" onclick="handleLogin()">Login</button>
-            </div>
+            <div class="bg-shape shape1"></div>
+            <div class="bg-shape shape2"></div>
 
-            <div id="setPinForm" style="width:100%; display:none;">
-                <p style="color:#10b981; font-weight:bold; text-align:center;">✅ Login Success!</p>
-                <p style="font-size:12px; text-align:center; color:#64748b; margin-bottom:10px;">Set 4-Digit PIN</p>
-                <input type="tel" id="newPin" class="input-group pin-input" placeholder="****" maxlength="4">
-                <button class="btn-login" onclick="savePin()">Save & Start</button>
-            </div>
+            <div class="glass-card">
+                <div class="login-logo"><img src="https://csc.gov.in/assets/images/logo.png" alt="CSC"></div>
+                <div class="login-title">CSC AP Tour & Travels</div>
+                <div class="login-subtitle">Priority Follow-Up System</div>
+                
+                <div id="idPasswordForm" style="width:100%;">
+                    <div class="input-group">
+                        <input type="tel" id="userId" placeholder="Enter Mobile No">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="Enter Password">
+                    </div>
+                    <button class="btn-login" onclick="handleLogin()">LOGIN</button>
+                </div>
 
-            <div id="enterPinForm" style="width:100%; display:none;">
-                <p style="color:#3b82f6; font-weight:bold; text-align:center;">Welcome Back!</p>
-                <input type="tel" id="authPin" class="input-group pin-input" placeholder="****" maxlength="4">
-                <button class="btn-login" onclick="loginWithPin()">Unlock 🔓</button>
-                <a class="text-link" onclick="forgotPin()">Forgot PIN? Login with ID</a>
+                <div id="setPinForm" style="width:100%; display:none;">
+                    <p class="welcome-text">Login Success!</p>
+                    <span id="newPinUserName" class="user-name-text"></span>
+                    <p style="font-size:13px; text-align:center; color:#64748b; margin-bottom:20px; font-weight: 600;">Create a 4-Digit Quick PIN</p>
+                    <input type="tel" id="newPin" class="input-group pin-input" placeholder="****" maxlength="4">
+                    <button class="btn-login" onclick="savePin()">SAVE & START</button>
+                </div>
+
+                <div id="enterPinForm" style="width:100%; display:none;">
+                    <p class="welcome-text">Welcome Back!</p>
+                    <span id="pinUserName" class="user-name-text">User</span>
+                    <input type="tel" id="authPin" class="input-group pin-input" placeholder="****" maxlength="4">
+                    <button class="btn-login" onclick="loginWithPin()">LOGIN</button>
+                    <!-- DEEP CLEAR BUTTON -->
+                    <a class="text-link" onclick="forgotPin()">Forgot PIN? Login with Password</a>
+                </div>
+                <p id="loginError" style="color:#ef4444; font-size:13px; font-weight:800; display:none; text-align:center; margin-top:20px; background: rgba(254, 242, 242, 0.9); padding: 10px; border-radius: 8px; width: 100%;"></p>
             </div>
-            <p id="loginError" style="color:red; font-size:12px; font-weight:bold; display:none; text-align:center; margin-top:10px;"></p>
         </div>
 
         <!-- HEADER -->
         <div class="app-header" id="mainHeader" style="display:none;">
-            <div class="header-left">
-                <h1 id="userNameTxt">Name</h1>
-                <span id="userRoleTxt">Role</span>
+            <div class="header-logo">
+                <img src="https://csc.gov.in/assets/images/logo.png" alt="CSC">
+                <div class="header-left">
+                    <h1>TOUR & TRAVELS AP</h1>
+                    <p class="sub-tag">Priority Follow-Up</p>
+                    <span id="userNameTxt">Name</span>
+                </div>
             </div>
-            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            <div class="header-right">
+                <button class="fs-btn" onclick="enterFullscreen()">⛶</button>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
         </div>
 
+        <!-- LOADER -->
         <div id="loader" class="loader-container" style="display:none;">
             <div class="spinner"></div>
-            <p id="loaderMsg" style="font-weight:700; color:#64748b; font-size:12px;">Syncing Data...</p>
+            <p id="loaderMsg" style="font-weight:800; color:#1e293b; font-size:14px; letter-spacing: 0.5px;">Syncing Data...</p>
         </div>
 
-        <!-- 🌟 SPOC COMMAND CENTER 🌟 -->
+        <!-- HOLIDAY SCREEN -->
+        <div id="holidayScreen">
+            <div class="bg-shape shape1"></div>
+            <div class="bg-shape shape2"></div>
+            <div class="glass-card" style="padding: 50px 30px; border-top: 6px solid #3b82f6; z-index: 10;">
+                <span id="holidayEmoji" style="font-size: 70px; display: block; margin-bottom: 20px; animation: bounceIn 1.5s infinite alternate;">🌴</span>
+                <h2 id="holidayTitle" style="color: #0f172a; font-size: 26px; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.5px;">Holiday!</h2>
+                <p style="color: #475569; font-size: 15px; font-weight: 600; line-height: 1.6;">Today is a public holiday.<br>No targets have been assigned for today.<br><br><span style="color:#2563eb; font-weight:800;">Relax and enjoy your day off! 😊</span></p>
+            </div>
+        </div>
+
+        <!-- SPOC COMMAND CENTER -->
         <div id="spocScreen">
-            
-            <!-- MASTER CONTROL -->
-            <div class="dash-card" style="background: #e0f2fe; border: 1px solid #bae6fd;">
-                <div class="dash-title" style="margin-bottom: 5px;">⚙️ Master Control (Push Data)</div>
-                <p style="font-size: 10px; color: #475569;">Generate new targets for all DMs from backend.</p>
+            <div class="dash-card" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border: 2px solid #a5b4fc;">
+                <div class="dash-title" style="margin-bottom: 5px; color: #4f46e5;">⚡ Master Control Panel</div>
+                <p style="font-size: 11px; color: #64748b; font-weight: 600;">Push new targets to all DMs live.</p>
                 <div class="master-btn-group">
-                    <button class="btn-irctc" onclick="triggerBackendPush('IRCTC')">📲 Push IRCTC</button>
-                    <button class="btn-redbus" onclick="triggerBackendPush('REDBUS')">📲 Push REDBUS</button>
+                    <button class="btn-master btn-irctc" onclick="triggerBackendPush('IRCTC')">📲 PUSH IRCTC</button>
+                    <button class="btn-master btn-redbus" onclick="triggerBackendPush('REDBUS')">📲 PUSH REDBUS</button>
                 </div>
             </div>
 
-            <!-- GLOBAL OVERVIEW 2x2 Grid -->
             <div class="dash-card">
                 <div class="dash-title">📊 Today's Global Overview</div>
                 <div class="stat-grid">
-                    <div class="stat-box"><h3 id="spocCallsToday">0</h3><p>Calls Today</p></div>
-                    <div class="stat-box"><h3 id="spocActiveDMs" style="color:#10b981;">0</h3><p>Active DMs</p></div>
-                    <div class="stat-box" style="background:#e0f2fe;"><h3 id="spocIrctcPending" style="color:#1e3a8a;">0</h3><p>IRCTC Pend</p></div>
-                    <div class="stat-box" style="background:#fee2e2;"><h3 id="spocRedbusPending" style="color:#dc2626;">0</h3><p>REDBUS Pend</p></div>
+                    <div class="stat-box"><h3 id="spocCallsToday">0</h3><p>Calls Made</p></div>
+                    <div class="stat-box" style="border-color: #bbf7d0; background: #f0fdf4;"><h3 id="spocActiveDMs">0</h3><p style="color:#166534;">Active DMs</p></div>
+                    <div class="stat-box" style="border-color: #bae6fd; background: #f0f9ff;"><h3 id="spocIrctcPending" style="color:#0284c7;">0</h3><p style="color:#075985;">IRCTC Pend</p></div>
+                    <div class="stat-box" style="border-color: #fecaca; background: #fef2f2;"><h3 id="spocRedbusPending" style="color:#dc2626;">0</h3><p style="color:#991b1b;">REDBUS Pend</p></div>
                 </div>
             </div>
 
-            <!-- ACTIVE DMs & TRACKER -->
-            <div class="dash-card">
-                <div class="dash-title">🟢 Active DMs (Logged In)</div>
-                <div id="activeDmList"></div>
+            <!-- 🌟 SMART DROPDOWN TO SWITCH VIEWS 🌟 -->
+            <select id="spocViewSelector" class="view-selector" onchange="switchSpocView()">
+                <option value="view-livefeed" selected>🟢 Live Feed & Active DMs</option>
+                <option value="view-statehead">📊 State Head Report</option>
+                <option value="view-dmfollowup">🚀 DM Follow-Up Center</option>
+            </select>
+
+            <!-- 🌟 VIEW 1: ACTIVE DMs & LIVE FEED 🌟 -->
+            <div id="view-livefeed" class="spoc-view-section" style="display:block;">
+                <div class="dash-card" style="border: 1px solid #e2e8f0; background: #f8fafc;">
+                    <div class="dash-title" style="color: #475569;">🟢 Active DMs (Logged In)</div>
+                    <div id="activeDmList"></div>
+                </div>
+
+                <div class="dash-card">
+                    <div class="dash-title" style="color:#0f172a;">
+                        <span><span class="live-indicator"></span>📝 Live Call Feed</span>
+                        <select id="feedFilter" class="dm-filter-select" style="max-width: 150px;" onchange="filterLiveFeed()">
+                            <option value="ALL">All DMs</option>
+                        </select>
+                    </div>
+                    <div id="liveCallFeed">
+                        <p style='font-size:12px; text-align:center; color:#64748b;'>No calls registered yet today.</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="dash-card" style="border: 2px solid #fee2e2;">
-                <div class="dash-title" style="color:#b91c1c;">🔴 Inactive DMs (Not Logged In)</div>
-                <div id="inactiveDmList"></div>
+            <!-- 🌟 VIEW 2: STATE HEAD REPORT (TABLE DESIGN) 🌟 -->
+            <div id="view-statehead" class="spoc-view-section" style="display:none;">
+                <div id="captureCard" class="dash-card" style="border: 2px solid #3b82f6; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1); padding:0; overflow:hidden; background:#ffffff;">
+                    <div class="dash-title" style="color: #2563eb; padding: 20px 20px 10px 20px; position: relative; justify-content: center;">
+                        <div style="text-align:center;">
+                            <span style="font-size: 16px;">📊 Priority Followup Report</span><br>
+                            <small style="font-size:11px; color:#64748b;" id="reportDateTxt"></small>
+                        </div>
+                        <button class="copy-btn" id="dlBtn" onclick="downloadStateHeadReport()" style="position: absolute; right: 20px; top: 20px;">📸 Save</button>
+                    </div>
+                    <div id="stateHeadReportList" style="padding: 0 20px 20px 20px;">
+                        <p style='font-size:12px; text-align:center; color:#64748b;'>Generating report...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🌟 VIEW 3: DM FOLLOW-UP ACTION CENTER 🌟 -->
+            <div id="view-dmfollowup" class="spoc-view-section" style="display:none;">
+                <div class="dash-card" style="border: 2px solid #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.1); padding:0; overflow:hidden;">
+                    <div class="dash-title" style="color: #059669; padding: 20px 20px 10px 20px;">🚀 DM Follow-Up Center</div>
+                    <div id="dmFollowUpList" style="padding: 0 20px 20px 20px;">
+                        <p style='font-size:12px; text-align:center; color:#64748b;'>No DMs with targets today.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 🌟 DM CALLING SCREEN 🌟 -->
+        <!-- DM CALLING SCREEN -->
         <div id="appScreen">
-            <div style="text-align:center; padding:10px; font-weight:bold; color:#3b82f6; font-size:12px;" id="progressTxt"></div>
-            <div class="card-stack" id="cardStack"></div>
+            <div id="callingView" style="height: 100%; display: flex; flex-direction: column;">
+                <div class="progress-bar-container"><div class="progress-bar-fill" id="progressBar"></div></div>
+                <div class="top-stats-wrapper">
+                    <div class="stats-dashboard">
+                        <div class="stat-main">
+                            <p>Total Inactive</p>
+                            <h2 id="totalPendingDisplay">0</h2>
+                        </div>
+                        <div class="stat-sub">
+                            <div class="sub-box irctc-box"><span>🚆 IRCTC</span><strong id="irctcPendingDisplay">0</strong></div>
+                            <div class="sub-box redbus-box"><span>🚌 REDBUS</span><strong id="redbusPendingDisplay">0</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-stack" id="cardStack"></div>
+                <div class="app-footer">Designed & Developed with ❤️ by <span>Chandra Sekhara Babu K</span></div>
+            </div>
+            
+            <div id="summaryView" class="summary-container" style="display:none;">
+                <div class="summary-header"><span>🎯</span><h3>Target Reached!</h3><p>Here is the list of VLEs you called today.</p></div>
+                <div class="summary-list" id="summaryList"></div>
+            </div>
         </div>
-
     </div>
 
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        
         let pendingQueue = [], currentIndex = 0, callStartTime = null;
+        let todayCalledVLEs = []; 
+        let grandTotalIrctc = 0; let grandTotalRedbus = 0;
+        let globalLiveFeedData = []; 
+        let globalUniqueDMs = {}; 
+        let spocAutoRefreshTimer = null; 
 
         window.onload = () => {
-            if (sessionStorage.getItem("isLoggedIn")) routeUser();
-            else if (localStorage.getItem("userSavedPin")) {
+            if (sessionStorage.getItem("isLoggedIn")) {
+                enterFullscreen(); routeUser();
+            } else if (localStorage.getItem("userSavedPin")) {
                 document.getElementById("idPasswordForm").style.display = "none";
                 document.getElementById("enterPinForm").style.display = "block";
+                document.getElementById("pinUserName").innerText = localStorage.getItem("userName") || "User";
             }
         };
 
-        async function fetchRetry(url) {
-            let r = await fetch(url); return await r.json();
+        function switchSpocView() {
+            let val = document.getElementById('spocViewSelector').value;
+            document.getElementById('view-statehead').style.display = 'none';
+            document.getElementById('view-dmfollowup').style.display = 'none';
+            document.getElementById('view-livefeed').style.display = 'none';
+            document.getElementById(val).style.display = 'block';
         }
 
-        async function handleLogin() {
-            let uid = document.getElementById("userId").value;
-            let pwd = document.getElementById("password").value;
-            if(!uid || !pwd) return;
-            
-            document.getElementById("loginError").style.display = "none";
-            let users = await fetchRetry(apiURL + "?sheet=Users");
-            let user = users.find(u => u[0] == uid && u[1] == pwd);
-            
-            if(user) {
-                localStorage.setItem("userRole", user[2]);
-                localStorage.setItem("userName", user[5]);
-                document.getElementById("idPasswordForm").style.display = "none";
-                document.getElementById("setPinForm").style.display = "block";
-            } else {
-                document.getElementById("loginError").innerText = "Invalid Details";
-                document.getElementById("loginError").style.display = "block";
+        function triggerFestivalBlast() {
+            const colors = ['#fce18a', '#ff7eb3', '#84fab0', '#8fd3f4', '#f68084'];
+            const emojis = ['✨', '🎊', '🌸', '🎆', '🎈', '🎉'];
+            let screen = document.getElementById('holidayScreen');
+            for(let i=0; i<60; i++) {
+                let conf = document.createElement('div'); conf.className = 'confetti';
+                if(Math.random() > 0.5) { conf.innerText = emojis[Math.floor(Math.random() * emojis.length)]; conf.style.fontSize = (Math.random() * 20 + 10) + 'px'; } 
+                else { conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; conf.style.width = (Math.random() * 10 + 5) + 'px'; conf.style.height = (Math.random() * 20 + 5) + 'px'; conf.style.borderRadius = '2px'; }
+                conf.style.left = Math.random() * 100 + 'vw'; conf.style.animationDuration = (Math.random() * 3 + 2) + 's'; conf.style.animationDelay = Math.random() * 2 + 's';
+                screen.appendChild(conf);
             }
+        }
+
+        function triggerWelcomeModal(totalCardsGenerated) {
+            let name = localStorage.getItem("userName") || "User"; let isFriday = (new Date().getDay() === 5);
+            document.getElementById("welcomeTitle").innerText = "Welcome " + name + " గారు!";
+            let msgEl = document.getElementById("welcomeMsg");
+            if(isFriday) { msgEl.innerHTML = `Today is the <b style='color:#e11d48;'>Travel Login Drive!</b><br><br>మీకు ఈరోజు <b>${totalCardsGenerated} Targets</b> అలాట్ చేయబడ్డాయి. దయచేసి ప్రతి ఒక్కరికీ కాల్ చేసి సర్వీస్ యాక్టివేట్ చేయించండి.`; } 
+            else { msgEl.innerHTML = `Welcome to the Priority Follow-up App.<br><br>మీకు ఈరోజు <b>${totalCardsGenerated} Targets</b> అలాట్ చేయబడ్డాయి. దయచేసి ఫాలో-అప్ పూర్తి చేయండి.`; }
+            document.getElementById("welcomeModalOverlay").style.display = "flex";
+        }
+
+        function closeWelcomeModal() { document.getElementById("welcomeModalOverlay").style.display = "none"; }
+        function enterFullscreen() { let elem = document.documentElement; if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); } else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(err => {}); } }
+        async function fetchRetry(url) { let r = await fetch(url); let text = await r.text(); try { return JSON.parse(text); } catch(e) { throw new Error("బ్యాకెండ్ డేటా రాలేదు."); } }
+        function fireBackendPost(payload) { fetch(apiURL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) }).catch(e => console.error("Post Error:", e)); }
+
+        async function handleLogin() {
+            enterFullscreen(); let uid = document.getElementById("userId").value; let pwd = document.getElementById("password").value; if(!uid || !pwd) return;
+            let btn = document.querySelector("#idPasswordForm .btn-login"); btn.innerText = "AUTHENTICATING..."; btn.disabled = true; document.getElementById("loginError").style.display = "none";
+            try {
+                let users = await fetchRetry(apiURL + "?sheet=Users");
+                let user = users.find(u => u[0] == uid && u[1] == pwd);
+                if(user) {
+                    localStorage.setItem("userRole", user[2]); localStorage.setItem("userName", user[5]);
+                    document.getElementById("idPasswordForm").style.display = "none"; document.getElementById("newPinUserName").innerText = user[5]; document.getElementById("setPinForm").style.display = "block";
+                } else {
+                    document.getElementById("loginError").innerText = "Invalid Mobile No or Password!"; document.getElementById("loginError").style.display = "block";
+                }
+            } catch(e) { document.getElementById("loginError").innerText = e.message || "Network Error!"; document.getElementById("loginError").style.display = "block"; }
+            btn.innerText = "LOGIN"; btn.disabled = false;
         }
 
         function savePin() {
-            let p = document.getElementById("newPin").value;
-            if(p.length===4) {
-                localStorage.setItem("userSavedPin", p);
-                sessionStorage.setItem("isLoggedIn", "true");
-                recordLoginAndRoute();
-            }
+            enterFullscreen(); let p = document.getElementById("newPin").value;
+            if(p.length===4) { localStorage.setItem("userSavedPin", p); sessionStorage.setItem("isLoggedIn", "true"); recordLoginAndRoute(); } else { alert("Please enter a 4-digit PIN"); }
         }
 
         function loginWithPin() {
-            if(document.getElementById("authPin").value === localStorage.getItem("userSavedPin")) {
-                sessionStorage.setItem("isLoggedIn", "true");
-                recordLoginAndRoute();
-            } else {
-                document.getElementById("loginError").innerText = "Wrong PIN";
-                document.getElementById("loginError").style.display = "block";
-            }
+            enterFullscreen();
+            if(document.getElementById("authPin").value === localStorage.getItem("userSavedPin")) { sessionStorage.setItem("isLoggedIn", "true"); recordLoginAndRoute(); } 
+            else { document.getElementById("loginError").innerText = "Incorrect PIN!"; document.getElementById("loginError").style.display = "block"; }
         }
 
-        function forgotPin() { localStorage.removeItem("userSavedPin"); location.reload(); }
-        function handleLogout() { sessionStorage.clear(); location.reload(); }
+        function forgotPin() { localStorage.clear(); sessionStorage.clear(); location.reload(); }
+        function handleLogout() { sessionStorage.clear(); if(spocAutoRefreshTimer) clearInterval(spocAutoRefreshTimer); if(document.exitFullscreen){document.exitFullscreen();} location.reload(); }
+        function recordLoginAndRoute() { fireBackendPost({ action: "recordLogin", dmName: localStorage.getItem("userName"), role: localStorage.getItem("userRole") }); routeUser(); }
 
-        function recordLoginAndRoute() {
-            fetch(apiURL, {
-                method:"POST", mode:"no-cors",
-                body: JSON.stringify({ action: "recordLogin", dmName: localStorage.getItem("userName"), role: localStorage.getItem("userRole") })
-            });
-            routeUser();
-        }
-
-        function routeUser() {
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("mainHeader").style.display = "flex";
-            document.getElementById("userNameTxt").innerText = localStorage.getItem("userName");
-            
+        async function routeUser() {
+            document.getElementById("loginScreen").style.display = "none"; document.getElementById("mainHeader").style.display = "flex";
+            let safeUserName = localStorage.getItem("userName") || "User"; document.getElementById("userNameTxt").innerText = safeUserName;
             let role = (localStorage.getItem("userRole")||"").toLowerCase();
-            document.getElementById("userRoleTxt").innerText = role.toUpperCase();
-
+            
             if(role.includes("manager")) {
-                document.getElementById("appScreen").style.display = "flex";
-                loadDMData();
-            } else {
-                document.getElementById("spocScreen").style.display = "flex";
-                loadSpocDashboard();
-            }
-        }
-
-        // ================= SPOC DASHBOARD LOGIC (SEPARATE IRCTC/REDBUS) ================= //
-        async function loadSpocDashboard() {
-            document.getElementById("loader").style.display = "flex";
-            document.getElementById("loaderMsg").innerText = "Analyzing AP Data...";
-            try {
-                let [users, logins, logs, targetsRaw] = await Promise.all([
-                    fetchRetry(apiURL + "?sheet=Users"),
-                    fetchRetry(apiURL + "?sheet=DM_Logins"),
-                    fetchRetry(apiURL + "?sheet=FollowUp_Logs"),
-                    fetchRetry(apiURL + "?sheet=App_Targets")
-                ]);
-
-                let todayStr = new Date().toLocaleDateString('en-GB'); 
-                
-                // 1. DMs List Setup (Separated Targets)
-                let uniqueDMs = {};
-                users.forEach(u => {
-                    if((u[2]||"").toLowerCase().includes("manager") && u[0] && !uniqueDMs[u[0]]) {
-                        uniqueDMs[u[0]] = { name: u[5], mobile: u[0], irctcTarget: 0, irctcPending: 0, redbusTarget: 0, redbusPending: 0, calledToday: 0 };
-                    }
-                });
-                
-                // 2. Calculate Targets & Pending Separate for IRCTC & REDBUS
-                let totalIrctcPending = 0, totalRedbusPending = 0;
-                for(let i=1; i<targetsRaw.length; i++) {
-                    let dmName = (targetsRaw[i][3]||"").trim();
-                    let service = (targetsRaw[i][4]||"").trim().toUpperCase();
-                    let status = targetsRaw[i][7];
+                document.getElementById("loader").style.display = "flex"; document.getElementById("loaderMsg").innerText = "Checking Calendar...";
+                try {
+                    let holidaysData = await fetchRetry(apiURL + "?sheet=Holidays");
+                    let today = new Date(); let dd = String(today.getDate()).padStart(2, '0'); let mm = String(today.getMonth() + 1).padStart(2, '0'); let yyyy = today.getFullYear();
+                    let f1 = `${yyyy}-${mm}-${dd}`; let f2 = `${dd}-${mm}-${yyyy}`; let f3 = `${dd}/${mm}/${yyyy}`;
+                    let isHoliday = false; let hName = ""; let hEmoji = "🎉";
                     
-                    let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
-                    
-                    if(dmKey) {
-                        if (service === "IRCTC") {
-                            uniqueDMs[dmKey].irctcTarget += 1;
-                            if(status === "PENDING") uniqueDMs[dmKey].irctcPending += 1;
-                        } else if (service === "REDBUS") {
-                            uniqueDMs[dmKey].redbusTarget += 1;
-                            if(status === "PENDING") uniqueDMs[dmKey].redbusPending += 1;
+                    if (holidaysData && holidaysData.length > 1) {
+                        for(let i=1; i<holidaysData.length; i++) {
+                            let dateVal = String(holidaysData[i][0]).trim();
+                            if(dateVal.includes(f1) || dateVal.includes(f2) || dateVal.includes(f3)) { isHoliday = true; hName = holidaysData[i][1] || "Public Holiday"; hEmoji = "🎊"; break; }
                         }
                     }
-                    
-                    // Global counts
-                    if(status === "PENDING") {
-                        if (service === "IRCTC") totalIrctcPending++;
-                        if (service === "REDBUS") totalRedbusPending++;
+                    if (!isHoliday && today.getDay() === 0) { isHoliday = true; hName = "Sunday"; hEmoji = "🌴"; }
+                    document.getElementById("loader").style.display = "none";
+                    if(isHoliday) {
+                        document.getElementById("holidayScreen").style.display = "flex"; document.getElementById("holidayEmoji").innerText = hEmoji;
+                        let titleEl = document.getElementById("holidayTitle");
+                        if (hName === "Sunday") { titleEl.innerText = "Happy Sunday!"; titleEl.style.color = "#0f172a"; } else { titleEl.innerText = `Happy ${hName}!`; titleEl.className = "festival-text"; triggerFestivalBlast(); }
+                        return; 
                     }
-                }
+                } catch(e) { console.error("Holiday fetch failed:", e); document.getElementById("loader").style.display = "none"; }
 
-                let todayLogins = new Set();
-                let loginTimeDetails = {};
-                for(let i=1; i<logins.length; i++) {
-                    if(logins[i][0] && logins[i][0].includes(todayStr)) {
-                        let name = logins[i][1];
-                        todayLogins.add(name);
-                        loginTimeDetails[name] = logins[i][0].split(" ")[1]; 
-                    }
-                }
-
-                let totalCallsToday = 0;
-                let todayISODate = new Date().toISOString().split('T')[0];
-                
-                for(let i=1; i<logs.length; i++) {
-                    let d = new Date(logs[i][0]).toISOString().split('T')[0];
-                    if(d === todayISODate) {
-                        totalCallsToday++;
-                        let logDmName = (logs[i][3]||"").trim();
-                        let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === logDmName.toLowerCase());
-                        if(dmKey) uniqueDMs[dmKey].calledToday += 1;
-                    }
-                }
-
-                document.getElementById("spocCallsToday").innerText = totalCallsToday;
-                document.getElementById("spocActiveDMs").innerText = todayLogins.size;
-                document.getElementById("spocIrctcPending").innerText = totalIrctcPending;
-                document.getElementById("spocRedbusPending").innerText = totalRedbusPending;
-
-                let actHtml = "", inactHtml = "";
-                
-                Object.values(uniqueDMs).forEach(dm => {
-                    let irctcHtml = `<span class="tgt-badge tgt-irctc">IRCTC: ${dm.irctcPending}/${dm.irctcTarget}</span>`;
-                    let redbusHtml = `<span class="tgt-badge tgt-redbus">REDBUS: ${dm.redbusPending}/${dm.redbusTarget}</span>`;
-                    
-                    if(todayLogins.has(dm.name)) {
-                        actHtml += `
-                        <div class="dm-item">
-                            <div class="dm-info">
-                                <h4>${dm.name}</h4>
-                                <div style="margin-top:4px;">${irctcHtml} ${redbusHtml}</div>
-                                <p style="margin-top:4px; color:#10b981;">Calls Today: <b>${dm.calledToday}</b></p>
-                                <p style="font-size:9px; margin-top:2px;">Login: ${loginTimeDetails[dm.name]||'Today'}</p>
-                            </div>
-                            <span class="dm-status status-active">Online</span>
-                        </div>`;
-                    } else {
-                        inactHtml += `
-                        <div class="dm-item">
-                            <div class="dm-info">
-                                <h4>${dm.name}</h4>
-                                <div style="margin-top:4px;">${irctcHtml}</div>
-                                <div style="margin-top:2px;">${redbusHtml}</div>
-                            </div>
-                            <a href="tel:${dm.mobile}" class="call-dm-btn">📞 Alert DM</a>
-                        </div>`;
-                    }
-                });
-
-                document.getElementById("activeDmList").innerHTML = actHtml || "<p style='font-size:11px; text-align:center;'>No active DMs yet.</p>";
-                document.getElementById("inactiveDmList").innerHTML = inactHtml || "<p style='font-size:11px; text-align:center;'>All DMs are active! 🎉</p>";
-
-            } catch(e) {
-                alert("Error loading dashboard data.");
+                document.getElementById("appScreen").style.display = "flex"; loadDMData();
+            } else {
+                document.getElementById("spocScreen").style.display = "flex"; loadSpocDashboard();
+                spocAutoRefreshTimer = setInterval(() => { fetchSpocDataSilently(); }, 30000);
             }
+        }
+
+        // 🌟 SMART IMAGE DOWNLOAD LOGIC (FIXES CROPPED TABLE) 🌟
+        window.downloadStateHeadReport = function() {
+            let card = document.getElementById("captureCard");
+            let btn = document.getElementById("dlBtn");
+            let container = document.querySelector(".report-table-container");
+            let tableEl = document.querySelector(".report-table");
+            
+            btn.style.display = "none";
+            
+            let originalWidth = card.style.width;
+            let originalMaxWidth = card.style.maxWidth;
+            let originalOverflow = container.style.overflowX;
+            
+            let targetWidth = tableEl.offsetWidth + 40; 
+            card.style.width = targetWidth + "px";
+            card.style.maxWidth = "none";
+            container.style.overflowX = "visible";
+            
+            html2canvas(card, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                link.download = `Priority_Followup_Report_${todayStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                btn.style.display = "flex";
+                card.style.width = originalWidth;
+                card.style.maxWidth = originalMaxWidth;
+                container.style.overflowX = originalOverflow;
+            }).catch(err => {
+                console.error("Screenshot Error:", err);
+                alert("Failed to save image. Please try again.");
+                btn.style.display = "flex";
+                card.style.width = originalWidth;
+                card.style.maxWidth = originalMaxWidth;
+                container.style.overflowX = originalOverflow;
+            });
+        }
+
+        window.dmWhatsApp = function(mobile, dmName, irctcTgt, redbusTgt) {
+            let cleanMob = mobile.replace(/\D/g, ''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+            let day = new Date().getDay(); let isFriday = (day === 5);
+            let iLimit = isFriday ? 15 : 5; let rLimit = isFriday ? 5 : 3;
+            let totalInactive = irctcTgt + redbusTgt;
+            let dailyAssigned = Math.min(irctcTgt, iLimit) + Math.min(redbusTgt, rLimit);
+            let msg = "";
+            
+            if (isFriday) { 
+                msg = `నమస్కారం ${dmName} గారు,\n\nఈరోజు మనకు *Travel Login Drive!* 🚀\n\nPriority Follow-up సిస్టమ్‌లో మీకు మొత్తం *${totalInactive}* (IRCTC & RedBus) టార్గెట్స్ పెండింగ్ ఉన్నాయి. అందులో ఈరోజు డ్రైవ్ కోసం మీకు *${dailyAssigned}* టార్గెట్స్ కేటాయించడం జరిగింది. \n\nదయచేసి ప్రత్యేకంగా సమయం కేటాయించి, ప్రతి VLE కి కాల్ చేసి వెంటనే సర్వీస్ యాక్టివేట్ చేయించండి. All the best!\n\n- Sri.Y. Ravi Kumar, State Head`;
+            } else { 
+                msg = `నమస్కారం ${dmName} గారు,\n\nPriority Follow-up సిస్టమ్‌లో మీకు మొత్తం *${totalInactive}* (IRCTC & RedBus) టార్గెట్స్ పెండింగ్ ఉన్నాయి. అందులో ఈరోజు ఫాలో-అప్ కోసం మీకు *${dailyAssigned}* టార్గెట్స్ అసైన్ చేయబడ్డాయి.\n\nదయచేసి మీ వీలు చూసుకుని ఈరోజు తప్పకుండా వీరికి కాల్ చేసి సర్వీసెస్ యాక్టివేట్ చేయించగలరు.\n\n- Sri.Y. Ravi Kumar, State Head`;
+            }
+            let encodedMsg = encodeURIComponent(msg); let isAndroid = /Android/i.test(navigator.userAgent);
+            let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+            window.location.href = waLink;
+        };
+
+        window.copyStateHeadReport = function() {
+            let todayStr = new Date().toLocaleDateString('en-GB');
+            let txt = `📊 *Priority Followup Report (${todayStr})*\n\n`;
+            
+            let day = new Date().getDay(); let isFridayDay = (day === 5);
+            let iLimit = isFridayDay ? 15 : 5; let rLimit = isFridayDay ? 5 : 3;
+            
+            let sno = 1;
+            Object.values(globalUniqueDMs).forEach(dm => {
+                let totalTgts = dm.irctcBaseTarget + dm.redbusBaseTarget;
+                if(totalTgts > 0) {
+                    let totalCalled = dm.irctcCalled + dm.redbusCalled;
+                    let totalPend = dm.irctcPending + dm.redbusPending;
+                    let iAct = dm.irctcBaseTarget - dm.irctcPending;
+                    let rAct = dm.redbusBaseTarget - dm.redbusPending;
+                    let totalActivated = iAct + rAct;
+                    let dailyAssigned = Math.min(dm.irctcPending, iLimit) + Math.min(dm.redbusPending, rLimit);
+                    
+                    txt += `*${sno}. ${dm.name}*\n`;
+                    txt += `🔹 Total Target: ${totalTgts} (I: ${dm.irctcBaseTarget}, R: ${dm.redbusBaseTarget})\n`;
+                    txt += `✅ Act. (Total): ${totalActivated}\n`;
+                    txt += `📅 Act. (Yesterday): ${dm.yesterdayAct}\n`;
+                    txt += `⏳ Pending: ${totalPend}\n`;
+                    txt += `🎯 Assigned (Today): ${dailyAssigned}\n`;
+                    txt += `📞 Attempted (Today): ${totalCalled}\n\n`;
+                    sno++;
+                }
+            });
+            
+            let textArea = document.createElement("textarea"); textArea.value = txt; document.body.appendChild(textArea); textArea.select();
+            try { document.execCommand('copy'); alert("✅ State Head Report Copied! You can now paste it in WhatsApp."); } catch (err) { alert("Failed to copy. Please try again."); }
+            document.body.removeChild(textArea);
+        }
+
+        async function loadSpocDashboard() {
+            document.getElementById("loader").style.display = "flex"; document.getElementById("loaderMsg").innerText = "Analyzing Live AP Data...";
+            await fetchSpocDataSilently();
             document.getElementById("loader").style.display = "none";
         }
 
-        // MASTER CONTROL PUSH FUNCTION
-        function triggerBackendPush(serviceName) {
-            document.getElementById("loader").style.display = "flex";
-            document.getElementById("loaderMsg").innerText = `Pushing ${serviceName} Data...`;
-            
-            fetch(apiURL, {
-                method: "POST",
-                body: JSON.stringify({ action: "generateAppTargets", service: serviceName })
-            })
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById("loader").style.display = "none";
-                if(data.success) {
-                    alert(`✅ Successfully assigned ${data.count} ${serviceName} targets to DMs!`);
-                    loadSpocDashboard(); 
-                } else {
-                    alert("❌ Backend Error: " + data.error);
-                }
-            })
-            .catch(e => {
-                document.getElementById("loader").style.display = "none";
-                alert("Request sent successfully! Background sync in progress.");
-            });
-        }
-
-        // ================= DM CALLING LOGIC ================= //
-        async function loadDMData() {
-            document.getElementById("loader").style.display = "flex";
-            let dmName = localStorage.getItem("userName").toLowerCase().trim();
+        async function fetchSpocDataSilently() {
             try {
-                let targetRaw = await fetchRetry(apiURL + "?sheet=App_Targets");
-                pendingQueue = [];
+                let [users, logins, logs, targetsRaw, baseTargetsRaw] = await Promise.all([ fetchRetry(apiURL + "?sheet=Users"), fetchRetry(apiURL + "?sheet=DM_Logins"), fetchRetry(apiURL + "?sheet=FollowUp_Logs"), fetchRetry(apiURL + "?sheet=App_Targets"), fetchRetry(apiURL + "?sheet=Base_Targets") ]);
                 
-                for(let i=1; i<targetRaw.length; i++) {
-                    if((targetRaw[i][3]||"").toLowerCase().trim() === dmName && targetRaw[i][7] === "PENDING") {
-                        pendingQueue.push({ cscId: targetRaw[i][0], name: targetRaw[i][1], mobile: targetRaw[i][2], service: targetRaw[i][4] });
+                let today = new Date();
+                let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
+                let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
+                let todayStr = new Date().toLocaleDateString('en-GB');
+                
+                let yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+                let yesterdayStr = yesterdayDate.toLocaleDateString('en-GB');
+
+                let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
+                
+                let uniqueDMs = {};
+                users.forEach(u => { 
+                    if((u[2]||"").toLowerCase().includes("manager") && u[0] && !uniqueDMs[u[0]]) { 
+                        uniqueDMs[u[0]] = { name: u[5], mobile: u[0], irctcBaseTarget: 0, redbusBaseTarget: 0, irctcPending: 0, redbusPending: 0, irctcCalled: 0, redbusCalled: 0, calledToday: 0, yesterdayAct: 0 }; 
+                    } 
+                });
+
+                let vleMobileMap = {}; let totalIrctcPending = 0, totalRedbusPending = 0;
+
+                if (baseTargetsRaw && baseTargetsRaw.length > 1) {
+                    for(let i=1; i<baseTargetsRaw.length; i++) {
+                        let cId = baseTargetsRaw[i][0]; if (cId) vleMobileMap[cId] = baseTargetsRaw[i][2]; 
+                        let dmName = (baseTargetsRaw[i][3]||"").trim(); let service = (baseTargetsRaw[i][4]||"").trim().toUpperCase();
+                        let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
+                        if(dmKey) { if (service === "IRCTC") uniqueDMs[dmKey].irctcBaseTarget += 1; else if (service === "REDBUS") uniqueDMs[dmKey].redbusBaseTarget += 1; }
                     }
                 }
-                
-                document.getElementById("loader").style.display = "none";
-                if(pendingQueue.length === 0) {
-                    document.getElementById("cardStack").innerHTML = `<h3 style='text-align:center; color:#1e293b;'>🎉 All Targets Completed!</h3>`;
-                } else {
-                    renderCards(); updateUI();
+
+                if (targetsRaw && targetsRaw.length > 1) {
+                    for(let i=1; i<targetsRaw.length; i++) {
+                        let dmName = (targetsRaw[i][3]||"").trim(); let service = (targetsRaw[i][4]||"").trim().toUpperCase(); let status = targetsRaw[i][7]; let cId = targetsRaw[i][0];
+                        if (cId && !vleMobileMap[cId]) vleMobileMap[cId] = targetsRaw[i][2]; 
+                        let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === dmName.toLowerCase());
+                        if(dmKey && status === "PENDING") {
+                            if (service === "IRCTC") { uniqueDMs[dmKey].irctcPending += 1; totalIrctcPending++; } 
+                            else if (service === "REDBUS") { uniqueDMs[dmKey].redbusPending += 1; totalRedbusPending++; }
+                        }
+                    }
                 }
-            } catch(e) {}
+
+                let pendingHistory = JSON.parse(localStorage.getItem("spocPendingHistory") || "{}");
+                if(!pendingHistory[todayStr]) pendingHistory[todayStr] = {};
+
+                Object.values(uniqueDMs).forEach(dm => {
+                    pendingHistory[todayStr][dm.name] = { i: dm.irctcPending, r: dm.redbusPending };
+                    if(pendingHistory[yesterdayStr] && pendingHistory[yesterdayStr][dm.name]) {
+                        let prevI = pendingHistory[yesterdayStr][dm.name].i;
+                        let prevR = pendingHistory[yesterdayStr][dm.name].r;
+                        let yActI = Math.max(0, prevI - dm.irctcPending);
+                        let yActR = Math.max(0, prevR - dm.redbusPending);
+                        dm.yesterdayAct = yActI + yActR;
+                    }
+                });
+                localStorage.setItem("spocPendingHistory", JSON.stringify(pendingHistory));
+
+                let todayLogins = new Set(); let loginTimeDetails = {};
+                if(logins) { for(let i=1; i<logins.length; i++) { if(isToday(logins[i][0])) { let name = logins[i][1]; todayLogins.add(name); let timePart = String(logins[i][0]).split(" ")[1] || "Today"; loginTimeDetails[name] = timePart; } } }
+
+                let totalCallsToday = 0; globalLiveFeedData = []; 
+
+                if(logs) {
+                    for(let i=1; i<logs.length; i++) { 
+                        if(isToday(logs[i][0])) {
+                            let logDmName = (logs[i][3]||"").trim(); let dmKey = Object.keys(uniqueDMs).find(k => uniqueDMs[k].name.toLowerCase() === logDmName.toLowerCase()); let srv = logs[i][2];
+                            if(dmKey) {
+                                totalCallsToday++; uniqueDMs[dmKey].calledToday += 1; 
+                                if(srv === "IRCTC") uniqueDMs[dmKey].irctcCalled += 1; else if(srv === "REDBUS") uniqueDMs[dmKey].redbusCalled += 1; 
+                            }
+                            let timeStr = String(logs[i][0]).split(" ")[1] || ""; let cscIdLog = logs[i][1]; let vleName = logs[i][2] === "IRCTC" || logs[i][2] === "REDBUS" ? cscIdLog : logs[i][1]; let rmk = logs[i][4]; let mobile = vleMobileMap[cscIdLog] || "";
+                            globalLiveFeedData.push({ dmName: logDmName, vleName: vleName, service: srv, time: timeStr, remark: rmk, mobile: mobile });
+                        }
+                    }
+                    globalLiveFeedData.reverse();
+                }
+
+                globalUniqueDMs = uniqueDMs; 
+                let oldActHtml = ""; let dmActionHtml = ""; let actualActiveDMCount = 0;
+                let filterSelect = document.getElementById("feedFilter"); let currentFilterValue = filterSelect.value || "ALL"; 
+                document.getElementById("reportDateTxt").innerText = `(${todayStr})`;
+                filterSelect.innerHTML = `<option value="ALL">All DMs</option>`; 
+                
+                // 🌟 STATE HEAD HTML TABLE BUILDER 🌟
+                let headReportHtml = `
+                <div class="report-table-container">
+                    <table class="report-table">
+                        <tr>
+                            <th>S.No</th>
+                            <th>Employee Name</th>
+                            <th>Total Target</th>
+                            <th>✅ Act. (Total)</th>
+                            <th>📅 Act. (Yesterday)</th>
+                            <th>⏳ Pending</th>
+                            <th>🎯 Assigned (Today)</th>
+                            <th>📞 Attempted (Today)</th>
+                        </tr>`;
+
+                let sno = 1; let dayNum = new Date().getDay(); let isFridayDay = (dayNum === 5);
+                let iLimit = isFridayDay ? 15 : 5; let rLimit = isFridayDay ? 5 : 3;
+
+                Object.values(uniqueDMs).forEach(dm => {
+                    dm.irctcBaseTarget = Math.max(dm.irctcBaseTarget, dm.irctcPending);
+                    dm.redbusBaseTarget = Math.max(dm.redbusBaseTarget, dm.redbusPending);
+                    
+                    let totalTgts = dm.irctcBaseTarget + dm.redbusBaseTarget;
+                    
+                    if(totalTgts > 0) {
+                        let totalCalled = dm.irctcCalled + dm.redbusCalled;
+                        let totalPend = dm.irctcPending + dm.redbusPending;
+                        let iAct = dm.irctcBaseTarget - dm.irctcPending;
+                        let rAct = dm.redbusBaseTarget - dm.redbusPending;
+                        let totalActivated = iAct + rAct;
+                        let dailyAssigned = Math.min(dm.irctcPending, iLimit) + Math.min(dm.redbusPending, rLimit);
+                        
+                        let attemptedColor = totalCalled > 0 ? "#10b981" : "#ef4444"; 
+                        let yActColor = dm.yesterdayAct > 0 ? "#0ea5e9" : "#64748b"; 
+                        
+                        headReportHtml += `
+                        <tr>
+                            <td>${sno}</td>
+                            <td style="font-weight:800; color:#0f172a; text-align:left;">${dm.name}</td>
+                            <td>${totalTgts}<br><span style="font-size:9px; color:#64748b;">(I:${dm.irctcBaseTarget}, R:${dm.redbusBaseTarget})</span></td>
+                            <td style="color:#16a34a; font-weight:800;">${totalActivated}<br><span style="font-size:9px; color:#64748b;">(I:${iAct}, R:${rAct})</span></td>
+                            <td style="color:${yActColor}; font-weight:900;">${dm.yesterdayAct}</td>
+                            <td style="color:#ef4444; font-weight:800;">${totalPend}</td>
+                            <td style="color:#2563eb; font-weight:800;">${dailyAssigned}</td>
+                            <td style="color:${attemptedColor}; font-weight:900;">${totalCalled}</td>
+                        </tr>`;
+
+                        dmActionHtml += `
+                        <div class="dm-action-item">
+                            <div style="display:flex; justify-content:space-between;">
+                                <h4>${dm.name}</h4>
+                                <span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:2px 8px; border-radius:6px;">${totalPend} Pending</span>
+                            </div>
+                            <p style="margin-top:4px;">Total: ${totalTgts} | Assigned Today: ${dailyAssigned} | Called: <b style="color:${attemptedColor};">${totalCalled}</b></p>
+                            <div class="action-buttons-sm">
+                                <a href="tel:${dm.mobile}" class="btn-sm-call">📞 Call</a>
+                                <div onclick="dmWhatsApp('${dm.mobile}', '${dm.name}', ${dm.irctcPending}, ${dm.redbusPending})" class="btn-sm-wa">💬 WhatsApp</div>
+                            </div>
+                        </div>`;
+                        sno++;
+                    }
+
+                    if(todayLogins.has(dm.name) || dm.calledToday > 0) { 
+                        actualActiveDMCount++;
+                        let irctcHtml = `<span class="tgt-badge tgt-irctc">IRCTC: ${dm.irctcPending}/${dm.irctcBaseTarget}</span>`; let redbusHtml = `<span class="tgt-badge tgt-redbus">REDBUS: ${dm.redbusPending}/${dm.redbusBaseTarget}</span>`;
+                        oldActHtml += `<div class="dm-item"><div class="dm-info"><h4>${dm.name}</h4><div style="margin-top:4px;">${irctcHtml} ${redbusHtml}</div><p style="margin-top:6px; color:#059669;">Calls Today: <b style="font-size:14px;">${dm.calledToday}</b></p><p style="font-size:10px; margin-top:4px; color:#94a3b8;">Logged in: ${loginTimeDetails[dm.name]||'Today'}</p></div><span class="dm-status status-active">Online</span></div>`; 
+                        let isSelected = (currentFilterValue === dm.name) ? "selected" : ""; filterSelect.innerHTML += `<option value="${dm.name}" ${isSelected}>${dm.name}</option>`;
+                    } 
+                });
+                headReportHtml += `</table></div>`;
+
+                document.getElementById("spocCallsToday").innerText = totalCallsToday; document.getElementById("spocActiveDMs").innerText = actualActiveDMCount;
+                document.getElementById("spocIrctcPending").innerText = totalIrctcPending; document.getElementById("spocRedbusPending").innerText = totalRedbusPending;
+                
+                document.getElementById("stateHeadReportList").innerHTML = (sno > 1) ? headReportHtml : "<p style='font-size:12px; text-align:center; color:#64748b; padding:10px;'>No targets assigned.</p>";
+                document.getElementById("dmFollowUpList").innerHTML = dmActionHtml || "<p style='font-size:12px; text-align:center; color:#64748b; padding:10px;'>No pending DMs to follow up.</p>";
+                document.getElementById("activeDmList").innerHTML = oldActHtml || "<p style='font-size:13px; text-align:center; padding:15px; color:#64748b;'>No active DMs yet.</p>";
+                renderLiveFeed(currentFilterValue);
+            } catch(e) { console.error("Auto Sync Error:", e); }
         }
 
+        function renderLiveFeed(filterDM) {
+            let feedContainer = document.getElementById("liveCallFeed"); let html = ""; let isAndroid = /Android/i.test(navigator.userAgent);
+            let filteredData = globalLiveFeedData; if(filterDM !== "ALL") { filteredData = globalLiveFeedData.filter(item => item.dmName === filterDM); }
+            if(filteredData.length === 0) { feedContainer.innerHTML = "<p style='font-size:12px; text-align:center; color:#64748b; padding:10px;'>No calls found.</p>"; return; }
+
+            filteredData.forEach(item => {
+                let badgeColor = item.remark === "Activated" ? "background:#dcfce7; color:#166534;" : (item.remark.includes("Not Reachable") || item.remark.includes("Shop Closed") ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
+                let btnHtml = "";
+                if(item.mobile && item.mobile !== "-" && item.mobile !== "0") {
+                    let cleanMob = item.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+                    let msg = `నమస్కారం సార్,\n\nCSC స్టేట్ ఆఫీస్ (SPOC) నుండి మాట్లాడుతున్నాము. మీ CSC ఐడీలో (${item.service}) సర్వీస్ ఇంకా పెండింగ్ లో ఉంది. దయచేసి వెంటనే యాక్టివేట్ చేసుకోగలరు.`;
+                    let encodedMsg = encodeURIComponent(msg);
+                    let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+                    btnHtml = `<div class="feed-actions"><a href="tel:${item.mobile}" class="feed-btn f-call">📞 Call</a><a href="${waLink}" class="feed-btn f-wa">💬 WhatsApp</a></div>`;
+                }
+                html += `<div class="live-feed-item"><div class="live-feed-header"><h4>${item.vleName} <span style="font-size:11px; color:#64748b;">(${item.service})</span></h4><span class="feed-dm">👤 ${item.dmName}</span></div><p>🕒 ${item.time}</p><span class="feed-rmk" style="${badgeColor}">${item.remark}</span>${btnHtml}</div>`;
+            });
+            feedContainer.innerHTML = html;
+        }
+
+        function filterLiveFeed() { let dm = document.getElementById("feedFilter").value; renderLiveFeed(dm); }
+
+        function triggerBackendPush(serviceName) {
+            document.getElementById("loader").style.display = "flex"; document.getElementById("loaderMsg").innerText = `Pushing ${serviceName} Targets...`;
+            fireBackendPost({ action: "generateAppTargets", service: serviceName });
+            setTimeout(() => { document.getElementById("loader").style.display = "none"; alert(`✅ Successfully triggered ${serviceName} sync to backend! Check dashboard shortly.`); loadSpocDashboard(); }, 1000);
+        }
+
+        async function loadDMData() {
+            document.getElementById("loader").style.display = "flex"; document.getElementById("loaderMsg").innerText = "Generating Smart Queue...";
+            let dmName = (localStorage.getItem("userName") || "").toLowerCase().trim(); let storageKey = "todayCalledVLEs_" + dmName.replace(/\s+/g, ''); let queueKey = "dailyQueue_" + dmName.replace(/\s+/g, ''); let dateKey = "dailyQueueDate_" + dmName.replace(/\s+/g, '');
+            todayCalledVLEs = JSON.parse(localStorage.getItem(storageKey) || "[]"); grandTotalIrctc = 0; grandTotalRedbus = 0;
+
+            try {
+                let [targetRaw, logsRaw] = await Promise.all([ fetchRetry(apiURL + "?sheet=App_Targets"), fetchRetry(apiURL + "?sheet=FollowUp_Logs") ]);
+                let historyMap = {};
+                for(let i=1; i<logsRaw.length; i++) { let cid = logsRaw[i][1]; if(!cid) continue; let dStr = logsRaw[i][0]; let rmk = logsRaw[i][4]; let dObj = new Date(dStr); if(!historyMap[cid] || dObj > historyMap[cid].dateObj) { historyMap[cid] = { dateObj: dObj, dateStr: dObj.toLocaleDateString('en-GB'), remark: rmk }; } }
+                let rawQueue = [];
+                for(let i=1; i<targetRaw.length; i++) {
+                    if((targetRaw[i][3]||"").toLowerCase().trim() === dmName && targetRaw[i][7] === "PENDING") {
+                        let srv = targetRaw[i][4]; if (srv === "IRCTC") grandTotalIrctc++; if (srv === "REDBUS") grandTotalRedbus++;
+                        rawQueue.push({ cscId: targetRaw[i][0], name: targetRaw[i][1], mobile: targetRaw[i][2], service: srv, lastYear: targetRaw[i][5] || "0", thisYear: targetRaw[i][6] || "0", history: historyMap[targetRaw[i][0]] || null });
+                    }
+                }
+                document.getElementById("loader").style.display = "none";
+                let today = new Date().toLocaleDateString('en-GB'); let savedDate = localStorage.getItem(dateKey); let initiallyGeneratedCount = 0;
+                
+                if (savedDate === today) {
+                    let savedQueue = JSON.parse(localStorage.getItem(queueKey) || "[]"); initiallyGeneratedCount = savedQueue.length;
+                    let calledIds = todayCalledVLEs.map(t => t.cscId); pendingQueue = savedQueue.filter(q => !calledIds.includes(q.cscId));
+                } else {
+                    let generatedQueue = generateStrictSmartQueue(rawQueue); initiallyGeneratedCount = generatedQueue.length;
+                    localStorage.setItem(dateKey, today); localStorage.setItem(queueKey, JSON.stringify(generatedQueue));
+                    todayCalledVLEs = []; localStorage.setItem(storageKey, JSON.stringify(todayCalledVLEs)); pendingQueue = generatedQueue;
+                }
+                if(pendingQueue.length === 0) { showSummaryScreen(); } else { renderCards(); updateUI(); triggerWelcomeModal(initiallyGeneratedCount); }
+            } catch(e) { document.getElementById("loader").style.display = "none"; alert("Error loading targets: " + e.message); }
+        }
+
+        function generateStrictSmartQueue(rawQueue) {
+            let irctcItems = rawQueue.filter(q => q.service === "IRCTC"); let redbusItems = rawQueue.filter(q => q.service === "REDBUS");
+            irctcItems.sort((a, b) => parseInt(b.lastYear || 0) - parseInt(a.lastYear || 0)); redbusItems.sort((a, b) => parseInt(b.lastYear || 0) - parseInt(a.lastYear || 0));
+            let finalQueue = []; let combinedCscIds = [];
+            irctcItems.forEach(iItem => { let rIdx = redbusItems.findIndex(rItem => rItem.cscId === iItem.cscId); if(rIdx > -1) { combinedCscIds.push(iItem.cscId); finalQueue.push({ cscId: iItem.cscId, name: iItem.name, mobile: iItem.mobile, service: "BOTH", irctcLastYear: iItem.lastYear, redbusLastYear: redbusItems[rIdx].lastYear, history: iItem.history || redbusItems[rIdx].history }); redbusItems.splice(rIdx, 1); } });
+            irctcItems = irctcItems.filter(iItem => !combinedCscIds.includes(iItem.cscId));
+            let today = new Date().getDay(); let isFriday = (today === 5); let irctcLimit = isFriday ? 15 : 5; let redbusLimit = isFriday ? 5 : 3; let totalAddedIrctc = 0; let totalAddedRedbus = 0;
+            finalQueue.forEach(item => { if(item.service === "BOTH") { totalAddedIrctc++; totalAddedRedbus++; } });
+            for(let i=0; i < irctcItems.length; i++) { if(totalAddedIrctc < irctcLimit) { finalQueue.push(irctcItems[i]); totalAddedIrctc++; } }
+            for(let i=0; i < redbusItems.length; i++) { if(totalAddedRedbus < redbusLimit) { finalQueue.push(redbusItems[i]); totalAddedRedbus++; } }
+            return finalQueue;
+        }
+
+        function handleRemarkChange(selElement, idx) { let inputId = "otherRemark-" + idx; let inputBox = document.getElementById(inputId); if(selElement.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); } else { inputBox.style.display = "none"; inputBox.value = ""; } }
+
         function renderCards() {
-            let html = "";
+            let html = ""; let isAndroid = /Android/i.test(navigator.userAgent);
             pendingQueue.forEach((v, i) => {
-                html += `
-                <div class="vle-card" id="card-${i}">
-                    <div style="background:#1e3a8a; color:white; padding:15px; text-align:center; border-radius:20px 20px 0 0; font-weight:bold;">${v.service} Follow-Up</div>
-                    <div class="vle-info">
-                        <h2 style="font-size:20px; font-weight:800; color:#1e293b; margin-bottom:5px;">${v.name}</h2>
-                        <p style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:20px;">CSC ID: ${v.cscId}</p>
-                        
-                        <button class="call-btn" onclick="startCallTimer('${v.mobile}')">📞 Call ${v.mobile}</button>
-                        
-                        <select id="remark-${i}">
-                            <option value="" disabled selected>Select Reason...</option>
-                            <option value="ACTIVATED">✅ ACTIVATED / Will do right now</option>
-                            <option value="Technical Issue">Password / Technical Issue</option>
-                            <option value="Not Reachable">Not Reachable</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        
-                        <button class="submit-btn" onclick="submitCall(${i})">Submit & Next</button>
-                    </div>
-                </div>`;
+                let isBoth = (v.service === "BOTH"); let headerClass = isBoth ? "bg-both" : (v.service === "IRCTC" ? "bg-irctc" : "bg-redbus"); let emoji = isBoth ? "🤝" : (v.service === "IRCTC" ? "🚆" : "🚌"); let titleText = isBoth ? "IRCTC & REDBUS COMBINED FOLLOW-UP" : `${v.service} Follow-Up`;
+                let txnBoxHtml = isBoth ? `<div class="txn-container"><div class="txn-row"><span>🚆 Last Year IRCTC Txns:</span> <span class="txn-count-badge">${v.irctcLastYear}</span></div><div class="txn-row" style="margin-top: 5px;"><span>🚌 Last Year REDBUS Txns:</span> <span class="txn-count-badge">${v.redbusLastYear}</span></div></div>` : `<div class="txn-container"><div class="txn-row"><span>📊 Last Year Txns Count:</span> <span class="txn-count-badge">${v.lastYear}</span></div></div>`;
+                let historyHtml = ""; if (v.history) { historyHtml = `<div class="history-badge">🕰️ Last Call: ${v.history.dateStr} <br><span>💬 "${v.history.remark}"</span></div>`; }
+                let cleanMob = v.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+                let msg = `నమస్కారం ${v.name} గారు,\n\nCSC AP ఆఫీస్ నుండి మాట్లాడుతున్నాము. మీ CSC ఐడీలో Tour & Travels (IRCTC/REDBUS) సర్వీస్ ఇంకా పెండింగ్ లో ఉంది. దయచేసి వెంటనే యాక్టివేట్ చేసుకోగలరు.\n\nఏమైనా సందేహాలు ఉంటే ఈ నెంబర్ కి రిప్లై ఇవ్వగలరు.`;
+                let encodedMsg = encodeURIComponent(msg); let waLink = isAndroid ? `intent://send?phone=${cleanMob}&text=${encodedMsg}#Intent;scheme=whatsapp;package=com.whatsapp;end` : `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+                html += `<div class="vle-card" id="card-${i}"><div class="vle-card-header ${headerClass}">${emoji} ${titleText}</div><div class="vle-info"><div class="vle-details"><h2>${v.name}</h2><p>CSC ID: ${v.cscId}</p><div class="action-btn-group"><button class="call-btn" onclick="startCallTimer('${v.mobile}')"><span>📞</span> Call</button><a href="${waLink}" class="wa-btn"><span>💬</span> WhatsApp</a></div>${historyHtml}${txnBoxHtml}</div><div class="vle-action"><select id="remark-${i}" onchange="handleRemarkChange(this, ${i})"><option value="" disabled selected>Tap to Select Outcome...</option><option value="Activated">Activated</option><option value="Promised to do today / tomorrow">Promised to do today / tomorrow</option><option value="Did not Lift / Not Reachable">Did not Lift / Not Reachable</option><option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option><option value="DSP e-KYC Problem">DSP e-KYC Problem</option><option value="Aadhaar Recovery Pending">ID Recovery Pending</option><option value="Password Reset / Login Issue">Password Reset / Login Issue</option><option value="Mobile No Change">Mobile No Change</option><option value="Others">Others (Type reason below)</option></select><input type="text" id="otherRemark-${i}" class="other-input-box" placeholder="Type actual reason here..."><button class="submit-btn" onclick="submitCall(${i})">Submit & View Next</button></div></div></div>`;
             });
             document.getElementById("cardStack").innerHTML = html;
         }
 
         function updateUI() {
-            document.getElementById("progressTxt").innerText = `Pending: ${currentIndex + 1} / ${pendingQueue.length}`;
-            for(let i=0; i<pendingQueue.length; i++) {
-                let c = document.getElementById(`card-${i}`);
-                if(i < currentIndex) c.className = "vle-card card-done";
-                else if(i === currentIndex) c.className = "vle-card card-active";
-                else c.className = "vle-card";
-            }
+            if(pendingQueue.length === 0) return;
+            let percent = (currentIndex / pendingQueue.length) * 100; document.getElementById("progressBar").style.width = `${percent}%`;
+            let realPendingIrctc = grandTotalIrctc; let realPendingRedbus = grandTotalRedbus;
+            let doneThisSession = pendingQueue.slice(0, currentIndex); let allDoneToday = todayCalledVLEs.concat(doneThisSession);
+            let dedIrctc = 0; let dedRed = 0;
+            allDoneToday.forEach(q => { if (q.service === "BOTH") { dedIrctc++; dedRed++; } else if (q.service === "IRCTC") { dedIrctc++; } else if (q.service === "REDBUS") { dedRed++; } });
+            realPendingIrctc -= dedIrctc; realPendingRedbus -= dedRed;
+            if(realPendingIrctc < 0) realPendingIrctc = 0; if(realPendingRedbus < 0) realPendingRedbus = 0;
+            document.getElementById("totalPendingDisplay").innerText = realPendingIrctc + realPendingRedbus; document.getElementById("irctcPendingDisplay").innerText = realPendingIrctc; document.getElementById("redbusPendingDisplay").innerText = realPendingRedbus;
+            for(let i=0; i<pendingQueue.length; i++) { let c = document.getElementById(`card-${i}`); if(!c) continue; if(i < currentIndex) c.className = "vle-card card-done"; else if(i === currentIndex) c.className = "vle-card card-active"; else if(i === currentIndex + 1) c.className = "vle-card card-next"; else c.className = "vle-card"; }
         }
 
         function startCallTimer(mob) { callStartTime = new Date(); window.location.href = `tel:${mob}`; }
 
         function submitCall(idx) {
-            let rmk = document.getElementById(`remark-${idx}`).value;
-            if(!rmk) { alert("Please select a remark!"); return; }
-            
-            let dur = callStartTime ? Math.round((new Date() - callStartTime)/1000) : 0;
-            let v = pendingQueue[idx];
-            
-            fetch(apiURL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: v.service, dmName: localStorage.getItem("userName"), remark: rmk, duration: dur, location: "App" })
-            });
+            let rmk = document.getElementById(`remark-${idx}`).value; if(!rmk) { alert("Please select an outcome reason!"); return; }
+            if(rmk === "Others") { let otherVal = document.getElementById(`otherRemark-${idx}`).value.trim(); if(!otherVal) { alert("Please type the actual reason in the text box."); return; } rmk = "Others: " + otherVal; }
+            let btn = event.target; btn.innerText = "⏳ Saving..."; btn.disabled = true; let dur = callStartTime ? Math.round((new Date() - callStartTime)/1000) : 0; let v = pendingQueue[idx];
+            let dmName = (localStorage.getItem("userName") || "").toLowerCase().trim(); let storageKey = "todayCalledVLEs_" + dmName.replace(/\s+/g, '');
+            todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, service: v.service, remark: rmk }); localStorage.setItem(storageKey, JSON.stringify(todayCalledVLEs));
+            if(v.service === "BOTH") { fireBackendPost({ action: "saveFollowUp", cscId: v.cscId, service: "IRCTC", dmName: localStorage.getItem("userName"), remark: rmk, duration: dur, location: "App" }); setTimeout(() => { fireBackendPost({ action: "saveFollowUp", cscId: v.cscId, service: "REDBUS", dmName: localStorage.getItem("userName"), remark: rmk, duration: dur, location: "App" }); }, 1500); } 
+            else { fireBackendPost({ action: "saveFollowUp", cscId: v.cscId, service: v.service, dmName: localStorage.getItem("userName"), remark: rmk, duration: dur, location: "App" }); }
+            setTimeout(() => { currentIndex++; if(currentIndex < pendingQueue.length) { updateUI(); callStartTime = null; } else { showSummaryScreen(); } }, 600); 
+        }
 
-            currentIndex++;
-            if(currentIndex < pendingQueue.length) updateUI();
-            else document.getElementById("cardStack").innerHTML = `<h3 style='text-align:center;'>🎉 All Done!</h3>`;
+        function showSummaryScreen() {
+            document.getElementById("callingView").style.display = "none"; document.getElementById("summaryView").style.display = "block";
+            if (todayCalledVLEs.length === 0) { document.getElementById("summaryList").innerHTML = `<p style="color:#64748b; font-weight:600; margin-top:20px;">No calls made today.</p>`; return; }
+            let summaryHtml = "";
+            todayCalledVLEs.forEach(v => { let badgeColor = v.remark === "Activated" ? "background:#dcfce7; color:#166534;" : (v.remark.includes("Not Reachable") || v.remark.includes("Shop Closed") ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;"); let srvBadge = v.service === "BOTH" ? "IRCTC+RED" : v.service; summaryHtml += `<div class="summary-card"><div class="summary-info"><h4>${v.name}</h4><p>${srvBadge} Follow-Up</p><span class="summary-remark" style="${badgeColor}">${v.remark}</span></div><button class="summary-call-btn" onclick="window.location.href='tel:${v.mobile}'">📞</button></div>`; });
+            document.getElementById("summaryList").innerHTML = summaryHtml;
         }
     </script>
 </body>
