@@ -50,10 +50,8 @@
     #homeDisplay { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     #reportIframeContainer { display: none; flex-direction: column; width: 100%; height: 100%; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
-    /* DASHBOARD LAYOUT CSS */
     #dashboardCards { display: none; width: 100%; box-sizing: border-box; justify-content: center; align-items: center; height: 100%; }
     
-    /* గ్లోబ్ యానిమేషన్ */
     .globe-wrapper { position: relative; width: 450px; height: 450px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
     .earth-globe { width: 250px; height: 250px; border-radius: 50%; background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'); background-size: 200% 100%; background-position: 0 0; box-shadow: inset -20px -20px 40px rgba(0,0,0,0.6), inset 5px 5px 20px rgba(255,255,255,0.3), 0 15px 35px rgba(0, 51, 102, 0.3); animation: spinEarth 25s linear infinite; position: absolute; z-index: 10; }
     @keyframes spinEarth { from { background-position: 0 0; } to { background-position: -200% 0; } }
@@ -62,7 +60,6 @@
     @keyframes spinText { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .welcome-text-area { text-align: center; margin-top: 10px; z-index: 30; }
 
-    /* 🌟 Modals & Popups Styling 🌟 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
     .modal-box { background-color: #ffffff; width: 380px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; animation: popIn 0.3s ease-out; position: relative; }
     .modal-close-btn { position: absolute; top: 12px; right: 15px; background: none; border: none; font-size: 22px; color: #64748b; cursor: pointer; transition: 0.2s; font-weight: bold; }
@@ -94,7 +91,6 @@
       </div>
     </div>
 
-    <!-- 🌟 మెనూ బటన్స్ 🌟 -->
     <div class="nav-menu">
       <button class="nav-btn" onclick="loadHome()">🏠 HOME</button>
       <button class="nav-btn color-irctc" onclick="openModule('IRCTC')">🚆 IRCTC</button>
@@ -121,7 +117,6 @@
 
     <div class="report-area" id="reportViewer">
       
-      <!-- 🌟 డిఫాల్ట్ హోమ్ డిస్ప్లే 🌟 -->
       <div id="homeDisplay">
         <div class="globe-wrapper">
           <div class="earth-globe"></div>
@@ -133,16 +128,12 @@
         </div>
       </div>
 
-      <!-- 🌟 DASHBOARD CARDS (Used for message display now) 🌟 -->
       <div id="dashboardCards"></div>
-
-      <!-- 🌟 రిపోర్ట్స్ Iframe 🌟 -->
       <div id="reportIframeContainer"></div>
 
     </div>
   </div>
 
-  <!-- 🌟 Sync Status Popup 🌟 -->
   <div class="modal-overlay" id="syncPopupOverlay">
     <div class="modal-box">
       <button class="modal-close-btn" onclick="closeSyncPopup()">✖</button>
@@ -155,7 +146,6 @@
     </div>
   </div>
 
-  <!-- 🌟 Logout Popup 🌟 -->
   <div class="modal-overlay" id="logoutPopupOverlay">
     <div class="modal-box" style="width: 360px;">
       <div class="sync-icon">🚪</div>
@@ -198,7 +188,7 @@
       if(loggedInDesig) document.getElementById('headerDesignation').innerText = "(" + loggedInDesig + ")";
       document.getElementById('mainUserName').innerText = loggedInUser;
       updateGreeting();
-      checkAndShowPopup(); // 🌟 Sync Popup Load Logic restored here! 🌟
+      checkAndShowPopup(); 
     };
 
     function loadHome() {
@@ -223,10 +213,9 @@
         document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
     }
 
-    // 🌟 Escape Key Logic Restored 🌟
     document.addEventListener('keydown', function(event) { 
         if (event.key === "Escape") { 
-            closeSyncPopup(); // Added sync popup close
+            closeSyncPopup(); 
             closeLogoutPopup(); 
             if(document.getElementById('reportIframeContainer').style.display === 'flex') {
                 closeActiveReport();
@@ -237,21 +226,41 @@
     function openModule(moduleName) {
       let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
       let isVLE = role === "VLE";
+      
+      let hasEstamp = localStorage.getItem("hasEstamp") === "true";
 
-      if (isVLE && moduleName !== 'E-STAMPING') {
-          document.getElementById('sidebar').style.display = 'none';
-          document.getElementById('homeDisplay').style.display = 'none';
-          document.getElementById('dashboardCards').style.display = 'none';
-          document.getElementById('reportIframeContainer').style.display = 'flex';
-          document.getElementById('reportIframeContainer').innerHTML = `
-            <div class="access-denied-box" style="margin-top:50px;">
-              <div class="access-denied-icon">🚫</div>
-              <h2 class="access-denied-title">Access Denied</h2>
-              <p class="access-denied-desc">You do not have permission to access the <b>${moduleName}</b> module.<br><br><b>Please access the E-STAMPING module only.</b></p>
-            </div>`;
-          return;
+      // 🌟 VLE ల కోసం అత్యంత కఠినమైన రూల్స్ (STRICT RULES) 🌟
+      if (isVLE) {
+          if (moduleName === 'HELPDESK') {
+              // HELPDESK అందరికీ వస్తుంది.. కిందకి వెళ్ళిపోనివ్వు..
+          } 
+          else if (moduleName === 'E-STAMPING' && hasEstamp) {
+              // E-Stamping ఉంటేనే లోపలికి రానివ్వు..
+          } 
+          else {
+              // మిగతా ఏ బటన్ నొక్కినా (IRCTC, REDBUS లేదా E-Stamping లేనివాడు E-Stamping నొక్కినా) ఇక్కడే బ్లాక్!
+              document.getElementById('sidebar').style.display = 'none';
+              document.getElementById('homeDisplay').style.display = 'none';
+              document.getElementById('dashboardCards').style.display = 'none';
+              document.getElementById('reportIframeContainer').style.display = 'flex';
+              
+              let errorMessage = `మీకు <b>${moduleName}</b> మాడ్యూల్ యాక్సెస్ లేదు.<br><br>దయచేసి హెల్ప్‌డెస్క్ (HELPDESK) ని మాత్రమే ఉపయోగించండి.`;
+              
+              if (moduleName === 'E-STAMPING' && !hasEstamp) {
+                  errorMessage = `మీకు <b>E-STAMPING</b> సర్వీస్ యాక్టివ్ లేదు.<br><br>దయచేసి మీ జిల్లా మేనేజర్ (DM) ని సంప్రదించండి.`;
+              }
+
+              document.getElementById('reportIframeContainer').innerHTML = `
+                <div class="access-denied-box" style="margin-top:50px;">
+                  <div class="access-denied-icon">🚫</div>
+                  <h2 class="access-denied-title">Access Denied</h2>
+                  <p class="access-denied-desc">${errorMessage}</p>
+                </div>`;
+              return; 
+          }
       }
 
+      // ఇక్కడినుండి కిందకి మామూలు డిజైన్ కోడ్
       const themes = { "IRCTC": {c: "#ea580c", b: "#fff7ed"}, "REDBUS": {c: "#dc2626", b: "#fef2f2"}, "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, "E-STAMPING": {c: "#6d28d9", b: "#f5f3ff"}, "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, "MASTER": {c: "#475569", b: "#f1f5f9"} };
       let t = themes[moduleName] || {c: "#3b82f6", b: "#eff6ff"};
       document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
@@ -272,10 +281,41 @@
           
           document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
           document.getElementById('dashboardCards').style.display = 'flex';
-         
-document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="estamp.png" alt="E-Stamping Logo" style="max-width: 650px; width: 80%; border-radius: 16px; box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.2) 0px 24px 48px, rgba(17, 17, 26, 0.2) 0px 3px 6px; border: 3px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.04) translateY(-10px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
+          document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="estamp.png" alt="E-Stamping Logo" style="max-width: 650px; width: 80%; border-radius: 16px; box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.2) 0px 24px 48px, rgba(17, 17, 26, 0.2) 0px 3px 6px; border: 3px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.04) translateY(-10px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
 
-      } else if(moduleName === 'MASTER') {
+      } 
+      else if(moduleName === 'HELPDESK') {
+          let options = [];
+          
+          if (isVLE) {
+              options = [
+                  { id: 'RaiseTicket', icon: '📝', name: 'Raise a Ticket' },
+                  { id: 'TrackStatus', icon: '🔍', name: 'Track Status' }
+              ];
+          } else {
+              options = [
+                  { id: 'HelpdeskAdmin', icon: '🎛️', name: 'Helpdesk Dashboard' },
+                  { id: 'TrackStatus', icon: '🔍', name: 'Track Ticket' }
+              ];
+          }
+
+          options.forEach(opt => {
+              let li = document.createElement('li');
+              li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`;
+              li.onclick = function() {
+                  document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
+                  this.classList.add('active-item');
+                  loadReport('HELPDESK', opt.id, opt.name);
+              };
+              list.appendChild(li);
+          });
+
+          document.getElementById('homeDisplay').style.display = 'none';
+          document.getElementById('reportIframeContainer').style.display = 'none';
+          document.getElementById('dashboardCards').style.display = 'flex';
+          document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center; margin-top: 50px;"><h3 style="color:#ca8a04; font-size: 24px;">HELPDESK మాడ్యూల్</h3><p style="color:#64748b; font-size: 16px;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
+      }
+      else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
         let li0 = document.createElement('li'); li0.innerHTML = '<span>📊</span> AP Consolidated Report'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
         let li1 = document.createElement('li'); li1.innerHTML = '<span>📤</span> Daily Data Upload'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); } else { loadAccessDenied(); } }; list.appendChild(li1);
@@ -295,8 +335,7 @@ document.getElementById('dashboardCards').innerHTML = `<div style="display: flex
 
     function loadAccessDenied() { document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; }
     
-    
-function loadReport(moduleName, reportId, reportNameParam) {
+    function loadReport(moduleName, reportId, reportNameParam) {
       let iframeSrc = ""; let reportName = reportNameParam || reportId;
       
       if (moduleName === "E-STAMPING" && reportId === "VleRequestStock") iframeSrc = "VleRequestStock.html";
@@ -340,7 +379,6 @@ function loadReport(moduleName, reportId, reportNameParam) {
       else if (moduleName === "REDBUS" && reportId === "Monthly Closure Report") iframeSrc = "REDBUS_Monthly_Closure.html";
       else if (moduleName === "REDBUS" && reportId === "Targets & Revenue") iframeSrc = "REDBUS_TXN & REV_Targets.html";
       
-      
       else if (moduleName === "AIRWAYS" && reportId === "VLE Performance") iframeSrc = "AIRWAYS_VLE_Performance.html";
       else if (moduleName === "AIRWAYS" && reportId === "Performance Report") iframeSrc = "AIRWAYS_Performance_Report.html";
       else if (moduleName === "AIRWAYS" && reportId === "Targets & Revenue") iframeSrc = "AIRWAYS_TXN & REV_Targets.html";
@@ -353,28 +391,24 @@ function loadReport(moduleName, reportId, reportNameParam) {
       else if (moduleName === "AIRWAYS" && reportId === "Top Performance") iframeSrc = "AIRWAYS_Top_Performance.html";
       else if (moduleName === "AIRWAYS" && reportId === "Monthly Closure Report") iframeSrc = "AIRWAYS_Monthly_Closure.html";
 
-
       else if (moduleName === "MASTER" && reportId === "AP Consolidated Report") iframeSrc = "Master_AP_Consolidated.html";
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
-      else if (moduleName === "HELPDESK" && reportId === "HelpdeskAdmin") iframeSrc = "HelpdeskAdmin.html";
-      
+
+      else if (moduleName === "HELPDESK" && reportId === "RaiseTicket") iframeSrc = "Helpdesk_RaiseTicket.html";
+      else if (moduleName === "HELPDESK" && reportId === "TrackStatus") iframeSrc = "Helpdesk_TrackStatus.html";
+
       else {
           document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none';
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; return;
       }
 
-      // 🌟 ఇక్కడే ఆ Close Report బటన్ కోడ్ ని పూర్తిగా లేపేశాను 🌟
       document.getElementById('homeDisplay').style.display = 'none';
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('reportIframeContainer').style.display = 'flex';
       
-      // 🌟 డైరెక్ట్ గా ఫుల్ స్క్రీన్ Iframe మాత్రమే ఓపెన్ అవుతుంది 🌟
       document.getElementById('reportIframeContainer').innerHTML = `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:12px; background:white;"></iframe>`;
     }
 
-
-
-    // 🌟 Sync Popup & Logout Logic Restored 🌟
     function showLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'flex'; }
     function closeLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'none'; }
     function confirmLogout() { localStorage.clear(); sessionStorage.clear(); window.location.replace("Login.html"); }
@@ -423,28 +457,19 @@ function loadReport(moduleName, reportId, reportNameParam) {
     }
   </script>
 
-<!-- 🌟 REDBUS REPORT PRE-FETCHING LOGIC (SUPER FAST LOADING) 🌟 -->
-<script>
-    // పేజీ లోడ్ అయిన వెంటనే ఈ ఫంక్షన్ రన్ అవుతుంది
+  <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. లాగిన్ అయిన యూజర్ వివరాలు localStorage నుండి తెచ్చుకోవడం
         let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
         let loggedInUserId = localStorage.getItem("userId") || ""; 
         
-        // యూజర్ ఐడీ ఉంటేనే డేటా లాగుతాం
         if(loggedInUserId && loggedInDesig) {
             prefetchRedbusData(loggedInUserId, loggedInDesig);
         }
     });
 
-    // 2. బ్యాక్ గ్రౌండ్ లో డేటా లాగి IndexedDB లో దాచే మ్యాజిక్ ఫంక్షన్
     function prefetchRedbusData(userId, designation) {
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
-        
-        // REDBUS పేజీలో వాడిన సేమ్ క్యాచ్ కీ నే ఇక్కడ కూడా వాడాలి
+        const SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; 
         const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + userId;
-
-        console.log("Background pre-fetching started for REDBUS...");
 
         fetch(SCRIPT_URL, {
             method: "POST",
@@ -458,7 +483,6 @@ function loadReport(moduleName, reportId, reportNameParam) {
         .then(res => res.json())
         .then(res => {
             if(res.success && res.data) {
-                // సర్వర్ నుంచి వచ్చిన డేటాని IndexedDB లో సేవ్ చేస్తున్నాం
                 let req = indexedDB.open("CscTravelDB", 1);
                 req.onupgradeneeded = (e) => {
                     let db = e.target.result;
@@ -470,28 +494,22 @@ function loadReport(moduleName, reportId, reportNameParam) {
                     let db = e.target.result;
                     let tx = db.transaction("ReportsData", "readwrite");
                     tx.objectStore("ReportsData").put({ data: res.data, timestamp: Date.now() }, CACHE_KEY);
-                    console.log("✅ REDBUS Data Pre-fetched successfully! Report will load instantly.");
-                };
-                req.onerror = (e) => {
-                    console.log("IndexedDB Error:", e.target.error);
                 };
             }
         }).catch(err => console.log("Prefetch failed:", err));
     }
-</script>
-<!-- 🌟 PRE-FETCHING LOGIC ENDS HERE 🌟 -->
+  </script>
 
-<!-- 🌟 Premium Fixed Footer Section (Ash Color) 🌟 -->
-    <div style="position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px 15px; font-size: 13px; font-weight: 700; color: #f8fafc; background-color: #334155; border-top: 2px solid #1e293b; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 99999;">
-        CSC AP Tour & Travel Analytics Platform &copy; <span id="currentYear">2026</span> 
-        <span style="margin: 0 12px; color: #64748b;">|</span> 
-        Designed & Developed with <span style="color: #ef4444; font-size: 14px;">❤️</span> by <span style="color: #60a5fa; font-weight: 900; letter-spacing: 0.5px;">Chandra Sekhara Babu K</span>
-    </div>
+  <div style="position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 10px 15px; font-size: 13px; font-weight: 700; color: #f8fafc; background-color: #334155; border-top: 2px solid #1e293b; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 99999;">
+      CSC AP Tour & Travel Analytics Platform &copy; <span id="currentYear">2026</span> 
+      <span style="margin: 0 12px; color: #64748b;">|</span> 
+      Designed & Developed with <span style="color: #ef4444; font-size: 14px;">❤️</span> by <span style="color: #60a5fa; font-weight: 900; letter-spacing: 0.5px;">Chandra Sekhara Babu K</span>
+  </div>
 
-    <script>
-        let yearSpan = document.getElementById("currentYear");
-        if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
-    </script>
+  <script>
+      let yearSpan = document.getElementById("currentYear");
+      if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
+  </script>
 
 </body>
 </html>

@@ -106,12 +106,11 @@
         .capture-mode .table-container { overflow: visible !important; border: 1px solid #cbd5e1; box-shadow: none !important; }
         .capture-mode th, .capture-mode td.col-dist, .capture-mode tfoot td { position: static !important; box-shadow: none !important; }
 
-
 /* 📸 ఇమేజ్ డౌన్‌లోడ్ పర్ఫెక్ట్ సెంటర్ అలైన్‌మెంట్ CSS 📸 */
         .capture-compact-mode {
             padding: 30px 20px !important;
             background-color: #ffffff !important;
-            align-items: center !important; /* 🌟 లోపల ఉన్నవన్నీ కరెక్ట్ గా సెంటర్ కి వస్తాయి 🌟 */
+            align-items: center !important;
         }
         .capture-compact-mode .kpi-display-row {
             width: max-content !important;
@@ -121,7 +120,7 @@
             width: max-content !important;
             margin: 0 auto !important;
             box-shadow: none !important;
-            border: 2px solid #cbd5e1 !important; /* టేబుల్ చుట్టూ నీట్ బార్డర్ */
+            border: 2px solid #cbd5e1 !important; 
         }
         .capture-compact-mode table {
             min-width: auto !important;
@@ -129,7 +128,7 @@
             margin: 0 auto !important;
         }
         .capture-compact-mode th {
-            padding: 10px 15px !important; /* 🌟 గ్యాప్ మరీ ఇరుకుగా కాకుండా పర్ఫెక్ట్ గా 🌟 */
+            padding: 10px 15px !important; 
             font-size: 11px !important;
         }
         .capture-compact-mode td {
@@ -143,7 +142,7 @@
             padding: 0 !important;
         }
         .capture-compact-mode .chart-box {
-            min-width: 400px !important; /* చార్ట్స్ టేబుల్ సైజుకి మ్యాచ్ అయ్యేలా */
+            min-width: 400px !important; 
             max-width: 500px !important;
             box-shadow: none !important;
             border: 2px solid #cbd5e1 !important;
@@ -278,7 +277,8 @@
         let dmAssignedOldDistrict = ""; 
         window.rawOldTargets = {}; 
         window.vleDistributionMap = {};
-        window.stateTargets = { txns: 181654, txnRev: 6437065, regs: 809, regRev: 851257 };
+        
+        window.stateTargets = { txns: 190403, txnRev: 6114994, regs: 809, regRev: 851257 };
 
         let barChartInstance = null;
         let pieChartInstance = null;
@@ -305,7 +305,6 @@
             fetchData();
         };
 
-        // 🌟 THE BULLETPROOF FETCH LOGIC (SAME AS TXN & REV TARGETS) 🌟
         async function fetchData() {
             document.getElementById("tableBody").innerHTML = "<tr><td colspan='8'><div class='loader'><div class='spinner'></div> Fetching Live Data...</div></td></tr>";
             document.getElementById("chartsArea").style.display = "none";
@@ -658,8 +657,12 @@
                 let balance = Math.max(0, currentTarget - s.achieved);
                 let pct = currentTarget > 0 ? ((s.achieved / currentTarget) * 100).toFixed(1) : (s.achieved > 0 ? 100 : 0);
 
-                grandTotals.ids += s.ids; grandTotals.act25 += s.act25; grandTotals.act26 += s.act26; 
-                grandTotals.target += currentTarget; grandTotals.achieved += s.achieved; grandTotals.balance += balance;
+                // 🌟 ఇక్కడే పక్కాగా ప్రతి జిల్లా టార్గెట్‌ని కలుపుకుంటూ వెళ్తున్నాం (Exactly matches 1st image sums) 🌟
+                grandTotals.ids += s.ids; 
+                grandTotals.act25 += s.act25; 
+                grandTotals.act26 += s.act26; 
+                grandTotals.target += currentTarget; 
+                grandTotals.achieved += s.achieved; 
 
                 chartLabels.push(dist);
                 chartTargets.push(currentTarget);
@@ -686,30 +689,7 @@
 
             document.getElementById("tableBody").innerHTML = bodyHtml;
 
-            if (selectedDist === "All" && userDesignation !== "District Manager") {
-                let globalYearly = isTxns ? window.stateTargets.txns : (isTxnRev ? window.stateTargets.txnRev : (isRegs ? window.stateTargets.regs : window.stateTargets.regRev));
-                
-                if (periodInfo.isYearly) grandTotals.target = globalYearly;
-                else if (periodInfo.isMonth) grandTotals.target = Math.round(globalYearly / 12);
-                else {
-                    if (isRegs || isRegRev) {
-                        let q = Math.floor(globalYearly * 0.25);
-                        grandTotals.target = period === 'q4' ? (globalYearly - (q * 3)) : q;
-                        if (period === 'h1') grandTotals.target = q * 2;
-                    } else {
-                        let q1 = Math.round(globalYearly * 0.20);
-                        let q2 = Math.round(globalYearly * 0.25);
-                        let q3 = Math.round(globalYearly * 0.35);
-                        let q4 = globalYearly - (q1 + q2 + q3);
-                        if (period === 'q1') grandTotals.target = q1;
-                        else if (period === 'q2') grandTotals.target = q2;
-                        else if (period === 'q3') grandTotals.target = q3;
-                        else if (period === 'q4') grandTotals.target = q4;
-                        else if (period === 'h1') grandTotals.target = q1 + q2;
-                    }
-                }
-            }
-
+            // ఓవర్‌రైడ్ చేసే కోడ్ తీసేశాం, కాబట్టి పైనున్న ఎగ్జాక్ట్ సమ్ ఇక్కడ క్యాలిక్యులేట్ అవుతుంది.
             grandTotals.balance = Math.max(0, grandTotals.target - grandTotals.achieved);
             let gtPct = grandTotals.target > 0 ? ((grandTotals.achieved / grandTotals.target) * 100).toFixed(1) : (grandTotals.achieved > 0 ? 100 : 0);
             let gtPctClass = gtPct >= 80 ? "pct-high" : (gtPct >= 50 ? "pct-med" : "pct-low");
@@ -810,7 +790,6 @@
             const tableWrapper = document.querySelector(".table-container");
             const origAreaOverflow = captureArea.style.overflow;
             
-            // 🌟 కాంపాక్ట్ మోడ్ ని ఆన్ చేస్తున్నాం (కాలమ్స్ దగ్గరకు వస్తాయి) 🌟
             captureArea.classList.add("capture-compact-mode");
             captureArea.style.overflow = "visible";
             
@@ -820,10 +799,9 @@
                 el.style.position = 'static';
             });
 
-            // స్టైల్స్ అప్లై అవ్వడానికి ఒక చిన్న గ్యాప్ (600ms) ఇస్తున్నాం
             setTimeout(() => { 
                 html2canvas(captureArea, { 
-                    scale: 3.5, // Ultra HD Quality
+                    scale: 3.5,
                     backgroundColor: "#ffffff",
                     useCORS: true,
                     logging: false,
@@ -852,7 +830,6 @@
             }, 600); 
 
             function restoreStyles() {
-                // 🌟 డౌన్లోడ్ అయ్యాక కాంపాక్ట్ మోడ్ ని ఆఫ్ చేసి నార్మల్ వ్యూ కి తెస్తున్నాం 🌟
                 captureArea.classList.remove("capture-compact-mode"); 
                 captureArea.style.overflow = origAreaOverflow;
                 stickyEls.forEach(el => { el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition; });
