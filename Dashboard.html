@@ -93,14 +93,14 @@
 
     <div class="nav-menu">
       <button class="nav-btn" onclick="loadHome()">🏠 HOME</button>
-      <button class="nav-btn color-irctc" onclick="openModule('IRCTC')">🚆 IRCTC</button>
-      <button class="nav-btn color-redbus" onclick="openModule('REDBUS')">🚌 REDBUS</button>
-      <button class="nav-btn color-airways" onclick="openModule('AIRWAYS')">✈️ AIRWAYS</button>
-      <button class="nav-btn color-apsrtc" onclick="openModule('APSRTC')">🚍 APSRTC</button>
-      <div class="menu-divider"></div>
-      <button class="nav-btn color-estamping" onclick="openModule('E-STAMPING')">📜 E-STAMPING</button>
-      <button class="nav-btn color-helpdesk" onclick="openModule('HELPDESK')">🎧 HELPDESK</button>
-      <button class="nav-btn" onclick="openModule('MASTER')">📊 MASTER</button>
+      <button class="nav-btn color-irctc" id="navIrctc" onclick="openModule('IRCTC')">🚆 IRCTC</button>
+      <button class="nav-btn color-redbus" id="navRedbus" onclick="openModule('REDBUS')">🚌 REDBUS</button>
+      <button class="nav-btn color-airways" id="navAirways" onclick="openModule('AIRWAYS')">✈️ AIRWAYS</button>
+      <button class="nav-btn color-apsrtc" id="navApsrtc" onclick="openModule('APSRTC')">🚍 APSRTC</button>
+      <div class="menu-divider" id="navDivider"></div>
+      <button class="nav-btn color-estamping" id="navEstamp" onclick="openModule('E-STAMPING')">📜 E-STAMPING</button>
+      <button class="nav-btn color-helpdesk" id="navHelpdesk" onclick="openModule('HELPDESK')">🎧 HELPDESK</button>
+      <button class="nav-btn" id="navMaster" onclick="openModule('MASTER')">📊 MASTER</button>
     </div>
 
     <div class="user-actions">
@@ -189,6 +189,26 @@
       document.getElementById('mainUserName').innerText = loggedInUser;
       updateGreeting();
       checkAndShowPopup(); 
+
+      // 🌟 VLE BUTTON HIDE/SHOW LOGIC 🌟
+      let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
+      let isVLE = role === "VLE";
+      let hasEstamp = localStorage.getItem("hasEstamp") === "true";
+
+      if (isVLE) {
+          // VLE కి అనవసరమైన బటన్స్ ని పూర్తిగా తీసేస్తున్నాం (Hide)
+          document.getElementById('navIrctc').style.display = 'none';
+          document.getElementById('navRedbus').style.display = 'none';
+          document.getElementById('navAirways').style.display = 'none';
+          document.getElementById('navApsrtc').style.display = 'none';
+          document.getElementById('navMaster').style.display = 'none';
+          document.getElementById('navDivider').style.display = 'none';
+          
+          // E-Stamping యాక్సెస్ లేకపోతే దాన్ని కూడా హైడ్ చేస్తున్నాం
+          if (!hasEstamp) {
+              document.getElementById('navEstamp').style.display = 'none';
+          }
+      }
     };
 
     function loadHome() {
@@ -226,19 +246,18 @@
     function openModule(moduleName) {
       let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
       let isVLE = role === "VLE";
-      
       let hasEstamp = localStorage.getItem("hasEstamp") === "true";
 
-      // 🌟 VLE ల కోసం అత్యంత కఠినమైన రూల్స్ (STRICT RULES) 🌟
+      // 🌟 VLE ల కోసం డబుల్ సెక్యూరిటీ (URL ద్వారా ఓపెన్ చేయకుండా బ్లాక్) 🌟
       if (isVLE) {
           if (moduleName === 'HELPDESK') {
-              // HELPDESK అందరికీ వస్తుంది.. కిందకి వెళ్ళిపోనివ్వు..
+              // Allowed
           } 
           else if (moduleName === 'E-STAMPING' && hasEstamp) {
-              // E-Stamping ఉంటేనే లోపలికి రానివ్వు..
+              // Allowed
           } 
           else {
-              // మిగతా ఏ బటన్ నొక్కినా (IRCTC, REDBUS లేదా E-Stamping లేనివాడు E-Stamping నొక్కినా) ఇక్కడే బ్లాక్!
+              // Blocked (Access Denied)
               document.getElementById('sidebar').style.display = 'none';
               document.getElementById('homeDisplay').style.display = 'none';
               document.getElementById('dashboardCards').style.display = 'none';
