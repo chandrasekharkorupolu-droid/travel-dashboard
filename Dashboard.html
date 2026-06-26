@@ -4,6 +4,10 @@
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <style>
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
 
@@ -37,7 +41,14 @@
 
     /* 4. మెయిన్ కంటెంట్ ఏరియా */
     .main-content { display: flex; padding: 15px 20px; gap: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
-    .sidebar { width: 250px; min-width: 250px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; }
+    
+    /* సైడ్‌బార్ transition కోడ్ */
+    .sidebar { width: 250px; min-width: 250px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; transition: all 0.3s ease-in-out; }
+    
+    /* ఇక్కడ మార్పు చేశాను: లైన్ కనిపించకుండా Transparent చేశాను */
+    .sidebar.collapsed-hover { width: 12px !important; min-width: 12px !important; overflow: hidden !important; background-color: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer; }
+    .sidebar.collapsed-hover * { opacity: 0 !important; pointer-events: none !important; display: none !important; }
+
     .sidebar-header { background: #f8fafc; padding: 15px; font-weight: 900; color: #6d28d9; border-bottom: 2px solid #e2e8f0; text-align: center; position: sticky; top: 0; font-size: 14px; letter-spacing: 0.5px; z-index: 10; border-radius: 12px 12px 0 0; }
     .report-list { list-style: none; padding: 0; margin: 0; }
     
@@ -104,6 +115,7 @@
     </div>
 
     <div class="user-actions">
+      <button onclick="enterFullScreen()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #475569;" title="Full Screen">⛶</button>
       <span class="user-name">Welcome, <span id="headerUserName">User</span> <span class="designation" id="headerDesignation"></span></span>
       <button class="logout-btn" onclick="showLogoutPopup()">Logout</button>
     </div>
@@ -174,6 +186,33 @@
       "APSRTC": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"]
     };
 
+    function enterFullScreen() {
+      let elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      let sidebar = document.getElementById('sidebar');
+      
+      sidebar.addEventListener('mouseenter', function() {
+        if (this.style.display === 'flex') {
+          this.classList.remove('collapsed-hover');
+        }
+      });
+      
+      sidebar.addEventListener('mouseleave', function() {
+        if (this.style.display === 'flex') {
+          this.classList.add('collapsed-hover');
+        }
+      });
+    });
+
     function updateGreeting() {
       const hour = new Date().getHours();
       let greeting = "Good Evening 🌙";
@@ -190,13 +229,11 @@
       updateGreeting();
       checkAndShowPopup(); 
 
-      // 🌟 VLE BUTTON HIDE/SHOW LOGIC 🌟
       let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
       let isVLE = role === "VLE";
       let hasEstamp = localStorage.getItem("hasEstamp") === "true";
 
       if (isVLE) {
-          // VLE కి అనవసరమైన బటన్స్ ని పూర్తిగా తీసేస్తున్నాం (Hide)
           document.getElementById('navIrctc').style.display = 'none';
           document.getElementById('navRedbus').style.display = 'none';
           document.getElementById('navAirways').style.display = 'none';
@@ -204,7 +241,6 @@
           document.getElementById('navMaster').style.display = 'none';
           document.getElementById('navDivider').style.display = 'none';
           
-          // E-Stamping యాక్సెస్ లేకపోతే దాన్ని కూడా హైడ్ చేస్తున్నాం
           if (!hasEstamp) {
               document.getElementById('navEstamp').style.display = 'none';
           }
@@ -212,7 +248,9 @@
     };
 
     function loadHome() {
+      enterFullScreen(); 
       document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('sidebar').classList.remove('collapsed-hover');
       document.getElementById('reportIframeContainer').style.display = 'none';
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('homeDisplay').style.display = 'flex';
@@ -244,11 +282,12 @@
     });
 
     function openModule(moduleName) {
+      enterFullScreen(); 
+      
       let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
       let isVLE = role === "VLE";
       let hasEstamp = localStorage.getItem("hasEstamp") === "true";
 
-      // 🌟 VLE ల కోసం డబుల్ సెక్యూరిటీ (URL ద్వారా ఓపెన్ చేయకుండా బ్లాక్) 🌟
       if (isVLE) {
           if (moduleName === 'HELPDESK') {
               // Allowed
@@ -257,7 +296,6 @@
               // Allowed
           } 
           else {
-              // Blocked (Access Denied)
               document.getElementById('sidebar').style.display = 'none';
               document.getElementById('homeDisplay').style.display = 'none';
               document.getElementById('dashboardCards').style.display = 'none';
@@ -279,12 +317,13 @@
           }
       }
 
-      // ఇక్కడినుండి కిందకి మామూలు డిజైన్ కోడ్
       const themes = { "IRCTC": {c: "#ea580c", b: "#fff7ed"}, "REDBUS": {c: "#dc2626", b: "#fef2f2"}, "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, "E-STAMPING": {c: "#6d28d9", b: "#f5f3ff"}, "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, "MASTER": {c: "#475569", b: "#f1f5f9"} };
       let t = themes[moduleName] || {c: "#3b82f6", b: "#eff6ff"};
       document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
       
       document.getElementById('sidebar').style.display = 'flex';
+      document.getElementById('sidebar').classList.remove('collapsed-hover'); // Start open
+      
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
       
       const list = document.getElementById('reportList'); list.innerHTML = ''; 
@@ -366,6 +405,7 @@
       else if (moduleName === "E-STAMPING" && reportId === "StockReport") iframeSrc = "StockReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "VleDispatchReport") iframeSrc = "VleDispatchReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "DenominationReport") iframeSrc = "DenominationReport.html";
+      else if (moduleName === "E-STAMPING" && reportId === "Spoiled Report") iframeSrc = "VleSpoiledReport.html";
       
       else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
       else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
