@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Ticket Status</title>
+    <style>
+        :root { --primary-gold: #d69e2e; --hover-gold: #b7791f; --text-dark: #374151; --border-color: #e5e7eb; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #ffffff; color: var(--text-dark); margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
+        .helpdesk-card { width: 100%; max-width: 700px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); text-align: center; }
+        .card-header h2 { margin: 0; color: var(--text-dark); font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .card-body { padding: 40px 30px; text-align: center; }
+        label { display: block; font-weight: 600; margin-bottom: 15px; color: #4b5563; font-size: 16px; }
+        .track-input { width: 100%; max-width: 400px; padding: 15px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 20px; font-weight: bold; color: var(--text-dark); background-color: #f9fafb; text-align: center; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; box-sizing: border-box; margin: 0 auto; display: block; }
+        .track-input:focus { outline: none; border-color: var(--primary-gold); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(214, 158, 46, 0.15); }
+        
+        /* మీరు అడిగిన Placeholder బ్లర్ (లైట్ గ్రే కలర్) ఫిక్స్ */
+        .track-input::placeholder { color: #a1a1aa; font-weight: normal; }
+        
+        .submit-btn { width: 100%; max-width: 400px; padding: 16px; background-color: var(--primary-gold); color: #ffffff; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-top: 25px; text-transform: uppercase; }
+        .submit-btn:hover { background-color: var(--hover-gold); }
+    </style>
+</head>
+<body>
+
+    <div class="helpdesk-card">
+        <div class="card-header">
+            <h2>🔍 CHECK TICKET STATUS</h2>
+        </div>
+        <div class="card-body">
+            <label>Enter Ticket No to Track Status:</label>
+            <input type="text" id="trackTicketInput" class="track-input" placeholder="VSP-IRC-1001" maxlength="12" oninput="formatTicketNumber(this)">
+            <button class="submit-btn">Check Status</button>
+        </div>
+    </div>
+
+    <script>
+        function formatTicketNumber(input) {
+            let val = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            if (val.length > 3 && val.length <= 6) {
+                val = val.slice(0, 3) + '-' + val.slice(3);
+            } else if (val.length > 6) {
+                val = val.slice(0, 3) + '-' + val.slice(3, 6) + '-' + val.slice(6, 12);
+            }
+            input.value = val;
+        }
+    </script>
+
+</body>
+</html>
