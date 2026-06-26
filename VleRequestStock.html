@@ -136,36 +136,38 @@
         transform: none;
     }
 
-    /* 🌟 Custom Alert Modal 🌟 */
+    /* 🌟 Premium Alert Modal (Updated) 🌟 */
     .modal-content-innovative {
         background: #ffffff;
         border: none;
-        border-radius: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         text-align: center;
-        padding: 30px;
+        padding: 40px 30px;
     }
     
-    .icon-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 35px; }
-    .icon-circle.success { background-color: #ecfdf5; color: #10b981; } 
-    .icon-circle.error { background-color: #fef2f2; color: #ef4444; }
+    .icon-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; }
+    .icon-circle.success { background-color: #ecfdf5; color: #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); } 
+    .icon-circle.error { background-color: #fef2f2; color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.2); }
+
+    .alert-message-text { font-size: 16px; font-weight: 600; color: #475569; line-height: 1.6; margin-bottom: 25px; }
 
     .btn-modal {
-        border-radius: 10px; padding: 12px 30px; font-weight: 800; font-size: 15px; transition: all 0.3s ease; border: none; width: 100%;
+        border-radius: 12px; padding: 14px 30px; font-weight: 800; font-size: 16px; transition: all 0.3s ease; border: none; width: 75%; margin: 0 auto; letter-spacing: 0.5px;
     }
-    .btn-modal.success { background: #10b981; color: white; }
-    .btn-modal.error { background: #ef4444; color: white; }
+    .btn-modal.success { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
+    .btn-modal.error { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
+    .btn-modal:hover { transform: translateY(-2px); }
   </style>
 </head>
 <body>
 
-  <!-- 🌟 Custom Alert Modal 🌟 -->
   <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content modal-content-innovative">
         <div id="alertIconContainer" class="icon-circle success">✅</div>
-        <h4 id="alertTitle" class="fw-bold text-dark mb-2" style="font-size: 22px;">Success!</h4>
-        <p id="alertMessage" class="text-secondary mb-4" style="font-size: 14px; font-weight: 600;">Message goes here.</p>
+        <h4 id="alertTitle" class="fw-bold text-dark mb-3" style="font-size: 26px; letter-spacing: -0.5px;">Success!</h4>
+        <p id="alertMessage" class="alert-message-text">Message goes here.</p>
         <button type="button" id="alertBtn" class="btn-modal success" data-bs-dismiss="modal">OK, Got it!</button>
       </div>
     </div>
@@ -197,7 +199,7 @@
     let loggedInId = localStorage.getItem("userId") || "";
     let loggedInUser = localStorage.getItem("userName") || "";
 
-    // 🌟 పాతకాలపు alert() బదులు మన కొత్త స్మూత్ అలర్ట్ 🌟
+    // 🌟 న్యూ స్మూత్ అండ్ ప్రీమియం అలర్ట్ 🌟
     function customAlert(msg, isSuccess) {
         let safeMsg = msg ? String(msg) : (isSuccess ? "Request Submitted Successfully." : "Request Failed!");
         const iconContainer = document.getElementById("alertIconContainer");
@@ -207,11 +209,13 @@
 
         if (isSuccess) {
             iconContainer.className = "icon-circle success"; iconContainer.innerHTML = "✅"; 
-            title.innerText = "Success!"; 
+            title.innerText = "Superb!"; 
+            title.style.color = "#0f172a";
             btn.className = "btn-modal success"; btn.innerText = "OK, Great!";
         } else {
             iconContainer.className = "icon-circle error"; iconContainer.innerHTML = "❌"; 
-            title.innerText = "Validation Failed"; 
+            title.innerText = "Oh Snap!"; 
+            title.style.color = "#ef4444";
             btn.className = "btn-modal error"; btn.innerText = "Try Again";
         }
         
@@ -244,7 +248,8 @@
                 document.getElementById('shqNo').value = ''; 
                 document.getElementById('reqQty').value = ''; 
             } else { 
-                customAlert("Error: " + res.message, false); 
+                // ముందున్న "Error: " తీసేశాను, డైరెక్ట్ మెసేజ్ వస్తుంది!
+                customAlert(res.message, false); 
             } 
         })
         .catch(err => { 
