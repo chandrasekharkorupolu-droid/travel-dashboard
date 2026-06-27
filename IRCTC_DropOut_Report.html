@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IRCTC Drop-Out VLEs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; padding: 10px; }
+        
+        /* 🔥 1. Single Line Controls Bar 🔥 */
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 10px; border-top: 4px solid #ea580c; flex-wrap: nowrap; overflow-x: auto; gap: 10px; }
+        .controls-left { display: flex; align-items: center; gap: 10px; }
+        .controls-right { display: flex; align-items: center; gap: 8px; }
+        
+        .title { color: #1e3a8a; margin: 0; font-size: 15px; font-weight: 900; white-space: nowrap; }
+        
+        select, button { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; font-weight: 700; outline: none; background: #f8fafc; color: #334155; cursor: pointer; white-space: nowrap; }
+        select:focus { border-color: #ea580c; }
+        select:disabled { background: #e2e8f0; cursor: not-allowed; color: #0f172a; font-weight: 900; }
+        
+        /* Buttons */
+        .btn-primary { background: #ea580c; color: white; border: none; box-shadow: 0 2px 0 #c2410c; }
+        .btn-primary:active { transform: translateY(2px); box-shadow: none; }
+        .btn-reset { background: #64748b; color: white; border: none; box-shadow: 0 2px 0 #475569; }
+        .btn-reset:active { transform: translateY(2px); box-shadow: none; }
+        .btn-excel { background: #10b981; color: white; border: none; box-shadow: 0 2px 0 #059669; }
+        .btn-image { background: #3b82f6; color: white; border: none; box-shadow: 0 2px 0 #2563eb; }
+        .btn-whatsapp { background: #25D366; color: white; border: none; box-shadow: 0 2px 0 #1ebc5a; transition: 0.2s; }
+
+        .radio-group { display: flex; gap: 8px; align-items: center; background: #f1f5f9; padding: 5px 10px; border-radius: 5px; border: 1px solid #cbd5e1; white-space: nowrap; }
+        .radio-group label { cursor: pointer; font-weight: 800; font-size: 12px; color: #1e293b; display: flex; align-items: center; gap: 3px; margin: 0;}
+        .radio-group input[type="radio"] { cursor: pointer; accent-color: #ea580c; margin: 0;}
+
+        /* 🔥 2. Compact Stat Cards 🔥 */
+        .stat-cards { display: flex; gap: 10px; margin-bottom: 10px; }
+        .card { background: white; padding: 10px; border-radius: 8px; flex: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; border-bottom: 3px solid #cbd5e1; }
+        .card.danger { border-bottom-color: #dc2626; background: #fef2f2; }
+        .card h3 { margin: 0 0 2px 0; font-size: 11px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        .card.danger h3 { color: #dc2626; }
+        .card p { margin: 0; font-size: 22px; font-weight: 900; color: #1e3a8a; }
+        .card.danger p { color: #b91c1c; }
+
+        /* 3. Table Styles */
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow-y: auto; max-height: calc(100vh - 150px); position: relative; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; background: white; }
+        thead { position: sticky; top: 0; background: #1e293b; color: white; z-index: 10; }
+        th, td { padding: 10px 12px; text-align: center; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { font-weight: 800; text-transform: uppercase; }
+        td.text-left { text-align: left; }
+        tbody tr:hover { background-color: #f8fafc; }
+        
+        .badge-red { background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-weight: 900; font-size: 12px; border: 1px solid #fecaca; display: inline-block;}
+        .badge-green { background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 4px; font-weight: 900; font-size: 12px; border: 1px solid #bbf7d0; display: inline-block;}
+        
+        .whatsapp-single { background: #25D366; color: white; text-decoration: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; box-shadow: 0 2px 0 #1ebc5a; cursor: pointer; border: none; }
+        .whatsapp-single:active { transform: translateY(2px); box-shadow: none; }
+
+        .loader { text-align: center; padding: 40px; font-size: 14px; font-weight: bold; color: #ea580c; }
+
+        /* 🔥 SUMMARY EXPORT STYLES 🔥 */
+        .export-wrapper { background: #e2e8f0; padding: 15px; display: flex; justify-content: center; }
+        .export-container { background: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        .export-header { text-align: center; border-bottom: 3px solid #ea580c; padding-bottom: 10px; margin-bottom: 15px; }
+        .export-header h1 { margin: 0; color: #1e3a8a; font-size: 20px; font-weight: 900; text-transform: uppercase; }
+        .export-header h2 { margin: 5px 0 0 0; color: #475569; font-size: 14px; font-weight: 700; }
+        .export-header p { margin: 5px 0 0 0; color: #ea580c; font-size: 13px; font-weight: 800; }
+        .export-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; }
+        .export-table th { background: #1e293b; color: white; padding: 10px; font-size: 12px; text-align: center; border: 1px solid #cbd5e1; }
+        .export-table td { padding: 8px 10px; border: 1px solid #cbd5e1; font-size: 12px; text-align: center; color: #334155; font-weight: 700; }
+        .export-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+        .export-table td.val-green { color: #16a34a; font-weight: 900; }
+        .export-table td.val-red { color: #dc2626; font-weight: 900; }
+        .export-table tfoot td { background-color: #f1f5f9; font-weight: 900; color: #0f172a; border-top: 2px solid #94a3b8; }
+        .col-sep { border-left: 2px solid #94a3b8 !important; } 
+        .export-footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<!-- 🔥 1. SINGLE LINE CONTROLS 🔥 -->
+<div class="controls-bar">
+    <div class="controls-left">
+        <select id="viewType" onchange="toggleView()" style="background:#1e293b; color:white; border:none;">
+            <option value="DATA">📋 Data View</option>
+            <option value="SUMMARY">📊 Summary</option>
+        </select>
+        <h2 class="title">IRCTC Drop-Outs</h2>
+        
+        <div class="radio-group">
+            <label><input type="radio" name="distType" value="OLD" checked onchange="changeDistType()"> Old</label>
+            <label><input type="radio" name="distType" value="NEW" onchange="changeDistType()"> New</label>
+        </div>
+        
+        <select id="distFilter" onchange="filterData()">
+            <option value="ALL">All Dists</option>
+        </select>
+        
+        <select id="month1" onchange="filterData()">
+            <option value="17">Apr '26</option>
+            <option value="18" selected>May '26</option>
+            <option value="19">Jun '26</option>
+            <option value="20">Jul '26</option>
+            <option value="21">Aug '26</option>
+            <option value="22">Sep '26</option>
+        </select>
+        <span style="font-weight:900; color:#94a3b8; font-size:12px;">VS</span>
+        <select id="month2" onchange="filterData()">
+            <option value="17">Apr '26</option>
+            <option value="18">May '26</option>
+            <option value="19" selected>Jun '26</option>
+            <option value="20">Jul '26</option>
+            <option value="21">Aug '26</option>
+            <option value="22">Sep '26</option>
+        </select>
+        <select id="month3" onchange="filterData()" style="border-color:#ea580c; background:#fff7ed; width:100px;">
+            <option value="NONE">+ 3rd Month</option>
+            <option value="18">May '26</option>
+            <option value="19">Jun '26</option>
+            <option value="20">Jul '26</option>
+            <option value="21">Aug '26</option>
+            <option value="22">Sep '26</option>
+        </select>
+        
+        <button class="btn-primary" onclick="fetchData()">🔄</button>
+        <button class="btn-reset" onclick="resetFilters()">✖</button>
+    </div>
+
+    <div class="controls-right">
+        <button id="btnImage" class="btn-image" onclick="downloadImage()" style="display:none;">🖼️ Image</button>
+        <button id="btnExcel" class="btn-excel" onclick="downloadExcel()" style="display:none;">📊 Excel</button>
+        <button id="bulkWaBtn" class="btn-whatsapp" onclick="startBulkWhatsApp()">💬 Send Queue (0)</button>
+    </div>
+</div>
+
+<!-- 🔥 2. COMPACT STAT CARDS 🔥 -->
+<div class="stat-cards">
+    <div class="card"><h3 id="stat1Label">Active in Base</h3><p id="stat1Value">0</p></div>
+    <div class="card danger"><h3 id="stat2Label">Dropped to ZERO</h3><p id="stat2Value">0</p></div>
+    <div class="card" style="border-bottom-color: #16a34a;"><h3 id="stat3Label" style="color: #16a34a;">Retained</h3><p id="stat3Value">0</p></div>
+</div>
+
+<div id="loader" class="loader">⏳ Fetching data from server...</div>
+
+<!-- ================= DATA VIEW ================= -->
+<div class="table-container" id="dataView" style="display:none;">
+    <table id="dataTable">
+        <thead id="dataTableHead"></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<!-- ================= SUMMARY VIEW ================= -->
+<div class="table-container" id="summaryView" style="display:none; overflow: visible; background: transparent; box-shadow: none;">
+    <div class="export-wrapper">
+        <div class="export-container" id="exportContainer">
+            <div class="export-header">
+                <h1>CSC AP Tour & Travels</h1>
+                <h2>IRCTC Drop-Out VLEs Summary</h2>
+                <p id="exportSubtitle">Comparison: May '26 vs Jun '26</p>
+            </div>
+            
+            <table class="export-table" id="summaryTable">
+                <thead id="summaryTableHead"></thead>
+                <tbody id="summaryTableBody"></tbody>
+                <tfoot id="summaryTableFoot"></tfoot>
+            </table>
+            
+            <div class="export-footer">
+                <span id="exportTimestamp">Generated On: </span>
+                <span style="color: #1e3a8a; font-weight: 800;">Andhra Pradesh</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 👇 మీ Web App URL ఇక్కడ కచ్చితంగా పెట్టాలి
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+    let rawData = [];
+    let currentDistType = "OLD";
+
+    // 🌟 BULLETPROOF DM SECURITY LOGIC 🌟
+    function getSafeStorage(key) {
+        try { 
+            return localStorage.getItem(key) || window.parent.localStorage.getItem(key) || sessionStorage.getItem(key) || ""; 
+        } catch(e) { 
+            return ""; 
+        }
+    }
+    
+    let loggedInRole = (getSafeStorage("userDesignation") || getSafeStorage("designation") || "SPOC").toUpperCase();
+    let isDM = loggedInRole === "DM" || loggedInRole.includes("DISTRICT MANAGER");
+    let loggedInDist = (getSafeStorage("userDistrict") || getSafeStorage("district") || "").toUpperCase();
+
+    let waQueue = [];
+    let waIndex = 0;
+
+    window.onload = function() { fetchData(); };
+
+    function normalizeDistrict(distName) {
+        if (!distName) return "";
+        let distMap = { "ANANTHAPUR": "ANANTAPUR", "ANANTHAPURAM": "ANANTAPUR", "NELLORE": "SPSR NELLORE", "VISAKHAPTNAM": "VISAKHAPATNAM", "VISAKHAPATANAM": "VISAKHAPATNAM", "Y.S.R.": "YSR KADAPA", "KADAPA": "YSR KADAPA", "Y.S.R": "YSR KADAPA" };
+        let d = distName.toUpperCase().trim();
+        return distMap[d] || d;
+    }
+
+    function fetchData() {
+        let loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        loader.innerText = "⏳ Fetching data from server... Please wait.";
+        document.getElementById('dataView').style.display = 'none';
+        document.getElementById('summaryView').style.display = 'none';
+
+        if(SCRIPT_URL.includes("YOUR_WEB_APP_URL_HERE")) {
+            loader.innerText = "❌ Error: Please paste your Web App URL in the code.";
+            return;
+        }
+
+        fetch(SCRIPT_URL + "?sheet=IRCTC")
+            .then(res => res.json())
+            .then(data => {
+                // పాత ఫార్మాట్ లేదా కొత్త ఫార్మాట్ (Object) రెండింటినీ సపోర్ట్ చేస్తుంది
+                if (data && data.success !== undefined && data.data) {
+                    rawData = data.data;
+                } else {
+                    rawData = data;
+                }
+
+                if (!Array.isArray(rawData) || rawData.length < 2) {
+                    loader.innerText = "⚠️ No Data Found. Please check your Google Sheet.";
+                    return;
+                }
+
+                try {
+                    populateDistricts();
+                    filterData();
+                    loader.style.display = 'none';
+                    toggleView();
+                } catch(e) {
+                    console.error(e);
+                    loader.innerText = "❌ Logic Error: " + e.message;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                loader.innerText = "❌ Connection Failed! Please check your internet or App URL.";
+            });
+    }
+
+    function toggleView() {
+        let view = document.getElementById('viewType').value;
+        if (view === "DATA") {
+            document.getElementById('dataView').style.display = 'block';
+            document.getElementById('summaryView').style.display = 'none';
+            document.getElementById('bulkWaBtn').style.display = 'inline-block';
+            document.getElementById('btnImage').style.display = 'none';
+            document.getElementById('btnExcel').style.display = 'none';
+        } else {
+            document.getElementById('dataView').style.display = 'none';
+            document.getElementById('summaryView').style.display = 'block';
+            document.getElementById('bulkWaBtn').style.display = 'none';
+            document.getElementById('btnImage').style.display = 'inline-block';
+            document.getElementById('btnExcel').style.display = 'inline-block';
+        }
+    }
+
+    function changeDistType() {
+        let radios = document.getElementsByName('distType');
+        for (let radio of radios) { if (radio.checked) { currentDistType = radio.value; break; } }
+        populateDistricts();
+        filterData();
+    }
+
+    function resetFilters() {
+        if(!isDM) document.getElementById('distFilter').value = "ALL";
+        document.getElementById('month1').value = "18"; 
+        document.getElementById('month2').value = "19"; 
+        document.getElementById('month3').value = "NONE"; 
+        document.getElementsByName('distType')[0].checked = true; 
+        currentDistType = "OLD";
+        populateDistricts();
+        filterData();
+    }
+
+    function populateDistricts() {
+        if (rawData.length < 2) return;
+        let distFilter = document.getElementById('distFilter');
+        
+        // 🔥 DM Lock Logic 🔥
+        if (isDM && loggedInDist !== "") {
+            let cleanLogDist = normalizeDistrict(loggedInDist);
+            distFilter.innerHTML = `<option value="${cleanLogDist}">${cleanLogDist}</option>`;
+            distFilter.value = cleanLogDist;
+            distFilter.disabled = true;
+            return;
+        }
+
+        let distSet = new Set();
+        let distColIndex = (currentDistType === "OLD") ? 4 : 5;
+        
+        for (let i = 1; i < rawData.length; i++) {
+            let displayDist = rawData[i][distColIndex] ? normalizeDistrict(rawData[i][distColIndex].toString().trim()) : "";
+            if (displayDist && displayDist !== "-") distSet.add(displayDist);
+        }
+        
+        let currentSelection = distFilter.value;
+        let sortedDist = Array.from(distSet).sort();
+        
+        let html = '<option value="ALL">All Dists</option>';
+        sortedDist.forEach(d => { html += `<option value="${d}">${d}</option>`; });
+        distFilter.innerHTML = html;
+        distFilter.disabled = false;
+        if(sortedDist.includes(currentSelection)) distFilter.value = currentSelection;
+    }
+
+    function filterData() {
+        if (!Array.isArray(rawData) || rawData.length < 2) return;
+
+        let m1Idx = document.getElementById('month1').value;
+        let m2Idx = document.getElementById('month2').value;
+        let m3Idx = document.getElementById('month3').value;
+        let selectedDist = document.getElementById('distFilter').value;
+        let distColIndex = (currentDistType === "OLD") ? 4 : 5;
+
+        let m1Sel = document.getElementById('month1'); let m1Name = m1Sel.options[m1Sel.selectedIndex].text.replace(" '26", "").replace(" '27", "");
+        let m2Sel = document.getElementById('month2'); let m2Name = m2Sel.options[m2Sel.selectedIndex].text.replace(" '26", "").replace(" '27", "");
+        let m3Sel = document.getElementById('month3'); let m3Name = m3Idx !== "NONE" ? m3Sel.options[m3Sel.selectedIndex].text.replace(" '26", "").replace(" '27", "") : "";
+        let distLabel = (currentDistType === "OLD") ? "Old Dist" : "New Dist";
+
+        if(m3Idx === "NONE") {
+            document.getElementById('exportSubtitle').innerText = `Comparison: ${m1Name} '26 vs ${m2Name} '26`;
+        } else {
+            document.getElementById('exportSubtitle').innerText = `Comparison: ${m1Name} vs ${m2Name}  &  ${m2Name} vs ${m3Name}`;
+        }
+
+        let dThead = document.getElementById('dataTableHead');
+        if(m3Idx === "NONE") {
+            dThead.innerHTML = `<tr>
+                <th><input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes(this)"></th>
+                <th>S.No</th><th class="text-left">CSC ID</th><th class="text-left">VLE Name</th>
+                <th class="text-left">${distLabel}</th><th>Mobile</th>
+                <th>${m1Name} Txn</th><th>${m2Name} Txn</th><th>Action</th>
+            </tr>`;
+        } else {
+            dThead.innerHTML = `<tr>
+                <th><input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes(this)"></th>
+                <th>S.No</th><th class="text-left">CSC ID</th><th class="text-left">VLE Name</th>
+                <th class="text-left">${distLabel}</th><th>Mobile</th>
+                <th>${m1Name}</th><th>${m2Name}</th><th>${m3Name}</th><th>Action</th>
+            </tr>`;
+        }
+
+        let tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
+
+        let summaryData = {};
+        resetWaButton();
+        let sno = 1;
+
+        for (let i = 1; i < rawData.length; i++) {
+            let row = rawData[i];
+            let cscId = row[1] ? row[1].toString().trim() : ""; 
+            if (!cscId || cscId === "-") continue;
+
+            let hoRemark = row[36] ? row[36].toString().toUpperCase() : ""; 
+            if (hoRemark.includes("BLOCK") || hoRemark.includes("SUSPEND")) continue;
+
+            // 🔥 DM Check Validation 🔥
+            let oldDistrict = row[4] ? normalizeDistrict(row[4].toString().trim()) : "UNKNOWN";
+            if (isDM && loggedInDist) {
+                if (oldDistrict !== normalizeDistrict(loggedInDist)) continue;
+            }
+            
+            let displayDistrict = row[distColIndex] ? normalizeDistrict(row[distColIndex].toString().trim()) : "UNKNOWN"; 
+            if (selectedDist !== "ALL" && displayDistrict !== selectedDist) {
+                continue;
+            }
+
+            let t1 = parseInt(row[m1Idx]) || 0;
+            let t2 = parseInt(row[m2Idx]) || 0;
+            let t3 = m3Idx !== "NONE" ? (parseInt(row[m3Idx]) || 0) : null;
+
+            if(!summaryData[displayDistrict]) { summaryData[displayDistrict] = { a1:0, r1:0, d1:0, a2:0, r2:0, d2:0 }; }
+
+            if (t1 > 0) {
+                summaryData[displayDistrict].a1++;
+                if (t2 === 0) summaryData[displayDistrict].d1++; else summaryData[displayDistrict].r1++;
+            }
+
+            if (m3Idx !== "NONE" && t2 > 0) {
+                summaryData[displayDistrict].a2++;
+                if (t3 === 0) summaryData[displayDistrict].d2++; else summaryData[displayDistrict].r2++;
+            }
+
+            let drop1 = (t1 > 0 && t2 === 0);
+            let drop2 = (m3Idx !== "NONE" && t2 > 0 && t3 === 0);
+
+            if (drop1 || drop2) {
+                let vleName = row[6] ? row[6].toString().trim() : "-"; 
+                let mobile = row[9] ? row[9].toString().trim() : (row[8] ? row[8].toString().trim() : ""); 
+                
+                let whatsappText = `Hello *${vleName}* garu,\n\n📉 *IRCTC Transaction Alert* 📉\n\n`;
+                if (drop2) {
+                    whatsappText += `You have done *${t2}* transactions in *${m2Name}*.\nBut in *${m3Name}*, your transactions dropped to *0*.\n\n*తెలుగు అనువాదం:*\nమీరు *${m2Name}* నెలలో *${t2}* టికెట్లు బుక్ చేశారు, కానీ *${m3Name}* లో ఒక్కటి కూడా చేయలేదు.\n\n`;
+                } else {
+                    whatsappText += `You have done *${t1}* transactions in *${m1Name}*.\nBut in *${m2Name}*, your transactions dropped to *0*.\n\n*తెలుగు అనువాదం:*\nమీరు *${m1Name}* నెలలో *${t1}* టికెట్లు బుక్ చేశారు, కానీ *${m2Name}* లో ఒక్కటి కూడా చేయలేదు.\n\n`;
+                }
+                whatsappText += `Is there any issue with your ID? Please let us know.`;
+                                   
+                let whatsappLink = `whatsapp://send?phone=91${mobile}&text=${encodeURIComponent(whatsappText)}`;
+
+                let tr = document.createElement('tr');
+                if(m3Idx === "NONE") {
+                    tr.innerHTML = `
+                        <td><input type="checkbox" class="vle-checkbox" value="${whatsappLink}" onchange="updateQueueCount()"></td>
+                        <td>${sno++}</td><td class="text-left" style="font-weight:900; color:#ea580c;">${cscId}</td>
+                        <td class="text-left" style="font-weight:600; color:#334155;">${vleName}</td><td class="text-left">${displayDistrict}</td>
+                        <td style="font-weight:600;">${mobile}</td><td><span class="badge-green">${t1}</span></td>
+                        <td><span class="badge-red">${t2}</span></td>
+                        <td>${mobile ? `<button class="whatsapp-single" onclick="openWa('${whatsappLink}')">💬 MSG</button>` : '-'}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td><input type="checkbox" class="vle-checkbox" value="${whatsappLink}" onchange="updateQueueCount()"></td>
+                        <td>${sno++}</td><td class="text-left" style="font-weight:900; color:#ea580c;">${cscId}</td>
+                        <td class="text-left" style="font-weight:600; color:#334155;">${vleName}</td><td class="text-left">${displayDistrict}</td>
+                        <td style="font-weight:600;">${mobile}</td><td>${t1 > 0 ? `<span class="badge-green">${t1}</span>` : t1}</td>
+                        <td>${t2 === 0 && t1 > 0 ? `<span class="badge-red">${t2}</span>` : (t2 > 0 ? `<span class="badge-green">${t2}</span>` : t2)}</td>
+                        <td>${t3 === 0 && t2 > 0 ? `<span class="badge-red">${t3}</span>` : t3}</td>
+                        <td>${mobile ? `<button class="whatsapp-single" onclick="openWa('${whatsappLink}')">💬 MSG</button>` : '-'}</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            }
+        }
+
+        buildSummaryTable(summaryData, m3Idx !== "NONE", m1Name, m2Name, m3Name);
+    }
+
+    function buildSummaryTable(dataObj, isThreeMonths, m1, m2, m3) {
+        let thead = document.getElementById('summaryTableHead');
+        let tbody = document.getElementById('summaryTableBody');
+        let tfoot = document.getElementById('summaryTableFoot');
+        tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+        if(!isThreeMonths) {
+            thead.innerHTML = `<tr><th style="text-align: left;">District</th><th>Active (${m1})</th><th>Retained in ${m2}</th><th>Dropped to Zero</th></tr>`;
+        } else {
+            thead.innerHTML = `<tr><th rowspan="2" style="text-align: left; vertical-align: middle;">District</th>
+                <th colspan="3" style="border-bottom:1px solid #cbd5e1;">${m1} vs ${m2}</th><th colspan="3" class="col-sep" style="border-bottom:1px solid #cbd5e1;">${m2} vs ${m3}</th></tr>
+                <tr><th>Active</th><th>Retained</th><th>Dropped</th><th class="col-sep">Active</th><th>Retained</th><th>Dropped</th></tr>`;
+        }
+
+        let distKeys = Object.keys(dataObj).sort();
+        let tA1=0, tR1=0, tD1=0, tA2=0, tR2=0, tD2=0;
+
+        distKeys.forEach(dist => {
+            let row = dataObj[dist];
+            if(row.a1 === 0 && row.a2 === 0) return; 
+
+            tA1+=row.a1; tR1+=row.r1; tD1+=row.d1; tA2+=row.a2; tR2+=row.r2; tD2+=row.d2;
+
+            let tr = document.createElement('tr');
+            if(!isThreeMonths) {
+                tr.innerHTML = `<td class="text-left">${dist}</td><td>${row.a1}</td><td class="val-green">${row.r1}</td><td class="val-red">${row.d1}</td>`;
+            } else {
+                tr.innerHTML = `<td class="text-left">${dist}</td><td>${row.a1}</td><td class="val-green">${row.r1}</td><td class="val-red">${row.d1}</td>
+                    <td class="col-sep">${row.a2}</td><td class="val-green">${row.r2}</td><td class="val-red">${row.d2}</td>`;
+            }
+            tbody.appendChild(tr);
+        });
+
+        let tf = document.createElement('tr'); tf.className = "total-row";
+        if(!isThreeMonths) {
+            tf.innerHTML = `<td class="text-left">TOTAL</td><td>${tA1}</td><td class="val-green">${tR1}</td><td class="val-red">${tD1}</td>`;
+            document.getElementById('stat1Label').innerHTML = `Active in ${m1}`; document.getElementById('stat1Value').innerText = tA1;
+            document.getElementById('stat2Label').innerHTML = `Dropped to ZERO`; document.getElementById('stat2Value').innerText = tD1;
+            document.getElementById('stat3Label').innerHTML = `Retained VLEs`; document.getElementById('stat3Value').innerText = tR1;
+        } else {
+            tf.innerHTML = `<td class="text-left">TOTAL</td><td>${tA1}</td><td class="val-green">${tR1}</td><td class="val-red">${tD1}</td><td class="col-sep">${tA2}</td><td class="val-green">${tR2}</td><td class="val-red">${tD2}</td>`;
+            document.getElementById('stat1Label').innerHTML = `Active in ${m1}`; document.getElementById('stat1Value').innerText = tA1;
+            document.getElementById('stat2Label').innerHTML = `Dropped in ${m2}`; document.getElementById('stat2Value').innerText = tD1;
+            document.getElementById('stat3Label').innerHTML = `Dropped in ${m3}`; document.getElementById('stat3Value').innerText = tD2;
+            document.getElementById('stat3Label').style.color = "#dc2626";
+        }
+        tfoot.appendChild(tf);
+    }
+
+    function openWa(url) {
+        let a = document.createElement('a'); a.href = url; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function toggleAllCheckboxes(source) {
+        let checkboxes = document.querySelectorAll('.vle-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateQueueCount();
+    }
+
+    function updateQueueCount() {
+        let count = document.querySelectorAll('.vle-checkbox:checked').length;
+        if(waIndex === 0) {
+            document.getElementById('bulkWaBtn').innerHTML = `💬 Send Queue (${count})`;
+        }
+    }
+
+    function resetWaButton() {
+        let btn = document.getElementById('bulkWaBtn');
+        btn.innerHTML = `💬 Send Queue (0)`;
+        btn.style.backgroundColor = "#25D366";
+        btn.style.boxShadow = "0 2px 0 #1ebc5a";
+        btn.onclick = startBulkWhatsApp;
+        waQueue = []; waIndex = 0;
+        document.querySelectorAll('.vle-checkbox').forEach(cb => cb.checked = false);
+        let selAll = document.getElementById('selectAll');
+        if(selAll) selAll.checked = false;
+    }
+
+    function startBulkWhatsApp() {
+        let checkboxes = document.querySelectorAll('.vle-checkbox:checked');
+        if (checkboxes.length === 0) { alert("Please select VLEs to send messages."); return; }
+
+        waQueue = []; checkboxes.forEach(cb => waQueue.push(cb.value)); waIndex = 0;
+        processNextWhatsApp();
+    }
+
+    function processNextWhatsApp() {
+        if (waIndex < waQueue.length) {
+            openWa(waQueue[waIndex]);
+            waIndex++;
+            let btn = document.getElementById('bulkWaBtn');
+            if (waIndex < waQueue.length) {
+                btn.innerHTML = `💬 Send Next (${waIndex + 1}/${waQueue.length})`;
+                btn.style.backgroundColor = "#eab308"; btn.style.boxShadow = "0 2px 0 #ca8a04";
+                btn.onclick = processNextWhatsApp;
+            } else {
+                btn.innerHTML = `✅ All Sent!`;
+                btn.style.backgroundColor = "#10b981"; btn.style.boxShadow = "0 2px 0 #059669";
+                setTimeout(() => { resetWaButton(); }, 2000);
+            }
+        }
+    }
+
+    function downloadExcel() {
+        let table = document.getElementById("summaryTable");
+        let html = table.outerHTML; let blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+        let a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = "IRCTC_DropOut_Summary.xls"; a.click();
+    }
+
+    function downloadImage() {
+        let now = new Date();
+        let fDate = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById('exportTimestamp').innerText = "Generated On: " + fDate;
+        let container = document.getElementById("exportContainer");
+        html2canvas(container, { backgroundColor: '#ffffff', scale: 2 }).then(canvas => {
+            let link = document.createElement('a'); link.download = `IRCTC_DropOut_Summary.png`;
+            link.href = canvas.toDataURL("image/png"); link.click();
+        });
+    }
+</script>
+</body>
+</html>
