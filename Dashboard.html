@@ -3,7 +3,6 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,22 +41,28 @@
     /* 4. మెయిన్ కంటెంట్ ఏరియా */
     .main-content { display: flex; padding: 15px 20px; gap: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
     
-    /* సైడ్‌బార్ transition కోడ్ */
-    .sidebar { width: 250px; min-width: 250px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; transition: all 0.3s ease-in-out; }
+    /* 🌟🌟 మార్చబడిన సైడ్‌బార్ కోడ్ 🌟🌟 */
+    .sidebar { width: 260px; min-width: 260px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; overflow-x: hidden; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 50; }
     
-    /* ఇక్కడ మార్పు చేశాను: లైన్ కనిపించకుండా Transparent చేశాను */
-    .sidebar.collapsed-hover { width: 12px !important; min-width: 12px !important; overflow: hidden !important; background-color: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer; }
-    .sidebar.collapsed-hover * { opacity: 0 !important; pointer-events: none !important; display: none !important; }
+    /* హైడ్ (కొలాప్స్) అయినప్పుడు కేవలం ఐకాన్స్ కనిపించే డిజైన్ */
+    .sidebar.collapsed-hover { width: 60px !important; min-width: 60px !important; cursor: pointer; }
+    .sidebar.collapsed-hover .sidebar-header { opacity: 0; padding: 15px 0; height: 20px; }
+    .sidebar.collapsed-hover .report-list li { padding-left: 18px; justify-content: flex-start; }
+    .sidebar.collapsed-hover .report-list li .menu-text { opacity: 0; visibility: hidden; width: 0; transition: opacity 0.2s; }
+    
+    /* ఓపెన్ (హోవర్) అయినప్పుడు టెక్స్ట్ కనిపించే డిజైన్ */
+    .report-list li .menu-text { opacity: 1; visibility: visible; transition: opacity 0.4s; white-space: nowrap; }
 
-    .sidebar-header { background: #f8fafc; padding: 15px; font-weight: 900; color: #6d28d9; border-bottom: 2px solid #e2e8f0; text-align: center; position: sticky; top: 0; font-size: 14px; letter-spacing: 0.5px; z-index: 10; border-radius: 12px 12px 0 0; }
+    .sidebar-header { background: #f8fafc; padding: 15px; font-weight: 900; color: #6d28d9; border-bottom: 2px solid #e2e8f0; text-align: center; position: sticky; top: 0; font-size: 14px; letter-spacing: 0.5px; z-index: 10; border-radius: 12px 12px 0 0; transition: opacity 0.2s; white-space: nowrap;}
     .report-list { list-style: none; padding: 0; margin: 0; }
     
     :root { --theme-color: #6d28d9; --theme-bg: #f5f3ff; }
-    .report-list li { padding: 12px 15px; border-bottom: 1px solid #f8fafc; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-    .report-list li:hover { background: var(--theme-bg); color: #0f172a; border-left: 4px solid var(--theme-color); padding-left: 11px; }
-    .report-list li.active-item { background: var(--theme-bg); color: var(--theme-color); border-left: 4px solid var(--theme-color); padding-left: 11px; font-weight: 900; }
+    .report-list li { padding: 12px 18px; border-bottom: 1px solid #f8fafc; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+    .report-list li:hover { background: var(--theme-bg); color: #0f172a; border-left: 4px solid var(--theme-color); padding-left: 14px; }
+    .report-list li.active-item { background: var(--theme-bg); color: var(--theme-color); border-left: 4px solid var(--theme-color); padding-left: 14px; font-weight: 900; }
+    .report-list li .menu-icon { font-size: 16px; min-width: 20px; text-align: center; }
     
-    .report-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; background: transparent; border-radius: 12px; }
+    .report-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; background: transparent; border-radius: 12px; transition: all 0.3s ease; }
     #homeDisplay { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     #reportIframeContainer { display: none; flex-direction: column; width: 100%; height: 100%; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
@@ -207,7 +212,7 @@
       });
       
       sidebar.addEventListener('mouseleave', function() {
-        if (this.style.display === 'flex') {
+        if (this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') {
           this.classList.add('collapsed-hover');
         }
       });
@@ -265,6 +270,7 @@
         
         if(activeModule === "E-STAMPING" || document.getElementById('dashboardCards').innerHTML.trim() !== '') {
             document.getElementById('dashboardCards').style.display = 'flex';
+            document.getElementById('sidebar').classList.remove('collapsed-hover');
         } else {
             document.getElementById('homeDisplay').style.display = 'flex';
         }
@@ -322,7 +328,7 @@
       document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
       
       document.getElementById('sidebar').style.display = 'flex';
-      document.getElementById('sidebar').classList.remove('collapsed-hover'); // Start open
+      document.getElementById('sidebar').classList.remove('collapsed-hover'); // ఓపెన్ అవ్వగానే సైడ్‌బార్ ఫుల్ గా కనపడాలి
       
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
       
@@ -331,10 +337,10 @@
       if(moduleName === 'E-STAMPING') {
           if (isVLE) {
               let options = [ { id: 'VleRequestStock', icon: '📦', name: 'Request New Stock' }, { id: 'VleSubmitSales', icon: '📊', name: 'Submit Daily Sales' }, { id: 'VleReportSpoil', icon: '⚠️', name: 'Report Spoiled Stamp' }, { id: 'VleTrackStatus', icon: '🔍', name: 'Track Request Status' } ];
-              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
+              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           } else {
               let options = [ { id: 'AddMasterStock', icon: '📥', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '📦', name: 'Assign Stationary' }, { id: 'StockReport', icon: '📈', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '🚚', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '📊', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '⭐', name: 'VLE Performance Report' } ];
-              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
+              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           }
           
           document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
@@ -359,7 +365,7 @@
 
           options.forEach(opt => {
               let li = document.createElement('li');
-              li.innerHTML = `<span>${opt.icon}</span> ${opt.name}`;
+              li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`;
               li.onclick = function() {
                   document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
                   this.classList.add('active-item');
@@ -371,20 +377,20 @@
           document.getElementById('homeDisplay').style.display = 'none';
           document.getElementById('reportIframeContainer').style.display = 'none';
           document.getElementById('dashboardCards').style.display = 'flex';
-          document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="HELPDESK.png" alt="E-Stamping Logo" style="max-width: 650px; width: 80%; border-radius: 16px; box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.2) 0px 24px 48px, rgba(17, 17, 26, 0.2) 0px 3px 6px; border: 3px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.04) translateY(-10px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
+          document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="HELPDESK.png" alt="Helpdesk Logo" style="max-width: 650px; width: 80%; border-radius: 16px; box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.2) 0px 24px 48px, rgba(17, 17, 26, 0.2) 0px 3px 6px; border: 3px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.04) translateY(-10px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
 
       }
       else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
-        let li0 = document.createElement('li'); li0.innerHTML = '<span>📊</span> AP Consolidated Report'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
-        let li1 = document.createElement('li'); li1.innerHTML = '<span>📤</span> Daily Data Upload'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); } else { loadAccessDenied(); } }; list.appendChild(li1);
+        let li0 = document.createElement('li'); li0.innerHTML = '<span class="menu-icon">📊</span> <span class="menu-text">AP Consolidated Report</span>'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
+        let li1 = document.createElement('li'); li1.innerHTML = '<span class="menu-icon">📤</span> <span class="menu-text">Daily Data Upload</span>'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); } else { loadAccessDenied(); } }; list.appendChild(li1);
         
         document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
         document.getElementById('dashboardCards').style.display = 'flex';
         document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h3 style="color:#475569;">MASTER మాడ్యూల్</h3><p style="color:#64748b;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
       } else {
         let reports = reportMenus[moduleName] || [];
-        reports.forEach(reportName => { let li = document.createElement('li'); li.innerHTML = '📄 ' + reportName; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li.classList.add('active-item'); loadReport(moduleName, reportName); }; list.appendChild(li); });
+        reports.forEach(reportName => { let li = document.createElement('li'); li.innerHTML = '<span class="menu-icon">📄</span> <span class="menu-text">' + reportName + '</span>'; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li.classList.add('active-item'); loadReport(moduleName, reportName); }; list.appendChild(li); });
         
         document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
         document.getElementById('dashboardCards').style.display = 'flex';
@@ -392,7 +398,12 @@
       }
     }
 
-    function loadAccessDenied() { document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; }
+    function loadAccessDenied() { 
+      document.getElementById('reportIframeContainer').style.display = 'flex'; 
+      document.getElementById('dashboardCards').style.display = 'none'; 
+      document.getElementById('sidebar').classList.add('collapsed-hover'); // హైడ్ అవుతుంది
+      document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; 
+    }
     
     function loadReport(moduleName, reportId, reportNameParam) {
       let iframeSrc = ""; let reportName = reportNameParam || reportId;
@@ -458,16 +469,22 @@
       else if (moduleName === "HELPDESK" && reportId === "RaiseTicket") iframeSrc = "Helpdesk_RaiseTicket.html";
       else if (moduleName === "HELPDESK" && reportId === "TrackStatus") iframeSrc = "Helpdesk_TrackStatus.html";
       else if (moduleName === "HELPDESK" && reportId === "HelpdeskAdmin") iframeSrc = "Helpdesk_Admin.html";
-     
-    
+      
+      
       else {
-          document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none';
-          document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; return;
+          document.getElementById('reportIframeContainer').style.display = 'flex'; 
+          document.getElementById('dashboardCards').style.display = 'none';
+          document.getElementById('sidebar').classList.add('collapsed-hover'); // హైడ్ అవుతుంది
+          document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; 
+          return;
       }
 
       document.getElementById('homeDisplay').style.display = 'none';
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('reportIframeContainer').style.display = 'flex';
+      
+      // రిపోర్ట్ ఓపెన్ అవ్వగానే సైడ్‌బార్ ఆటోమేటిక్ గా సన్నగా (Icon view) మారుతుంది
+      document.getElementById('sidebar').classList.add('collapsed-hover'); 
       
       document.getElementById('reportIframeContainer').innerHTML = `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:12px; background:white;"></iframe>`;
     }
