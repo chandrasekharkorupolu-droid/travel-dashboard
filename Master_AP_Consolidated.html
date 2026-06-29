@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AP Travel Master Dashboard</title>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;}
+    
+    .controls-bar { background: #0f172a; border-radius: 10px; padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-bottom: 4px solid #3b82f6;}
+    .title-sec { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #f8fafc; text-transform: uppercase; margin: 0; display:flex; align-items: center;}
+    .filter-group { display: flex; align-items: center; gap: 15px; }
+    .dist-select { border: 1px solid #334155; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; background-color: #1e293b; color: #f1f5f9; cursor: pointer;}
+    .period-select { border: 2px solid #3b82f6; color: #eff6ff; background-color: #1e3a8a; }
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 15px; border-radius: 6px; transition: 0.2s; border: none; color: white; cursor: pointer;}
+    .btn-refresh { background: #3b82f6; } .btn-refresh:hover { background: #2563eb; }
+    .btn-export { background: #10b981; } .btn-export:hover { background: #059669; }
+
+    .kpi-section { display: flex; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    .kpi-block { flex: 1; border-radius: 10px; padding: 15px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;}
+    .kpi-block::after { content: ''; position: absolute; right: -20px; top: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+    
+    .bg-irctc { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); } 
+    .bg-redbus { background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%); } 
+    .bg-airways { background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%); } 
+    
+    .kpi-header { font-size: 16px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; display: flex; justify-content: space-between;}
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+    .kpi-item span { font-size: 11px; font-weight: 700; opacity: 0.9; text-transform: uppercase; display: block; margin-bottom: 2px;}
+    .kpi-item strong { font-size: 20px; font-weight: 900; }
+    .kpi-item.pend strong { color: #fde047; } 
+
+    .targets-section { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; flex-shrink: 0; }
+    .target-card { background: white; border-radius: 8px; padding: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.02); text-align: center; }
+    .tc-title { font-size: 11px; font-weight: 900; color: #475569; margin-bottom: 8px; text-transform: uppercase;}
+    .tc-stats { display: flex; justify-content: space-between; font-size: 14px; font-weight: 900;}
+    .tc-targ { color: #3b82f6; } .tc-ach { color: #10b981; } .tc-pend { color: #ea580c; }
+    .tc-label { font-size: 9px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: -2px;}
+
+    .table-wrapper { flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; position:relative;}
+    .table-scroll { flex: 1; overflow: auto; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; text-align: center;}
+    thead { position: sticky; top: -1px; z-index: 10; }
+    
+    .th-super { color: white; font-weight: 900; font-size: 13px; padding: 8px; border-right: 2px solid rgba(255,255,255,0.2); }
+    .th-sub { background: #f8fafc; color: #1e293b; font-weight: 900; font-size: 10px; padding: 8px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; text-transform: uppercase;}
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.1s; cursor: pointer; }
+    tbody tr:hover { background-color: #fef08a !important; }
+    tbody td { font-weight: 800; padding: 8px; color: #334155; border-right: 1px solid #f1f5f9; }
+    
+    .td-dist { text-align: left; padding-left: 15px; color: #0f172a; font-weight: 900; background: white; position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important;}
+    
+    .t-row-total { background-color: #e2e8f0 !important; border-top: 3px solid #94a3b8 !important; position: sticky; bottom: 0; z-index: 10;}
+    .t-row-total td { font-size: 13px !important; font-weight: 900 !important; color: #0f172a !important; }
+
+    .col-sep { border-right: 3px solid #cbd5e1 !important; }
+    
+    .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #3b82f6;}
+    .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .filter-badge { background: #fef08a; color: #b45309; font-size: 10px; padding: 3px 8px; border-radius: 4px; margin-left: 10px; display: none; border: 1px solid #f59e0b; cursor: pointer;}
+  </style>
+</head>
+<body>
+
+  <div class="controls-bar">
+    <div class="title-sec">
+        🏢 AP TRAVEL DASHBOARD 
+        <span id="filterBadge" class="filter-badge" onclick="toggleDistrictFilter('')">FILTERED (DOUBLE-CLICK TABLE TO CLEAR) ❌</span>
+    </div>
+    <div class="filter-group">
+      <select id="distTypeDropdown" class="dist-select" onchange="renderView()">
+          <option value="OLD">Old Districts</option>
+          <option value="NEW">New Districts</option>
+      </select>
+      
+      <select id="periodDropdown" class="dist-select period-select" onchange="renderView()">
+          <option value="APR">APR-2026</option>
+          <option value="MAY">MAY-2026</option>
+          <option value="JUN">JUN-2026</option>
+          <option value="JUL">JUL-2026</option>
+          <option value="AUG">AUG-2026</option>
+          <option value="SEP">SEP-2026</option>
+          <option value="OCT">OCT-2026</option>
+          <option value="NOV">NOV-2026</option>
+          <option value="DEC">DEC-2026</option>
+          <option value="JAN">JAN-2027</option>
+          <option value="FEB">FEB-2027</option>
+          <option value="MAR">MAR-2027</option>
+          <option value="Q1">Q1 (Apr-Jun)</option>
+          <option value="Q2">Q2 (Jul-Sep)</option>
+          <option value="Q3">Q3 (Oct-Dec)</option>
+          <option value="Q4">Q4 (Jan-Mar)</option>
+          <option value="H1">H1 (Half Yearly)</option>
+          <option value="FY" selected>FY 26-27 (Yearly)</option>
+      </select>
+
+      <button class="btn-custom btn-refresh" onclick="fetchData(true)">🔄 Sync Live Data</button>
+      <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Export Excel</button>
+    </div>
+  </div>
+
+  <div class="kpi-section">
+    <div class="kpi-block bg-irctc">
+        <div class="kpi-header">🚆 IRCTC MASTER STATUS</div>
+        <div class="kpi-grid">
+            <div class="kpi-item"><span>Total IDs</span><strong id="irctc-csc">0</strong></div>
+            <div class="kpi-item"><span>Act 25-26</span><strong id="irctc-a25">0</strong></div>
+            <div class="kpi-item"><span id="lbl-irctc-a26">Act 26-27</span><strong id="irctc-a26">0</strong></div>
+            <div class="kpi-item pend"><span>Pending</span><strong id="irctc-pend">0</strong></div>
+        </div>
+    </div>
+    <div class="kpi-block bg-redbus">
+        <div class="kpi-header">🚌 REDBUS MASTER STATUS</div>
+        <div class="kpi-grid">
+            <div class="kpi-item"><span>Total IDs</span><strong id="rb-csc">0</strong></div>
+            <div class="kpi-item"><span>Act 25-26</span><strong id="rb-a25">0</strong></div>
+            <div class="kpi-item"><span id="lbl-rb-a26">Act 26-27</span><strong id="rb-a26">0</strong></div>
+            <div class="kpi-item pend"><span>Pending</span><strong id="rb-pend">0</strong></div>
+        </div>
+    </div>
+    <div class="kpi-block bg-airways">
+        <div class="kpi-header">✈️ AIRWAYS MASTER STATUS</div>
+        <div class="kpi-grid">
+            <div class="kpi-item"><span>Total IDs</span><strong id="aw-csc">0</strong></div>
+            <div class="kpi-item"><span>Act 25-26</span><strong id="aw-a25">0</strong></div>
+            <div class="kpi-item"><span id="lbl-aw-a26">Act 26-27</span><strong id="aw-a26">0</strong></div>
+            <div class="kpi-item pend"><span>Pending</span><strong id="aw-pend">0</strong></div>
+        </div>
+    </div>
+  </div>
+
+  <div class="targets-section">
+      <div class="target-card" style="border-top: 4px solid #f59e0b;">
+          <div class="tc-title">📝 IRCTC New Registrations</div>
+          <div class="tc-stats">
+              <div><span class="tc-label">TARGET</span><span class="tc-targ" id="tgt-irctc-reg">0</span></div>
+              <div><span class="tc-label">ACHIEVED</span><span class="tc-ach" id="ach-irctc-reg">0</span></div>
+              <div><span class="tc-label">PENDING</span><span class="tc-pend" id="pend-irctc-reg">0</span></div>
+          </div>
+      </div>
+      <div class="target-card" style="border-top: 4px solid #f97316;">
+          <div class="tc-title">💸 IRCTC AMC Renewal</div>
+          <div class="tc-stats">
+              <div><span class="tc-label">ELIGIBLE</span><span class="tc-targ" id="tgt-irctc-amc">0</span></div>
+              <div><span class="tc-label">RENEWED</span><span class="tc-ach" id="ach-irctc-amc">0</span></div>
+              <div><span class="tc-label">PENDING</span><span class="tc-pend" id="pend-irctc-amc">0</span></div>
+          </div>
+      </div>
+      <div class="target-card" style="border-top: 4px solid #3b82f6;">
+          <div class="tc-title">🚆 IRCTC TXN Target</div>
+          <div class="tc-stats">
+              <div><span class="tc-label">TARGET</span><span class="tc-targ" id="tgt-irctc-txn">0</span></div>
+              <div><span class="tc-label">ACHIEVED</span><span class="tc-ach" id="ach-irctc-txn">0</span></div>
+              <div><span class="tc-label">PENDING</span><span class="tc-pend" id="pend-irctc-txn">0</span></div>
+          </div>
+      </div>
+      <div class="target-card" style="border-top: 4px solid #ef4444;">
+          <div class="tc-title">🚌 REDBUS TXN Target</div>
+          <div class="tc-stats">
+              <div><span class="tc-label">TARGET</span><span class="tc-targ" id="tgt-rb">0</span></div>
+              <div><span class="tc-label">ACHIEVED</span><span class="tc-ach" id="ach-rb">0</span></div>
+              <div><span class="tc-label">PENDING</span><span class="tc-pend" id="pend-rb">0</span></div>
+          </div>
+      </div>
+      <div class="target-card" style="border-top: 4px solid #0ea5e9;">
+          <div class="tc-title">✈️ AIRWAYS TXN Target</div>
+          <div class="tc-stats">
+              <div><span class="tc-label">TARGET</span><span class="tc-targ" id="tgt-aw">0</span></div>
+              <div><span class="tc-label">ACHIEVED</span><span class="tc-ach" id="ach-aw">0</span></div>
+              <div><span class="tc-label">PENDING</span><span class="tc-pend" id="pend-aw">0</span></div>
+          </div>
+      </div>
+  </div>
+
+  <div class="table-wrapper">
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <span id="loadText">Connecting to Server (Fetching Fast)...</span>
+    </div>
+    
+    <div class="table-scroll">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th rowspan="2" class="bg-dark text-white" style="position: sticky; left: 0; z-index: 20; border-right: 2px solid #cbd5e1;">DISTRICT NAME</th>
+                    <th colspan="4" class="th-super bg-irctc text-center">🚆 IRCTC STATUS</th>
+                    <th colspan="4" class="th-super bg-redbus text-center">🚌 REDBUS STATUS</th>
+                    <th colspan="4" class="th-super bg-airways text-center" style="border-right: none;">✈️ AIRWAYS STATUS</th>
+                </tr>
+                <tr>
+                    <th class="th-sub text-primary">Total IDs</th>
+                    <th class="th-sub" style="color:#475569;">Act 25-26</th>
+                    <th class="th-sub text-success" id="th-irctc-a26">Act 26-27</th>
+                    <th class="th-sub text-danger col-sep">Pending</th>
+                    <th class="th-sub text-primary">Total IDs</th>
+                    <th class="th-sub" style="color:#475569;">Act 25-26</th>
+                    <th class="th-sub text-success" id="th-rb-a26">Act 26-27</th>
+                    <th class="th-sub text-danger col-sep">Pending</th>
+                    <th class="th-sub text-primary">Total IDs</th>
+                    <th class="th-sub" style="color:#475569;">Act 25-26</th>
+                    <th class="th-sub text-success" id="th-aw-a26">Act 26-27</th>
+                    <th class="th-sub text-danger">Pending</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+            <tfoot id="tableFoot">
+            </tfoot>
+        </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInUser = localStorage.getItem("userName") || "";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+
+    let rawMemory = { IRCTC: [], REDBUS: [], AIRWAYS: [] };
+    let dmAssignedOldDistrict = "";
+    let dmNewDistrictsSet = new Set();
+    let selectedDistrictFilter = ""; 
+    
+    let confTargetMap = {}; 
+    let globalTargets = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+    let oldDistVleCount = { IRCTC: {}, REDBUS: {}, AIRWAYS: {} }; 
+
+    const dbName = "APTravelDB";
+    const storeName = "DashboardCache";
+
+    function saveToDB(key, data) {
+        return new Promise((resolve) => {
+            let request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = function(e) {
+                let db = e.target.result;
+                if(!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName);
+            };
+            request.onsuccess = function(e) {
+                let db = e.target.result;
+                let tx = db.transaction(storeName, "readwrite");
+                tx.objectStore(storeName).put(data, key);
+                tx.oncomplete = () => resolve(true);
+            };
+            request.onerror = () => resolve(false);
+        });
+    }
+
+    function loadFromDB(key) {
+        return new Promise((resolve) => {
+            let request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = function(e) {
+                let db = e.target.result;
+                if(!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName);
+            };
+            request.onsuccess = function(e) {
+                let db = e.target.result;
+                if(!db.objectStoreNames.contains(storeName)) return resolve(null);
+                let tx = db.transaction(storeName, "readonly");
+                let getReq = tx.objectStore(storeName).get(key);
+                getReq.onsuccess = () => resolve(getReq.result);
+                getReq.onerror = () => resolve(null);
+            };
+            request.onerror = () => resolve(null);
+        });
+    }
+
+    function getEmptyDist(name) {
+        return {
+            name: name,
+            IRCTC: { tot:0, a25:0, a26:0, pend:0 },
+            REDBUS: { tot:0, a25:0, a26:0, pend:0 },
+            AIRWAYS: { tot:0, a25:0, a26:0, pend:0 }
+        };
+    }
+
+    function formatExactNumber(num) {
+        return Math.round(num).toLocaleString('en-IN');
+    }
+
+    function toProperCase(str) { 
+        if (!str || str.trim() === "") return "Unknown"; 
+        return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); 
+    }
+
+    function normalizeDistrict(distName) {
+        if (!distName) return "";
+        var distMap = { 
+            "ANANTHAPUR": "ANANTAPUR", "ANANTHAPURAM": "ANANTAPUR", "CHITTOOR": "CHITTOOR", 
+            "EAST GODAVARI": "EAST GODAVARI", "GUNTUR": "GUNTUR", "KRISHNA": "KRISHNA", 
+            "KURNOOL": "KURNOOL", "PRAKASAM": "PRAKASAM", "NELLORE": "SPSR NELLORE", "SPSR NELLORE": "SPSR NELLORE", 
+            "SRIKAKULAM": "SRIKAKULAM", "VISAKHAPATNAM": "VISAKHAPATNAM", "VISAKHAPTNAM": "VISAKHAPATNAM", 
+            "VISAKHAPATANAM": "VISAKHAPATNAM", "VIZIANAGARAM": "VIZIANAGARAM", "WEST GODAVARI": "WEST GODAVARI", 
+            "YSR KADAPA": "YSR KADAPA", "Y.S.R.": "YSR KADAPA", "KADAPA": "YSR KADAPA", "Y.S.R": "YSR KADAPA" 
+        };
+        return distMap[distName.toUpperCase()] || distName.toUpperCase();
+    }
+
+    function isNameMatch(sheetName, loginName) {
+        if (!sheetName || !loginName) return false;
+        let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+        let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+        if (sClean === lClean) return true;
+        if (lClean.length > 5 && sClean.includes(lClean)) return true;
+        if (sClean.length > 5 && lClean.includes(sClean)) return true;
+        return false;
+    }
+
+    function parseDateString(dateStr) {
+        if(!dateStr) return null;
+        dateStr = dateStr.toString().replace(/^'/g, '').trim(); 
+        let d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d;
+        let parts = dateStr.split(' ')[0].split(/[-/]/);
+        if(parts.length >= 3) {
+            let y = parts[0].length === 4 ? parts[0] : parts[2];
+            let m = parts[0].length === 4 ? parts[1] : parts[1];
+            let day = parts[0].length === 4 ? parts[2] : parts[0];
+            return new Date(y, parseInt(m)-1, day);
+        }
+        return null;
+    }
+
+    window.onload = function() { fetchData(false); }
+
+    async function fetchData(forceRefresh = false) {
+        let loader = document.getElementById("loader");
+        let loadText = document.getElementById("loadText");
+        let cacheKey = "apTravelDashboardPayload";
+
+        try {
+            if (!forceRefresh) {
+                let cachedPayload = await loadFromDB(cacheKey);
+                if (cachedPayload) {
+                    processAndDisplay(cachedPayload);
+                    return; 
+                }
+            }
+
+            loader.style.display = "flex";
+            loadText.innerText = "Connecting to Server (Fetching Fast)...";
+
+            let timestamp = new Date().getTime();
+            
+            let payload = await new Promise((resolve, reject) => {
+                let script = document.createElement('script');
+                let cbName = "jsonp_cb_" + timestamp;
+                
+                window[cbName] = function(data) {
+                    resolve(data);
+                    document.body.removeChild(script);
+                    delete window[cbName];
+                };
+                
+                script.src = API_URL + "?action=getFastMasterData&t=" + timestamp + "&callback=" + cbName;
+                script.onerror = () => reject(new Error("Network connection blocked by browser."));
+                document.body.appendChild(script);
+            });
+
+            if (!payload || !payload.success) {
+                throw new Error(payload ? payload.message : "No response from server.");
+            }
+
+            await saveToDB(cacheKey, payload); 
+            processAndDisplay(payload);
+            
+        } catch (e) {
+            console.error(e);
+            alert("⚠️ Failed to load Data.\n\n" + e.message);
+        } finally {
+            loader.style.display = "none";
+        }
+    }
+
+    function processAndDisplay(payload) {
+        rawMemory = { IRCTC: [], REDBUS: [], AIRWAYS: [] };
+        dmNewDistrictsSet.clear();
+        dmAssignedOldDistrict = "";
+        confTargetMap = {};
+        globalTargets = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+        oldDistVleCount = { IRCTC: {}, REDBUS: {}, AIRWAYS: {} }; 
+
+        if(payload.targets && payload.targets.length > 1) {
+            let tHeaders = payload.targets[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let idxProj = tHeaders.findIndex(h => h.includes('project') || h.includes('service'));
+            let idxTaxTarget = tHeaders.findIndex(h => h.includes('taxtarget') || h.includes('target') || h.includes('count'));
+            let idxDist = tHeaders.findIndex(h => h.includes('distname') || h.includes('district'));
+
+            for(let i=1; i<payload.targets.length; i++) {
+                let dName = "UNKNOWN";
+                if(idxDist > -1) dName = toProperCase(normalizeDistrict(payload.targets[i][idxDist] || ""));
+                
+                if(!confTargetMap[dName]) confTargetMap[dName] = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+
+                let proj = (payload.targets[i][idxProj] || '').toString().trim().toUpperCase();
+                let tCount = parseInt((payload.targets[i][idxTaxTarget] || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+
+                if(proj.includes("BUS") || proj.includes("REDBUS")) { confTargetMap[dName].REDBUS += tCount; globalTargets.REDBUS += tCount; }
+                else if(proj.includes("FLIGHT") || proj.includes("AIRWAYS")) { confTargetMap[dName].AIRWAYS += tCount; globalTargets.AIRWAYS += tCount; }
+                else if(proj.includes("IRCTC")) {
+                    if(proj.includes("REG") || proj.includes("NEW")) { confTargetMap[dName].IRCTC_REG += tCount; globalTargets.IRCTC_REG += tCount; }
+                    else if(proj.includes("AMC") || proj.includes("RENEW")) { confTargetMap[dName].IRCTC_AMC += tCount; globalTargets.IRCTC_AMC += tCount; }
+                    else { confTargetMap[dName].IRCTC_TXN += tCount; globalTargets.IRCTC_TXN += tCount; }
+                }
+            }
+        }
+
+        if (isDM && payload.users && payload.users.length > 0) {
+            for(let i=0; i<payload.users.length; i++) {
+                if ((payload.users[i][0] || '').toString().trim() === loggedInUserId) {
+                    dmAssignedOldDistrict = (payload.users[i][1] || '').toString().trim();
+                    break;
+                }
+            }
+        }
+
+        function processFastData(arr, service) {
+            if(!arr) return;
+            arr.forEach(row => {
+                let oldD = toProperCase(normalizeDistrict(row[0]));
+                let newD = toProperCase(row[1]);
+                let empName = (row[2] || "").toString().trim();
+
+                if (isDM && loggedInUser && isNameMatch(empName, loggedInUser)) {
+                    dmNewDistrictsSet.add(newD);
+                }
+                oldDistVleCount[service][oldD] = (oldDistVleCount[service][oldD] || 0) + 1;
+
+                let tx25 = Math.round(parseFloat((row[3]||"0").toString().replace(/[^\d.-]/g, '')) || 0);
+                let txMonths = row[4].map(v => Math.round(parseFloat((v||"0").toString().replace(/[^\d.-]/g, '')) || 0));
+
+                let creationDate = "", amcStatus = "", amcDate = "";
+                if (service === "IRCTC") {
+                    creationDate = (row[5] || "").toString().trim();
+                    amcStatus = (row[6] || "").toString().trim().toUpperCase();
+                    amcDate = (row[7] || "").toString().trim();
+                }
+
+                rawMemory[service].push({ oldD, newD, empName, tx25, txMonths, creationDate, amcStatus, amcDate });
+            });
+        }
+
+        processFastData(payload.irctc, 'IRCTC');
+        processFastData(payload.redbus, 'REDBUS');
+        processFastData(payload.airways, 'AIRWAYS');
+
+        renderView();
+    }
+
+    window.toggleDistrictFilter = function(distName) {
+        if(selectedDistrictFilter === distName) {
+            selectedDistrictFilter = ""; 
+            document.getElementById("filterBadge").style.display = "none";
+        } else {
+            selectedDistrictFilter = distName;
+            document.getElementById("filterBadge").style.display = "inline-block";
+        }
+        renderView();
+    }
+
+    function renderView() {
+        let isNew = document.getElementById("distTypeDropdown").value === "NEW";
+        let period = document.getElementById("periodDropdown").value;
+        let pText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
+
+        let lblTxt = period === "FY" ? "Act 26-27" : pText;
+        document.getElementById("lbl-irctc-a26").innerText = lblTxt;
+        document.getElementById("lbl-rb-a26").innerText = lblTxt;
+        document.getElementById("lbl-aw-a26").innerText = lblTxt;
+        document.getElementById("th-irctc-a26").innerText = lblTxt;
+        document.getElementById("th-rb-a26").innerText = lblTxt;
+        document.getElementById("th-aw-a26").innerText = lblTxt;
+
+        let incMonths = [];
+        if(period === "APR") incMonths = [0]; else if(period === "MAY") incMonths = [1];
+        else if(period === "JUN") incMonths = [2]; else if(period === "JUL") incMonths = [3];
+        else if(period === "AUG") incMonths = [4]; else if(period === "SEP") incMonths = [5];
+        else if(period === "OCT") incMonths = [6]; else if(period === "NOV") incMonths = [7];
+        else if(period === "DEC") incMonths = [8]; else if(period === "JAN") incMonths = [9];
+        else if(period === "FEB") incMonths = [10]; else if(period === "MAR") incMonths = [11];
+        else if(period === "Q1") incMonths = [0,1,2]; else if(period === "Q2") incMonths = [3,4,5];
+        else if(period === "Q3") incMonths = [6,7,8]; else if(period === "Q4") incMonths = [9,10,11];
+        else if(period === "H1") incMonths = [0,1,2,3,4,5]; else if(period === "H2") incMonths = [6,7,8,9,10,11];
+        else incMonths = [0,1,2,3,4,5,6,7,8,9,10,11]; 
+
+        let distStats = {};
+        let tStats = {
+            REDBUS: { ach: 0 }, AIRWAYS: { ach: 0 }, IRCTC_TXN: { ach: 0 }, 
+            IRCTC_REG: { ach: 0 }, IRCTC_AMC: { eligible: 0, ach: 0 }
+        };
+        let activeTargets = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+
+        ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(service => {
+            rawMemory[service].forEach(row => {
+                let dName = isNew ? row.newD : row.oldD;
+
+                if (selectedDistrictFilter !== "" && dName !== selectedDistrictFilter) return;
+
+                let isMyDist = false;
+                if (isDM) {
+                    if (isNew && dmNewDistrictsSet.has(row.newD)) isMyDist = true;
+                    else if (!isNew && dmAssignedOldDistrict && row.oldD.toLowerCase() === dmAssignedOldDistrict.toLowerCase()) isMyDist = true;
+                    else if (isNameMatch(row.empName, loggedInUser)) isMyDist = true;
+                    if (!isMyDist) return;
+                }
+
+                if (!distStats[dName]) distStats[dName] = getEmptyDist(dName);
+
+                let periodTxn = 0;
+                incMonths.forEach(mIdx => { periodTxn += row.txMonths[mIdx]; });
+
+                if (service === "IRCTC") tStats.IRCTC_TXN.ach += periodTxn;
+                else tStats[service].ach += periodTxn;
+
+                if (service === "IRCTC") {
+                    tStats.IRCTC_AMC.eligible++;
+                    
+                    if (row.creationDate) {
+                        let cDate = parseDateString(row.creationDate);
+                        if (cDate) {
+                            let m = cDate.getMonth(); let y = cDate.getFullYear();
+                            let fyMonthIdx = (m >= 3) ? (m - 3) : (m + 9);
+                            let isCurrentFY = (y === 2026 && m >= 3) || (y === 2027 && m < 3);
+                            if (isCurrentFY && incMonths.includes(fyMonthIdx)) { tStats.IRCTC_REG.ach++; }
+                        }
+                    }
+
+                    if (row.amcStatus.includes("RENEW") || row.amcStatus.includes("YES") || row.amcStatus.includes("ACTIVE") || row.amcStatus.includes("PAID")) {
+                        let aDate = parseDateString(row.amcDate);
+                        if (aDate) {
+                            let m = aDate.getMonth(); let y = aDate.getFullYear();
+                            let fyMonthIdx = (m >= 3) ? (m - 3) : (m + 9);
+                            let isCurrentFY = (y === 2026 && m >= 3) || (y === 2027 && m < 3);
+                            if (isCurrentFY && incMonths.includes(fyMonthIdx)) { tStats.IRCTC_AMC.ach++; }
+                        } else {
+                            if (period === "FY") tStats.IRCTC_AMC.ach++; 
+                        }
+                    }
+                }
+
+                distStats[dName][service].tot++;
+                if (row.tx25 > 0) distStats[dName][service].a25++;
+                if (periodTxn > 0) distStats[dName][service].a26++;
+                if (row.tx25 > 0 && periodTxn === 0) distStats[dName][service].pend++;
+
+                if (selectedDistrictFilter !== "" || isDM || isNew) {
+                    let oldDName = row.oldD;
+                    let totVles = oldDistVleCount[service][oldDName] || 1;
+                    let oTgt = confTargetMap[oldDName] || { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+
+                    if (service === "REDBUS") activeTargets.REDBUS += (oTgt.REDBUS / totVles);
+                    if (service === "AIRWAYS") activeTargets.AIRWAYS += (oTgt.AIRWAYS / totVles);
+                    if (service === "IRCTC") {
+                        activeTargets.IRCTC_TXN += (oTgt.IRCTC_TXN / totVles);
+                        activeTargets.IRCTC_REG += (oTgt.IRCTC_REG / totVles);
+                        activeTargets.IRCTC_AMC += (oTgt.IRCTC_AMC / totVles);
+                    }
+                }
+            });
+        });
+
+        if (selectedDistrictFilter === "" && !isDM && !isNew) {
+            activeTargets = { ...globalTargets };
+        }
+
+        let validDistricts = Object.values(distStats).filter(d => d.name !== "Unknown" && d.name !== "-");
+        validDistricts.sort((a,b) => a.name.localeCompare(b.name));
+
+        let tbody = document.getElementById("tableBody");
+        let tfoot = document.getElementById("tableFoot");
+        tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+        let gt = getEmptyDist("GRAND TOTAL");
+
+        validDistricts.forEach(d => {
+            ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(s => {
+                gt[s].tot += d[s].tot; gt[s].a25 += d[s].a25;
+                gt[s].a26 += d[s].a26; gt[s].pend += d[s].pend;
+            });
+
+            tbody.innerHTML += `
+            <tr ondblclick="toggleDistrictFilter('${d.name}')" title="Double click to filter this district">
+                <td class="td-dist">${d.name}</td>
+                <td class="text-primary">${formatExactNumber(d.IRCTC.tot)}</td>
+                <td style="color:#475569;">${formatExactNumber(d.IRCTC.a25)}</td>
+                <td class="text-success">${formatExactNumber(d.IRCTC.a26)}</td>
+                <td class="text-danger col-sep fw-bold">${formatExactNumber(d.IRCTC.pend)}</td>
+
+                <td class="text-primary">${formatExactNumber(d.REDBUS.tot)}</td>
+                <td style="color:#475569;">${formatExactNumber(d.REDBUS.a25)}</td>
+                <td class="text-success">${formatExactNumber(d.REDBUS.a26)}</td>
+                <td class="text-danger col-sep fw-bold">${formatExactNumber(d.REDBUS.pend)}</td>
+
+                <td class="text-primary">${formatExactNumber(d.AIRWAYS.tot)}</td>
+                <td style="color:#475569;">${formatExactNumber(d.AIRWAYS.a25)}</td>
+                <td class="text-success">${formatExactNumber(d.AIRWAYS.a26)}</td>
+                <td class="text-danger fw-bold">${formatExactNumber(d.AIRWAYS.pend)}</td>
+            </tr>`;
+        });
+
+        tfoot.innerHTML = `
+        <tr class="t-row-total">
+            <td class="td-dist" style="background:#e2e8f0; color:#dc2626 !important;">${gt.name}</td>
+            <td class="text-primary">${formatExactNumber(gt.IRCTC.tot)}</td><td>${formatExactNumber(gt.IRCTC.a25)}</td>
+            <td class="text-success">${formatExactNumber(gt.IRCTC.a26)}</td><td class="text-danger col-sep">${formatExactNumber(gt.IRCTC.pend)}</td>
+            <td class="text-primary">${formatExactNumber(gt.REDBUS.tot)}</td><td>${formatExactNumber(gt.REDBUS.a25)}</td>
+            <td class="text-success">${formatExactNumber(gt.REDBUS.a26)}</td><td class="text-danger col-sep">${formatExactNumber(gt.REDBUS.pend)}</td>
+            <td class="text-primary">${formatExactNumber(gt.AIRWAYS.tot)}</td><td>${formatExactNumber(gt.AIRWAYS.a25)}</td>
+            <td class="text-success">${formatExactNumber(gt.AIRWAYS.a26)}</td><td class="text-danger">${formatExactNumber(gt.AIRWAYS.pend)}</td>
+        </tr>`;
+
+        // 🌟 REMOVED THOSE 3 LINES (irctc-tot, redbus-tot, airways-tot) SO NO MORE ERRORS 🌟
+        
+        document.getElementById("irctc-csc").innerText = formatExactNumber(gt.IRCTC.tot);
+        document.getElementById("irctc-a25").innerText = formatExactNumber(gt.IRCTC.a25);
+        document.getElementById("irctc-a26").innerText = formatExactNumber(gt.IRCTC.a26);
+        document.getElementById("irctc-pend").innerText = formatExactNumber(gt.IRCTC.pend);
+
+        document.getElementById("rb-csc").innerText = formatExactNumber(gt.REDBUS.tot);
+        document.getElementById("rb-a25").innerText = formatExactNumber(gt.REDBUS.a25);
+        document.getElementById("rb-a26").innerText = formatExactNumber(gt.REDBUS.a26);
+        document.getElementById("rb-pend").innerText = formatExactNumber(gt.REDBUS.pend);
+
+        document.getElementById("aw-csc").innerText = formatExactNumber(gt.AIRWAYS.tot);
+        document.getElementById("aw-a25").innerText = formatExactNumber(gt.AIRWAYS.a25);
+        document.getElementById("aw-a26").innerText = formatExactNumber(gt.AIRWAYS.a26);
+        document.getElementById("aw-pend").innerText = formatExactNumber(gt.AIRWAYS.pend);
+
+        let targetRatio = 1.0;
+        if(period === "Q1") targetRatio = 0.20;
+        else if(period === "Q2") targetRatio = 0.25;
+        else if(period === "Q3") targetRatio = 0.35;
+        else if(period === "Q4") targetRatio = 0.20;
+        else if(period === "H1") targetRatio = 0.45; 
+        else if(period === "H2") targetRatio = 0.55; 
+        else if(['APR','MAY','JUN'].includes(period)) targetRatio = 0.20 / 3;
+        else if(['JUL','AUG','SEP'].includes(period)) targetRatio = 0.25 / 3;
+        else if(['OCT','NOV','DEC'].includes(period)) targetRatio = 0.35 / 3;
+        else if(['JAN','FEB','MAR'].includes(period)) targetRatio = 0.20 / 3;
+
+        let rbTgt = Math.round(activeTargets.REDBUS * targetRatio);
+        let rbPend = Math.max(0, rbTgt - tStats.REDBUS.ach);
+        document.getElementById("tgt-rb").innerText = formatExactNumber(rbTgt);
+        document.getElementById("ach-rb").innerText = formatExactNumber(tStats.REDBUS.ach);
+        document.getElementById("pend-rb").innerText = formatExactNumber(rbPend);
+
+        let awTgt = Math.round(activeTargets.AIRWAYS * targetRatio);
+        let awPend = Math.max(0, awTgt - tStats.AIRWAYS.ach);
+        document.getElementById("tgt-aw").innerText = formatExactNumber(awTgt);
+        document.getElementById("ach-aw").innerText = formatExactNumber(tStats.AIRWAYS.ach);
+        document.getElementById("pend-aw").innerText = formatExactNumber(awPend);
+
+        let irTxnTgt = Math.round(activeTargets.IRCTC_TXN * targetRatio);
+        let irTxnPend = Math.max(0, irTxnTgt - tStats.IRCTC_TXN.ach);
+        document.getElementById("tgt-irctc-txn").innerText = formatExactNumber(irTxnTgt);
+        document.getElementById("ach-irctc-txn").innerText = formatExactNumber(tStats.IRCTC_TXN.ach);
+        document.getElementById("pend-irctc-txn").innerText = formatExactNumber(irTxnPend);
+
+        let irRegTgt = Math.round(activeTargets.IRCTC_REG * targetRatio);
+        let irRegPend = Math.max(0, irRegTgt - tStats.IRCTC_REG.ach);
+        document.getElementById("tgt-irctc-reg").innerText = formatExactNumber(irRegTgt);
+        document.getElementById("ach-irctc-reg").innerText = formatExactNumber(tStats.IRCTC_REG.ach);
+        document.getElementById("pend-irctc-reg").innerText = formatExactNumber(irRegPend);
+
+        let irAmcTgt = activeTargets.IRCTC_AMC > 0 ? Math.round(activeTargets.IRCTC_AMC * targetRatio) : Math.round(tStats.IRCTC_AMC.eligible * targetRatio);
+        let irAmcPend = Math.max(0, irAmcTgt - tStats.IRCTC_AMC.ach);
+        document.getElementById("tgt-irctc-amc").innerText = formatExactNumber(irAmcTgt);
+        document.getElementById("ach-irctc-amc").innerText = formatExactNumber(tStats.IRCTC_AMC.ach);
+        document.getElementById("pend-irctc-amc").innerText = formatExactNumber(irAmcPend);
+    }
+
+    function exportToExcel() {
+       let ws = XLSX.utils.table_to_sheet(document.getElementById('dataTable'));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Consolidated Report");
+       XLSX.writeFile(wb, `AP_Travel_Consolidated_Report.xlsx`);
+    }
+  </script>
+</body>
+</html>
