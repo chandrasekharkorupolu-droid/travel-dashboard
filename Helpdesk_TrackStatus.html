@@ -6,7 +6,7 @@
     <style>
         :root { --primary-gold: #d69e2e; --hover-gold: #b7791f; --text-dark: #374151; --border-color: #e5e7eb; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #ffffff; color: var(--text-dark); margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
-        .helpdesk-card { width: 100%; max-width: 700px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; }
+        .helpdesk-card { width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .card-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); text-align: center; }
         .card-header h2 { margin: 0; color: var(--text-dark); font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -14,12 +14,18 @@
         label { display: block; font-weight: 600; margin-bottom: 15px; color: #4b5563; font-size: 16px; }
         .track-input { width: 100%; max-width: 400px; padding: 15px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 20px; font-weight: bold; color: var(--text-dark); background-color: #f9fafb; text-align: center; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; box-sizing: border-box; margin: 0 auto; display: block; }
         .track-input:focus { outline: none; border-color: var(--primary-gold); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(214, 158, 46, 0.15); }
-        
-        /* మీరు అడిగిన Placeholder బ్లర్ (లైట్ గ్రే కలర్) ఫిక్స్ */
         .track-input::placeholder { color: #a1a1aa; font-weight: normal; }
-        
         .submit-btn { width: 100%; max-width: 400px; padding: 16px; background-color: var(--primary-gold); color: #ffffff; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-top: 25px; text-transform: uppercase; }
         .submit-btn:hover { background-color: var(--hover-gold); }
+
+        /* 🌟 పాపప్ రిజల్ట్ డిజైన్ 🌟 */
+        .result-box { display: none; margin-top: 30px; padding: 20px; border-radius: 8px; text-align: left; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.3s; }
+        .result-box p { margin: 8px 0; font-size: 15px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
+        .result-box span { font-weight: bold; color: #1e3a8a; float: right; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+        .status-pending { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .status-resolved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .error-msg { color: #ef4444; font-weight: bold; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -30,20 +36,90 @@
         </div>
         <div class="card-body">
             <label>Enter Ticket No to Track Status:</label>
-            <input type="text" id="trackTicketInput" class="track-input" placeholder="VSP-IRC-1001" maxlength="12" oninput="formatTicketNumber(this)">
-            <button class="submit-btn">Check Status</button>
+            <input type="text" id="trackTicketInput" class="track-input" placeholder="VSP-1001" maxlength="15" oninput="formatTicketNumber(this)" onkeypress="handleEnter(event)">
+            
+            <button class="submit-btn" id="trackBtn" onclick="trackTicket()">Check Status</button>
+
+            <!-- 🌟 రిజల్ట్ చూపించే బాక్స్ 🌟 -->
+            <div id="errorMsg" class="error-msg"></div>
+            
+            <div id="resultBox" class="result-box">
+                <p>Service: <span id="rService"></span></p>
+                <p>Issue: <span id="rIssue"></span></p>
+                <p>Date & Time: <span id="rDate"></span></p>
+                <p>Status: <span id="rStatus"></span></p>
+                <p style="border-bottom:none;">Remarks: <span id="rRemarks" style="color:#ef4444;"></span></p>
+            </div>
+
         </div>
     </div>
 
     <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+
         function formatTicketNumber(input) {
             let val = input.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-            if (val.length > 3 && val.length <= 6) {
+            if (val.length > 3) {
                 val = val.slice(0, 3) + '-' + val.slice(3);
-            } else if (val.length > 6) {
-                val = val.slice(0, 3) + '-' + val.slice(3, 6) + '-' + val.slice(6, 12);
             }
             input.value = val;
+        }
+
+        function handleEnter(event) {
+            if (event.key === "Enter") trackTicket();
+        }
+
+        async function trackTicket() {
+            let tInput = document.getElementById("trackTicketInput").value.trim();
+            let trackBtn = document.getElementById("trackBtn");
+            let resultBox = document.getElementById("resultBox");
+            let errorMsg = document.getElementById("errorMsg");
+
+            resultBox.style.display = "none";
+            errorMsg.style.display = "none";
+
+            if (tInput.length < 5) {
+                errorMsg.innerText = "⚠️ Please enter a valid Ticket ID";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            trackBtn.innerText = "Searching...";
+            trackBtn.disabled = true;
+
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "trackTicket", ticketId: tInput })
+                });
+                
+                let result = await response.json();
+
+                if (result.success) {
+                    document.getElementById("rService").innerText = result.ticket.service;
+                    document.getElementById("rIssue").innerText = result.ticket.issue;
+                    
+                    // 🌟 ఇక్కడ మార్పు చేసాను: డైరెక్ట్ గా డేట్ & టైమ్ మొత్తం వస్తుంది 🌟
+                    document.getElementById("rDate").innerText = result.ticket.date;
+                    
+                    document.getElementById("rRemarks").innerText = result.ticket.remarks;
+                    
+                    let sSpan = document.getElementById("rStatus");
+                    sSpan.innerText = result.ticket.status;
+                    sSpan.className = "status-badge " + (result.ticket.status.toUpperCase() === "PENDING" ? "status-pending" : "status-resolved");
+                    
+                    resultBox.style.display = "block";
+                } else {
+                    errorMsg.innerText = result.message;
+                    errorMsg.style.display = "block";
+                }
+            } catch (error) {
+                errorMsg.innerText = "❌ Server Error. Please try again.";
+                errorMsg.style.display = "block";
+            } finally {
+                trackBtn.innerText = "Check Status";
+                trackBtn.disabled = false;
+            }
         }
     </script>
 

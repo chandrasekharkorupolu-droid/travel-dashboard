@@ -180,7 +180,7 @@
     let loggedInId = localStorage.getItem("userId") || "Unknown ID"; 
     
     const reportMenus = {
-      "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "New Registration Targets", "TXN & REV Targets", "Daily Transactions", "Daily Achievements", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor"],
+      "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "New Registration Targets", "TXN & REV Targets", "Daily Transactions", "Daily Achievements", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor", "Drop Out VLEs"],
       "REDBUS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
       "AIRWAYS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
       "APSRTC": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"]
@@ -354,7 +354,7 @@
               options = [
                   { id: 'HelpdeskAdmin', icon: '🎛️', name: 'Helpdesk Dashboard' },
                   { id: 'TrackStatus', icon: '🔍', name: 'Track Ticket' }
-              ];
+                  ];
           }
 
           options.forEach(opt => {
@@ -371,7 +371,8 @@
           document.getElementById('homeDisplay').style.display = 'none';
           document.getElementById('reportIframeContainer').style.display = 'none';
           document.getElementById('dashboardCards').style.display = 'flex';
-          document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center; margin-top: 50px;"><h3 style="color:#ca8a04; font-size: 24px;">HELPDESK మాడ్యూల్</h3><p style="color:#64748b; font-size: 16px;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
+          document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="HELPDESK.png" alt="E-Stamping Logo" style="max-width: 650px; width: 80%; border-radius: 16px; box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.2) 0px 24px 48px, rgba(17, 17, 26, 0.2) 0px 3px 6px; border: 3px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.04) translateY(-10px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
+
       }
       else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
@@ -424,6 +425,7 @@
       else if (moduleName === "IRCTC" && reportId === "Monthly Closure Report") iframeSrc = "IRCTC_Monthly_Closure_Report.html";
       else if (moduleName === "IRCTC" && reportId === "VLE Details Editor") iframeSrc = "IRCTC_VLE_Details_Editor.html";
       else if (moduleName === "IRCTC" && reportId === "New Registration Targets") iframeSrc = "IRCTC_New_Registrations_Target.html";
+      else if (moduleName === "IRCTC" && reportId === "Drop Out VLEs") iframeSrc = "IRCTC_DropOut_Report.html";
       else if (moduleName === "IRCTC" && reportId === "TXN & REV Targets") iframeSrc = "IRCTC_TXN & REV_Targets.html";
       
       else if (moduleName === "REDBUS" && reportId === "VLE Performance") iframeSrc = "REDBUS_VLE_Performance.html";
@@ -455,7 +457,9 @@
 
       else if (moduleName === "HELPDESK" && reportId === "RaiseTicket") iframeSrc = "Helpdesk_RaiseTicket.html";
       else if (moduleName === "HELPDESK" && reportId === "TrackStatus") iframeSrc = "Helpdesk_TrackStatus.html";
-
+      else if (moduleName === "HELPDESK" && reportId === "HelpdeskAdmin") iframeSrc = "Helpdesk_Admin.html";
+     
+    
       else {
           document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none';
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; return;

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Helpdesk Admin Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #334155; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #ca8a04; }
+        .header-container h2 { margin: 0; color: #1e293b; font-size: 22px; display: flex; align-items: center; gap: 10px;}
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        
+        /* 🌟 కొత్త ఫిల్టర్ స్టైల్స్ 🌟 */
+        .status-filter-select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; outline: none; cursor: pointer; background-color: #f8fafc; }
+        .status-filter-select:hover { border-color: #ca8a04; }
+        
+        .refresh-btn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .refresh-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .services-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .service-card { flex: 1; background: #ffffff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 2px solid transparent; cursor: pointer; transition: all 0.3s ease; position: relative; min-width: 150px; }
+        .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .service-card.active { border-color: #ca8a04; background-color: #fefce8; }
+        .service-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0 0 15px 0; text-align: center; }
+        .card-stats { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; }
+        .stat-resolved { color: #15803d; background: #dcfce7; padding: 5px 10px; border-radius: 6px; border: 1px solid #bbf7d0; }
+        .stat-pending { color: #dc2626; background: #fee2e2; padding: 5px 10px; border-radius: 6px; border: 1px solid #fecaca; }
+        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f1f5f9; color: #475569; padding: 15px; font-size: 14px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; }
+        tr:hover { background-color: #f8fafc; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .status-pending { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .action-btn { background-color: #ca8a04; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
+        .action-btn:hover { background-color: #a16207; }
+        #loadingMsg { text-align: center; padding: 50px; font-size: 18px; color: #64748b; font-weight: bold; }
+        
+        /* 🌟 పాప్-అప్ (MODAL) స్టైల్స్ 🌟 */
+        .resolve-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+        .resolve-modal-content { background: #ffffff; width: 90%; max-width: 650px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid #d69e2e; display: flex; flex-direction: column; max-height: 90vh; animation: popIn 0.3s ease-out; }
+        .resolve-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px 12px 0 0; }
+        .resolve-header h3 { margin: 0; color: #1e293b; font-size: 18px; font-weight: 800; }
+        .close-btn { font-size: 24px; cursor: pointer; color: #64748b; font-weight: bold; line-height: 1; transition: 0.2s; }
+        .close-btn:hover { color: #ef4444; }
+        .resolve-body { padding: 20px; overflow-y: auto; font-size: 13px; color: #334155; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;}
+        .detail-item strong { color: #0f172a; display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+        .desc-box { background: #fff; padding: 12px; border-radius: 6px; border: 1px dashed #cbd5e1; white-space: pre-wrap; font-family: inherit; font-size: 13px; margin-bottom: 15px; line-height: 1.5; }
+        
+        .image-preview-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+        .preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #e2e8f0; cursor: zoom-in; transition: transform 0.2s; }
+        .preview-img:hover { transform: scale(1.05); border-color: #ca8a04; }
+        .download-link { font-size: 11px; color: #2563eb; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 5px; background: #eff6ff; padding: 3px 8px; border-radius: 4px;}
+        .download-link:hover { background: #dbeafe; }
+
+        .remarks-box { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; }
+        .remarks-box:focus { outline: none; border-color: #ca8a04; box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.2); }
+        .resolve-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; text-align: right; background: #f8fafc; border-radius: 0 0 12px 12px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-action { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
+        .btn-mail { background: #3b82f6; color: white; } .btn-mail:hover { background: #2563eb; }
+        .btn-wa { background: #22c55e; color: white; } .btn-wa:hover { background: #16a34a; }
+        .btn-submit { background: #ca8a04; color: white; padding: 8px 20px; font-size: 14px;} .btn-submit:hover { background: #a16207; }
+
+        .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .custom-alert-box { background: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 350px; width: 90%; animation: popIn 0.3s; border-top: 5px solid #16a34a; }
+        .custom-alert-box h3 { margin: 10px 0 5px 0; color: #15803d; font-size: 18px;}
+        .custom-alert-box p { color: #475569; font-size: 14px; margin-bottom: 20px; }
+        .btn-ok { background: #16a34a; color: white; border: none; padding: 8px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .btn-ok:hover { background: #15803d; }
+
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h2 id="headerTitle">🎧 Helpdesk Tickets Dashboard</h2>
+        <div class="header-actions">
+            <!-- 🌟 కొత్తగా యాడ్ చేసిన డ్రాప్-డౌన్ ఫిల్టర్ 🌟 -->
+            <select id="statusFilter" class="status-filter-select" onchange="applyStatusFilter()">
+                <option value="ALL">📋 All Tickets</option>
+                <option value="PENDING">⏳ Pending Only</option>
+                <option value="RESOLVED">✅ Resolved Only</option>
+            </select>
+            <button class="refresh-btn" onclick="fetchDataFromServer(true)" title="Force Refresh">🔄 Refresh Data</button>
+        </div>
+    </div>
+
+    <div class="services-container" id="servicesCardsContainer"></div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Date</th>
+                    <th>CSC ID</th>
+                    <th>District</th>
+                    <th>Service & Issue</th>
+                    <th>Agent ID</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="ticketsBody"></tbody>
+        </table>
+        <div id="loadingMsg">⏳ Fetching tickets from server...</div>
+    </div>
+
+    <!-- 🌟 MODAL HTML 🌟 -->
+    <div id="resolveModal" class="resolve-modal-overlay">
+        <div class="resolve-modal-content">
+            <div class="resolve-header">
+                <h3>🎫 Ticket Details: <span id="r_ticketId" style="color:#d69e2e;"></span></h3>
+                <span class="close-btn" onclick="closeResolveModal()">&times;</span>
+            </div>
+            <div class="resolve-body">
+                <div class="detail-grid">
+                    <div class="detail-item"><strong>Service</strong><span id="r_service"></span></div>
+                    <div class="detail-item"><strong>Issue Category</strong><span id="r_issue"></span></div>
+                    <div class="detail-item"><strong>CSC ID</strong><span id="r_cscid" style="font-weight:bold; color:#1e3a8a;"></span></div>
+                    <div class="detail-item"><strong>District</strong><span id="r_district"></span></div>
+                </div>
+                
+                <strong>Description & Proofs:</strong>
+                <div class="desc-box">
+                    <div id="r_desc_text"></div>
+                    <div id="r_image_preview" class="image-preview-container"></div>
+                </div>
+                
+                <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                    <button class="btn-action btn-mail" onclick="copyMailText()">📋 Copy Mail Text</button>
+                    <button class="btn-action btn-wa" onclick="sendWhatsApp()">💬 WhatsApp HO</button>
+                </div>
+
+                <div id="resolvedDetailsArea" style="display:none; background:#dcfce7; padding:15px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:15px;">
+                    <strong style="color:#15803d; font-size:14px;">✅ This ticket is already processed.</strong>
+                    <p style="margin:8px 0 4px 0; font-size:13px;"><b>Status:</b> <span id="r_resolvedStatus"></span></p>
+                    <p style="margin:4px 0; font-size:13px;"><b>Resolved On:</b> <span id="r_resolvedDate" style="color:#0f172a; font-weight:bold;"></span></p>
+                    <p style="margin:0; font-size:13px;"><b>Remarks:</b> <span id="r_resolvedRemarks" style="color:#334155;"></span></p>
+                </div>
+
+                <div id="actionFormArea">
+                    <strong style="color:#ef4444; display:block; margin-bottom:5px;">Action (Resolution Type) *</strong>
+                    <select id="r_status" class="remarks-box" style="margin-bottom:10px; background:#fffbea;">
+                        <option value="Resolved">✅ Solved Locally (Close Ticket)</option>
+                        <option value="Forwarded to HO">⏳ Escalated to HO</option>
+                    </select>
+
+                    <strong style="color:#ef4444; display:block; margin-bottom:5px;">Resolution Remarks *</strong>
+                    <textarea id="r_remarks" class="remarks-box" rows="3" placeholder="Enter remarks (e.g., Mailed to HO / Refund Processed)..." required></textarea>
+                </div>
+            </div>
+            
+            <div class="resolve-footer">
+                <span style="font-size:12px; color:#64748b;">Action by: <b id="r_adminName">SPOC</b></span>
+                <button class="btn-action btn-submit" id="btnResolveSubmit" onclick="submitResolve()">Submit Resolution</button>
+            </div>
+        </div>
+    </div>
+                
+    <div id="customAlert" class="custom-alert-overlay">
+        <div class="custom-alert-box">
+            <h3 id="alertTitle">Success!</h3>
+            <p id="alertMessage">Action completed successfully.</p>
+            <button class="btn-ok" id="alertBtn" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+        
+        const adminRole = localStorage.getItem("userDesignation") ? localStorage.getItem("userDesignation").toUpperCase() : "";
+        const userId = localStorage.getItem("userId") || "";
+        const adminName = localStorage.getItem("userName") || localStorage.getItem("userDesignation") || "SPOC/DM";
+
+        let allTicketsData = [];
+        let currentFilter = "ALL"; 
+        let currentStatusFilter = "ALL"; // 🌟 కొత్త ఫిల్టర్ వేరియబుల్ 🌟
+
+        window.onload = async function() {
+            document.getElementById('r_adminName').innerText = adminName;
+            fetchDataFromServer(false); 
+        }
+
+        // 🌟 డ్రాప్ డౌన్ మార్చినప్పుడు ఫిల్టర్ అప్లై అవ్వడానికి ఫంక్షన్ 🌟
+        function applyStatusFilter() {
+            currentStatusFilter = document.getElementById("statusFilter").value;
+            renderTickets();
+        }
+
+        function showCustomAlert(title, message, isSuccess = true) {
+            document.getElementById("alertTitle").innerText = title;
+            document.getElementById("alertMessage").innerText = message;
+            document.getElementById("alertTitle").style.color = isSuccess ? "#15803d" : "#dc2626";
+            document.querySelector(".custom-alert-box").style.borderTopColor = isSuccess ? "#16a34a" : "#dc2626";
+            document.getElementById("alertBtn").style.background = isSuccess ? "#16a34a" : "#dc2626";
+            document.getElementById("customAlert").style.display = "flex";
+        }
+
+        function closeCustomAlert() {
+            document.getElementById("customAlert").style.display = "none";
+        }
+
+        async function fetchDataFromServer(forceRefresh = false) {
+            if (forceRefresh) {
+                sessionStorage.removeItem("helpdeskDataCache");
+                sessionStorage.removeItem("helpdeskDistCache");
+            } else {
+                let cachedData = sessionStorage.getItem("helpdeskDataCache");
+                let cachedDist = sessionStorage.getItem("helpdeskDistCache");
+                
+                if (cachedData) {
+                    allTicketsData = JSON.parse(cachedData);
+                    let dName = cachedDist || "ALL";
+                    document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
+                    updateServiceCards(); 
+                    renderTickets();
+                    // ఒకవేళ కాష్ ఉన్నా.. బ్యాక్ గ్రౌండ్ లో డేటా చెక్ చేయాలంటే కింది లైన్స్ కంటిన్యూ అవుతాయి (Auto-Refresh)
+                } else {
+                    document.getElementById("loadingMsg").style.display = "block";
+                    document.getElementById("loadingMsg").innerText = "⏳ Fetching tickets from server...";
+                    document.getElementById("ticketsBody").innerHTML = "";
+                }
+            }
+
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "getHelpdeskTickets", role: adminRole, userId: userId })
+                });
+                
+                let result = await response.json();
+                if (result.success) {
+                    allTicketsData = result.tickets;
+                    let dName = result.dmDistrict || "ALL";
+                    
+                    sessionStorage.setItem("helpdeskDataCache", JSON.stringify(allTicketsData));
+                    sessionStorage.setItem("helpdeskDistCache", dName);
+
+                    document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
+                    updateServiceCards(); 
+                    renderTickets();      
+                } else if (!sessionStorage.getItem("helpdeskDataCache")) {
+                    document.getElementById("loadingMsg").innerText = "❌ Failed to load tickets.";
+                }
+            } catch (error) {
+                if (!sessionStorage.getItem("helpdeskDataCache")) document.getElementById("loadingMsg").innerText = "❌ Server Error.";
+            }
+        }
+
+        function updateServiceCards() {
+            let stats = { "ALL": { pending: 0, resolved: 0 }, "IRCTC": { pending: 0, resolved: 0 }, "REDBUS": { pending: 0, resolved: 0 }, "AIRWAYS": { pending: 0, resolved: 0 }, "APSRTC": { pending: 0, resolved: 0 } };
+
+            allTicketsData.forEach(t => {
+                let srv = t.service ? t.service.toUpperCase() : "";
+                let status = t.status ? t.status.toUpperCase() : "";
+
+                if (!stats[srv]) stats[srv] = { pending: 0, resolved: 0 };
+                if (status === "PENDING" || status === "FORWARDED TO HO") {
+                    stats["ALL"].pending++;
+                    if(stats[srv]) stats[srv].pending++;
+                } else {
+                    stats["ALL"].resolved++;
+                    if(stats[srv]) stats[srv].resolved++;
+                }
+            });
+
+            const container = document.getElementById("servicesCardsContainer");
+            container.innerHTML = ""; 
+
+            const serviceList = [
+                { id: "ALL", name: "📋 ALL SERVICES" }, { id: "IRCTC", name: "🚆 IRCTC" },
+                { id: "REDBUS", name: "🚌 REDBUS" }, { id: "AIRWAYS", name: "✈️ AIRWAYS" },
+                { id: "APSRTC", name: "🚍 APSRTC" }
+            ];
+
+            serviceList.forEach(s => {
+                let sData = stats[s.id] || { pending: 0, resolved: 0 };
+                let activeClass = currentFilter === s.id ? "active" : "";
+                let cardHTML = `
+                    <div class="service-card ${activeClass}" onclick="filterService('${s.id}')">
+                        <p class="service-title">${s.name}</p>
+                        <div class="card-stats">
+                            <span class="stat-resolved" title="Resolved">✔️ ${sData.resolved}</span>
+                            <span class="stat-pending" title="Pending">⏳ ${sData.pending}</span>
+                        </div>
+                    </div>`;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function filterService(serviceId) { currentFilter = serviceId; updateServiceCards(); renderTickets(); }
+
+        function renderTickets() {
+            const tbody = document.getElementById("ticketsBody");
+            tbody.innerHTML = "";
+            let displayCount = 0;
+
+            allTicketsData.forEach(t => {
+                let tSrv = t.service ? t.service.toUpperCase() : "";
+                let tStat = t.status ? t.status.toUpperCase() : "";
+                
+                // 1. సర్వీస్ ఫిల్టర్ చెకింగ్ (IRCTC, REDBUS లాంటివి)
+                if (currentFilter !== "ALL" && tSrv !== currentFilter) return;
+
+                // 🌟 2. స్టేటస్ ఫిల్టర్ చెకింగ్ (కొత్త లాజిక్) 🌟
+                let isPendingType = (tStat === "PENDING" || tStat === "FORWARDED TO HO");
+                if (currentStatusFilter === "PENDING" && !isPendingType) return;
+                if (currentStatusFilter === "RESOLVED" && tStat !== "RESOLVED") return;
+
+                displayCount++;
+                let statusClass = "status-resolved";
+                if(isPendingType) statusClass = "status-pending";
+                
+                let agentId = (t.irctcId && t.irctcId !== "-") ? t.irctcId : "-";
+                
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId}</td>
+                    <td style="font-size:13px; color:#64748b;">${t.date.split(' ')[0]}</td>
+                    <td style="font-weight:bold;">${t.cscId}</td>
+                    <td>${t.district}</td>
+                    <td><span style="color:#ca8a04; font-weight:bold;">${t.service}</span><br><span style="font-size:12px; color:#475569;">${t.category}</span></td>
+                    <td style="font-weight:bold; color:#ef4444;">${agentId}</td>
+                    <td><span class="status-badge ${statusClass}">${t.status}</span></td>
+                    <td><button class="action-btn" onclick="viewTicket('${t.ticketId}')">View / Resolve</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("loadingMsg").style.display = "none";
+            if(displayCount === 0) {
+                document.getElementById("loadingMsg").style.display = "block";
+                document.getElementById("loadingMsg").innerText = "🎉 No tickets found in this category!";
+            }
+        }
+
+        function viewTicket(ticketId) {
+            let t = allTicketsData.find(x => x.ticketId === ticketId);
+            if(!t) return;
+
+            document.getElementById('r_ticketId').innerText = t.ticketId;
+            document.getElementById('r_cscid').innerText = t.cscId;
+            document.getElementById('r_district').innerText = t.district;
+            document.getElementById('r_service').innerText = t.service;
+            document.getElementById('r_issue').innerText = t.category;
+            
+            let formattedDesc = t.desc || "";
+            let imageGalleryHTML = "";
+            
+            let driveRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/g;
+            let match;
+            
+            while ((match = driveRegex.exec(t.desc)) !== null) {
+                let fileId = match[1];
+                let viewUrl = "https://drive.google.com/file/d/" + fileId + "/view";
+                let thumbUrl = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w400";
+                let downloadUrl = "https://drive.google.com/uc?export=download&id=" + fileId;
+                
+                imageGalleryHTML += `<div style="text-align:center;">
+                                        <a href="${viewUrl}" target="_blank" title="Click to view full image">
+                                            <img src="${thumbUrl}" class="preview-img" alt="Proof Image">
+                                        </a><br>
+                                        <a href="${downloadUrl}" class="download-link" target="_blank">⬇️ Download</a>
+                                     </div>`;
+            }
+            
+            formattedDesc = formattedDesc.replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '<span style="color:#10b981; font-weight:bold;">[Attachment Available Below]</span>');
+            document.getElementById('r_desc_text').innerHTML = formattedDesc;
+            document.getElementById('r_image_preview').innerHTML = imageGalleryHTML;
+            
+            if(t.status.toUpperCase() === "RESOLVED") {
+                document.getElementById('actionFormArea').style.display = "none";
+                document.getElementById('btnResolveSubmit').style.display = "none";
+                document.getElementById('resolvedDetailsArea').style.display = "block";
+                
+                document.getElementById('r_resolvedStatus').innerText = t.status;
+                document.getElementById('r_resolvedDate').innerText = t.resolvedDate ? t.resolvedDate : "-";
+                document.getElementById('r_resolvedRemarks').innerText = t.remarks ? t.remarks : "Solved locally.";
+            } else {
+                document.getElementById('actionFormArea').style.display = "block";
+                document.getElementById('btnResolveSubmit').style.display = "block";
+                document.getElementById('resolvedDetailsArea').style.display = "none";
+                
+                if(t.status.toUpperCase() === "FORWARDED TO HO") {
+                    document.getElementById('r_status').value = "Forwarded to HO";
+                    document.getElementById('r_remarks').value = t.remarks || "";
+                } else {
+                    document.getElementById('r_status').value = "Resolved";
+                    document.getElementById('r_remarks').value = "";
+                }
+            }
+
+            document.getElementById('resolveModal').style.display = "flex";
+        }
+
+        function closeResolveModal() { document.getElementById('resolveModal').style.display = "none"; }
+
+        function copyMailText() {
+            let tId = document.getElementById('r_ticketId').innerText;
+            let t = allTicketsData.find(x => x.ticketId === tId);
+            if(!t) return;
+
+            let csc = t.cscId; let dist = t.district; let srv = t.service; let iss = t.category;
+
+            let dataMap = {};
+            t.desc.split('\n').forEach(line => {
+                let parts = line.split(':');
+                if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
+            });
+
+            let agentId = (t.irctcId && t.irctcId !== "-") ? t.irctcId : "-";
+            let vleMob = (t.vleMobile && t.vleMobile !== "-") ? t.vleMobile : "-"; 
+
+            let mailHTML = "";
+            if (srv.toUpperCase() === "IRCTC" && iss.toUpperCase().includes("WRONG MOBILE NO")) {
+                let pnr = dataMap["PNR NO"] || "-";
+                let passName = dataMap["PASSENGER NAME"] || "-";
+                let wrongMob = dataMap["MOBILE NO ON PNR"] || "-";
+                let correctMob = dataMap["CORRECT MOBILE NO"] || "-";
+
+                mailHTML = `
+                    <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #000;">
+                        <p>Dear Sir,<br>Good evening!!!</p>
+                        <p>The following VLEs are unable to raise refund requests on our <b>CSC Safar portal</b> due to the "wrong mobile number" reason.</p>
+                        <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; border: 1px solid #000;">
+                            <thead><tr style="background-color: #c05000; color: #ffffff; font-weight: bold;"><th>S No</th><th>IRCTC ID</th><th>VLE Mobile No</th><th>PNR No</th><th>Passenger Name</th><th>PSP Name</th><th>Mobile Number on PNR</th><th>Correct Mobile Number</th><th>Reason for Not Verifing</th></tr></thead>
+                            <tbody><tr style="background-color: #ffffff; color: #000000;"><td>1</td><td>${agentId}</td><td>${vleMob}</td><td>${pnr}</td><td>${passName}</td><td>CSC E GOVERNANCE SERVICES INDIA LIMITED</td><td>${wrongMob}</td><td>${correctMob}</td><td>Mobile No not working</td></tr></tbody>
+                        </table>
+                        <p>The necessary supporting documents have already been attached to this email for your kind perusal.</p><p>Regards,<br><b>CSC District Manager</b></p>
+                    </div>`;
+            } else {
+                let descClean = t.desc.replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '').trim();
+                mailHTML = `
+                    <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #000;">
+                        <p>Dear HO Team,</p><p>Please look into the following ticket raised by the VLE.</p>
+                        <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 70%; text-align: left; font-size: 13px; border: 1px solid #000;">
+                            <tr style="background-color: #f1f5f9;"><th style="width: 35%;">Ticket ID</th><td><b>${tId}</b></td></tr>
+                            <tr><th>Service</th><td>${srv}</td></tr>
+                            <tr style="background-color: #f1f5f9;"><th>Issue Category</th><td>${iss}</td></tr>
+                            <tr><th>CSC ID</th><td>${csc}</td></tr>
+                            <tr style="background-color: #f1f5f9;"><th>District</th><td>${dist}</td></tr>
+                            <tr><th>Agent ID</th><td>${agentId}</td></tr>
+                            <tr style="background-color: #f1f5f9;"><th>Complaint Details</th><td><pre style="font-family: inherit; margin: 0; white-space: pre-wrap;">${descClean}</pre></td></tr>
+                        </table>
+                        <p>Please find the supporting documents attached to this email.</p><p>Regards,<br><b>CSC District Manager</b></p>
+                    </div>`;
+            }
+
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = mailHTML;
+            tempDiv.style.position = "absolute"; tempDiv.style.left = "-9999px";
+            document.body.appendChild(tempDiv);
+            const selection = window.getSelection(); const range = document.createRange();
+            range.selectNodeContents(tempDiv); selection.removeAllRanges(); selection.addRange(range);
+
+            try {
+                document.execCommand("copy");
+                showCustomAlert("Copied Successfully!", "Mail content copied!\nPaste it in your NIC mail (Ctrl + V).");
+            } catch (err) {
+                alert("Failed to copy text.");
+            }
+            document.body.removeChild(tempDiv); selection.removeAllRanges();
+        }
+
+        function sendWhatsApp() {
+            let tId = document.getElementById('r_ticketId').innerText; 
+            let t = allTicketsData.find(x => x.ticketId === tId);
+            if(!t) return;
+
+            let csc = t.cscId; 
+            let dist = t.district; 
+            let srv = t.service ? t.service.toUpperCase() : ""; 
+            let iss = t.category;
+
+            // 🌟 1. Description లో ఉన్న డేటాని విడదీయడం 🌟
+            let dataMap = {};
+            t.desc.split('\n').forEach(line => {
+                let parts = line.split(':');
+                if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
+            });
+
+            // బేసిక్ మెసేజ్
+            let message = `*Ticket Escalation - HO*\n\n*Ticket ID:* ${tId}\n*CSC ID:* ${csc}\n*District:* ${dist}\n*Service:* ${srv}\n*Issue:* ${iss}\n`;
+
+            // 🌟 2. REDBUS లేదా AIRWAYS అయితే ఆటోమేటిక్ గా డీటెయిల్స్ యాడ్ చేయడం 🌟
+            if (srv === "REDBUS" || srv === "AIRWAYS") {
+                let pnr = dataMap["PNR NO"] || dataMap["PNR NUMBER"] || "-";
+                let ticketNo = dataMap["TICKET NO"] || dataMap["TICKET NUMBER"] || "-";
+                let doj = dataMap["DATE OF JOURNEY"] || dataMap["DOJ"] || "-";
+                let doc = dataMap["DATE OF CANCELLATION"] || dataMap["DOC"] || "-";
+                let amount = dataMap["AMOUNT"] || dataMap["FARE"] || "-";
+                let travels = dataMap["TRAVELS NAME"] || dataMap["TRAVELS"] || dataMap["AIRLINE"] || "-";
+
+                message += `\n*PNR No:* ${pnr}\n*Ticket No:* ${ticketNo}\n*Travels Name:* ${travels}\n*Date of Journey:* ${doj}\n*Date of Cancellation:* ${doc}\n*Amount:* ${amount}\n`;
+            }
+
+            message += `\nKindly check this issue.`;
+
+            let text = encodeURIComponent(message);
+            window.open("https://wa.me/?text=" + text, "_blank");
+        }
+
+        async function submitResolve() {
+            let remarks = document.getElementById('r_remarks').value.trim();
+            let statusAction = document.getElementById('r_status').value;
+            let ticketId = document.getElementById('r_ticketId').innerText;
+
+            if(remarks === "") {
+                showCustomAlert("Error", "Please enter resolution remarks before submitting.", false);
+                document.getElementById('r_remarks').focus();
+                return;
+            }
+
+            let btn = document.getElementById('btnResolveSubmit');
+            btn.innerText = "⏳ Submitting..."; btn.disabled = true;
+
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "resolveTicket", ticketId: ticketId, remarks: remarks, resolvedBy: adminName, statusAction: statusAction })
+                });
+
+                let data = await response.json();
+                if(data.success) {
+                    showCustomAlert("Success!", "Ticket status updated successfully.");
+                    closeResolveModal();
+                    
+                    sessionStorage.removeItem("helpdeskDataCache");
+                    fetchDataFromServer(true); 
+                } else {
+                    showCustomAlert("Failed!", "Failed to update: " + data.message, false);
+                }
+            } catch (err) {
+                showCustomAlert("Error!", "Server Error: " + err, false);
+            } finally {
+                btn.innerText = "Submit Resolution"; btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

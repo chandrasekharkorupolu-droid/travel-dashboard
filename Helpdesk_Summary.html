@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helpdesk Analytics Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    /* 🌟 Corporate Clean Background 🌟 */
+    body { background: #f8f9fa; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 20px; min-height: 100vh; color: #334155; }
+
+    /* 🌟 KPI Cards 🌟 */
+    .stats-card { background: #ffffff; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-top: 4px solid transparent; }
+    .stats-card.total { border-top-color: #3b82f6; } 
+    .stats-card.resolved { border-top-color: #059669; } 
+    .stats-card.escalated { border-top-color: #ca8a04; } 
+    .stats-card.pending { border-top-color: #dc2626; } 
+    .stats-card h6 { color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .stats-card h2 { font-size: 24px; font-weight: 800; margin: 0; line-height: 1; }
+
+    /* 🌟 Cards & Tables (Height fix) 🌟 */
+    .premium-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; margin-bottom: 20px; }
+    .card-header-custom { padding: 12px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #fbfbfc; }
+    .card-title { color: #1e293b; font-weight: 700; font-size: 14px; margin: 0; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+    
+    .table { margin-bottom: 0; }
+    .table thead th { background: #e2e8f0; color: #1e293b; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 10px 15px; border-bottom: 2px solid #cbd5e1; white-space: nowrap; }
+    .table tbody tr td { padding: 8px 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 13px; color: #334155; font-weight: 500; }
+    .table-hover tbody tr:hover { background-color: #f8fafc; }
+
+    /* 🌟 Action Buttons 🌟 */
+    .btn-action { font-weight: 600; border: none; border-radius: 4px; padding: 6px 14px; font-size: 12px; transition: all 0.2s ease; }
+    .btn-outline-custom { color: #4f46e5; background: #ffffff; border: 1px solid #c7d2fe; }
+    .btn-outline-custom:hover { background: #e0e7ff; }
+    .btn-outline-dark-custom { color: #475569; background: #ffffff; border: 1px solid #cbd5e1; }
+    .btn-outline-dark-custom:hover { background: #f1f5f9; color: #1e293b; border-color: #94a3b8;}
+    
+    .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #f1f5f9; border: 1px solid #cbd5e1;}
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid p-0" id="captureArea">
+    
+    <!-- 🌟 Header 🌟 -->
+    <div class="row align-items-center mb-3 px-1">
+      <div class="col-md-3"></div>
+      <div class="col-md-6 text-center">
+        <h5 class="fw-bold m-0" style="color: #1e293b;">📊 Helpdesk Analytics Dashboard</h5>
+        <p id="reportDateTime" class="mt-1 mb-0" style="font-size: 12px; color: #64748b; font-weight: 600;"></p>
+      </div>
+      <div class="col-md-3 text-end">
+        <div data-html2canvas-ignore="true" class="d-flex gap-2 justify-content-end">
+          <button class="btn-action btn-outline-dark-custom" onclick="downloadImage()">📸 Download Image</button>
+          <button class="btn-action btn-outline-custom" onclick="fetchSummaryData()">🔄 Refresh</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌟 Top KPI Cards 🌟 -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3 col-6">
+        <div class="stats-card total">
+            <h6>Total Tickets</h6>
+            <h2 id="kpiTotal" style="color: #3b82f6;">0</h2>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stats-card resolved">
+            <h6>Resolved Locally</h6>
+            <h2 id="kpiResolved" style="color: #059669;">0</h2>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stats-card escalated">
+            <h6>Escalated to HO</h6>
+            <h2 id="kpiEscalated" style="color: #ca8a04;">0</h2>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stats-card pending">
+            <h6>Pending Action</h6>
+            <h2 id="kpiPending" style="color: #dc2626;">0</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🌟 Analytics Grid 🌟 -->
+    <div class="row g-3">
+      
+      <!-- Left Column: District Wise Matrix -->
+      <div class="col-lg-8">
+        <div class="premium-card">
+          <div class="card-header-custom">
+            <h3 class="card-title">📍 Districtwise Issue Matrix</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+              <thead>
+                <tr>
+                  <th class="text-start ps-4">District Name</th>
+                  <th>Total</th>
+                  <th style="color: #059669;">Resolved</th>
+                  <th style="color: #ca8a04;">HO Pending</th>
+                  <th style="color: #dc2626;">Pending</th>
+                </tr>
+              </thead>
+              <tbody id="districtBody">
+                <tr><td colspan="5" class="py-4 fw-bold text-muted">Loading Data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Resolvers & Services -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
+        
+        <!-- Top Right: Employee Performance -->
+        <div class="premium-card" style="margin-bottom: 0;">
+          <div class="card-header-custom">
+            <h3 class="card-title">🏆 Top Resolvers (SPOC/DM)</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th class="ps-3">Employee Name</th>
+                  <th class="text-center">Resolved</th>
+                </tr>
+              </thead>
+              <tbody id="resolverBody">
+                <tr><td colspan="2" class="py-3 text-center text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Bottom Right: Service Breakdown -->
+        <div class="premium-card" style="margin-bottom: 0;">
+          <div class="card-header-custom">
+            <h3 class="card-title">🛠️ Service Breakdown</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th class="ps-3">Service Name</th>
+                  <th class="text-center">Tickets</th>
+                </tr>
+              </thead>
+              <tbody id="serviceBody">
+                <tr><td colspan="2" class="py-3 text-center text-muted">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    // 🌟 లాగిన్ డీటెయిల్స్ పట్టుకోవడం 🌟
+    let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+
+    window.onload = function() { 
+        updateDateTime(); 
+        fetchSummaryData(); 
+    };
+
+    function updateDateTime() {
+        let now = new Date();
+        let formatted = now.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById("reportDateTime").innerText = "Report Generated: " + formatted;
+    }
+
+    function fetchSummaryData() {
+       document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="py-4 text-center fw-bold text-primary">🔄 Fetching Data...</td></tr>`;
+       
+       // 🌟 బ్యాకెండ్ కి లాగిన్ ఐడీలు కూడా పంపుతున్నాం 🌟
+       fetch(SCRIPT_URL, { 
+           method: "POST", 
+           body: JSON.stringify({ 
+               action: "getHelpdeskSummary",
+               role: loggedInDesig,
+               userId: loggedInUserId
+           }) 
+       })
+       .then(res => res.json()).then(res => {
+          if(res.success && res.summary) { 
+             renderDashboard(res.summary);
+             updateDateTime(); 
+          }
+       }).catch(e => { 
+           document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ Network error.</td></tr>`; 
+       });
+    }
+
+    function renderDashboard(data) {
+        // 1. KPI Cards
+        document.getElementById("kpiTotal").innerText = data.kpi.total;
+        document.getElementById("kpiResolved").innerText = data.kpi.resolved;
+        document.getElementById("kpiEscalated").innerText = data.kpi.escalated;
+        document.getElementById("kpiPending").innerText = data.kpi.pending;
+
+        // 2. District Table
+        let dBody = "";
+        let distList = Object.keys(data.districts).sort();
+        distList.forEach(d => {
+            let dData = data.districts[d];
+            dBody += `<tr>
+                <td class="text-start ps-4 fw-bold" style="color: #1e293b;">${d}</td>
+                <td class="fw-bold" style="color: #3b82f6;">${dData.total}</td>
+                <td class="fw-bold" style="color: #059669;">${dData.resolved}</td>
+                <td class="fw-bold" style="color: #ca8a04;">${dData.escalated}</td>
+                <td class="fw-bold" style="color: #dc2626;">${dData.pending}</td>
+            </tr>`;
+        });
+        document.getElementById("districtBody").innerHTML = dBody || `<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>`;
+
+        // 3. Resolvers Table
+        let rBody = "";
+        let resList = Object.keys(data.resolvers).sort((a,b) => data.resolvers[b] - data.resolvers[a]); 
+        resList.forEach(r => {
+            rBody += `<tr>
+                <td class="text-start ps-3 fw-bold" style="color: #334155;">${r}</td>
+                <td class="text-center fw-bold" style="color: #059669;">${data.resolvers[r]} <span style="font-size:10px;">✅</span></td>
+            </tr>`;
+        });
+        document.getElementById("resolverBody").innerHTML = rBody || `<tr><td colspan="2" class="text-center text-muted">No resolutions yet</td></tr>`;
+
+        // 4. Services Table
+        let sBody = "";
+        let srvList = Object.keys(data.services).sort((a,b) => data.services[b] - data.services[a]); 
+        srvList.forEach(s => {
+            sBody += `<tr>
+                <td class="text-start ps-3 fw-bold" style="color: #475569;">${s}</td>
+                <td class="text-center"><span class="status-badge">${data.services[s]}</span></td>
+            </tr>`;
+        });
+        document.getElementById("serviceBody").innerHTML = sBody || `<tr><td colspan="2" class="text-center text-muted">No services logged</td></tr>`;
+    }
+
+    function downloadImage() {
+       updateDateTime();
+       const captureElement = document.getElementById('captureArea');
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f8f9fa' }).then(canvas => {
+          let link = document.createElement('a');
+          link.download = 'Helpdesk_Analytics_Report.png';
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+       });
+    }
+  </script>
+</body>
+</html>

@@ -2,245 +2,464 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Raise a Ticket</title>
+    <title>Raise a Ticket & Dashboard</title>
     <style>
         :root { --primary-gold: #d69e2e; --hover-gold: #b7791f; --text-dark: #374151; --border-color: #e5e7eb; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #ffffff; color: var(--text-dark); margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
-        .helpdesk-card { width: 100%; max-width: 700px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; color: var(--text-dark); margin: 0; padding: 20px; overflow-x: hidden;}
+        
+        .main-wrapper { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* 🌟 Stats Cards Layout 🌟 */
+        .stats-container { display: flex; gap: 15px; flex-wrap: wrap; }
+        .stat-card { flex: 1; min-width: 150px; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid; background: white; }
+        .stat-card h3 { margin: 0 0 5px 0; font-size: 14px; color: #64748b; font-weight: 600; }
+        .stat-card h1 { margin: 0; font-size: 26px; font-weight: 800; }
+        .card-total { border-color: #3b82f6; color: #1e3a8a; }
+        .card-pending { border-color: #f59e0b; color: #92400e; }
+        .card-resolved { border-color: #10b981; color: #065f46; }
+
+        /* 🌟 Form & History Layout with Smooth Transition 🌟 */
+        .content-grid { display: grid; grid-template-columns: 1fr; gap: 25px; transition: all 0.4s ease-in-out; }
+        /* ఫామ్ కొంచెం వెడల్పుగా ఉండేలా 450px పెట్టాను */
+        @media(min-width: 768px) { .content-grid { grid-template-columns: 480px 1fr; } } 
+        
+        .helpdesk-card { background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; height: fit-content; transition: all 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); text-align: center; }
-        .card-header h2 { margin: 0; color: var(--text-dark); font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .card-body { padding: 30px; }
+        
+        .card-header { padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .card-header h2 { margin: 0; color: var(--text-dark); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 25px; }
+        
         .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #4b5563; font-size: 14px; }
-        select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] { width: 100%; padding: 12px 15px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; color: var(--text-dark); background-color: #f9fafb; transition: all 0.3s ease; box-sizing: border-box; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #4b5563; font-size: 14px; }
+        select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; color: var(--text-dark); background-color: #f9fafb; transition: all 0.3s ease; box-sizing: border-box; }
         select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 3px rgba(214, 158, 46, 0.2); background-color: #ffffff; }
         input[readonly] { background-color: #e5e7eb; color: #6b7280; cursor: not-allowed; border-color: #d1d5db; }
-        .file-hint { display: block; font-size: 12px; color: #ef4444; margin-top: 5px; font-weight: 500; }
+        
+        .file-hint { display: block; font-size: 12px; color: #ef4444; margin-top: 5px; font-weight: bold; }
         .submit-btn { width: 100%; padding: 14px; background-color: var(--primary-gold); color: #ffffff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-top: 10px; text-transform: uppercase; }
         .submit-btn:hover { background-color: var(--hover-gold); }
         .required-star { color: #ef4444; }
 
+        /* 🌟 Toggle Buttons 🌟 */
+        .toggle-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px 12px; cursor: pointer; font-size: 14px; font-weight: bold; color: #334155; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .toggle-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+        /* 🌟 History Table Design 🌟 */
+        .history-card { background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); overflow: hidden; display: flex; flex-direction: column; transition: all 0.4s ease; transform-origin: right; }
+        .table-container { overflow-x: auto; width: 100%; max-height: 700px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f1f5f9; color: #475569; padding: 12px 15px; font-size: 13px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10;}
+        td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155; }
+        tr:hover { background-color: #f8fafc; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .status-pending { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        #loadingMsg { text-align: center; padding: 40px; font-size: 14px; color: #64748b; font-weight: bold; }
+
+        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #ffffff; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid var(--primary-gold); animation: popIn 0.3s; }
+        .modal-content { background: #ffffff; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid var(--primary-gold); }
         .modal-btn { background-color: var(--primary-gold); color: white; border: none; padding: 10px 30px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="helpdesk-card">
-        <div class="card-header">
-            <h2>🎧 RAISE NEW TICKET</h2>
+<div class="main-wrapper">
+    
+    <div class="stats-container">
+        <div class="stat-card card-total">
+            <h3>My Total Tickets</h3>
+            <h1 id="countTotal">0</h1>
         </div>
-        <div class="card-body">
-            <form id="ticketForm" onsubmit="submitTicket(event)">
-                <div class="form-group">
-                    <label for="serviceSelect">Select Service <span class="required-star">*</span></label>
-                    <select id="serviceSelect" onchange="loadIssues()" required>
-                        <option value="">-- Choose Service --</option>
-                        <option value="IRCTC">IRCTC</option>
-                        <option value="REDBUS">REDBUS</option>
-                        <option value="AIRWAYS">AIRWAYS</option>
-                        <option value="APSRTC">APSRTC</option>
-                    </select>
-                </div>
-                <div class="form-group" id="issueDiv" style="display:none;">
-                    <label for="issueSelect">Issue Category <span class="required-star">*</span></label>
-                    <select id="issueSelect" onchange="loadFields()" required>
-                        <option value="">-- Choose Issue --</option>
-                    </select>
-                </div>
-                <div id="dynamicFields"></div>
-                <button type="submit" class="submit-btn" id="submitBtn" style="display:none;">Submit Ticket</button>
-            </form>
+        <div class="stat-card card-pending">
+            <h3>Pending Tickets</h3>
+            <h1 id="countPending">0</h1>
+        </div>
+        <div class="stat-card card-resolved">
+            <h3>Resolved Tickets</h3>
+            <h1 id="countResolved">0</h1>
         </div>
     </div>
 
-    <div id="successModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-            <h3 style="color: #374151; margin-top: 0;">Ticket Raised Successfully!</h3>
-            <p style="color: #4b5563; font-size: 16px; font-weight: bold; margin: 10px 0;">Ticket No: <span style="color: #d69e2e;">VSP-IRC-1001</span></p>
-            <p style="color: #6b7280; font-size: 13px;">Please save this for future reference.</p>
-            <button type="button" onclick="closeModal()" class="modal-btn">OK</button>
+    <!-- MAIN GRID CONTAINER -->
+    <div class="content-grid" id="mainGrid">
+        
+        <!-- LEFT SIDE: RAISE TICKET FORM -->
+        <div class="helpdesk-card" id="formCard">
+            <div class="card-header">
+                <h2>🎧 RAISE NEW TICKET</h2>
+                <!-- ఈ బటన్ కేవలం టేబుల్ హైడ్ అయినప్పుడు మాత్రమే కనిపిస్తుంది -->
+                <button id="showHistoryBtn" class="toggle-btn" style="display:none;" onclick="toggleHistory()">
+                    <span>📜 Show History</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <form id="ticketForm" onsubmit="submitTicket(event)">
+                    <div class="form-group">
+                        <label for="serviceSelect">Select Service <span class="required-star">*</span></label>
+                        <select id="serviceSelect" onchange="loadIssues()" required>
+                            <option value="">-- Choose Service --</option>
+                            <option value="IRCTC">IRCTC</option>
+                            <option value="REDBUS">REDBUS</option>
+                            <option value="AIRWAYS">AIRWAYS</option>
+                            <option value="APSRTC">APSRTC</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="issueDiv" style="display:none;">
+                        <label for="issueSelect">Issue Category <span class="required-star">*</span></label>
+                        <select id="issueSelect" onchange="loadFields()" required>
+                            <option value="">-- Choose Issue --</option>
+                        </select>
+                    </div>
+                    <div id="dynamicFields"></div>
+                    <button type="submit" class="submit-btn" id="submitBtn" style="display:none;">Submit Ticket</button>
+                </form>
+            </div>
         </div>
+
+        <!-- RIGHT SIDE: TICKETS HISTORY -->
+        <div class="history-card" id="historyCard">
+            <div class="card-header">
+                <h2>📋 MY TICKETS HISTORY</h2>
+                <!-- ఈ బటన్ టేబుల్ ని హైడ్ చేస్తుంది -->
+                <button class="toggle-btn" onclick="toggleHistory()" title="Hide History to expand form">
+                    Hide ➡️
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Date & Time</th>
+                            <th>Service & Issue</th>
+                            <th>Status</th>
+                            <th>Resolution Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vleTicketsBody">
+                    </tbody>
+                </table>
+                <div id="loadingMsg">⏳ Fetching your ticket history...</div>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <script>
-        const loggedInVLE = { cscId: "510873980010", irctcId: "WCSCEGL144398", vleName: "Bonela Prasada Rao", mobile: "9391212079" };
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
+        <h3 style="color: #374151; margin-top: 0;">Ticket Raised Successfully!</h3>
+        <p style="color: #4b5563; font-size: 16px; font-weight: bold; margin: 10px 0;">Ticket No: <span style="color: #d69e2e;"></span></p>
+        <button type="button" onclick="closeModal()" class="modal-btn">OK</button>
+    </div>
+</div>
 
-        const helpdeskData = {
-            "IRCTC": {
-                "New Registration Done - But ID not generated": [
-                    { label: "CSC ID", type: "text", required: true, autoFillKey: "cscId" },
-                    { label: "Date of Registration", type: "date", required: true }
-                ],
-                "Password Reset": [
-                    { label: "Agent ID (IRCTC ID)", type: "text", required: true, autoFillKey: "irctcId" },
-                    { label: "CSC ID", type: "text", required: true, autoFillKey: "cscId" }
-                ],
-                "Mobile No / Email Change": [
-                    { label: "Agent ID", type: "text", required: true, autoFillKey: "irctcId" },
-                    { label: "Old Mobile No", type: "number", required: true },
-                    { label: "New Mobile No", type: "number", required: true },
-                    { label: "Old Email ID", type: "text", required: true },
-                    { label: "New Email ID", type: "text", required: true }
-                ],
-                "No Refund after Cancellation": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Date of Cancellation", type: "date", required: true }
-                ],
-                "Wrong Mobile No - OTP Not Received": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Passenger Name", type: "text", required: true },
-                    { label: "Mobile No on PNR", type: "number", required: true },
-                    { label: "Correct Mobile No", type: "number", required: true },
-                    { label: "Upload Passenger Form", type: "file", hint: "Max 100 KB", required: true },
-                    { label: "Upload ID Proof", type: "file", hint: "Full Aadhaar only - Max 100 KB", required: true }
-                ],
-                "General": [
-                    { label: "Date of Transaction", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Issue Description", type: "textarea", required: true },
-                    { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }
-                ]
-            },
-            "REDBUS": {
-                "No Refund After Cancellation": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Ticket No", type: "text", required: true },
-                    { label: "Date of Cancellation", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true }
-                ],
-                "Service Cancelled by Operator": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Ticket No", type: "text", required: true },
-                    { label: "Date of Journey", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Bus Travels Name", type: "text", required: true }
-                ],
-                "Amount Debited Ticket Not Confirmed": [
-                    { label: "Date of Transaction", type: "date", required: true },
-                    { label: "Amount Debited", type: "number", required: true },
-                    { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }
-                ]
-            },
-            "AIRWAYS": {
-                "No Refund After Cancellation": [
-                    { label: "Cart No", type: "text", required: true },
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Date of Cancellation", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Upload Cancellation Proof", type: "file", hint: "Max 100 KB", required: true }
-                ],
-                "Flight Cancelled": [
-                    { label: "Cart No", type: "text", required: true },
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Date of Journey", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Airline Name", type: "text", required: true },
-                    { label: "Upload Cancellation Proof", type: "file", hint: "Max 100 KB", required: true }
-                ],
-                "Amount Debited Ticket Not Confirmed": [
-                    { label: "Date of Transaction", type: "date", required: true },
-                    { label: "Amount Debited", type: "number", required: true },
-                    { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }
-                ]
-            },
-            "APSRTC": {
-                "No Refund After Cancellation": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Ticket No", type: "text", required: true },
-                    { label: "Date of Cancellation", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true }
-                ],
-                "Service Cancelled by Operator": [
-                    { label: "PNR No", type: "text", required: true },
-                    { label: "Ticket No", type: "text", required: true },
-                    { label: "Date of Journey", type: "date", required: true },
-                    { label: "Amount", type: "number", required: true },
-                    { label: "Bus Service Name", type: "text", required: true }
-                ],
-                "Amount Debited Ticket Not Confirmed": [
-                    { label: "Date of Transaction", type: "date", required: true },
-                    { label: "Amount Debited", type: "number", required: true },
-                    { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }
-                ]
+<!-- ERROR MODAL -->
+<div id="errorModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="border-top: 6px solid #ef4444;">
+        <div style="font-size: 50px; margin-bottom: 10px;">❌</div>
+        <h3 style="color: #ef4444; margin-top: 0;">Failed!</h3>
+        <p id="errorMsgText" style="color: #4b5563; font-size: 15px; font-weight: bold; margin: 10px 0;"></p>
+        <button type="button" onclick="closeErrorModal()" class="modal-btn" style="background-color: #ef4444;">OK</button>
+    </div>
+</div>
+
+<script>
+    const loggedInVLE = { 
+        cscId: localStorage.getItem("userId") || "", 
+        vleName: localStorage.getItem("userName") || "", 
+        district: localStorage.getItem("userDistrict") || "AP",
+        irctcId: "", 
+        mobile: "" 
+    };
+
+    const scriptURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+
+    // 🌟 1. TOGGLE HISTORY LOGIC 🌟
+    function toggleHistory() {
+        const historyCard = document.getElementById("historyCard");
+        const grid = document.getElementById("mainGrid");
+        const showBtn = document.getElementById("showHistoryBtn");
+
+        if (historyCard.style.display === "none") {
+            // టేబుల్ చూపించు, ఫామ్ సైజ్ నార్మల్ చెయ్
+            historyCard.style.display = "flex";
+            grid.style.gridTemplateColumns = window.innerWidth >= 768 ? "480px 1fr" : "1fr";
+            showBtn.style.display = "none";
+        } else {
+            // టేబుల్ దాచిపెట్టు, ఫామ్ ని ఫుల్ స్క్రీన్ చెయ్
+            historyCard.style.display = "none";
+            grid.style.gridTemplateColumns = "1fr";
+            showBtn.style.display = "inline-flex";
+        }
+    }
+
+    // 🌟 2. FETCH AGENT ID 🌟
+    function fetchAgentId() {
+        if (loggedInVLE.cscId && !loggedInVLE.irctcId) {
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "getIrctcId", cscId: loggedInVLE.cscId })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success && result.irctcId) {
+                    loggedInVLE.irctcId = result.irctcId; 
+                    let input = document.querySelector('input[data-key="irctcId"]');
+                    if (input && input.value === "") {
+                        input.value = result.irctcId;
+                        input.setAttribute("readonly", "true");
+                        input.style.backgroundColor = "#e5e7eb";
+                        input.style.cursor = "not-allowed";
+                    }
+                }
+            }).catch(e => console.log("Fetch Error:", e));
+        }
+    }
+
+    // 🌟 3. FETCH DASHBOARD & HISTORY 🌟
+    async function loadVLEDashboard() {
+        if (!loggedInVLE.cscId) {
+            document.getElementById("loadingMsg").innerText = "⚠️ User ID not found. Please login again.";
+            return;
+        }
+        try {
+            let response = await fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "getVLETickets", cscId: loggedInVLE.cscId })
+            });
+            let result = await response.json();
+            
+            if (result.success) {
+                document.getElementById("countTotal").innerText = result.stats.total;
+                document.getElementById("countPending").innerText = result.stats.pending;
+                document.getElementById("countResolved").innerText = result.stats.resolved;
+
+                const tbody = document.getElementById("vleTicketsBody");
+                tbody.innerHTML = "";
+
+                if (result.tickets.length === 0) {
+                    document.getElementById("loadingMsg").innerText = "🎉 No tickets raised yet!";
+                    document.getElementById("loadingMsg").style.display = "block";
+                } else {
+                    document.getElementById("loadingMsg").style.display = "none";
+                    result.tickets.forEach(t => {
+                        let statusClass = t.status.toUpperCase() === "PENDING" ? "status-pending" : "status-resolved";
+                        let remarksColor = t.status.toUpperCase() === "PENDING" ? "#d97706" : "#15803d";
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId}</td>
+                            <td style="font-size:12px; color:#64748b;">${t.date}</td>
+                            <td><span style="color:#ca8a04; font-weight:bold;">${t.service}</span><br><span style="font-size:11px; color:#475569;">${t.issue}</span></td>
+                            <td><span class="status-badge ${statusClass}">${t.status}</span></td>
+                            <td style="color:${remarksColor}; font-weight:bold; font-size:12px;">${t.remarks}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } else {
+                // ఎర్రర్ వస్తే లోడింగ్ మెసేజ్ మారుతుంది
+                document.getElementById("loadingMsg").innerText = "❌ Failed to fetch data. Server Error.";
             }
+        } catch (e) { 
+            console.log("Dashboard Error:", e);
+            // ఇక్కడ కూడా ఎర్రర్ హ్యాండ్లింగ్ పెట్టాను
+            document.getElementById("loadingMsg").innerText = "❌ Connection Failed. Please deploy Code.gs properly.";
+        }
+    }
+
+    window.addEventListener('load', () => {
+        fetchAgentId();
+        loadVLEDashboard();
+    });
+
+    const helpdeskData = {
+        "IRCTC": {
+            "New Registration Done - But ID not generated": [{ label: "CSC ID", type: "text", required: true, autoFillKey: "cscId" }, { label: "Date of Registration", type: "date", required: true }],
+            "Password Reset": [{ label: "Agent ID (IRCTC ID)", type: "text", required: true, autoFillKey: "irctcId" }, { label: "CSC ID", type: "text", required: true, autoFillKey: "cscId" }],
+            "Mobile No / Email Change": [{ label: "Agent ID", type: "text", required: true, autoFillKey: "irctcId" }, { label: "Old Mobile No", type: "number", required: true }, { label: "New Mobile No", type: "number", required: true }, { label: "Old Email ID", type: "text", required: true }, { label: "New Email ID", type: "text", required: true }],
+            "No Refund after Cancellation": [{ label: "PNR No", type: "text", required: true }, { label: "Amount", type: "number", required: true }, { label: "Date of Cancellation", type: "date", required: true }],
+            "Wrong Mobile No - OTP Not Received": [{ label: "PNR No", type: "text", required: true }, { label: "Passenger Name", type: "text", required: true }, { label: "Mobile No on PNR", type: "number", required: true }, { label: "Correct Mobile No", type: "number", required: true }, { label: "Upload Passenger Form", type: "file", hint: "Max 100 KB", required: true }, { label: "Upload ID Proof", type: "file", hint: "Full Aadhaar only - Max 100 KB", required: true }],
+            "General": [{ label: "Date of Transaction", type: "date", required: true }, { label: "Amount", type: "number", required: true }, { label: "Issue Description", type: "textarea", required: true }, { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }]
+        },
+        "REDBUS": {
+            "No Refund After Cancellation": [{ label: "PNR No", type: "text", required: true }, { label: "Ticket No", type: "text", required: true }, { label: "Date of Cancellation", type: "date", required: true }, { label: "Amount", type: "number", required: true }],
+            "Service Cancelled by Operator": [{ label: "PNR No", type: "text", required: true }, { label: "Ticket No", type: "text", required: true }, { label: "Date of Journey", type: "date", required: true }, { label: "Amount", type: "number", required: true }, { label: "Bus Travels Name", type: "text", required: true }],
+            "Amount Debited Ticket Not Confirmed": [{ label: "Date of Transaction", type: "date", required: true }, { label: "Amount Debited", type: "number", required: true }, { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }]
+        },
+        "AIRWAYS": {
+            "No Refund After Cancellation": [{ label: "Cart No", type: "text", required: true }, { label: "PNR No", type: "text", required: true }, { label: "Date of Cancellation", type: "date", required: true }, { label: "Amount", type: "number", required: true }, { label: "Upload Cancellation Proof", type: "file", hint: "Max 100 KB", required: true }],
+            "Flight Cancelled": [{ label: "Cart No", type: "text", required: true }, { label: "PNR No", type: "text", required: true }, { label: "Date of Journey", type: "date", required: true }, { label: "Amount", type: "number", required: true }, { label: "Airline Name", type: "text", required: true }, { label: "Upload Cancellation Proof", type: "file", hint: "Max 100 KB", required: true }],
+            "Amount Debited Ticket Not Confirmed": [{ label: "Date of Transaction", type: "date", required: true }, { label: "Amount Debited", type: "number", required: true }, { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }]
+        },
+        "APSRTC": {
+            "No Refund After Cancellation": [{ label: "PNR No", type: "text", required: true }, { label: "Ticket No", type: "text", required: true }, { label: "Date of Cancellation", type: "date", required: true }, { label: "Amount", type: "number", required: true }],
+            "Service Cancelled by Operator": [{ label: "PNR No", type: "text", required: true }, { label: "Ticket No", type: "text", required: true }, { label: "Date of Journey", type: "date", required: true }, { label: "Amount", type: "number", required: true }, { label: "Bus Service Name", type: "text", required: true }],
+            "Amount Debited Ticket Not Confirmed": [{ label: "Date of Transaction", type: "date", required: true }, { label: "Amount Debited", type: "number", required: true }, { label: "Upload Screenshot", type: "file", hint: "Max 100 KB", required: true }]
+        }
+    };
+
+    function loadIssues() {
+        const service = document.getElementById("serviceSelect").value;
+        const issueSelect = document.getElementById("issueSelect");
+        const issueDiv = document.getElementById("issueDiv");
+        const dynamicFields = document.getElementById("dynamicFields");
+        const submitBtn = document.getElementById("submitBtn");
+
+        issueSelect.innerHTML = '<option value="">-- Choose Issue --</option>';
+        dynamicFields.innerHTML = '';
+        submitBtn.style.display = "none";
+
+        if(service === "IRCTC") fetchAgentId(); 
+
+        if (service && helpdeskData[service]) {
+            issueDiv.style.display = "block";
+            Object.keys(helpdeskData[service]).forEach(issue => {
+                issueSelect.appendChild(new Option(issue, issue));
+            });
+        } else { issueDiv.style.display = "none"; }
+    }
+
+    function loadFields() {
+        const service = document.getElementById("serviceSelect").value;
+        const issue = document.getElementById("issueSelect").value;
+        const dynamicFields = document.getElementById("dynamicFields");
+        const submitBtn = document.getElementById("submitBtn");
+
+        dynamicFields.innerHTML = ''; 
+        if (service && issue && helpdeskData[service][issue]) {
+            helpdeskData[service][issue].forEach(field => {
+                const div = document.createElement("div"); 
+                div.className = "form-group";
+                let autoFillAttr = '', autoFillValue = '', dataKeyAttr = '';
+                
+                if (field.autoFillKey) { dataKeyAttr = `data-key="${field.autoFillKey}"`; }
+                
+                if (field.autoFillKey === "cscId") {
+                    autoFillValue = `value="${loggedInVLE.cscId}"`;
+                    autoFillAttr = 'readonly';
+                } else if (field.autoFillKey === "irctcId") {
+                    if (loggedInVLE.irctcId) {
+                        autoFillValue = `value="${loggedInVLE.irctcId}"`;
+                        autoFillAttr = 'readonly';
+                    } else {
+                        autoFillValue = `placeholder="Enter Agent ID (Autofilling...)"`;
+                        autoFillAttr = '';
+                        fetchAgentId();
+                    }
+                }
+                
+                let inputHTML = '';
+                if (field.type === "textarea") {
+                    inputHTML = `<textarea rows="3" ${field.required ? 'required' : ''}></textarea>`;
+                } else if (field.type === "file") {
+                    inputHTML = `<input type="file" ${field.required ? 'required' : ''} accept=".jpg,.jpeg,.png,.pdf">`;
+                } else {
+                    inputHTML = `<input type="${field.type}" ${dataKeyAttr} ${autoFillValue} ${autoFillAttr} ${field.required ? 'required' : ''}>`;
+                }
+
+                const hintHTML = field.hint ? `<span class="file-hint">${field.hint}</span>` : '';
+                div.innerHTML = `<label>${field.label} ${field.required ? '<span class="required-star">*</span>' : ''}</label>${inputHTML}${hintHTML}`;
+                dynamicFields.appendChild(div);
+            });
+            submitBtn.style.display = "block";
+        } else { submitBtn.style.display = "none"; }
+    }
+
+    async function submitTicket(event) {
+        event.preventDefault();
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.innerText = "Submitting...";
+        submitBtn.disabled = true;
+
+        const service = document.getElementById("serviceSelect").value;
+        const issue = document.getElementById("issueSelect").value;
+        const dynamicDivs = document.getElementById("dynamicFields").children;
+
+        let descriptionText = "";
+        let filePromises = [];
+        let filesData = [];
+
+        for (let i = 0; i < dynamicDivs.length; i++) {
+            let label = dynamicDivs[i].querySelector("label").innerText.replace('*', '').trim();
+            let input = dynamicDivs[i].querySelector("input, select, textarea");
+            
+            if (input.type !== 'file') {
+                descriptionText += label + ": " + input.value + "\n";
+            } else {
+                if (input.files.length > 0) {
+                    let file = input.files[0];
+                    
+                    // 100 KB FILE SIZE VALIDATION 
+                    if (file.size > 102400) { 
+                        alert("File '" + file.name + "' is larger than 100 KB. Please upload a smaller file.");
+                        submitBtn.innerText = "Submit Ticket";
+                        submitBtn.disabled = false;
+                        return;
+                    }
+
+                    let promise = new Promise((resolve) => {
+                        let reader = new FileReader();
+                        reader.onload = function(e) {
+                            let base64 = e.target.result.split(',')[1];
+                            filesData.push({ label: label, base64: base64, fileName: file.name, mimeType: file.type });
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    filePromises.push(promise);
+                } else { descriptionText += label + ": No file\n"; }
+            }
+        }
+
+        if (filePromises.length > 0) { await Promise.all(filePromises); }
+
+        const payload = {
+            action: "raiseTicket",
+            cscId: loggedInVLE.cscId,
+            district: loggedInVLE.district, 
+            service: service,
+            issue: issue,
+            description: descriptionText,
+            files: filesData 
         };
 
-        function loadIssues() {
-            const service = document.getElementById("serviceSelect").value;
-            const issueSelect = document.getElementById("issueSelect");
-            const issueDiv = document.getElementById("issueDiv");
-            const dynamicFields = document.getElementById("dynamicFields");
-            const submitBtn = document.getElementById("submitBtn");
-
-            issueSelect.innerHTML = '<option value="">-- Choose Issue --</option>';
-            dynamicFields.innerHTML = '';
-            submitBtn.style.display = "none";
-
-            if (service && helpdeskData[service]) {
-                issueDiv.style.display = "block";
-                Object.keys(helpdeskData[service]).forEach(issue => {
-                    issueSelect.appendChild(new Option(issue, issue));
-                });
+        try {
+            let response = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+            let result = await response.json();
+            if (result.success) {
+                document.querySelector("#successModal p span").innerText = result.ticketId;
+                document.getElementById('successModal').style.display = 'flex';
+                loadVLEDashboard(); // LIVE UPDATE
             } else {
-                issueDiv.style.display = "none";
+                document.getElementById("errorMsgText").innerText = result.message;
+                document.getElementById('errorModal').style.display = 'flex';
             }
+        } catch (error) {
+            document.getElementById("errorMsgText").innerText = "Error: " + error;
+            document.getElementById('errorModal').style.display = 'flex';
+        } finally {
+            submitBtn.innerText = "Submit Ticket";
+            submitBtn.disabled = false;
         }
+    }
 
-        function loadFields() {
-            const service = document.getElementById("serviceSelect").value;
-            const issue = document.getElementById("issueSelect").value;
-            const dynamicFields = document.getElementById("dynamicFields");
-            const submitBtn = document.getElementById("submitBtn");
+    function closeModal() {
+        document.getElementById('successModal').style.display = 'none';
+        document.getElementById('ticketForm').reset();
+        document.getElementById('dynamicFields').innerHTML = '';
+        document.getElementById('issueDiv').style.display = 'none';
+        document.getElementById('submitBtn').style.display = 'none';
+    }
 
-            dynamicFields.innerHTML = ''; 
-            if (service && issue && helpdeskData[service][issue]) {
-                helpdeskData[service][issue].forEach(field => {
-                    const div = document.createElement("div"); 
-                    div.className = "form-group";
-                    
-                    let autoFillAttr = '', autoFillValue = '';
-                    if (field.autoFillKey && loggedInVLE[field.autoFillKey]) {
-                        autoFillValue = `value="${loggedInVLE[field.autoFillKey]}"`;
-                        autoFillAttr = 'readonly';
-                    }
-                    
-                    let inputHTML = '';
-                    if (field.type === "textarea") {
-                        inputHTML = `<textarea rows="3" ${field.required ? 'required' : ''}></textarea>`;
-                    } else if (field.type === "file") {
-                        inputHTML = `<input type="file" ${field.required ? 'required' : ''} accept=".jpg,.jpeg,.png,.pdf">`;
-                    } else {
-                        inputHTML = `<input type="${field.type}" ${autoFillValue} ${autoFillAttr} ${field.required ? 'required' : ''}>`;
-                    }
-
-                    const hintHTML = field.hint ? `<span class="file-hint">${field.hint}</span>` : '';
-                    div.innerHTML = `<label>${field.label} ${field.required ? '<span class="required-star">*</span>' : ''}</label>${inputHTML}${hintHTML}`;
-                    dynamicFields.appendChild(div);
-                });
-                submitBtn.style.display = "block";
-            } else {
-                submitBtn.style.display = "none";
-            }
-        }
-
-        function submitTicket(event) {
-            event.preventDefault();
-            document.getElementById('successModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('successModal').style.display = 'none';
-            document.getElementById('ticketForm').reset();
-            document.getElementById('dynamicFields').innerHTML = '';
-            document.getElementById('issueDiv').style.display = 'none';
-            document.getElementById('submitBtn').style.display = 'none';
-        }
-    </script>
+    function closeErrorModal() { 
+        document.getElementById('errorModal').style.display = 'none'; 
+    }
+</script>
 </body>
 </html>
