@@ -201,7 +201,7 @@
     // 🌟 1. ఫైర్‌బేస్ REDBUS డైరెక్ట్ లింక్ 🌟
     const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/redbusData.json";
 
-    // 🌟 2. కొత్త బులెట్-ప్రూఫ్ ఫైర్‌బేస్ ఫెచ్ ఫంక్షన్ 🌟
+    // 🌟 2. అడ్వాన్స్‌డ్ ఫైర్‌బేస్ ఫెచ్ (స్మార్ట్ మ్యాపింగ్) 🌟
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
         if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
@@ -218,11 +218,28 @@
                 let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
                 if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
 
-                // 🌟 గూగుల్ షీట్ హెడ్డింగ్స్ ని మన ఫ్రంట్-ఎండ్ కి మ్యాపింగ్ చేయడం 🌟
+                // 🌟 స్మార్ట్ మ్యాపింగ్: కాలమ్ పేరు ఎలా ఉన్నా కరెక్ట్ గా పట్టుకుంటుంది 🌟
                 rawData = dataArr.map(r => {
-                    let oDist = r.Old_District || r.OldDistrict || "";
-                    let nDist = r.New_District || r.NewDistrict || "";
-                    
+                    let dsp25 = 0, srv25 = 0, dsp26 = 0, srv26 = 0, mob = "", oDist = "", nDist = "", cId = "", vName = "";
+
+                    // డేటాబేస్ లోని ప్రతి కీని చెక్ చేసి మ్యాప్ చేయడం
+                    for(let k in r) {
+                        let kUp = k.toUpperCase();
+                        let val = r[k] || "";
+
+                        if(kUp.includes("OLD")) oDist = val;
+                        else if(kUp.includes("NEW")) nDist = val;
+                        else if(kUp.includes("CSC")) cId = val;
+                        else if(kUp.includes("VLE") || kUp.includes("NAME")) vName = val;
+                        else if(kUp.includes("MOBILE")) mob = val;
+                        
+                        else if(kUp.includes("DSP") && kUp.includes("25")) dsp25 = parseInt(val) || 0;
+                        else if((kUp.includes("REDBUS") || kUp.includes("SRV")) && kUp.includes("25")) srv25 = parseInt(val) || 0;
+                        
+                        else if(kUp.includes("DSP") && kUp.includes("26") && !kUp.includes("25")) dsp26 = parseInt(val) || 0;
+                        else if((kUp.includes("REDBUS") || kUp.includes("SRV")) && kUp.includes("26") && !kUp.includes("25")) srv26 = parseInt(val) || 0;
+                    }
+
                     let isMyNDist = false;
                     let normNewDist = nDist.replace(/[^A-Za-z]/g, '').toUpperCase();
                     if(normNewDist === "VSP") normNewDist = "VISAKHAPATNAM";
@@ -231,14 +248,13 @@
                     return {
                         oldDist: oDist,
                         newDist: nDist,
-                        cscId: r.CSC_ID || r.CSCID || "",
-                        vleName: r.VLE_Name || r.VLEName || "",
-                        mobile: r.Mobile_No || r.Mobile || "",
-                        // ఫైర్‌బేస్ లో 'DSP 25-26' అనేది 'DSP_2526' గా సేవ్ అవుతుంది, దాన్ని మనం క్యాచ్ చేస్తున్నాం
-                        dsp2526: parseInt(r.DSP_2526) || 0,
-                        srv2526: parseInt(r.REDBUS_2526 || r.SRV_2526) || 0,
-                        dsp2627: parseInt(r.DSP_2627) || 0,
-                        srv2627: parseInt(r.REDBUS_2627 || r.SRV_2627) || 0,
+                        cscId: cId,
+                        vleName: vName,
+                        mobile: mob,
+                        dsp2526: dsp25,
+                        srv2526: srv25,
+                        dsp2627: dsp26,
+                        srv2627: srv26,
                         isMyNewDist: isMyNDist
                     };
                 });
@@ -253,7 +269,7 @@
                 }
 
                 saveToCache(CACHE_KEY, rawData);
-                initApp(); // (పాత కోడ్ లో లేని processData బదులు దీన్ని సెట్ చేశాను)
+                initApp(); 
             } else {
                 if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found.</td></tr>`;
             }
