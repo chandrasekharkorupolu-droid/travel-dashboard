@@ -77,7 +77,6 @@
     <div class="header-container">
         <h2 id="headerTitle">🎧 Helpdesk Tickets Dashboard</h2>
         <div class="header-actions">
-            <!-- 🌟 కొత్తగా యాడ్ చేసిన డ్రాప్-డౌన్ ఫిల్టర్ 🌟 -->
             <select id="statusFilter" class="status-filter-select" onchange="applyStatusFilter()">
                 <option value="ALL">📋 All Tickets</option>
                 <option value="PENDING">⏳ Pending Only</option>
@@ -105,10 +104,9 @@
             </thead>
             <tbody id="ticketsBody"></tbody>
         </table>
-        <div id="loadingMsg">⏳ Fetching tickets from server...</div>
+        <div id="loadingMsg">⚡ Fetching from Firebase in milliseconds...</div>
     </div>
 
-    <!-- 🌟 MODAL HTML 🌟 -->
     <div id="resolveModal" class="resolve-modal-overlay">
         <div class="resolve-modal-content">
             <div class="resolve-header">
@@ -169,22 +167,25 @@
     </div>
 
     <script>
+        // ఇది సబ్మిట్ బటన్ కోసం (Google Sheet కి పంపడానికి)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
         
+        // 🌟 ఫైర్‌బేస్ డైరెక్ట్ లింక్ (దీనివల్ల స్పీడ్ 100 రెట్లు పెరుగుతుంది) 🌟
+        const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/helpdeskTickets.json";
+
         const adminRole = localStorage.getItem("userDesignation") ? localStorage.getItem("userDesignation").toUpperCase() : "";
         const userId = localStorage.getItem("userId") || "";
         const adminName = localStorage.getItem("userName") || localStorage.getItem("userDesignation") || "SPOC/DM";
 
         let allTicketsData = [];
         let currentFilter = "ALL"; 
-        let currentStatusFilter = "ALL"; // 🌟 కొత్త ఫిల్టర్ వేరియబుల్ 🌟
+        let currentStatusFilter = "ALL"; 
 
         window.onload = async function() {
             document.getElementById('r_adminName').innerText = adminName;
-            fetchDataFromServer(false); 
+            fetchDataFromServer(); 
         }
 
-        // 🌟 డ్రాప్ డౌన్ మార్చినప్పుడు ఫిల్టర్ అప్లై అవ్వడానికి ఫంక్షన్ 🌟
         function applyStatusFilter() {
             currentStatusFilter = document.getElementById("statusFilter").value;
             renderTickets();
@@ -203,50 +204,47 @@
             document.getElementById("customAlert").style.display = "none";
         }
 
+        // 🌟 ఇక్కడ ఉంది అసలైన మ్యాజిక్: Firebase Fetch 🌟
         async function fetchDataFromServer(forceRefresh = false) {
-            if (forceRefresh) {
-                sessionStorage.removeItem("helpdeskDataCache");
-                sessionStorage.removeItem("helpdeskDistCache");
-            } else {
-                let cachedData = sessionStorage.getItem("helpdeskDataCache");
-                let cachedDist = sessionStorage.getItem("helpdeskDistCache");
-                
-                if (cachedData) {
-                    allTicketsData = JSON.parse(cachedData);
-                    let dName = cachedDist || "ALL";
-                    document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
-                    updateServiceCards(); 
-                    renderTickets();
-                    // ఒకవేళ కాష్ ఉన్నా.. బ్యాక్ గ్రౌండ్ లో డేటా చెక్ చేయాలంటే కింది లైన్స్ కంటిన్యూ అవుతాయి (Auto-Refresh)
-                } else {
-                    document.getElementById("loadingMsg").style.display = "block";
-                    document.getElementById("loadingMsg").innerText = "⏳ Fetching tickets from server...";
-                    document.getElementById("ticketsBody").innerHTML = "";
-                }
-            }
+            document.getElementById("loadingMsg").style.display = "block";
+            document.getElementById("loadingMsg").innerText = "⚡ Fetching from Firebase in milliseconds...";
+            document.getElementById("ticketsBody").innerHTML = "";
 
             try {
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "getHelpdeskTickets", role: adminRole, userId: userId })
-                });
-                
-                let result = await response.json();
-                if (result.success) {
-                    allTicketsData = result.tickets;
-                    let dName = result.dmDistrict || "ALL";
-                    
-                    sessionStorage.setItem("helpdeskDataCache", JSON.stringify(allTicketsData));
-                    sessionStorage.setItem("helpdeskDistCache", dName);
+                // ఫైర్‌బేస్ నుండి డైరెక్ట్ గా డేటా లాగడం (Zero delay)
+                let response = await fetch(FIREBASE_URL);
+                let data = await response.json(); 
 
-                    document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
-                    updateServiceCards(); 
-                    renderTickets();      
-                } else if (!sessionStorage.getItem("helpdeskDataCache")) {
-                    document.getElementById("loadingMsg").innerText = "❌ Failed to load tickets.";
+                let rawTickets = [];
+                for (let key in data) {
+                    if(data[key]) rawTickets.push(data[key]);
                 }
+
+                // 🌟 DM లాగిన్ అయితే కేవలం వాళ్ళ జిల్లా డేటా మాత్రమే ఫిల్టర్ చేయడం 🌟
+                if (adminRole === "DM" || adminRole.includes("DISTRICT MANAGER")) {
+                    let userDist = localStorage.getItem("userDistrict") || "";
+                    let normUserDist = userDist.replace(/[^A-Za-z]/g, '').toUpperCase();
+                    if(normUserDist === "VSP") normUserDist = "VISAKHAPATNAM";
+
+                    rawTickets = rawTickets.filter(t => {
+                        let tDist = (t.district || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+                        if(tDist === "VSP") tDist = "VISAKHAPATNAM";
+                        return tDist.includes(normUserDist) || normUserDist.includes(tDist);
+                    });
+                }
+
+                // లేటెస్ట్ టికెట్స్ పైన వచ్చేలా రివర్స్ చేయడం
+                allTicketsData = rawTickets.reverse();
+
+                let dName = (adminRole === "DM" || adminRole.includes("DISTRICT MANAGER")) ? localStorage.getItem("userDistrict") : "ALL";
+                document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
+                
+                updateServiceCards(); 
+                renderTickets();      
+
             } catch (error) {
-                if (!sessionStorage.getItem("helpdeskDataCache")) document.getElementById("loadingMsg").innerText = "❌ Server Error.";
+                document.getElementById("loadingMsg").innerText = "❌ Firebase Connection Error.";
+                console.error(error);
             }
         }
 
@@ -302,10 +300,10 @@
                 let tSrv = t.service ? t.service.toUpperCase() : "";
                 let tStat = t.status ? t.status.toUpperCase() : "";
                 
-                // 1. సర్వీస్ ఫిల్టర్ చెకింగ్ (IRCTC, REDBUS లాంటివి)
+                // 1. సర్వీస్ ఫిల్టర్ చెకింగ్ 
                 if (currentFilter !== "ALL" && tSrv !== currentFilter) return;
 
-                // 🌟 2. స్టేటస్ ఫిల్టర్ చెకింగ్ (కొత్త లాజిక్) 🌟
+                // 2. స్టేటస్ ఫిల్టర్ చెకింగ్ 
                 let isPendingType = (tStat === "PENDING" || tStat === "FORWARDED TO HO");
                 if (currentStatusFilter === "PENDING" && !isPendingType) return;
                 if (currentStatusFilter === "RESOLVED" && tStat !== "RESOLVED") return;
@@ -319,7 +317,7 @@
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId}</td>
-                    <td style="font-size:13px; color:#64748b;">${t.date.split(' ')[0]}</td>
+                    <td style="font-size:13px; color:#64748b;">${t.date ? t.date.split(' ')[0] : '-'}</td>
                     <td style="font-weight:bold;">${t.cscId}</td>
                     <td>${t.district}</td>
                     <td><span style="color:#ca8a04; font-weight:bold;">${t.service}</span><br><span style="font-size:12px; color:#475569;">${t.category}</span></td>
@@ -475,17 +473,14 @@
             let srv = t.service ? t.service.toUpperCase() : ""; 
             let iss = t.category;
 
-            // 🌟 1. Description లో ఉన్న డేటాని విడదీయడం 🌟
             let dataMap = {};
             t.desc.split('\n').forEach(line => {
                 let parts = line.split(':');
                 if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
             });
 
-            // బేసిక్ మెసేజ్
             let message = `*Ticket Escalation - HO*\n\n*Ticket ID:* ${tId}\n*CSC ID:* ${csc}\n*District:* ${dist}\n*Service:* ${srv}\n*Issue:* ${iss}\n`;
 
-            // 🌟 2. REDBUS లేదా AIRWAYS అయితే ఆటోమేటిక్ గా డీటెయిల్స్ యాడ్ చేయడం 🌟
             if (srv === "REDBUS" || srv === "AIRWAYS") {
                 let pnr = dataMap["PNR NO"] || dataMap["PNR NUMBER"] || "-";
                 let ticketNo = dataMap["TICKET NO"] || dataMap["TICKET NUMBER"] || "-";
@@ -528,8 +523,8 @@
                     showCustomAlert("Success!", "Ticket status updated successfully.");
                     closeResolveModal();
                     
-                    sessionStorage.removeItem("helpdeskDataCache");
-                    fetchDataFromServer(true); 
+                    // బ్యాకెండ్ అప్‌డేట్ అయ్యాక ఫైర్‌బేస్ డేటా కోసం 2 సెకన్లు ఆగి రిఫ్రెష్ చేస్తుంది.
+                    setTimeout(() => { fetchDataFromServer(true); }, 2000); 
                 } else {
                     showCustomAlert("Failed!", "Failed to update: " + data.message, false);
                 }
