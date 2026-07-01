@@ -198,10 +198,10 @@
     };
 
  
-    // 🌟 1. ఫైర్‌బేస్ REDBUS డైరెక్ట్ లింక్ 🌟
+  // 🌟 1. ఫైర్‌బేస్ REDBUS డైరెక్ట్ లింక్ 🌟
     const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/redbusData.json";
 
-    // 🌟 2. అడ్వాన్స్‌డ్ ఫైర్‌బేస్ ఫెచ్ (స్మార్ట్ మ్యాపింగ్) 🌟
+    // 🌟 2. అల్ట్రా-స్మార్ట్ ఫైర్‌బేస్ ఫెచ్ (Exact Column Matching) 🌟
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
         if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
@@ -218,43 +218,52 @@
                 let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
                 if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
 
-                // 🌟 స్మార్ట్ మ్యాపింగ్: కాలమ్ పేరు ఎలా ఉన్నా కరెక్ట్ గా పట్టుకుంటుంది 🌟
+                // 🌟 అల్ట్రా-స్మార్ట్ మ్యాపింగ్: గూగుల్ షీట్‌లో ఎన్ని ఎక్స్‌ట్రా కాలమ్స్ ఉన్నా కరెక్ట్ దాన్ని మాత్రమే పట్టుకుంటుంది 🌟
                 rawData = dataArr.map(r => {
-                    let dsp25 = 0, srv25 = 0, dsp26 = 0, srv26 = 0, mob = "", oDist = "", nDist = "", cId = "", vName = "";
-
-                    // డేటాబేస్ లోని ప్రతి కీని చెక్ చేసి మ్యాప్ చేయడం
-                    for(let k in r) {
+                    let keys = Object.keys(r);
+                    
+                    // కాలమ్ పేరుని పక్కాగా కనిపెట్టే ఫంక్షన్ (ఇందులో కీవర్డ్స్ ఉండి, ఎక్స్‌క్లూడ్ పదాలు ఉండకూడదు)
+                    const getK = (inc, exc) => keys.find(k => {
                         let kUp = k.toUpperCase();
-                        let val = r[k] || "";
+                        return inc.every(c => kUp.includes(c)) && (!exc || exc.every(e => !kUp.includes(e)));
+                    });
 
-                        if(kUp.includes("OLD")) oDist = val;
-                        else if(kUp.includes("NEW")) nDist = val;
-                        else if(kUp.includes("CSC")) cId = val;
-                        else if(kUp.includes("VLE") || kUp.includes("NAME")) vName = val;
-                        else if(kUp.includes("MOBILE")) mob = val;
-                        
-                        else if(kUp.includes("DSP") && kUp.includes("25")) dsp25 = parseInt(val) || 0;
-                        else if((kUp.includes("REDBUS") || kUp.includes("SRV")) && kUp.includes("25")) srv25 = parseInt(val) || 0;
-                        
-                        else if(kUp.includes("DSP") && kUp.includes("26") && !kUp.includes("25")) dsp26 = parseInt(val) || 0;
-                        else if((kUp.includes("REDBUS") || kUp.includes("SRV")) && kUp.includes("26") && !kUp.includes("25")) srv26 = parseInt(val) || 0;
-                    }
+                    // కరెక్ట్ కాలమ్స్ ని మాత్రమే వెతకడం (Target, Pending, Alt లాంటివి వదిలేయడం)
+                    let kOldDist = getK(["OLD", "DIST"]) || getK(["OLD"]);
+                    let kNewDist = getK(["NEW", "DIST"]) || getK(["NEW"]);
+                    let kCscId   = getK(["CSC", "ID"]) || getK(["CSC"]);
+                    let kVleName = getK(["VLE", "NAME"]) || getK(["NAME"], ["DIST"]);
+                    
+                    // మొబైల్ నెంబర్ జీరో రాకుండా 'ALT' (Alternate) లాంటివి పక్కన పెట్టడం
+                    let kMobile  = getK(["MOBILE"], ["ALT", "WHATSAPP", "APP"]);
+                    
+                    // 25-26 కాలమ్స్ (టార్గెట్స్, పెండింగ్ కాకుండా)
+                    let kDsp25 = getK(["DSP", "25"], ["TARGET", "PEND", "ACHIEV"]);
+                    let kSrv25 = getK(["REDBUS", "25"], ["TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "25"], ["TARGET", "PEND", "ACHIEV"]);
+                    
+                    // 26-27 కాలమ్స్ (టార్గెట్స్, పెండింగ్ కాకుండా)
+                    let kDsp26 = getK(["DSP", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["DSP", "27"], ["25", "TARGET", "PEND", "ACHIEV"]);
+                    let kSrv26 = getK(["REDBUS", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["REDBUS", "27"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "27"], ["25", "TARGET", "PEND", "ACHIEV"]);
 
+                    // వాల్యూస్ ని అసైన్ చేయడం
+                    let nDist = kNewDist ? (r[kNewDist] || "") : "";
+                    
                     let isMyNDist = false;
                     let normNewDist = nDist.replace(/[^A-Za-z]/g, '').toUpperCase();
                     if(normNewDist === "VSP") normNewDist = "VISAKHAPATNAM";
                     if(normNewDist.includes(dmDistrict) || dmDistrict.includes(normNewDist)) isMyNDist = true;
 
                     return {
-                        oldDist: oDist,
+                        oldDist: kOldDist ? (r[kOldDist] || "") : "",
                         newDist: nDist,
-                        cscId: cId,
-                        vleName: vName,
-                        mobile: mob,
-                        dsp2526: dsp25,
-                        srv2526: srv25,
-                        dsp2627: dsp26,
-                        srv2627: srv26,
+                        cscId: kCscId ? (r[kCscId] || "") : "",
+                        vleName: kVleName ? (r[kVleName] || "") : "",
+                        mobile: kMobile ? (r[kMobile] || "") : "",
+                        
+                        dsp2526: kDsp25 ? (parseInt(r[kDsp25]) || 0) : 0,
+                        srv2526: kSrv25 ? (parseInt(r[kSrv25]) || 0) : 0,
+                        dsp2627: kDsp26 ? (parseInt(r[kDsp26]) || 0) : 0,
+                        srv2627: kSrv26 ? (parseInt(r[kSrv26]) || 0) : 0,
                         isMyNewDist: isMyNDist
                     };
                 });
