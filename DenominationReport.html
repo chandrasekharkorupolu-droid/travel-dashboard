@@ -190,7 +190,6 @@
 
   <div class="container-fluid px-3" id="captureArea">
     
-    <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
       <div>
         <h4 class="fw-bold m-0" style="color: #0f172a;">📊 E-Stamping Denomination Sales</h4>
@@ -229,7 +228,6 @@
       </div>
     </div>
 
-    <!-- Clickable Summary Cards -->
     <div class="row g-3 mb-3">
       <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ea580c;">Total VLEs</div><div class="stat-value" style="color:#ea580c;" id="totVles">0</div></div></div>
       <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ef4444;">Total Papers</div><div class="stat-value" style="color:#ef4444;" id="totPapers">0</div></div></div>
@@ -240,7 +238,6 @@
       <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
     </div>
 
-    <!-- Controls: Toggle Buttons & Search -->
     <div class="controls-bar" data-html2canvas-ignore="true">
       <div>
         <button id="btnDistView" class="view-btn" onclick="switchView('DIST')">🏢 District Summary</button>
@@ -251,7 +248,6 @@
       </div>
     </div>
 
-    <!-- Premium Table Area -->
     <div class="premium-card">
       <div class="card-header-custom">
         <div class="card-title">
@@ -261,7 +257,6 @@
       </div>
       
       <div class="table-container">
-        <!-- 🌟 Table Responsive 🌟 -->
         <div class="table-responsive" style="max-height: calc(100vh - 280px); overflow-y: auto; overflow-x: auto;">
           <table class="table table-hover table-striped align-middle text-center mb-0" id="salesTable">
             <thead class="sticky-top" id="theadDist" style="display:none; z-index: 11;">
@@ -269,7 +264,7 @@
                 <th class="text-start ps-3">District Name</th>
                 <th class="text-secondary">Issued Stock</th>
                 <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-                <th style="color: #38bdf8 !important;">Used Stock</th> <!-- లైట్ బ్లూ తీసేసి డార్క్ సయాన్ కింద మారుస్తాం -->
+                <th style="color: #38bdf8 !important;">Used Stock</th>
                 <th style="color: #60a5fa !important;">Avail. Stock</th>
                 <th style="color: #818cf8 !important;">Target (₹)</th>
                 <th style="color: #34d399 !important;">Total Sales(₹)</th>
@@ -282,7 +277,6 @@
                 <th>District</th>
                 <th class="text-secondary">Issued Stock</th>
                 <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-                <!-- 🌟 Used Stock Heading డార్క్ చేసాను 🌟 -->
                 <th style="color: #0284c7 !important;">Used Stock</th>
                 <th style="color: #60a5fa !important;">Avail. Stock</th>
                 <th style="color: #818cf8 !important;">Target (₹)</th>
@@ -311,6 +305,11 @@
 
     let masterVleData = [];
     let masterDistData = [];
+    
+    // 🌟 కొత్త మ్యాజిక్ లాజిక్ వేరియబుల్స్ (Overall Data స్టోరేజ్) 🌟
+    let masterOverallDataVle = {}; 
+    let isOverallLoaded = false;
+
     let currentView = 'VLE'; 
     let currentFilter = 'ALL';
 
@@ -322,6 +321,10 @@
        fetchReportData(); 
     };
 
+    function showError() {
+        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold">❌ Network Error. Failed to fetch data.</td></tr>`;
+    }
+
     function fetchReportData() {
        let filterVal = document.getElementById("dateFilter").value;
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
@@ -329,23 +332,55 @@
 
        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">Fetching live sales data...</td></tr>`;
 
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
-       .then(res => res.json()).then(res => {
-          if(res.success) {
-             masterVleData = res.vleSummary;
-             masterDistData = res.distSummary;
-             calculateTotals(masterVleData);
-             renderCurrentView();
-          }
-       }).catch(e => { document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold">❌ Network Error.</td></tr>`; });
+       // 🌟 మ్యాజిక్ లాజిక్: ఫస్ట్ టైం అయితే 'ALL' డేటా మరియు 'Selected' డేటా రెండూ లాగుతుంది 🌟
+       if (!isOverallLoaded) {
+           Promise.all([
+               fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: "ALL" }) }).then(r=>r.json()),
+               (filterVal === "ALL") ? Promise.resolve(null) : fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) }).then(r=>r.json())
+           ]).then(results => {
+               let resAll = results[0];
+               let resCur = results[1] || resAll; // ఫిల్టర్ 'ALL' అయితే రెండు ఒకటే!
+               
+               if (resAll.success) {
+                   // ఓవరాల్ డేటాని బ్యాక్‌గ్రౌండ్ లో సేవ్ చేస్తుంది
+                   resAll.vleSummary.forEach(v => { masterOverallDataVle[v.id] = v; });
+                   isOverallLoaded = true;
+               }
+               if (resCur.success) {
+                   masterVleData = resCur.vleSummary;
+                   masterDistData = resCur.distSummary;
+                   calculateTotals(masterVleData);
+                   renderCurrentView();
+               } else {
+                   showError();
+               }
+           }).catch(e => showError());
+       } 
+       else {
+           // సెకండ్ టైం నుండి ఓవరాల్ డేటా అప్పటికే ఉంటుంది కాబట్టి, జస్ట్ ఫిల్టర్ డేటా లాగుతుంది
+           fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
+           .then(res => res.json()).then(res => {
+               if(res.success) {
+                   masterVleData = res.vleSummary;
+                   masterDistData = res.distSummary;
+                   calculateTotals(masterVleData);
+                   renderCurrentView();
+               } else {
+                   showError();
+               }
+           }).catch(e => showError());
+       }
     }
 
     function calculateTotals(data) {
        let d10=0, d20=0, d50=0, d100=0, oth=0, totPap=0;
        data.forEach(item => {
+          // 🌟 టోటల్ పేపర్స్ (Issued Stock) ని ఎల్లప్పుడూ ఓవరాల్ డేటా నుంచే తీసుకుంటుంది 🌟
+          let ov = masterOverallDataVle[item.id] || item;
+          
           d10 += item.data.d10; d20 += item.data.d20; d50 += item.data.d50;
           d100 += item.data.d100; oth += item.data.other;
-          totPap += (item.data.assignedStock || 0); 
+          totPap += (ov.data.assignedStock || 0); 
        });
        document.getElementById("totVles").innerText = data.length;
        document.getElementById("totPapers").innerText = totPap;
@@ -366,7 +401,6 @@
        if(view === 'DIST') {
           document.getElementById("btnDistView").classList.add("active");
           document.getElementById("theadDist").style.display = "table-header-group";
-          // ఇక్కడ కూడా Heading అప్‌డేట్ చేస్తున్నా
           document.getElementById("theadDist").innerHTML = `
               <tr>
                 <th class="text-start ps-3">District Name</th>
@@ -412,10 +446,13 @@
           masterVleData.forEach(v => {
              let d = v.data.district;
              if(!distExtMap[d]) distExtMap[d] = {avail:0, target:0, pending:0, issued:0};
-             distExtMap[d].avail += (v.data.availableStock || 0);
-             distExtMap[d].target += (v.data.targetAmount || 0);
-             distExtMap[d].pending += (v.data.pendingAmount || 0);
-             distExtMap[d].issued += (v.data.assignedStock || 0);
+             
+             // 🌟 మేజర్ ఫిక్స్: డిస్ట్రిక్ట్ సమ్మరీలో కూడా ఓవరాల్ డేటా వాడబడుతుంది 🌟
+             let ov = masterOverallDataVle[v.id] || v; 
+             distExtMap[d].avail += (ov.data.availableStock || 0);
+             distExtMap[d].target += (ov.data.targetAmount || 0);
+             distExtMap[d].pending += (ov.data.pendingAmount || 0);
+             distExtMap[d].issued += (ov.data.assignedStock || 0);
           });
 
           if(dataToRender.length > 0) {
@@ -446,7 +483,6 @@
                     <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
                     <td class="text-muted">${otherHtml}</td>
                     <td class="text-secondary">${dsdHtml}</td>
-                    <!-- 🌟 Used Stock డార్క్ బ్లూ లో పెట్టి, ఫాంట్ సైజు పెంచాను 🌟 -->
                     <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
                     <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${ext.avail}</span></td>
                     <td class="text-secondary">₹ ${ext.target.toLocaleString('en-IN')}</td>
@@ -465,7 +501,6 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <!-- 🌟 Grand Total లో కూడా Used Stock ని డార్క్ బ్లూ చేశాను 🌟 -->
                     <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
@@ -484,16 +519,21 @@
 
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
+                // 🌟 మేజర్ ఫిక్స్: VLE లెవల్ లో కూడా ఓవరాల్ డేటా వాడబడుతుంది 🌟
+                let ov = masterOverallDataVle[item.id] || item;
+
                 let otherAmt = item.data.otherAmt || 0;
                 let dsdCount = item.data.dsdCount || 0;
                 let dsdAmt = item.data.dsd || 0;
 
                 let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
                 let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
-                let availStock = item.data.availableStock || 0;
-                let targetAmt = item.data.targetAmount || 0;
-                let pendingAmt = item.data.pendingAmount || 0;
-                let assignedStock = item.data.assignedStock || 0;
+                
+                // ఇష్యూడ్, అవైలబుల్, టార్గెట్, పెండింగ్ వాల్యూస్ 'ov' (Overall) నుంచే వస్తాయి
+                let availStock = ov.data.availableStock || 0;
+                let targetAmt = ov.data.targetAmount || 0;
+                let pendingAmt = ov.data.pendingAmount || 0;
+                let assignedStock = ov.data.assignedStock || 0;
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
                 gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
@@ -518,7 +558,6 @@
                     <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
                     <td class="text-muted">${otherHtml}</td>
                     <td class="text-secondary">${dsdHtml}</td>
-                    <!-- 🌟 Used Stock డార్క్ బ్లూ లో పెట్టి, ఫాంట్ సైజు పెంచాను 🌟 -->
                     <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
                     <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${availStock}</span></td>
                     <td class="text-secondary">₹ ${targetAmt.toLocaleString('en-IN')}</td>
@@ -537,7 +576,6 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <!-- 🌟 Grand Total లో కూడా Used Stock ని డార్క్ బ్లూ చేశాను 🌟 -->
                     <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
                     <td class="text-primary">${gtAvail}</td>
                     <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
