@@ -190,6 +190,7 @@
 
   <div class="container-fluid px-3" id="captureArea">
     
+    <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
       <div>
         <h4 class="fw-bold m-0" style="color: #0f172a;">📊 E-Stamping Denomination Sales</h4>
@@ -228,9 +229,13 @@
       </div>
     </div>
 
+    <!-- Clickable Summary Cards -->
     <div class="row g-3 mb-3">
+      <!-- 🌟 ఈ రెండు బాక్సులు ఎప్పటికీ మారకుండా ఫిక్స్ చేశాను 🌟 -->
       <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ea580c;">Total VLEs</div><div class="stat-value" style="color:#ea580c;" id="totVles">0</div></div></div>
       <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ef4444;">Total Papers</div><div class="stat-value" style="color:#ef4444;" id="totPapers">0</div></div></div>
+      
+      <!-- మిగతావి మారుతాయి -->
       <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title" style="color:#16a34a;">₹ 10</div><div class="stat-value" style="color:#16a34a;" id="tot10">0</div></div></div>
       <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title" style="color:#0284c7;">₹ 20</div><div class="stat-value" style="color:#0284c7;" id="tot20">0</div></div></div>
       <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title" style="color:#ca8a04;">₹ 50</div><div class="stat-value" style="color:#ca8a04;" id="tot50">0</div></div></div>
@@ -238,6 +243,7 @@
       <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
     </div>
 
+    <!-- Controls: Toggle Buttons & Search -->
     <div class="controls-bar" data-html2canvas-ignore="true">
       <div>
         <button id="btnDistView" class="view-btn" onclick="switchView('DIST')">🏢 District Summary</button>
@@ -248,6 +254,7 @@
       </div>
     </div>
 
+    <!-- Premium Table Area -->
     <div class="premium-card">
       <div class="card-header-custom">
         <div class="card-title">
@@ -264,7 +271,7 @@
                 <th class="text-start ps-3">District Name</th>
                 <th class="text-secondary">Issued Stock</th>
                 <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-                <th style="color: #38bdf8 !important;">Used Stock</th>
+                <th style="color: #0284c7 !important;">Used Stock</th>
                 <th style="color: #60a5fa !important;">Avail. Stock</th>
                 <th style="color: #818cf8 !important;">Target (₹)</th>
                 <th style="color: #34d399 !important;">Total Sales(₹)</th>
@@ -306,7 +313,6 @@
     let masterVleData = [];
     let masterDistData = [];
     
-    // 🌟 కొత్త మ్యాజిక్ లాజిక్ వేరియబుల్స్ (Overall Data స్టోరేజ్) 🌟
     let masterOverallDataVle = {}; 
     let isOverallLoaded = false;
 
@@ -332,17 +338,15 @@
 
        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">Fetching live sales data...</td></tr>`;
 
-       // 🌟 మ్యాజిక్ లాజిక్: ఫస్ట్ టైం అయితే 'ALL' డేటా మరియు 'Selected' డేటా రెండూ లాగుతుంది 🌟
        if (!isOverallLoaded) {
            Promise.all([
                fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: "ALL" }) }).then(r=>r.json()),
                (filterVal === "ALL") ? Promise.resolve(null) : fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) }).then(r=>r.json())
            ]).then(results => {
                let resAll = results[0];
-               let resCur = results[1] || resAll; // ఫిల్టర్ 'ALL' అయితే రెండు ఒకటే!
+               let resCur = results[1] || resAll; 
                
                if (resAll.success) {
-                   // ఓవరాల్ డేటాని బ్యాక్‌గ్రౌండ్ లో సేవ్ చేస్తుంది
                    resAll.vleSummary.forEach(v => { masterOverallDataVle[v.id] = v; });
                    isOverallLoaded = true;
                }
@@ -351,13 +355,10 @@
                    masterDistData = resCur.distSummary;
                    calculateTotals(masterVleData);
                    renderCurrentView();
-               } else {
-                   showError();
-               }
+               } else { showError(); }
            }).catch(e => showError());
        } 
        else {
-           // సెకండ్ టైం నుండి ఓవరాల్ డేటా అప్పటికే ఉంటుంది కాబట్టి, జస్ట్ ఫిల్టర్ డేటా లాగుతుంది
            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
            .then(res => res.json()).then(res => {
                if(res.success) {
@@ -365,25 +366,29 @@
                    masterDistData = res.distSummary;
                    calculateTotals(masterVleData);
                    renderCurrentView();
-               } else {
-                   showError();
-               }
+               } else { showError(); }
            }).catch(e => showError());
        }
     }
 
     function calculateTotals(data) {
-       let d10=0, d20=0, d50=0, d100=0, oth=0, totPap=0;
+       let d10=0, d20=0, d50=0, d100=0, oth=0;
+       
+       // 🌟 1. సేల్స్ (Denominations) కి సంబంధించినవి ఫిల్టర్ చేసిన డేటా నుండి లెక్కించబడతాయి 🌟
        data.forEach(item => {
-          // 🌟 టోటల్ పేపర్స్ (Issued Stock) ని ఎల్లప్పుడూ ఓవరాల్ డేటా నుంచే తీసుకుంటుంది 🌟
-          let ov = masterOverallDataVle[item.id] || item;
-          
           d10 += item.data.d10; d20 += item.data.d20; d50 += item.data.d50;
           d100 += item.data.d100; oth += item.data.other;
-          totPap += (ov.data.assignedStock || 0); 
        });
-       document.getElementById("totVles").innerText = data.length;
-       document.getElementById("totPapers").innerText = totPap;
+
+       // 🌟 2. Total VLEs & Total Papers మాత్రం ఎప్పటికీ Overall డేటా నుండే తీసుకోబడతాయి (ఫిక్స్డ్) 🌟
+       let globalVLECount = Object.keys(masterOverallDataVle).length;
+       let globalIssued = 0;
+       Object.values(masterOverallDataVle).forEach(ov => {
+           globalIssued += (ov.data.assignedStock || 0);
+       });
+
+       document.getElementById("totVles").innerText = globalVLECount;
+       document.getElementById("totPapers").innerText = globalIssued;
        document.getElementById("tot10").innerText = d10;
        document.getElementById("tot20").innerText = d20;
        document.getElementById("tot50").innerText = d50;
@@ -401,17 +406,6 @@
        if(view === 'DIST') {
           document.getElementById("btnDistView").classList.add("active");
           document.getElementById("theadDist").style.display = "table-header-group";
-          document.getElementById("theadDist").innerHTML = `
-              <tr>
-                <th class="text-start ps-3">District Name</th>
-                <th class="text-secondary">Issued Stock</th>
-                <th>₹ 10</th><th>₹ 20</th><th>₹ 50</th><th>₹ 100</th><th>Oth.</th><th>DSD</th>
-                <th style="color: #0284c7 !important;">Used Stock</th>
-                <th style="color: #60a5fa !important;">Avail. Stock</th>
-                <th style="color: #818cf8 !important;">Target (₹)</th>
-                <th style="color: #34d399 !important;">Total Sales(₹)</th>
-                <th style="color: #f87171 !important;">Pending (₹)</th>
-              </tr>`;
           document.getElementById("tableTitle").innerText = "🏢 District-Wise Overall Summary";
           document.getElementById("searchBox").placeholder = "🔍 Search District...";
        } else {
@@ -436,19 +430,26 @@
        const tbody = document.getElementById("reportTbody"); tbody.innerHTML = "";
        let dataToRender = [];
 
-       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtDsd = 0, gtAmt = 0;
-       let gtAvail = 0, gtTarget = 0, gtPending = 0, gtIssued = 0, gtUsed = 0;
+       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtDsd = 0, gtAmt = 0, gtUsed = 0;
+
+       // 🌟 3. Grand Total అట్టడుగు వరుస కోసం మొత్తం రాష్ట్ర/జిల్లా టార్గెట్స్ లెక్కించడం 🌟
+       let globalIssued = 0, globalAvail = 0, globalTarget = 0, globalPending = 0;
+       Object.values(masterOverallDataVle).forEach(ov => {
+           globalIssued += (ov.data.assignedStock || 0);
+           globalAvail += (ov.data.availableStock || 0);
+           globalTarget += (ov.data.targetAmount || 0);
+           globalPending += (ov.data.pendingAmount || 0);
+       });
 
        if (currentView === 'DIST') {
           dataToRender = masterDistData;
           
           let distExtMap = {};
-          masterVleData.forEach(v => {
-             let d = v.data.district;
+          // జిల్లాల వారీగా ఓవరాల్ టార్గెట్ ని మ్యాప్ చేయడం
+          Object.values(masterOverallDataVle).forEach(ov => {
+             let d = ov.data.district;
              if(!distExtMap[d]) distExtMap[d] = {avail:0, target:0, pending:0, issued:0};
              
-             // 🌟 మేజర్ ఫిక్స్: డిస్ట్రిక్ట్ సమ్మరీలో కూడా ఓవరాల్ డేటా వాడబడుతుంది 🌟
-             let ov = masterOverallDataVle[v.id] || v; 
              distExtMap[d].avail += (ov.data.availableStock || 0);
              distExtMap[d].target += (ov.data.targetAmount || 0);
              distExtMap[d].pending += (ov.data.pendingAmount || 0);
@@ -468,7 +469,7 @@
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
                 gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
-                gtAvail += ext.avail; gtTarget += ext.target; gtPending += ext.pending; gtIssued += ext.issued; gtUsed += usedStock;
+                gtUsed += usedStock;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
@@ -491,10 +492,11 @@
                 </tr>`;
              });
              
+             // 🌟 Grand Total వరుసలో లైఫ్‌టైమ్ డేటా ముద్రించడం 🌟
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
                     <td class="text-end pe-4 text-uppercase">Grand Total</td>
-                    <td class="text-secondary">${gtIssued}</td>
+                    <td class="text-secondary">${globalIssued}</td>
                     <td style="color:#16a34a;">${gt10}</td>
                     <td style="color:#0284c7;">${gt20}</td>
                     <td style="color:#ca8a04;">${gt50}</td>
@@ -502,10 +504,10 @@
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
                     <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
-                    <td class="text-primary">${gtAvail}</td>
-                    <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-primary">${globalAvail}</td>
+                    <td class="text-primary">₹ ${globalTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-danger">₹ ${gtPending.toLocaleString('en-IN')}</td>
+                    <td class="text-danger pe-3">₹ ${globalPending.toLocaleString('en-IN')}</td>
                 </tr>`;
           } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-5 fw-bold fs-6">❌ No sales data found.</td></tr>`; }
        } 
@@ -519,7 +521,6 @@
 
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
-                // 🌟 మేజర్ ఫిక్స్: VLE లెవల్ లో కూడా ఓవరాల్ డేటా వాడబడుతుంది 🌟
                 let ov = masterOverallDataVle[item.id] || item;
 
                 let otherAmt = item.data.otherAmt || 0;
@@ -529,7 +530,6 @@
                 let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
                 let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
                 
-                // ఇష్యూడ్, అవైలబుల్, టార్గెట్, పెండింగ్ వాల్యూస్ 'ov' (Overall) నుంచే వస్తాయి
                 let availStock = ov.data.availableStock || 0;
                 let targetAmt = ov.data.targetAmount || 0;
                 let pendingAmt = ov.data.pendingAmount || 0;
@@ -537,7 +537,7 @@
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
                 gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
-                gtAvail += availStock; gtTarget += targetAmt; gtPending += pendingAmt; gtIssued += assignedStock; gtUsed += usedStock;
+                gtUsed += usedStock;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
@@ -566,10 +566,11 @@
                 </tr>`;
              });
              
+             // 🌟 Grand Total వరుసలో లైఫ్‌టైమ్ డేటా ముద్రించడం 🌟
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
                     <td colspan="2" class="text-end pe-4 text-uppercase">Grand Total</td>
-                    <td class="text-secondary">${gtIssued}</td>
+                    <td class="text-secondary">${globalIssued}</td>
                     <td style="color:#16a34a;">${gt10}</td>
                     <td style="color:#0284c7;">${gt20}</td>
                     <td style="color:#ca8a04;">${gt50}</td>
@@ -577,10 +578,10 @@
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
                     <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
-                    <td class="text-primary">${gtAvail}</td>
-                    <td class="text-primary">₹ ${gtTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-primary">${globalAvail}</td>
+                    <td class="text-primary">₹ ${globalTarget.toLocaleString('en-IN')}</td>
                     <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-danger pe-3">₹ ${gtPending.toLocaleString('en-IN')}</td>
+                    <td class="text-danger pe-3">₹ ${globalPending.toLocaleString('en-IN')}</td>
                 </tr>`;
           } else { tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold fs-6">❌ No VLEs found for this selection.</td></tr>`; }
        }
