@@ -197,34 +197,71 @@
         }
     };
 
-    // 🌟 పక్కా లోడింగ్ & రీట్రై లాజిక్ (Bullet-proof Fetch) 🌟
-    function fetchDataFromServer() {
-        // డేటా వచ్చేదాకా టేబుల్ లో లోడింగ్ అని చూపిస్తాం
-        let tbody = document.getElementById("reportBody");
-        if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from server... Please wait...</td></tr>`;
+ 
+    // 🌟 1. ఫైర్‌బేస్ REDBUS డైరెక్ట్ లింక్ 🌟
+    const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/redbusData.json";
 
-        fetch(SCRIPT_URL, { 
-            method: "POST", 
-            body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) 
-        })
+    // 🌟 2. కొత్త బులెట్-ప్రూఫ్ ఫైర్‌బేస్ ఫెచ్ ఫంక్షన్ 🌟
+    function fetchDataFromServer() {
+        let tbody = document.getElementById("reportBody");
+        if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
+
+        fetch(FIREBASE_URL)
         .then(res => res.json())
-        .then(res => { 
-            if(res.success && res.data && res.data.length > 0) { 
-                rawData = res.data; 
+        .then(data => {
+            if(data) {
+                let dataArr = [];
+                for(let key in data) {
+                    if(data[key]) dataArr.push(data[key]);
+                }
                 
-                // కొత్త డేటాని క్యాష్ లో సేవ్ చేయడం (నెక్స్ట్ టైమ్ ఫాస్ట్ గా రావడానికి)
-                saveToCache(CACHE_KEY, rawData); 
-                
-                processData(); 
+                let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+                if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
+
+                // 🌟 గూగుల్ షీట్ హెడ్డింగ్స్ ని మన ఫ్రంట్-ఎండ్ కి మ్యాపింగ్ చేయడం 🌟
+                rawData = dataArr.map(r => {
+                    let oDist = r.Old_District || r.OldDistrict || "";
+                    let nDist = r.New_District || r.NewDistrict || "";
+                    
+                    let isMyNDist = false;
+                    let normNewDist = nDist.replace(/[^A-Za-z]/g, '').toUpperCase();
+                    if(normNewDist === "VSP") normNewDist = "VISAKHAPATNAM";
+                    if(normNewDist.includes(dmDistrict) || dmDistrict.includes(normNewDist)) isMyNDist = true;
+
+                    return {
+                        oldDist: oDist,
+                        newDist: nDist,
+                        cscId: r.CSC_ID || r.CSCID || "",
+                        vleName: r.VLE_Name || r.VLEName || "",
+                        mobile: r.Mobile_No || r.Mobile || "",
+                        // ఫైర్‌బేస్ లో 'DSP 25-26' అనేది 'DSP_2526' గా సేవ్ అవుతుంది, దాన్ని మనం క్యాచ్ చేస్తున్నాం
+                        dsp2526: parseInt(r.DSP_2526) || 0,
+                        srv2526: parseInt(r.REDBUS_2526 || r.SRV_2526) || 0,
+                        dsp2627: parseInt(r.DSP_2627) || 0,
+                        srv2627: parseInt(r.REDBUS_2627 || r.SRV_2627) || 0,
+                        isMyNewDist: isMyNDist
+                    };
+                });
+
+                // 🌟 DM లాగిన్ అయితే పాత జిల్లా ప్రకారం ఫిల్టర్ చేయడం 🌟
+                if (isDM) {
+                    rawData = rawData.filter(r => {
+                        let normOldDist = (r.oldDist || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+                        if(normOldDist === "VSP") normOldDist = "VISAKHAPATNAM";
+                        return normOldDist.includes(dmDistrict) || dmDistrict.includes(normOldDist);
+                    });
+                }
+
+                saveToCache(CACHE_KEY, rawData);
+                initApp(); // (పాత కోడ్ లో లేని processData బదులు దీన్ని సెట్ చేశాను)
             } else {
-                if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found. Please check if Google Sheet has data.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found.</td></tr>`;
             }
         })
-        .catch(e => { 
-            console.error("Fetch Error:", e);
+        .catch(e => {
+            console.error("Firebase Error:", e);
             if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
-            // ఎర్రర్ వస్తే 3 సెకన్ల తర్వాత దానంతట అదే మళ్ళీ ట్రై చేస్తుంది!
-            setTimeout(fetchDataFromServer, 3000); 
+            setTimeout(fetchDataFromServer, 3000);
         });
     }
 
