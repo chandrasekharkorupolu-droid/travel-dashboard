@@ -165,9 +165,9 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    // 🌟 పాత గూగుల్ షీట్ లింక్ తీసేసి ఫైర్‌బేస్ లింక్ పెట్టాం 🌟
+    const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/helpdeskTickets.json";
     
-    // 🌟 లాగిన్ డీటెయిల్స్ పట్టుకోవడం 🌟
     let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
     let loggedInUserId = localStorage.getItem("userId") || ""; 
 
@@ -182,36 +182,73 @@
         document.getElementById("reportDateTime").innerText = "Report Generated: " + formatted;
     }
 
-    function fetchSummaryData() {
-       document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="py-4 text-center fw-bold text-primary">🔄 Fetching Data...</td></tr>`;
+    async function fetchSummaryData() {
+       document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="py-4 text-center fw-bold text-primary">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
        
-       // 🌟 బ్యాకెండ్ కి లాగిన్ ఐడీలు కూడా పంపుతున్నాం 🌟
-       fetch(SCRIPT_URL, { 
-           method: "POST", 
-           body: JSON.stringify({ 
-               action: "getHelpdeskSummary",
-               role: loggedInDesig,
-               userId: loggedInUserId
-           }) 
-       })
-       .then(res => res.json()).then(res => {
-          if(res.success && res.summary) { 
-             renderDashboard(res.summary);
-             updateDateTime(); 
-          }
-       }).catch(e => { 
-           document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ Network error.</td></tr>`; 
-       });
+       try {
+           let res = await fetch(FIREBASE_URL);
+           let rawData = await res.json();
+           
+           let dataArr = [];
+           for(let key in rawData) {
+               if(rawData[key]) dataArr.push(rawData[key]);
+           }
+           
+           // 🌟 DM కి వాళ్ళ జిల్లా డేటా మాత్రమే చూపించే ఫిల్టర్ 🌟
+           if (loggedInDesig === "DM" || loggedInDesig.includes("DISTRICT MANAGER")) {
+               let userDist = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+               if(userDist === "VSP") userDist = "VISAKHAPATNAM";
+               
+               dataArr = dataArr.filter(t => {
+                   let tDist = (t.district || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+                   if(tDist === "VSP") tDist = "VISAKHAPATNAM";
+                   return tDist.includes(userDist) || userDist.includes(tDist);
+               });
+           }
+
+           // 🌟 ఫ్రంట్-ఎండ్ లోనే స్పీడ్ గా కాలిక్యులేట్ చేయడం 🌟
+           let summary = { kpi: { total: 0, resolved: 0, escalated: 0, pending: 0 }, districts: {}, resolvers: {}, services: {} };
+           
+           dataArr.forEach(t => {
+               let dist = t.district ? t.district.toUpperCase() : "UNKNOWN";
+               let status = t.status ? t.status.toUpperCase() : "PENDING";
+               let srv = t.service ? t.service.toUpperCase() : "UNKNOWN";
+               let resolver = t.resolvedBy ? t.resolvedBy.toUpperCase() : "";
+
+               summary.kpi.total++;
+               if (status === "RESOLVED") summary.kpi.resolved++;
+               else if (status === "FORWARDED TO HO") summary.kpi.escalated++;
+               else summary.kpi.pending++;
+
+               if (!summary.districts[dist]) summary.districts[dist] = { total: 0, resolved: 0, escalated: 0, pending: 0 };
+               summary.districts[dist].total++;
+               if (status === "RESOLVED") summary.districts[dist].resolved++;
+               else if (status === "FORWARDED TO HO") summary.districts[dist].escalated++;
+               else summary.districts[dist].pending++;
+
+               if (status === "RESOLVED" && resolver !== "") {
+                   if (!summary.resolvers[resolver]) summary.resolvers[resolver] = 0;
+                   summary.resolvers[resolver]++;
+               }
+
+               if (!summary.services[srv]) summary.services[srv] = 0;
+               summary.services[srv]++;
+           });
+
+           renderDashboard(summary);
+           updateDateTime(); 
+
+       } catch (error) {
+           document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ Firebase Connection Error.</td></tr>`;
+       }
     }
 
     function renderDashboard(data) {
-        // 1. KPI Cards
         document.getElementById("kpiTotal").innerText = data.kpi.total;
         document.getElementById("kpiResolved").innerText = data.kpi.resolved;
         document.getElementById("kpiEscalated").innerText = data.kpi.escalated;
         document.getElementById("kpiPending").innerText = data.kpi.pending;
 
-        // 2. District Table
         let dBody = "";
         let distList = Object.keys(data.districts).sort();
         distList.forEach(d => {
@@ -226,7 +263,6 @@
         });
         document.getElementById("districtBody").innerHTML = dBody || `<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>`;
 
-        // 3. Resolvers Table
         let rBody = "";
         let resList = Object.keys(data.resolvers).sort((a,b) => data.resolvers[b] - data.resolvers[a]); 
         resList.forEach(r => {
@@ -237,7 +273,6 @@
         });
         document.getElementById("resolverBody").innerHTML = rBody || `<tr><td colspan="2" class="text-center text-muted">No resolutions yet</td></tr>`;
 
-        // 4. Services Table
         let sBody = "";
         let srvList = Object.keys(data.services).sort((a,b) => data.services[b] - data.services[a]); 
         srvList.forEach(s => {
