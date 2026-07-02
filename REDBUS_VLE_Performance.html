@@ -127,6 +127,7 @@
   </div>
 
   <script>
+    // 🌟 పక్కా మీ గూగుల్ స్క్రిప్ట్ లింక్ (SCRIPT_URL). ఫైర్‌బేస్ పీకేశాను! 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     const SERVICE_NAME = "REDBUS"; 
     
@@ -197,107 +198,74 @@
         }
     };
 
- 
-  // 🌟 1. ఫైర్‌బేస్ REDBUS డైరెక్ట్ లింక్ 🌟
-    const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/redbusData.json";
-
-    // 🌟 2. అల్ట్రా-స్మార్ట్ ఫైర్‌బేస్ ఫెచ్ (Exact Column Matching) 🌟
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
-        if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from Google Script... Please wait...</td></tr>`;
 
-        fetch(FIREBASE_URL)
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) 
+        })
         .then(res => res.json())
-        .then(data => {
-            if(data) {
-                let dataArr = [];
-                for(let key in data) {
-                    if(data[key]) dataArr.push(data[key]);
-                }
+        .then(res => { 
+            if(res.success && res.data && res.data.length > 0) { 
                 
-                let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
-                if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
-
-                // 🌟 అల్ట్రా-స్మార్ట్ మ్యాపింగ్: గూగుల్ షీట్‌లో ఎన్ని ఎక్స్‌ట్రా కాలమ్స్ ఉన్నా కరెక్ట్ దాన్ని మాత్రమే పట్టుకుంటుంది 🌟
-                rawData = dataArr.map(r => {
-                    let keys = Object.keys(r);
+                // 🌟 మీ గూగుల్ షీట్ నుండి వచ్చే నెలల డేటాని ఇక్కడ కూడుతున్నాం (Sum) 🌟
+                rawData = res.data.map(item => {
+                    let rb26_sum = 0;
                     
-                    // కాలమ్ పేరుని పక్కాగా కనిపెట్టే ఫంక్షన్ (ఇందులో కీవర్డ్స్ ఉండి, ఎక్స్‌క్లూడ్ పదాలు ఉండకూడదు)
-                    const getK = (inc, exc) => keys.find(k => {
-                        let kUp = k.toUpperCase();
-                        return inc.every(c => kUp.includes(c)) && (!exc || exc.every(e => !kUp.includes(e)));
-                    });
-
-                    // కరెక్ట్ కాలమ్స్ ని మాత్రమే వెతకడం (Target, Pending, Alt లాంటివి వదిలేయడం)
-                    let kOldDist = getK(["OLD", "DIST"]) || getK(["OLD"]);
-                    let kNewDist = getK(["NEW", "DIST"]) || getK(["NEW"]);
-                    let kCscId   = getK(["CSC", "ID"]) || getK(["CSC"]);
-                    let kVleName = getK(["VLE", "NAME"]) || getK(["NAME"], ["DIST"]);
-                    
-                    // మొబైల్ నెంబర్ జీరో రాకుండా 'ALT' (Alternate) లాంటివి పక్కన పెట్టడం
-                    let kMobile  = getK(["MOBILE"], ["ALT", "WHATSAPP", "APP"]);
-                    
-                    // 25-26 కాలమ్స్ (టార్గెట్స్, పెండింగ్ కాకుండా)
-                    let kDsp25 = getK(["DSP", "25"], ["TARGET", "PEND", "ACHIEV"]);
-                    let kSrv25 = getK(["REDBUS", "25"], ["TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "25"], ["TARGET", "PEND", "ACHIEV"]);
-                    
-                    // 26-27 కాలమ్స్ (టార్గెట్స్, పెండింగ్ కాకుండా)
-                    let kDsp26 = getK(["DSP", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["DSP", "27"], ["25", "TARGET", "PEND", "ACHIEV"]);
-                    let kSrv26 = getK(["REDBUS", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "26"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["REDBUS", "27"], ["25", "TARGET", "PEND", "ACHIEV"]) || getK(["SRV", "27"], ["25", "TARGET", "PEND", "ACHIEV"]);
-
-                    // వాల్యూస్ ని అసైన్ చేయడం
-                    let nDist = kNewDist ? (r[kNewDist] || "") : "";
-                    
-                    let isMyNDist = false;
-                    let normNewDist = nDist.replace(/[^A-Za-z]/g, '').toUpperCase();
-                    if(normNewDist === "VSP") normNewDist = "VISAKHAPATNAM";
-                    if(normNewDist.includes(dmDistrict) || dmDistrict.includes(normNewDist)) isMyNDist = true;
-
-                    return {
-                        oldDist: kOldDist ? (r[kOldDist] || "") : "",
-                        newDist: nDist,
-                        cscId: kCscId ? (r[kCscId] || "") : "",
-                        vleName: kVleName ? (r[kVleName] || "") : "",
-                        mobile: kMobile ? (r[kMobile] || "") : "",
+                    for(let key in item) {
+                        let kUp = key.toUpperCase();
+                        let val = parseInt(item[key]) || 0;
                         
-                        dsp2526: kDsp25 ? (parseInt(r[kDsp25]) || 0) : 0,
-                        srv2526: kSrv25 ? (parseInt(r[kSrv25]) || 0) : 0,
-                        dsp2627: kDsp26 ? (parseInt(r[kDsp26]) || 0) : 0,
-                        srv2627: kSrv26 ? (parseInt(r[kSrv26]) || 0) : 0,
-                        isMyNewDist: isMyNDist
-                    };
+                        // 'RB_' అని ఉండి, 26 లేదా 27 ఉండి, 25 లేని నెలలని మాత్రమే కూడుతుంది
+                        if ((kUp.includes("RB_") || kUp.includes("REDBUS")) && 
+                            (kUp.includes("26") || kUp.includes("27")) && 
+                            !kUp.includes("25") && 
+                            !kUp.includes("TARGET") && 
+                            !kUp.includes("PEND") && 
+                            !kUp.includes("FY")) {
+                            rb26_sum += val;
+                        }
+                    }
+                    
+                    // పాత వాల్యూస్ దేని దానికి అసైన్ చేయడం
+                    item.dsp2526 = parseInt(item.dsp2526) || 0;
+                    item.srv2526 = parseInt(item.srv2526) || 0;
+                    item.dsp2627 = parseInt(item.dsp2627) || 0;
+                    
+                    // నెలల సమ్ > 0 ఉంటే దాన్ని వేస్తుంది, లేదంటే పాత srv2627 వేస్తుంది
+                    if(rb26_sum > 0) {
+                        item.srv2627 = rb26_sum;
+                    } else {
+                        item.srv2627 = parseInt(item.srv2627) || parseInt(item.REDBUS2627) || 0;
+                    }
+                    
+                    return item;
                 });
 
-                // 🌟 DM లాగిన్ అయితే పాత జిల్లా ప్రకారం ఫిల్టర్ చేయడం 🌟
-                if (isDM) {
-                    rawData = rawData.filter(r => {
-                        let normOldDist = (r.oldDist || "").replace(/[^A-Za-z]/g, '').toUpperCase();
-                        if(normOldDist === "VSP") normOldDist = "VISAKHAPATNAM";
-                        return normOldDist.includes(dmDistrict) || dmDistrict.includes(normOldDist);
-                    });
-                }
-
-                saveToCache(CACHE_KEY, rawData);
+                saveToCache(CACHE_KEY, rawData); 
                 initApp(); 
+                
             } else {
-                if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found.</td></tr>`;
+                // 🌟 ఒకవేళ మీరు లోకల్ గా సిస్టమ్ లో ఓపెన్ చేస్తే, దానికి కారణం ఇక్కడ స్పష్టంగా చూపిస్తుంది 🌟
+                let serverResponse = res.message ? res.message : JSON.stringify(res);
+                if(tbody) tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-danger py-5 text-center fw-bold">
+                            <span style="font-size:18px;">⚠️ Google Script Data Rejected</span><br><br>
+                            Server Message: <span class="text-dark">${serverResponse}</span><br><br>
+                            <span style="color:#0284c7;">గమనిక: మీరు ఈ ఫైల్‌ని C: Drive (Local) నుండి ఓపెన్ చేసినట్లున్నారు. సిస్టమ్‌లో Login ID లేకపోవడం వల్ల Google Script డేటాని పంపలేదు.<br>
+                            దయచేసి ఈ ఫైల్‌ని మీ లైవ్ పోర్టల్ లో పెట్టి చెక్ చేయండి, కచ్చితంగా డేటా వస్తుంది!</span>
+                        </td>
+                    </tr>`;
             }
         })
-        .catch(e => {
-            console.error("Firebase Error:", e);
-            if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
-            setTimeout(fetchDataFromServer, 3000);
+        .catch(e => { 
+            console.error("Fetch Error:", e);
+            if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
+            setTimeout(fetchDataFromServer, 3000); 
         });
-    }
-
-    // డేటాని క్యాష్ (IndexedDB) లోకి సేవ్ చేసే ఫంక్షన్ (ఇది మీ దగ్గర లేకపోతే యాడ్ చేయండి)
-    async function saveToCache(key, dataObj) {
-        try {
-            let db = await openDB();
-            let tx = db.transaction(STORE_NAME, "readwrite");
-            let store = tx.objectStore(STORE_NAME);
-            store.put({ data: dataObj, timestamp: Date.now() }, key);
-        } catch(e) { console.error("Cache Save Error", e); }
     }
 
     function initApp() {
@@ -354,7 +322,7 @@
 
             let rowDist = toProperCase((isNew ? r.newDist : r.oldDist).trim());
             let matchDist = (selDist === "ALL" || rowDist === selDist);
-            let matchSearch = (r.vleName.toUpperCase().includes(searchTxt) || r.cscId.toUpperCase().includes(searchTxt));
+            let matchSearch = ((r.vleName && r.vleName.toUpperCase().includes(searchTxt)) || (r.cscId && r.cscId.toUpperCase().includes(searchTxt)));
             return matchDist && matchSearch;
         });
 
@@ -431,7 +399,7 @@
                 <td><span class="status-badge ${dspClass}">${item.dsp2627}</span></td>
                 <td><span class="status-badge ${rbClass}">${item.srv2627}</span></td>
                 <td>
-                <button class="btn-wa" onclick="sendWhatsApp('${item.mobile}', '${toProperCase(item.vleName)}', '${rowDist}')">💬 WA</button>
+                <button class="btn-wa" onclick="sendWhatsApp('${item.mobile}', '${toProperCase(item.vleName).replace(/'/g, "\\'")}', '${rowDist}')">💬 WA</button>
                 </td>
             </tr>`;
         });
@@ -453,7 +421,6 @@
         setKpiFilter('ALL');
     }
 
-// 🌟 బ్రౌజర్ ట్యాబ్స్ తో పనే లేకుండా డైరెక్ట్ యాప్ ఓపెన్ చేసే ఫంక్షన్ 🌟
     function sendWhatsApp(mobile, name, district) {
        if(!mobile || mobile === "-" || mobile.length < 10) { alert("Invalid Mobile Number!"); return; }
        
@@ -464,10 +431,7 @@
 
        let message = `ప్రియమైన *${name}* గారు,\n*${greeting}* 👋\nDistrict Name : *${district}*\n\nమీరు ఈ ఫైనాన్షియల్ ఇయర్ లో ఇంకా *bus ticket booking (REDBUS service)* ప్రారంభించలేదు. మీ ID ఇంకా *inactive* లో ఉంది.\n\n👉 వెంటనే ఒక bus ticket బుక్ చేసి మీ ID ని *active* గా మార్చండి.\n\n📌 *Sample Booking Details:*\nBus: *MahendraTravels*\nFrom: *Jagadalpur (Chhattisgarh)*\nTo: *Tokapal*\nTicket Cost: *₹30/-* *(₹28.01 CSC wallet నుండి deduct అవుతుంది)*\n\n⚠️ Regular bookings చేయడం ద్వారా మీ ఆదాయం కూడా పెరుగుతుంది.\n\n📌 వెంటనే REDBUS service లో activate అవ్వండి.\n\nధన్యవాదాలు,\n*CSC Tour & Travels*\n*SPOC || Andhra Pradesh*\n*9440115828*`;
        
-       // 🌟 మ్యాజిక్ ఇక్కడే ఉంది: 'https' బదులు 'whatsapp://' వాడుతున్నాం 🌟
        let appUrl = `whatsapp://send?phone=91${mobile}&text=${encodeURIComponent(message)}`;
-       
-       // ఇది కొత్త ట్యాబ్ ఓపెన్ చేయదు, డైరెక్ట్ గా సిస్టమ్ లోని వాట్సాప్ యాప్ కే వెళ్తుంది!
        window.location.href = appUrl;
     }
 
@@ -509,32 +473,30 @@
        }
     });
 
-function pushToMobileApp() {
-    let btn = document.getElementById("pushAppBtn");
-    btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
+    function pushToMobileApp() {
+        let btn = document.getElementById("pushAppBtn");
+        btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
 
-    let targetUrl = typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : (typeof apiURL !== 'undefined' ? apiURL : "");
+        let targetUrl = typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : (typeof apiURL !== 'undefined' ? apiURL : "");
 
-    fetch(targetUrl, {
-        method: "POST",
-        body: JSON.stringify({ action: "generateAppTargets", service: "REDBUS" })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if(data.success) {
-            alert(`✅ REDBUS Targets Generated! (${data.count} VLEs pushed to App)`);
-        } else {
-            alert("❌ Backend Error: " + data.error);
-        }
-        btn.innerText = "📱 Push to App"; btn.disabled = false;
-    })
-    .catch(e => {
-        alert("❌ Network Timeout. But check Google Sheet, data might be there.");
-        btn.innerText = "📱 Push to App"; btn.disabled = false;
-    });
-}
-
-
-</script>
+        fetch(targetUrl, {
+            method: "POST",
+            body: JSON.stringify({ action: "generateAppTargets", service: "REDBUS" })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.success) {
+                alert(`✅ REDBUS Targets Generated! (${data.count} VLEs pushed to App)`);
+            } else {
+                alert("❌ Backend Error: " + data.error);
+            }
+            btn.innerText = "📱 Push to App"; btn.disabled = false;
+        })
+        .catch(e => {
+            alert("❌ Network Timeout. But check Google Sheet, data might be there.");
+            btn.innerText = "📱 Push to App"; btn.disabled = false;
+        });
+    }
+  </script>
 </body>
 </html>
