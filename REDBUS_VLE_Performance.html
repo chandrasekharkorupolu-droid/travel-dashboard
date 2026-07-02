@@ -127,7 +127,6 @@
   </div>
 
   <script>
-    // 🌟 పక్కా మీ గూగుల్ స్క్రిప్ట్ లింక్ (SCRIPT_URL). ఫైర్‌బేస్ వద్దు! 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     const SERVICE_NAME = "REDBUS"; 
     
@@ -201,6 +200,7 @@
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
         if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from Google Script... Please wait...</td></tr>`;
+        document.getElementById("lblStatus").innerText = "Fetching Live Data...";
 
         fetch(SCRIPT_URL, { 
             method: "POST", 
@@ -209,67 +209,56 @@
         .then(res => res.json())
         .then(res => { 
             if(res.success && res.data && res.data.length > 0) { 
-
-                // జిల్లా ఫిల్టర్ కోసం DM జిల్లా పేరును తీసుకోవడం
+                
                 let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
                 if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
 
-                let finalData = [];
-
-                res.data.forEach(item => {
-                    // 🌟 1. పక్కా ఫ్రంట్-ఎండ్ డిస్ట్రిక్ట్ ఫిల్టర్ (AP డేటా మొత్తం రాకుండా ఆపుతుంది) 🌟
-                    if (isDM && dmDistrict) {
-                        let rowOldDist = (item.oldDist || item.Old_District || item["Old District"] || "").toString().replace(/[^A-Za-z]/g, '').toUpperCase();
-                        let rowNewDist = (item.newDist || item.New_District || item["New District"] || "").toString().replace(/[^A-Za-z]/g, '').toUpperCase();
-                        
-                        if (rowOldDist === "VSP") rowOldDist = "VISAKHAPATNAM";
-                        if (rowNewDist === "VSP") rowNewDist = "VISAKHAPATNAM";
-
-                        // VLE జిల్లా కనుక మీ (DM) జిల్లాతో మ్యాచ్ అవ్వకపోతే, ఆ రికార్డ్ ని వదిలేస్తుంది
-                        if (!rowOldDist.includes(dmDistrict) && !dmDistrict.includes(rowOldDist) && !rowNewDist.includes(dmDistrict) && !dmDistrict.includes(rowNewDist)) {
-                            return; 
-                        }
-                    }
-
-                    // 🌟 2. REDBUS జీరో (0) ఎర్రర్ ని ఫిక్స్ చేసే లాజిక్ 🌟
-                    let rb26_months = 0, rb26_fy = 0;
+                rawData = res.data.map(item => {
+                    let rb26_sum = 0;
                     
-                    // గూగుల్ షీట్ నుండి వచ్చే ప్రతి కాలమ్ ని చెక్ చేస్తుంది
+                    // 🌟 1. REDBUS మంత్లీ కాలమ్స్ అన్నీ సేఫ్ గా సమ్ చేస్తుంది 🌟
                     for(let key in item) {
+                        if (!item.hasOwnProperty(key)) continue;
                         let kUp = key.toUpperCase();
                         let val = parseInt(item[key]) || 0;
                         
-                        // ఒకవేళ ఆ వాల్యూ > 0 ఉండి, అది REDBUS కి సంబంధించినదైతే..
-                        if (val > 0 && (kUp.includes("RB_") || kUp.includes("REDBUS") || kUp.includes("SRV"))) {
-                            // 26-27 డేటా మాత్రమే పట్టుకోవాలి (25-26 ఉండకూడదు)
-                            if (kUp.includes("26") && !kUp.includes("25")) {
-                                if (kUp.includes("FY")) rb26_fy += val;
-                                else rb26_months += val;
-                            }
+                        if (kUp.includes("RB_") && (kUp.includes("26") || kUp.includes("27")) && !kUp.includes("25") && !kUp.includes("TARGET") && !kUp.includes("PEND") && !kUp.includes("FY")) {
+                            rb26_sum += val;
+                        }
+                        if (kUp.includes("RB_TXN_FY_2026") || kUp.includes("FY_2026_27")) { 
+                            rb26_sum += val; 
                         }
                     }
                     
-                    // పాత వాల్యూస్ దేని దానికి కరెక్ట్ గా అసైన్ చేయడం
-                    item.dsp2526 = parseInt(item.dsp2526) || 0;
-                    item.srv2526 = parseInt(item.srv2526) || 0;
-                    item.dsp2627 = parseInt(item.dsp2627) || 0;
+                    let oldD = item.oldDist || item.Old_District || item["Old District"] || "";
+                    let newD = item.newDist || item.New_District || item["New District"] || "";
                     
-                    // Math.max వాడటం వల్ల డబుల్ అవ్వదు, నెలల టోటల్ గానీ, FY టోటల్ గానీ ఏది కరెక్ట్ అయితే ఆ నెంబర్ లాగుతుంది
-                    item.srv2627 = Math.max(rb26_months, rb26_fy, (parseInt(item.srv2627) || 0));
+                    let rowOldDist = oldD.toString().replace(/[^A-Za-z]/g, '').toUpperCase();
+                    let rowNewDist = newD.toString().replace(/[^A-Za-z]/g, '').toUpperCase();
+                    if(rowOldDist === "VSP") rowOldDist = "VISAKHAPATNAM";
+                    if(rowNewDist === "VSP") rowNewDist = "VISAKHAPATNAM";
 
-                    finalData.push(item);
+                    // ఇక్కడ isMyOldDist, isMyNewDist లను పక్కాగా సెట్ చేస్తుంది
+                    return {
+                        ...item, // మీ గూగుల్ స్క్రిప్ట్ లోని పాత డేటా అంతా ఉంచుతుంది
+                        srv2627: rb26_sum > 0 ? rb26_sum : (parseInt(item.srv2627) || 0),
+                        isMyOldDist: (rowOldDist.includes(dmDistrict) || dmDistrict.includes(rowOldDist)),
+                        isMyNewDist: (rowNewDist.includes(dmDistrict) || dmDistrict.includes(rowNewDist))
+                    };
                 });
-
-                rawData = finalData;
+                
+                document.getElementById("lblStatus").innerText = "Data Loaded Successfully";
                 saveToCache(CACHE_KEY, rawData); 
                 initApp(); 
                 
             } else {
+                document.getElementById("lblStatus").innerText = "No Data Found";
                 if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found. Please check if Google Sheet has data.</td></tr>`;
             }
         })
         .catch(e => { 
             console.error("Fetch Error:", e);
+            document.getElementById("lblStatus").innerText = "Network Error";
             if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
             setTimeout(fetchDataFromServer, 3000); 
         });
@@ -287,12 +276,17 @@
         applyFilters();
     }
 
+    // 🌟 2. డిస్ట్రిక్ట్ ఫిల్టర్ - DM లాగిన్ అయితే కేవలం వాళ్ళ జిల్లానే చూపిస్తుంది 🌟
     function populateDistrictDropdown() {
         let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
         let distSet = new Set();
         
         rawData.forEach(r => {
-            if (isNew && isDM && !r.isMyNewDist) return; 
+            if (isDM) {
+                // ఓల్డ్ జిల్లా ఐనా, న్యూ జిల్లా ఐనా పక్కాగా ఫిల్టర్ చేస్తుంది
+                if (isNew && !r.isMyNewDist) return; 
+                if (!isNew && !r.isMyOldDist) return;
+            }
             let d = isNew ? r.newDist : r.oldDist;
             if (d && d !== "UNKNOWN") distSet.add(toProperCase(d.trim()));
         });
@@ -323,8 +317,10 @@
         let searchTxt = document.getElementById("searchInput").value.toUpperCase();
 
         let baseData = rawData.filter(r => {
-            if (isNew && isDM) {
-                if (!r.isMyNewDist) return false;
+            if (isDM) {
+                // ఇది కూడా ఓల్డ్ & న్యూ జిల్లాకి స్ట్రాంగ్ గా ఫిల్టర్ చేస్తుంది
+                if (isNew && !r.isMyNewDist) return false;
+                if (!isNew && !r.isMyOldDist) return false;
             }
 
             let rowDist = toProperCase((isNew ? r.newDist : r.oldDist).trim());
