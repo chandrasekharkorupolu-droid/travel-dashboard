@@ -127,7 +127,7 @@
   </div>
 
   <script>
-    // 🌟 పక్కా మీ గూగుల్ స్క్రిప్ట్ లింక్ (SCRIPT_URL). ఫైర్‌బేస్ పీకేశాను! 🌟
+    // 🌟 పక్కా మీ గూగుల్ స్క్రిప్ట్ లింక్ (SCRIPT_URL). ఫైర్‌బేస్ వద్దు! 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     const SERVICE_NAME = "REDBUS"; 
     
@@ -209,56 +209,63 @@
         .then(res => res.json())
         .then(res => { 
             if(res.success && res.data && res.data.length > 0) { 
-                
-                // 🌟 మీ గూగుల్ షీట్ నుండి వచ్చే నెలల డేటాని ఇక్కడ కూడుతున్నాం (Sum) 🌟
-                rawData = res.data.map(item => {
-                    let rb26_sum = 0;
+
+                // జిల్లా ఫిల్టర్ కోసం DM జిల్లా పేరును తీసుకోవడం
+                let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
+                if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
+
+                let finalData = [];
+
+                res.data.forEach(item => {
+                    // 🌟 1. పక్కా ఫ్రంట్-ఎండ్ డిస్ట్రిక్ట్ ఫిల్టర్ (AP డేటా మొత్తం రాకుండా ఆపుతుంది) 🌟
+                    if (isDM && dmDistrict) {
+                        let rowOldDist = (item.oldDist || item.Old_District || item["Old District"] || "").toString().replace(/[^A-Za-z]/g, '').toUpperCase();
+                        let rowNewDist = (item.newDist || item.New_District || item["New District"] || "").toString().replace(/[^A-Za-z]/g, '').toUpperCase();
+                        
+                        if (rowOldDist === "VSP") rowOldDist = "VISAKHAPATNAM";
+                        if (rowNewDist === "VSP") rowNewDist = "VISAKHAPATNAM";
+
+                        // VLE జిల్లా కనుక మీ (DM) జిల్లాతో మ్యాచ్ అవ్వకపోతే, ఆ రికార్డ్ ని వదిలేస్తుంది
+                        if (!rowOldDist.includes(dmDistrict) && !dmDistrict.includes(rowOldDist) && !rowNewDist.includes(dmDistrict) && !dmDistrict.includes(rowNewDist)) {
+                            return; 
+                        }
+                    }
+
+                    // 🌟 2. REDBUS జీరో (0) ఎర్రర్ ని ఫిక్స్ చేసే లాజిక్ 🌟
+                    let rb26_months = 0, rb26_fy = 0;
                     
+                    // గూగుల్ షీట్ నుండి వచ్చే ప్రతి కాలమ్ ని చెక్ చేస్తుంది
                     for(let key in item) {
                         let kUp = key.toUpperCase();
                         let val = parseInt(item[key]) || 0;
                         
-                        // 'RB_' అని ఉండి, 26 లేదా 27 ఉండి, 25 లేని నెలలని మాత్రమే కూడుతుంది
-                        if ((kUp.includes("RB_") || kUp.includes("REDBUS")) && 
-                            (kUp.includes("26") || kUp.includes("27")) && 
-                            !kUp.includes("25") && 
-                            !kUp.includes("TARGET") && 
-                            !kUp.includes("PEND") && 
-                            !kUp.includes("FY")) {
-                            rb26_sum += val;
+                        // ఒకవేళ ఆ వాల్యూ > 0 ఉండి, అది REDBUS కి సంబంధించినదైతే..
+                        if (val > 0 && (kUp.includes("RB_") || kUp.includes("REDBUS") || kUp.includes("SRV"))) {
+                            // 26-27 డేటా మాత్రమే పట్టుకోవాలి (25-26 ఉండకూడదు)
+                            if (kUp.includes("26") && !kUp.includes("25")) {
+                                if (kUp.includes("FY")) rb26_fy += val;
+                                else rb26_months += val;
+                            }
                         }
                     }
                     
-                    // పాత వాల్యూస్ దేని దానికి అసైన్ చేయడం
+                    // పాత వాల్యూస్ దేని దానికి కరెక్ట్ గా అసైన్ చేయడం
                     item.dsp2526 = parseInt(item.dsp2526) || 0;
                     item.srv2526 = parseInt(item.srv2526) || 0;
                     item.dsp2627 = parseInt(item.dsp2627) || 0;
                     
-                    // నెలల సమ్ > 0 ఉంటే దాన్ని వేస్తుంది, లేదంటే పాత srv2627 వేస్తుంది
-                    if(rb26_sum > 0) {
-                        item.srv2627 = rb26_sum;
-                    } else {
-                        item.srv2627 = parseInt(item.srv2627) || parseInt(item.REDBUS2627) || 0;
-                    }
-                    
-                    return item;
+                    // Math.max వాడటం వల్ల డబుల్ అవ్వదు, నెలల టోటల్ గానీ, FY టోటల్ గానీ ఏది కరెక్ట్ అయితే ఆ నెంబర్ లాగుతుంది
+                    item.srv2627 = Math.max(rb26_months, rb26_fy, (parseInt(item.srv2627) || 0));
+
+                    finalData.push(item);
                 });
 
+                rawData = finalData;
                 saveToCache(CACHE_KEY, rawData); 
                 initApp(); 
                 
             } else {
-                // 🌟 ఒకవేళ మీరు లోకల్ గా సిస్టమ్ లో ఓపెన్ చేస్తే, దానికి కారణం ఇక్కడ స్పష్టంగా చూపిస్తుంది 🌟
-                let serverResponse = res.message ? res.message : JSON.stringify(res);
-                if(tbody) tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-danger py-5 text-center fw-bold">
-                            <span style="font-size:18px;">⚠️ Google Script Data Rejected</span><br><br>
-                            Server Message: <span class="text-dark">${serverResponse}</span><br><br>
-                            <span style="color:#0284c7;">గమనిక: మీరు ఈ ఫైల్‌ని C: Drive (Local) నుండి ఓపెన్ చేసినట్లున్నారు. సిస్టమ్‌లో Login ID లేకపోవడం వల్ల Google Script డేటాని పంపలేదు.<br>
-                            దయచేసి ఈ ఫైల్‌ని మీ లైవ్ పోర్టల్ లో పెట్టి చెక్ చేయండి, కచ్చితంగా డేటా వస్తుంది!</span>
-                        </td>
-                    </tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found. Please check if Google Sheet has data.</td></tr>`;
             }
         })
         .catch(e => { 
