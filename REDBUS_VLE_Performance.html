@@ -127,7 +127,12 @@
   </div>
 
   <script>
+    // 🌟 డేటా లోడింగ్ కోసం ఫాస్ట్ ఫైర్‌బేస్ వాడుతున్నాం 🌟
+    const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/redbusData.json";
+    
+    // 🌟 యాప్ పుష్ (Push to App) కోసం మాత్రమే గూగుల్ స్క్రిప్ట్ వాడుతున్నాం 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
     const SERVICE_NAME = "REDBUS"; 
     
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
@@ -199,61 +204,106 @@
 
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
-        if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from Google Script... Please wait...</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⚡ Fetching fast data... Please wait...</td></tr>`;
         document.getElementById("lblStatus").innerText = "Fetching Live Data...";
 
-        fetch(SCRIPT_URL, { 
-            method: "POST", 
-            body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) 
-        })
+        fetch(FIREBASE_URL)
         .then(res => res.json())
-        .then(res => { 
-            if(res.success && res.data && res.data.length > 0) { 
-                
+        .then(data => { 
+            if(data) { 
+                let dataArr = Object.values(data);
                 let dmDistrict = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
                 if(dmDistrict === "VSP") dmDistrict = "VISAKHAPATNAM";
 
-                rawData = res.data.map(item => {
-                    let rb26_sum = 0;
-                    
-                    // 🌟 1. REDBUS మంత్లీ కాలమ్స్ అన్నీ సేఫ్ గా సమ్ చేస్తుంది 🌟
-                    for(let key in item) {
-                        if (!item.hasOwnProperty(key)) continue;
-                        let kUp = key.toUpperCase();
-                        let val = parseInt(item[key]) || 0;
-                        
-                        if (kUp.includes("RB_") && (kUp.includes("26") || kUp.includes("27")) && !kUp.includes("25") && !kUp.includes("TARGET") && !kUp.includes("PEND") && !kUp.includes("FY")) {
-                            rb26_sum += val;
-                        }
-                        if (kUp.includes("RB_TXN_FY_2026") || kUp.includes("FY_2026_27")) { 
-                            rb26_sum += val; 
-                        }
-                    }
-                    
-                    let oldD = item.oldDist || item.Old_District || item["Old District"] || "";
-                    let newD = item.newDist || item.New_District || item["New District"] || "";
-                    
+                let finalData = [];
+
+                dataArr.forEach(item => {
+                    // కాలమ్ పేరు ఎలా ఉన్నా పట్టుకునే మ్యాపింగ్
+                    let keys = Object.keys(item);
+                    const getK = (inc, exc) => keys.find(k => {
+                        let kUp = k.toUpperCase();
+                        return inc.every(c => kUp.includes(c)) && (!exc || exc.every(e => !kUp.includes(e)));
+                    });
+
+                    let kOldDist = getK(["OLD", "DIST"]) || getK(["OLD"]);
+                    let kNewDist = getK(["NEW", "DIST"]) || getK(["NEW"]);
+                    let kCscId   = getK(["CSC", "ID"]) || getK(["CSC"]);
+                    let kVleName = getK(["VLE", "NAME"]) || getK(["NAME"], ["DIST"]);
+                    let kMobile  = getK(["MOBILE"], ["ALT", "APP"]) || getK(["MOB"]);
+
+                    let oldD = kOldDist ? item[kOldDist] : "";
+                    let newD = kNewDist ? item[kNewDist] : "";
+                    let csc = kCscId ? item[kCscId] : "";
+                    let vName = kVleName ? item[kVleName] : "";
+                    let mob = kMobile ? item[kMobile] : "";
+
                     let rowOldDist = oldD.toString().replace(/[^A-Za-z]/g, '').toUpperCase();
                     let rowNewDist = newD.toString().replace(/[^A-Za-z]/g, '').toUpperCase();
                     if(rowOldDist === "VSP") rowOldDist = "VISAKHAPATNAM";
                     if(rowNewDist === "VSP") rowNewDist = "VISAKHAPATNAM";
 
-                    // ఇక్కడ isMyOldDist, isMyNewDist లను పక్కాగా సెట్ చేస్తుంది
-                    return {
-                        ...item, // మీ గూగుల్ స్క్రిప్ట్ లోని పాత డేటా అంతా ఉంచుతుంది
-                        srv2627: rb26_sum > 0 ? rb26_sum : (parseInt(item.srv2627) || 0),
-                        isMyOldDist: (rowOldDist.includes(dmDistrict) || dmDistrict.includes(rowOldDist)),
-                        isMyNewDist: (rowNewDist.includes(dmDistrict) || dmDistrict.includes(rowNewDist))
-                    };
+                    // 🌟 DM లాగిన్ అయితే కేవలం మీ జిల్లా డేటానే తీసుకుంటుంది 🌟
+                    let isMyOldDist = (rowOldDist.includes(dmDistrict) || dmDistrict.includes(rowOldDist));
+                    let isMyNewDist = (rowNewDist.includes(dmDistrict) || dmDistrict.includes(rowNewDist));
+
+                    if (isDM && dmDistrict) {
+                        if (!isMyOldDist && !isMyNewDist) {
+                            return; // మీ జిల్లా కాకపోతే ఇక్కడే ఫిల్టర్ చేస్తుంది
+                        }
+                    }
+
+                    // 🌟 నెలల డేటాని క్యాలిక్యులేట్ చేయడం 🌟
+                    let dsp25 = 0, rb25 = 0, dsp26 = 0, rb26_months = 0, rb26_fy = 0, rb26_direct = 0;
+
+                    for (let key in item) {
+                        let kUp = key.toUpperCase();
+                        let valStr = item[key] ? item[key].toString().trim() : "";
+                        let val = parseInt(valStr) || 0;
+
+                        if (val > 0 && !kUp.includes("TARGET") && !kUp.includes("PEND") && !kUp.includes("ACHIEV")) {
+                            if (kUp.includes("DSP")) {
+                                if (kUp.includes("25") && !kUp.includes("26") && !kUp.includes("27")) dsp25 += val;
+                                if ((kUp.includes("26") || kUp.includes("27")) && !kUp.includes("25")) dsp26 += val;
+                            } 
+                            else if (kUp.includes("RB") || kUp.includes("REDBUS") || kUp.includes("SRV") || kUp.includes("TXN")) {
+                                if (kUp.includes("25") && !kUp.includes("26") && !kUp.includes("27")) {
+                                    rb25 += val;
+                                }
+                                if ((kUp.includes("26") || kUp.includes("27")) && !kUp.includes("25")) {
+                                    if (kUp.includes("FY")) rb26_fy += val;
+                                    else if (["APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC","JAN","FEB","MAR"].some(m => kUp.includes(m))) {
+                                        rb26_months += val;
+                                    } else {
+                                        rb26_direct += val;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    finalData.push({
+                        oldDist: oldD,
+                        newDist: newD,
+                        cscId: csc,
+                        vleName: vName,
+                        mobile: (mob && mob !== "0") ? mob : "-",
+                        dsp2526: dsp25,
+                        srv2526: rb25,
+                        dsp2627: dsp26,
+                        srv2627: Math.max(rb26_months, rb26_fy, rb26_direct),
+                        isMyOldDist: isMyOldDist,
+                        isMyNewDist: isMyNewDist
+                    });
                 });
-                
+
+                rawData = finalData;
                 document.getElementById("lblStatus").innerText = "Data Loaded Successfully";
                 saveToCache(CACHE_KEY, rawData); 
                 initApp(); 
                 
             } else {
                 document.getElementById("lblStatus").innerText = "No Data Found";
-                if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found. Please check if Google Sheet has data.</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">⚠️ No Data Found in database.</td></tr>`;
             }
         })
         .catch(e => { 
@@ -276,14 +326,12 @@
         applyFilters();
     }
 
-    // 🌟 2. డిస్ట్రిక్ట్ ఫిల్టర్ - DM లాగిన్ అయితే కేవలం వాళ్ళ జిల్లానే చూపిస్తుంది 🌟
     function populateDistrictDropdown() {
         let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
         let distSet = new Set();
         
         rawData.forEach(r => {
             if (isDM) {
-                // ఓల్డ్ జిల్లా ఐనా, న్యూ జిల్లా ఐనా పక్కాగా ఫిల్టర్ చేస్తుంది
                 if (isNew && !r.isMyNewDist) return; 
                 if (!isNew && !r.isMyOldDist) return;
             }
@@ -318,7 +366,6 @@
 
         let baseData = rawData.filter(r => {
             if (isDM) {
-                // ఇది కూడా ఓల్డ్ & న్యూ జిల్లాకి స్ట్రాంగ్ గా ఫిల్టర్ చేస్తుంది
                 if (isNew && !r.isMyNewDist) return false;
                 if (!isNew && !r.isMyOldDist) return false;
             }
@@ -478,9 +525,9 @@
 
     function pushToMobileApp() {
         let btn = document.getElementById("pushAppBtn");
-        btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
+        btn.innerText = "⏳ Pushing to App..."; btn.disabled = true;
 
-        let targetUrl = typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : (typeof apiURL !== 'undefined' ? apiURL : "");
+        let targetUrl = typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : "";
 
         fetch(targetUrl, {
             method: "POST",
