@@ -198,13 +198,17 @@
         }
     };
 
-    function fetchDataFromServer() {
+  function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
         if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from Google Script... Please wait...</td></tr>`;
         document.getElementById("lblStatus").innerText = "Fetching Live Data...";
 
         fetch(SCRIPT_URL, { 
-            method: "POST", 
+            method: "POST",
+            redirect: "follow", // <-- CORS ఎర్రర్స్ నివారించడానికి యాడ్ చేయబడింది
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8" // <-- Preflight ఎర్రర్స్ నివారించడానికి
+            },
             body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) 
         })
         .then(res => res.json())
@@ -252,7 +256,10 @@
 
                 rawData = finalData;
                 document.getElementById("lblStatus").innerText = "Data Loaded Successfully";
-                saveToCache(CACHE_KEY, rawData); 
+                
+                // ✅ ఇక్కడ ఫంక్షన్ పేరు సరిచేయబడింది
+                setCachedData(CACHE_KEY, rawData); 
+                
                 initApp(); 
                 
             } else {
@@ -263,7 +270,6 @@
         .catch(e => { 
             console.error("Fetch Error:", e);
             document.getElementById("lblStatus").innerText = "Network Error";
-            // 🌟 ఎర్రర్ వస్తే లూప్ కాకుండా ఇక్కడే ఆపేసాను, పేజీ తిరగదు 🌟
             if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-5 text-center fw-bold">📶 Network Error! Please Refresh the Page.</td></tr>`;
         });
     }
