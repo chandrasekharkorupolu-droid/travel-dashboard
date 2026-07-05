@@ -6,7 +6,6 @@
   <base target="_top">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- 🌟 html2canvas లైబ్రరీ 🌟 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
@@ -35,7 +34,9 @@
     .bg-redbus { background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); } 
     .bg-airways { background: linear-gradient(135deg, #075985 0%, #0284c7 100%); } 
     .kpi-header { font-size: 14px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px;}
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; text-align: center; }
+    
+    /* 🌟 ఇక్కడ 5 columns కి మార్చబడింది 🌟 */
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; text-align: center; }
     .kpi-item span { font-size: 11px; font-weight: 700; opacity: 0.8; text-transform: uppercase; display: block; margin-bottom: 2px;}
     .kpi-item strong { font-size: 20px; font-weight: 900; }
     .kpi-item.pend strong { color: #fde047; } 
@@ -47,7 +48,6 @@
     .tc-targ { color: #60a5fa; } .tc-ach { color: #34d399; } .tc-pend { color: #fb923c; }
     .tc-label { font-size: 10px; color: var(--text-muted); font-weight: 700; display: block;}
 
-    /* 🌟 టేబుల్ ఫుల్ విడ్త్ (టాప్ పెర్ఫార్మెన్స్ తీసేశాను) 🌟 */
     .bottom-layout { display: flex; flex: 1; min-height: 0; overflow: hidden; margin-bottom: 5px;}
     
     .table-wrapper { width: 100%; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden;}
@@ -72,28 +72,16 @@
     .download-icon { float: right; font-size: 16px; opacity: 0.7; transition: 0.2s; background: rgba(255,255,255,0.1); border-radius: 6px; padding: 2px 6px; color: #60a5fa;}
     .download-icon:hover { opacity: 1; background: #3b82f6; color: white; transform: scale(1.1); }
   </style>
-
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
-  <!-- 🌟 రిపోర్ట్ కార్డ్ (డాష్‌బోర్డ్ లాగే ఎగ్జాక్ట్ మ్యాపింగ్) 🌟 -->
   <div id="reportCardTemplate" style="width: 1000px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
-      <!-- Header -->
       <div style="text-align: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
           <h1 style="color: #0f172a; font-size: 40px; margin: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;" id="rc-distName">DISTRICT NAME</h1>
           <h3 style="color: #3b82f6; font-size: 18px; margin: 5px 0 0 0; font-weight: 800; text-transform: uppercase;" id="rc-period">CLOSURE REPORT</h3>
       </div>
 
-      <!-- 1. Master Status Row -->
       <div style="display: flex; gap: 15px; margin-bottom: 15px;">
           <div style="flex: 1; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
               <div style="font-size: 14px; font-weight: 900; margin-bottom: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">🚆 IRCTC MASTER STATUS</div>
@@ -124,7 +112,6 @@
           </div>
       </div>
 
-      <!-- 2. Target Cards Row (5 Columns) -->
       <div style="display: flex; gap: 10px; margin-bottom: 25px;">
           <div style="flex: 1; background: white; border-radius: 10px; padding: 12px; border: 1px solid #cbd5e1; border-top: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
               <div style="font-size: 11px; font-weight: 900; color: #475569; margin-bottom: 10px; text-align: center;">📝 IRCTC NEW REG</div>
@@ -168,7 +155,6 @@
           </div>
       </div>
 
-      <!-- 3. Overall Performance % Row -->
       <div style="display: flex; gap: 15px; margin-bottom: 25px;">
           <div style="flex: 1; background: white; border: 2px solid #bfdbfe; border-radius: 10px; padding: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
               <div style="font-size: 12px; font-weight: 900; color: #1e40af; margin-bottom: 5px;">🚆 IRCTC ACHIEVEMENT</div>
@@ -184,7 +170,6 @@
           </div>
       </div>
 
-      <!-- 4. Insights -->
       <div style="background: #fefce8; border: 1px solid #fde047; border-radius: 12px; padding: 25px; position: relative;">
           <div style="position: absolute; top: -12px; left: 30px; background: #f59e0b; color: white; padding: 4px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">💡 INSIGHTS & ACTIONS</div>
           <ul style="margin: 0; padding-left: 20px; color: #451a03; font-size: 14px; line-height: 1.8;" id="rc-insights-list"></ul>
@@ -193,7 +178,6 @@
   </div>
 
 
-  <!-- 🌟 Dashboard UI 🌟 -->
   <div class="controls-bar">
     <div class="title-sec">🏢 AP TRAVEL DASHBOARD <span id="filterBadge" class="filter-badge" onclick="clearDistrictFilter()">FILTERED (CLICK TO CLEAR) ❌</span></div>
     <div class="filter-group">
@@ -207,9 +191,11 @@
   </div>
 
   <div class="kpi-section">
-    <div class="kpi-block bg-irctc"><div class="kpi-header">🚆 IRCTC MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="irctc-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="irctc-a25">0</strong></div><div class="kpi-item"><span id="lbl-irctc-a26">Act 26-27</span><strong id="irctc-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="irctc-pend">0</strong></div></div></div>
-    <div class="kpi-block bg-redbus"><div class="kpi-header">🚌 REDBUS MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="rb-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="rb-a25">0</strong></div><div class="kpi-item"><span id="lbl-rb-a26">Act 26-27</span><strong id="rb-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="rb-pend">0</strong></div></div></div>
-    <div class="kpi-block bg-airways"><div class="kpi-header">✈️ AIRWAYS MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="aw-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="aw-a25">0</strong></div><div class="kpi-item"><span id="lbl-aw-a26">Act 26-27</span><strong id="aw-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="aw-pend">0</strong></div></div></div>
+    <div class="kpi-block bg-irctc"><div class="kpi-header">🚆 IRCTC MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="irctc-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="irctc-a25">0</strong></div><div class="kpi-item"><span style="color: #6ee7b7;">FY Act</span><strong id="irctc-a26-fy" style="color: #6ee7b7;">0</strong></div><div class="kpi-item"><span id="lbl-irctc-a26">Act 26-27</span><strong id="irctc-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="irctc-pend">0</strong></div></div></div>
+    
+    <div class="kpi-block bg-redbus"><div class="kpi-header">🚌 REDBUS MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="rb-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="rb-a25">0</strong></div><div class="kpi-item"><span style="color: #6ee7b7;">FY Act</span><strong id="rb-a26-fy" style="color: #6ee7b7;">0</strong></div><div class="kpi-item"><span id="lbl-rb-a26">Act 26-27</span><strong id="rb-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="rb-pend">0</strong></div></div></div>
+    
+    <div class="kpi-block bg-airways"><div class="kpi-header">✈️ AIRWAYS MASTER STATUS</div><div class="kpi-grid"><div class="kpi-item"><span>Total IDs</span><strong id="aw-csc">0</strong></div><div class="kpi-item"><span>Act 25-26</span><strong id="aw-a25">0</strong></div><div class="kpi-item"><span style="color: #6ee7b7;">FY Act</span><strong id="aw-a26-fy" style="color: #6ee7b7;">0</strong></div><div class="kpi-item"><span id="lbl-aw-a26">Act 26-27</span><strong id="aw-a26">0</strong></div><div class="kpi-item pend"><span>Pending</span><strong id="aw-pend">0</strong></div></div></div>
   </div>
 
   <div class="targets-section">
@@ -221,7 +207,6 @@
   </div>
 
   <div class="bottom-layout">
-      <!-- 🌟 లీడర్‌బోర్డ్ బాక్సులను తీసేసి టేబుల్ కి 100% స్పేస్ ఇచ్చాను 🌟 -->
       <div class="table-wrapper">
         <div id="loader" class="loader-overlay"><div class="spinner"></div><span id="loadText">Connecting to Server (Fetching Fast)...</span></div>
         <div class="table-scroll">
@@ -246,7 +231,6 @@
   </div>
 
   <script>
-    // 🌟 మిస్సయిన ముఖ్యమైన ఫంక్షన్లను పక్కాగా మళ్ళీ రాశాను 🌟
     function formatExactNumber(num) { 
         return Math.round(num).toLocaleString('en-IN'); 
     }
@@ -260,12 +244,13 @@
         return { irctc_reg_tgt: 0, irctc_reg_ach: 0, irctc_amc_tgt: 0, irctc_amc_ach: 0 }; 
     }
 
+    // 🌟 5 Variables update in getEmptyDist 🌟
     function getEmptyDist(name) {
         return {
             name: name,
-            IRCTC: { tot:0, a25:0, a26:0, id_pend:0, tgt:0, ach:0 },
-            REDBUS: { tot:0, a25:0, a26:0, id_pend:0, tgt:0, ach:0 },
-            AIRWAYS: { tot:0, a25:0, a26:0, id_pend:0, tgt:0, ach:0 }
+            IRCTC: { tot:0, a25:0, a26_fy:0, a26_period:0, id_pend:0, tgt:0, ach:0 },
+            REDBUS: { tot:0, a25:0, a26_fy:0, a26_period:0, id_pend:0, tgt:0, ach:0 },
+            AIRWAYS: { tot:0, a25:0, a26_fy:0, a26_period:0, id_pend:0, tgt:0, ach:0 }
         };
     }
 
@@ -336,7 +321,6 @@
 
     function clearDistrictFilter() { selectedDistrictFilter = ""; document.getElementById("filterBadge").style.display = "none"; renderView(); }
 
-    // 🌟 రిపోర్ట్ కార్డ్ ఇమేజ్ డౌన్‌లోడ్ లాజిక్ 🌟
     function downloadCard(distName) {
         let d = globalDistDataMap[distName];
         let sub = globalDistSubStatsMap[distName] || getEmptySubStats();
@@ -347,23 +331,21 @@
         document.getElementById("rc-distName").innerText = d.name;
         document.getElementById("rc-period").innerText = "CLOSURE REPORT : " + periodText;
 
-        // 1. Master Status
         document.getElementById("rc-ms-ir-tot").innerText = formatExactNumber(d.IRCTC.tot);
         document.getElementById("rc-ms-ir-a25").innerText = formatExactNumber(d.IRCTC.a25);
-        document.getElementById("rc-ms-ir-a26").innerText = formatExactNumber(d.IRCTC.a26);
+        document.getElementById("rc-ms-ir-a26").innerText = formatExactNumber(d.IRCTC.a26_period);
         document.getElementById("rc-ms-ir-pend").innerText = formatExactNumber(d.IRCTC.id_pend);
 
         document.getElementById("rc-ms-rb-tot").innerText = formatExactNumber(d.REDBUS.tot);
         document.getElementById("rc-ms-rb-a25").innerText = formatExactNumber(d.REDBUS.a25);
-        document.getElementById("rc-ms-rb-a26").innerText = formatExactNumber(d.REDBUS.a26);
+        document.getElementById("rc-ms-rb-a26").innerText = formatExactNumber(d.REDBUS.a26_period);
         document.getElementById("rc-ms-rb-pend").innerText = formatExactNumber(d.REDBUS.id_pend);
 
         document.getElementById("rc-ms-aw-tot").innerText = formatExactNumber(d.AIRWAYS.tot);
         document.getElementById("rc-ms-aw-a25").innerText = formatExactNumber(d.AIRWAYS.a25);
-        document.getElementById("rc-ms-aw-a26").innerText = formatExactNumber(d.AIRWAYS.a26);
+        document.getElementById("rc-ms-aw-a26").innerText = formatExactNumber(d.AIRWAYS.a26_period);
         document.getElementById("rc-ms-aw-pend").innerText = formatExactNumber(d.AIRWAYS.id_pend);
 
-        // 2. Targets and Achievements
         let irRegTgt = Math.round(sub.irctc_reg_tgt); let irRegAch = sub.irctc_reg_ach;
         document.getElementById("rc-tg-reg-tgt").innerText = formatExactNumber(irRegTgt);
         document.getElementById("rc-tg-reg-ach").innerText = formatExactNumber(irRegAch);
@@ -389,12 +371,10 @@
         document.getElementById("rc-tg-awt-ach").innerText = formatExactNumber(awAch);
         document.getElementById("rc-tg-awt-pend").innerText = formatExactNumber(Math.max(0, awTgt - awAch));
 
-        // 3. Percentages
         document.getElementById("rc-pct-ir").innerText = calcPercent(irAch, irTgt);
         document.getElementById("rc-pct-rb").innerText = calcPercent(rbAch, rbTgt);
         document.getElementById("rc-pct-aw").innerText = calcPercent(awAch, awTgt);
 
-        // 4. Insights
         let insightsHTML = "";
         if (irAch < irTgt) insightsHTML += `<li><strong>IRCTC:</strong> Target missed. Focus immediately on the <strong style="color: #dc2626;">${d.IRCTC.id_pend}</strong> pending agents.</li>`;
         else insightsHTML += `<li><strong>IRCTC:</strong> <strong style="color: #059669; background:#dcfce7; padding:2px 4px;">EXCELLENT!</strong> Booking target achieved successfully.</li>`;
@@ -404,23 +384,13 @@
         if (regShort > 0) insightsHTML += `<li style='margin-top:5px;'><span style='background:#ef4444; color:white; padding:1px 5px; border-radius:4px; font-size:11px;'>ALERT</span> Need <strong style="color: #dc2626;">${regShort} New IDs</strong> to meet IRCTC parameter rules.</li>`;
         document.getElementById("rc-insights-list").innerHTML = insightsHTML;
 
-        // html2canvas Export
         let card = document.getElementById("reportCardTemplate");
         card.style.position = "static";
         card.style.left = "0";
         card.style.top = "0";
 
-        html2canvas(card, {
-            scale: 2,
-            logging: false,
-            useCORS: false, 
-            allowTaint: true,
-            backgroundColor: '#ffffff'
-        }).then(canvas => {
-            card.style.position = "absolute";
-            card.style.left = "-9999px";
-            card.style.top = "-9999px";
-
+        html2canvas(card, { scale: 2, logging: false, useCORS: false, allowTaint: true, backgroundColor: '#ffffff' }).then(canvas => {
+            card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
             let dataUrl = canvas.toDataURL('image/png');
             let link = document.createElement('a');
             link.download = `${d.name}_Closure_Report_${periodText}.png`;
@@ -429,9 +399,7 @@
             link.click();
             document.body.removeChild(link);
         }).catch(err => {
-            card.style.position = "absolute";
-            card.style.left = "-9999px";
-            card.style.top = "-9999px";
+            card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
             alert("Download restricted due to local file security. Please upload this file to the server.");
         });
     }
@@ -532,17 +500,28 @@
     function renderView() {
         globalDistDataMap = {}; globalDistSubStatsMap = {}; 
         let isNew = document.getElementById("distTypeDropdown").value === "NEW"; let period = document.getElementById("periodDropdown").value; let pText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
+        
         let lblTxt = period === "FY" ? "Act 26-27" : pText;
         document.getElementById("lbl-irctc-a26").innerText = lblTxt; document.getElementById("lbl-rb-a26").innerText = lblTxt; document.getElementById("lbl-aw-a26").innerText = lblTxt;
+        
         let incMonths = []; if(period === "APR") incMonths = [0]; else if(period === "MAY") incMonths = [1]; else if(period === "JUN") incMonths = [2]; else if(period === "JUL") incMonths = [3]; else if(period === "AUG") incMonths = [4]; else if(period === "SEP") incMonths = [5]; else if(period === "OCT") incMonths = [6]; else if(period === "NOV") incMonths = [7]; else if(period === "DEC") incMonths = [8]; else if(period === "JAN") incMonths = [9]; else if(period === "FEB") incMonths = [10]; else if(period === "MAR") incMonths = [11]; else if(period === "Q1") incMonths = [0,1,2]; else if(period === "Q2") incMonths = [3,4,5]; else if(period === "Q3") incMonths = [6,7,8]; else if(period === "Q4") incMonths = [9,10,11]; else if(period === "H1") incMonths = [0,1,2,3,4,5]; else if(period === "H2") incMonths = [6,7,8,9,10,11]; else incMonths = [0,1,2,3,4,5,6,7,8,9,10,11]; 
+        
+        // 🌟 KOTHA CUMULATIVE ARRAY: April nunchi meeru select chesina month varaku 🌟
+        let maxMonthIdx = Math.max(...incMonths);
+        let cumulativeMonths = [];
+        for(let i=0; i<=maxMonthIdx; i++) { cumulativeMonths.push(i); }
+
         let targetRatio = 1.0; if(period === "Q1") targetRatio = 0.20; else if(period === "Q2") targetRatio = 0.25; else if(period === "Q3") targetRatio = 0.35; else if(period === "Q4") targetRatio = 0.20; else if(period === "H1") targetRatio = 0.45; else if(period === "H2") targetRatio = 0.55; else if(['APR','MAY','JUN'].includes(period)) targetRatio = 0.20 / 3; else if(['JUL','AUG','SEP'].includes(period)) targetRatio = 0.25 / 3; else if(['OCT','NOV','DEC'].includes(period)) targetRatio = 0.35 / 3; else if(['JAN','FEB','MAR'].includes(period)) targetRatio = 0.20 / 3;
+        
         let distStats = {}; let tStats = { REDBUS: { ach: 0 }, AIRWAYS: { ach: 0 }, IRCTC_TXN: { ach: 0 }, IRCTC_REG: { ach: 0 }, IRCTC_AMC: { eligible: 0, ach: 0 } }; let activeTargets = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
 
         ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(service => {
             rawMemory[service].forEach(row => {
                 let dName = isNew ? row.newD : row.oldD; 
                 let oldDName = row.oldD; let totVles = oldDistVleCount[service][oldDName] || 1; let oTgt = confTargetMap[oldDName] || { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 };
+                
                 let periodTxn = 0; incMonths.forEach(mIdx => { periodTxn += row.txMonths[mIdx]; });
+                let fyTxn = 0; cumulativeMonths.forEach(mIdx => { fyTxn += row.txMonths[mIdx]; });
 
                 if (selectedDistrictFilter !== "" && dName !== selectedDistrictFilter) return;
                 if (isDM) {
@@ -574,7 +553,18 @@
                     }
                 }
 
-                distStats[dName][service].tot++; if (row.tx25 > 0) distStats[dName][service].a25++; if (periodTxn > 0) distStats[dName][service].a26++; if (row.tx25 > 0 && periodTxn === 0) distStats[dName][service].id_pend++;
+                // 🌟 MEE FUNNEL LOGIC 🌟
+                distStats[dName][service].tot++; 
+                if (row.tx25 > 0) {
+                    distStats[dName][service].a25++; // 100 mandi (Active 25-26)
+                    if (fyTxn > 0) distStats[dName][service].a26_fy++; // 70 mandi (April nunchi actvate ayina vallu)
+                    if (fyTxn === 0) distStats[dName][service].id_pend++; // 30 mandi (Inka pending)
+                }
+                
+                if (periodTxn > 0) {
+                    distStats[dName][service].a26_period++; // Kevalam July lo chesina vallu
+                }
+
                 let tgtKey = service === "IRCTC" ? "IRCTC_TXN" : service; let vleTarget = (oTgt[tgtKey] / totVles) * targetRatio;
                 distStats[dName][service].ach += periodTxn; distStats[dName][service].tgt += vleTarget;
 
@@ -593,7 +583,8 @@
             globalDistDataMap[d.name] = { ...d }; 
             let trText = `<tr ondblclick="handleRowDoubleClick('${d.name}')" title="Double click to filter this district"><td class="td-dist">${d.name} <span class="download-icon" onclick="event.stopPropagation(); downloadCard('${d.name}')" title="Download Report Card">📥</span></td>`;
             ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(s => {
-                gt[s].tot += d[s].tot; gt[s].a25 += d[s].a25; gt[s].a26 += d[s].a26; gt[s].id_pend += d[s].id_pend; gt[s].tgt += d[s].tgt; gt[s].ach += d[s].ach;
+                gt[s].tot += d[s].tot; gt[s].a25 += d[s].a25; gt[s].a26_fy += d[s].a26_fy; gt[s].a26_period += d[s].a26_period; gt[s].id_pend += d[s].id_pend; gt[s].tgt += d[s].tgt; gt[s].ach += d[s].ach;
+                
                 let tgt = Math.round(d[s].tgt); let ach = d[s].ach; let pend = Math.max(0, tgt - ach); let pct = calcPercent(ach, tgt);
                 let pctClass = ""; let rawPct = tgt === 0 ? (ach>0?100:0) : (ach/tgt)*100; if (rawPct >= 100) pctClass = "text-success fw-bold"; else if (rawPct >= 50) pctClass = "text-warning fw-bold"; else pctClass = "text-danger";
                 trText += `<td class="text-primary">${formatExactNumber(tgt)}</td><td class="text-success">${formatExactNumber(ach)}</td><td class="text-danger">${formatExactNumber(pend)}</td><td class="col-sep ${pctClass}">${pct}</td>`;
@@ -609,9 +600,24 @@
         });
         tFootText += `</tr>`; tfoot.innerHTML = tFootText;
 
-        document.getElementById("irctc-csc").innerText = formatExactNumber(gt.IRCTC.tot); document.getElementById("irctc-a25").innerText = formatExactNumber(gt.IRCTC.a25); document.getElementById("irctc-a26").innerText = formatExactNumber(gt.IRCTC.a26); document.getElementById("irctc-pend").innerText = formatExactNumber(gt.IRCTC.id_pend);
-        document.getElementById("rb-csc").innerText = formatExactNumber(gt.REDBUS.tot); document.getElementById("rb-a25").innerText = formatExactNumber(gt.REDBUS.a25); document.getElementById("rb-a26").innerText = formatExactNumber(gt.REDBUS.a26); document.getElementById("rb-pend").innerText = formatExactNumber(gt.REDBUS.id_pend);
-        document.getElementById("aw-csc").innerText = formatExactNumber(gt.AIRWAYS.tot); document.getElementById("aw-a25").innerText = formatExactNumber(gt.AIRWAYS.a25); document.getElementById("aw-a26").innerText = formatExactNumber(gt.AIRWAYS.a26); document.getElementById("aw-pend").innerText = formatExactNumber(gt.AIRWAYS.id_pend);
+        // 🌟 Ikkada DOM IDs update 🌟
+        document.getElementById("irctc-csc").innerText = formatExactNumber(gt.IRCTC.tot); 
+        document.getElementById("irctc-a25").innerText = formatExactNumber(gt.IRCTC.a25); 
+        document.getElementById("irctc-a26-fy").innerText = formatExactNumber(gt.IRCTC.a26_fy); 
+        document.getElementById("irctc-a26").innerText = formatExactNumber(gt.IRCTC.a26_period); 
+        document.getElementById("irctc-pend").innerText = formatExactNumber(gt.IRCTC.id_pend);
+
+        document.getElementById("rb-csc").innerText = formatExactNumber(gt.REDBUS.tot); 
+        document.getElementById("rb-a25").innerText = formatExactNumber(gt.REDBUS.a25); 
+        document.getElementById("rb-a26-fy").innerText = formatExactNumber(gt.REDBUS.a26_fy); 
+        document.getElementById("rb-a26").innerText = formatExactNumber(gt.REDBUS.a26_period); 
+        document.getElementById("rb-pend").innerText = formatExactNumber(gt.REDBUS.id_pend);
+
+        document.getElementById("aw-csc").innerText = formatExactNumber(gt.AIRWAYS.tot); 
+        document.getElementById("aw-a25").innerText = formatExactNumber(gt.AIRWAYS.a25); 
+        document.getElementById("aw-a26-fy").innerText = formatExactNumber(gt.AIRWAYS.a26_fy); 
+        document.getElementById("aw-a26").innerText = formatExactNumber(gt.AIRWAYS.a26_period); 
+        document.getElementById("aw-pend").innerText = formatExactNumber(gt.AIRWAYS.id_pend);
 
         let rbTgt = Math.round(activeTargets.REDBUS * targetRatio); let rbPend = Math.max(0, rbTgt - tStats.REDBUS.ach); document.getElementById("tgt-rb").innerText = formatExactNumber(rbTgt); document.getElementById("ach-rb").innerText = formatExactNumber(tStats.REDBUS.ach); document.getElementById("pend-rb").innerText = formatExactNumber(rbPend);
         let awTgt = Math.round(activeTargets.AIRWAYS * targetRatio); let awPend = Math.max(0, awTgt - tStats.AIRWAYS.ach); document.getElementById("tgt-aw").innerText = formatExactNumber(awTgt); document.getElementById("ach-aw").innerText = formatExactNumber(tStats.AIRWAYS.ach); document.getElementById("pend-aw").innerText = formatExactNumber(awPend);
