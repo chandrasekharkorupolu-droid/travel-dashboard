@@ -49,7 +49,9 @@
     .sidebar.collapsed-hover .sidebar-header { opacity: 0; padding: 15px 0; height: 20px; }
     .sidebar.collapsed-hover .report-list li { padding-left: 18px; justify-content: flex-start; }
     .sidebar.collapsed-hover .report-list li .menu-text { opacity: 0; visibility: hidden; width: 0; transition: opacity 0.2s; }
-    
+
+
+
     /* ఓపెన్ (హోవర్) అయినప్పుడు టెక్స్ట్ కనిపించే డిజైన్ */
     .report-list li .menu-text { opacity: 1; visibility: visible; transition: opacity 0.4s; white-space: nowrap; }
 
@@ -94,9 +96,19 @@
     .btn-confirm { background-color: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; transition: 0.2s; font-size: 14px; }
     .access-denied-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 450px; margin: auto; border-top: 5px solid #dc2626; animation: popIn 0.3s; }
     @keyframes popIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* 🌟 NEW Badge Blinking 🌟 */
+.new-badge {
+    background-color: #ef4444; color: white; font-size: 8px; font-weight: 800;
+    padding: 2px 5px; border-radius: 4px; margin-left: 5px;
+    animation: blinker 1s linear infinite;
+    vertical-align: middle; text-transform: uppercase;
+}
+@keyframes blinker { 50% { opacity: 0; } }
+
   </style>
 
-  <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -104,7 +116,6 @@
   gtag('js', new Date());
   gtag('config', 'G-GF2VXY76KN');
 </script>
-  
 </head>
 <body>
 
@@ -186,6 +197,7 @@
       </div>
     </div>
   </div>
+
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -350,7 +362,7 @@
               options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           } else {
               let options = [ { id: 'AddMasterStock', icon: '📥', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '📦', name: 'Assign Stationary' }, { id: 'StockReport', icon: '📈', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '🚚', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '📊', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '⭐', name: 'VLE Performance Report' } ];
-              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
+              options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>` + getBadgeHtml(opt.name); li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           }
           
           document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
@@ -401,7 +413,29 @@
         document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h3 style="color:#475569;">MASTER మాడ్యూల్</h3><p style="color:#64748b;">ఎడమ వైపు సైడ్‌బార్ నుండి మీ ఆప్షన్ ఎంచుకోండి.</p></div>`;
       } else {
         let reports = reportMenus[moduleName] || [];
-        reports.forEach(reportName => { let li = document.createElement('li'); li.innerHTML = '<span class="menu-icon">📄</span> <span class="menu-text">' + reportName + '</span>'; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li.classList.add('active-item'); loadReport(moduleName, reportName); }; list.appendChild(li); });
+       
+reports.forEach(reportName => { 
+    let li = document.createElement('li'); 
+    
+    // 🌟 NEW Badge Logic 🌟
+    let badgeHtml = '';
+    var launchDate = new Date("2026-07-05"); // రిపోర్ట్ యాడ్ చేసిన డేట్
+    var today = new Date();
+    var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24)); // రోజుల లెక్క
+    
+    // కేవలం "VLE Performance Report" అనే పేరు ఉన్నప్పుడు మాత్రమే బ్లింక్ అవుతుంది (7 రోజుల వరకు)
+    if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
+        badgeHtml = '<span class="new-badge">NEW</span>';
+    }
+
+    li.innerHTML = '<span class="menu-icon">📄</span> <span class="menu-text">' + reportName + '</span>' + badgeHtml; 
+    li.onclick = function() { 
+        document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
+        li.classList.add('active-item'); 
+        loadReport(moduleName, reportName); 
+    }; 
+    list.appendChild(li); 
+});
         
         document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
         document.getElementById('dashboardCards').style.display = 'flex';
@@ -429,7 +463,9 @@
       else if (moduleName === "E-STAMPING" && reportId === "VleDispatchReport") iframeSrc = "VleDispatchReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "DenominationReport") iframeSrc = "DenominationReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "Spoiled Report") iframeSrc = "VleSpoiledReport.html";
+      else if (moduleName === "E-STAMPING" && reportId === "VLE Performance Report") iframeSrc = "VLE_Performance_Report.html";
       
+
       else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
       else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
       else if (moduleName === "IRCTC" && reportId === "Total Registrations") iframeSrc = "IRCTC_Total_Registrations.html";
@@ -560,7 +596,7 @@
     });
 
     function prefetchRedbusData(userId, designation) {
-        const SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
         const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + userId;
 
         fetch(SCRIPT_URL, {
@@ -601,6 +637,20 @@
   <script>
       let yearSpan = document.getElementById("currentYear");
       if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
+
+
+// 🌟 బ్యాడ్జ్ ని క్రియేట్ చేసే ఫంక్షన్ 🌟
+function getBadgeHtml(reportName) {
+    var launchDate = new Date("2026-07-05"); 
+    var today = new Date();
+    var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+    
+    // "VLE Performance Report" అనే పేరు ఉంటేనే 7 రోజుల వరకు బ్లింక్ అవుతుంది
+    if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
+        return '<span class="new-badge">NEW</span>';
+    }
+    return '';
+}
   </script>
 
 </body>

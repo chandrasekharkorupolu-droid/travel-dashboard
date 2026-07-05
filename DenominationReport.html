@@ -9,66 +9,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   <style>
-    /* 🌟 Master Clean Background 🌟 */
-    body { 
-        background: #f1f5f9; 
-        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
-        padding: 20px 15px; 
-        min-height: 100vh;
-        color: #334155;
-    }
+    body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 20px 15px; min-height: 100vh; color: #334155; }
+    .premium-card { background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); overflow: hidden; border-top: 5px solid #6366f1; margin-bottom: 20px; }
+    .card-header-custom { background: #ffffff; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .card-title { color: #0f172a; font-weight: 900; font-size: 18px; margin: 0; }
 
-    /* 🌟 Premium Card Container 🌟 */
-    .premium-card {
-        background: #ffffff;
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-        border-top: 5px solid #6366f1; 
-        margin-bottom: 20px;
-    }
-    
-    .card-header-custom {
-        background: #ffffff;
-        padding: 15px 20px;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    
-    .card-title {
-        color: #0f172a;
-        font-weight: 900;
-        font-size: 18px;
-        margin: 0;
-    }
-
-    /* 🌟 Clickable Summary Cards Styles (Premium Look) 🌟 */
-    .stat-card { 
-        background: #ffffff; 
-        border-radius: 12px; 
-        padding: 15px 10px; 
-        text-align: center; 
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
-        cursor: pointer; 
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-        border-top: 4px solid #cbd5e1; 
-        height: 100%; 
-        border-left: 1px solid #f1f5f9;
-        border-right: 1px solid #f1f5f9;
-        border-bottom: 1px solid #f1f5f9;
-    }
+    .stat-card { background: #ffffff; border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 4px solid #cbd5e1; height: 100%; border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
     .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
     .stat-card.active { transform: translateY(-2px); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
     
     .stat-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
     .stat-value { font-size: 24px; font-weight: 900; color: #1e293b; margin: 0; line-height: 1; }
     
-    /* Card Top Colors */
     .border-vles { border-top-color: #f97316; } .active.border-vles { border-color: #f97316 !important; background-color: #fff7ed; }
     .border-tot { border-top-color: #ef4444; } .active.border-tot { border-color: #ef4444 !important; background-color: #fef2f2; }
     .border-10 { border-top-color: #22c55e; } .active.border-10 { border-color: #22c55e !important; background-color: #f0fdf4; }
@@ -77,116 +29,42 @@
     .border-100 { border-top-color: #a855f7; } .active.border-100 { border-color: #a855f7 !important; background-color: #faf5ff; }
     .border-oth { border-top-color: #64748b; } .active.border-oth { border-color: #64748b !important; background-color: #f8fafc; }
 
-    /* 🌟 Controls & Search 🌟 */
-    .controls-bar { 
-        background: #ffffff; 
-        padding: 12px 20px; 
-        border-radius: 12px; 
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        margin-bottom: 20px; 
-        border: 1px solid #e2e8f0;
-    }
-    
-    .view-btn { 
-        border: 1px solid #cbd5e1; 
-        background: #f8fafc; 
-        color: #475569; 
-        font-weight: 800; 
-        padding: 8px 18px; 
-        font-size: 13px; 
-        transition: 0.3s; 
-    }
+    .controls-bar { background: #ffffff; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+    .view-btn { border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 800; padding: 8px 18px; font-size: 13px; transition: 0.3s; }
     .view-btn.active { background: #6366f1; color: white; border-color: #6366f1; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
     .view-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
     .view-btn:last-child { border-radius: 0 8px 8px 0; }
     
-    .search-box { 
-        width: 300px; 
-        border: 2px solid #cbd5e1; 
-        border-radius: 8px; 
-        padding: 8px 16px; 
-        outline: none; 
-        font-size: 13px; 
-        font-weight: 600;
-        color: #1e293b;
-        background: #f8fafc;
-        transition: 0.3s;
-    }
+    .search-box { width: 300px; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; outline: none; font-size: 13px; font-weight: 600; color: #1e293b; background: #f8fafc; transition: 0.3s; }
     .search-box:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-    /* 🌟 High Contrast Single-Line Table Design (No Scrolling) 🌟 */
     .table-container { padding: 0; width: 100%; }
-    
     .table { margin-bottom: 0; white-space: nowrap; width: 100%; table-layout: auto; }
-    
-    .table thead th { 
-        background: #1e293b !important; 
-        color: #ffffff !important; 
-        font-size: 10.5px; 
-        font-weight: 800;
-        text-transform: uppercase; 
-        letter-spacing: 0.5px;
-        padding: 12px 6px;
-        border: none;
-    }
-    
-    .table tbody tr td { 
-        padding: 12px 6px;
-        border-bottom: 1px solid #e2e8f0;
-        vertical-align: middle;
-        font-size: 12px; 
-        font-weight: 700;
-    }
+    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 6px; border: none; }
+    .table tbody tr td { padding: 12px 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 12px; font-weight: 700; }
 
-    /* 🌟 Zebra Striping 🌟 */
     .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
     .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
     .table-hover tbody tr:hover td { background-color: #e0e7ff !important; cursor: pointer; }
 
-    /* Grand Total Row Sticky */
-    .grand-total-row td { 
-        background-color: #cbd5e1 !important; 
-        font-weight: 900 !important; 
-        color: #0f172a !important; 
-        border-top: 3px solid #64748b !important; 
-        position: sticky; 
-        bottom: 0; 
-        z-index: 10; 
-        font-size: 13px; 
-    }
+    .grand-total-row td { background-color: #cbd5e1 !important; font-weight: 900 !important; color: #0f172a !important; border-top: 3px solid #64748b !important; position: sticky; bottom: 0; z-index: 10; font-size: 13px; }
 
-    /* 🌟 Buttons & Selects 🌟 */
     .btn-outline-custom { color: #6366f1; background: #eff6ff; font-weight: 800; padding: 6px 14px; border-radius: 8px; border: 1px solid #c7d2fe; transition: 0.3s;}
     .btn-outline-custom:hover { background: #e0e7ff; color: #4f46e5; }
     
-    .form-select-custom {
-        background-color: #ffffff;
-        border: 2px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 6px 36px 6px 12px;
-        font-weight: 800;
-        color: #1e293b;
-        font-size: 13px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+    .form-select-custom { background-color: #ffffff; border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; font-weight: 800; color: #1e293b; font-size: 13px; cursor: pointer; transition: 0.3s; }
     .form-select-custom:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-    /* 🌟 Badges 🌟 */
     .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 6px; border: 1px solid #a7f3d0; }
     .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 10px; text-transform: uppercase; border: 1px solid #d8b4fe; }
 
-    /* Scrollbar */
     .table-responsive::-webkit-scrollbar { width: 6px; height: 8px; }
     .table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
     .table-responsive::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
     .table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
 
-  <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -199,7 +77,6 @@
 
   <div class="container-fluid px-3" id="captureArea">
     
-    <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
       <div>
         <h4 class="fw-bold m-0" style="color: #0f172a;">📊 E-Stamping Denomination Sales</h4>
@@ -209,26 +86,14 @@
         <select id="dateFilter" class="form-select-custom" style="width:220px;" onchange="fetchReportData()">
           <option value="ALL">All Time (Overall)</option>
           <optgroup label="Monthly (Current FY)">
-            <option value="APR">April</option>
-            <option value="MAY">May</option>
-            <option value="JUN">June</option>
-            <option value="JUL">July</option>
-            <option value="AUG">August</option>
-            <option value="SEP">September</option>
-            <option value="OCT">October</option>
-            <option value="NOV">November</option>
-            <option value="DEC">December</option>
-            <option value="JAN">January</option>
-            <option value="FEB">February</option>
-            <option value="MAR">March</option>
+            <option value="APR">April</option><option value="MAY">May</option><option value="JUN">June</option>
+            <option value="JUL">July</option><option value="AUG">August</option><option value="SEP">September</option>
+            <option value="OCT">October</option><option value="NOV">November</option><option value="DEC">December</option>
+            <option value="JAN">January</option><option value="FEB">February</option><option value="MAR">March</option>
           </optgroup>
           <optgroup label="Quarters & Half-Yearly">
-            <option value="Q1">Q1 (Apr - Jun)</option>
-            <option value="Q2">Q2 (Jul - Sep)</option>
-            <option value="Q3">Q3 (Oct - Dec)</option>
-            <option value="Q4">Q4 (Jan - Mar)</option>
-            <option value="H1">H1 (Apr - Sep)</option>
-            <option value="H2">H2 (Oct - Mar)</option>
+            <option value="Q1">Q1 (Apr - Jun)</option><option value="Q2">Q2 (Jul - Sep)</option><option value="Q3">Q3 (Oct - Dec)</option>
+            <option value="Q4">Q4 (Jan - Mar)</option><option value="H1">H1 (Apr - Sep)</option><option value="H2">H2 (Oct - Mar)</option>
           </optgroup>
           <optgroup label="Yearly">
             <option value="FY">Current Financial Year</option>
@@ -238,13 +103,9 @@
       </div>
     </div>
 
-    <!-- Clickable Summary Cards -->
     <div class="row g-3 mb-3">
-      <!-- 🌟 ఈ రెండు బాక్సులు ఎప్పటికీ మారకుండా ఫిక్స్ చేశాను 🌟 -->
       <div class="col"><div class="stat-card border-vles active" id="card-ALL" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ea580c;">Total VLEs</div><div class="stat-value" style="color:#ea580c;" id="totVles">0</div></div></div>
       <div class="col"><div class="stat-card border-tot" id="card-TOT" onclick="filterVles('ALL')"><div class="stat-title" style="color:#ef4444;">Total Papers</div><div class="stat-value" style="color:#ef4444;" id="totPapers">0</div></div></div>
-      
-      <!-- మిగతావి మారుతాయి -->
       <div class="col"><div class="stat-card border-10" id="card-D10" onclick="filterVles('D10')"><div class="stat-title" style="color:#16a34a;">₹ 10</div><div class="stat-value" style="color:#16a34a;" id="tot10">0</div></div></div>
       <div class="col"><div class="stat-card border-20" id="card-D20" onclick="filterVles('D20')"><div class="stat-title" style="color:#0284c7;">₹ 20</div><div class="stat-value" style="color:#0284c7;" id="tot20">0</div></div></div>
       <div class="col"><div class="stat-card border-50" id="card-D50" onclick="filterVles('D50')"><div class="stat-title" style="color:#ca8a04;">₹ 50</div><div class="stat-value" style="color:#ca8a04;" id="tot50">0</div></div></div>
@@ -252,7 +113,6 @@
       <div class="col"><div class="stat-card border-oth" id="card-OTH" onclick="filterVles('OTH')"><div class="stat-title">Others</div><div class="stat-value text-secondary" id="totOth">0</div></div></div>
     </div>
 
-    <!-- Controls: Toggle Buttons & Search -->
     <div class="controls-bar" data-html2canvas-ignore="true">
       <div>
         <button id="btnDistView" class="view-btn" onclick="switchView('DIST')">🏢 District Summary</button>
@@ -263,7 +123,6 @@
       </div>
     </div>
 
-    <!-- Premium Table Area -->
     <div class="premium-card">
       <div class="card-header-custom">
         <div class="card-title">
@@ -322,8 +181,11 @@
     let masterVleData = [];
     let masterDistData = [];
     
+    // 🌟 డేటాను భద్రపరిచే మ్యాప్స్ 🌟
+    let apiCache = {};
     let masterOverallDataVle = {}; 
-    let isOverallLoaded = false;
+    let currentCumVleMap = {};
+    let currentCumDistMap = {};
 
     let currentView = 'VLE'; 
     let currentFilter = 'ALL';
@@ -332,64 +194,144 @@
        let d = new Date();
        let monthMap = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
        document.getElementById("dateFilter").value = monthMap[d.getMonth()];
-       
        fetchReportData(); 
     };
 
-    function showError() {
-        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold">❌ Network Error. Failed to fetch data.</td></tr>`;
+    function resetTopCards() {
+       document.getElementById("tot10").innerText = "0"; document.getElementById("tot20").innerText = "0";
+       document.getElementById("tot50").innerText = "0"; document.getElementById("tot100").innerText = "0";
+       document.getElementById("totOth").innerText = "0";
     }
 
-    function fetchReportData() {
+    // 🌟 సర్వర్ క్రాష్ అవ్వకుండా నిరోధించే సెక్యూర్ ఫెచ్ (CORS Bypass Headers తో) 🌟
+    async function fetchFromApi(filterType) {
+       if (apiCache[filterType]) return apiCache[filterType];
+       let payload = { action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterType };
+       try {
+           let response = await fetch(SCRIPT_URL, { 
+               method: "POST", 
+               headers: { "Content-Type": "text/plain;charset=utf-8" }, // 🌟 బ్రౌజర్ ఎర్రర్ రాకుండా కాపాడే బ్రహ్మాస్త్రం 🌟
+               body: JSON.stringify(payload) 
+           });
+           let res = await response.json();
+           if (res && res.success) { apiCache[filterType] = res; return res; }
+       } catch (e) { console.error("Fetch failed for:", filterType, e); }
+       return null;
+    }
+
+    // 🌟 క్లోజింగ్ బ్యాలెన్స్ కోసం పాత నెలలు లాగే లాజిక్ (తక్కువ రిక్వెస్ట్స్ వాడేలా) 🌟
+    function getCumBlocks(filter) {
+        switch(filter) {
+            case 'APR': return ['APR'];
+            case 'MAY': return ['APR', 'MAY'];
+            case 'JUN': return ['Q1']; 
+            case 'JUL': return ['Q1', 'JUL'];
+            case 'AUG': return ['Q1', 'JUL', 'AUG'];
+            case 'SEP': return ['H1'];
+            case 'OCT': return ['H1', 'OCT'];
+            case 'NOV': return ['H1', 'OCT', 'NOV'];
+            case 'DEC': return ['H1', 'Q3'];
+            case 'JAN': return ['H1', 'Q3', 'JAN'];
+            case 'FEB': return ['H1', 'Q3', 'JAN', 'FEB'];
+            case 'MAR': return ['FY'];
+            case 'Q1': return ['Q1'];
+            case 'Q2': return ['H1'];
+            case 'Q3': return ['H1', 'Q3'];
+            case 'Q4': return ['FY'];
+            case 'H1': return ['H1'];
+            case 'H2': return ['FY'];
+            case 'FY': return ['FY'];
+            case 'ALL': return ['ALL'];
+            default: return [filter];
+        }
+    }
+
+    // 🌟 సర్వర్ క్రాష్ అవ్వకుండా "ఒకదాని తర్వాత ఒకటి (Sequential)" లాగే లాజిక్ 🌟
+    async function fetchReportData() {
        let filterVal = document.getElementById("dateFilter").value;
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
        document.getElementById("lblFilterText").innerText = filterText;
+       
+       let tbody = document.getElementById("reportTbody");
+       
+       let requiredFilters = ["ALL"];
+       let cumBlocks = getCumBlocks(filterVal);
+       cumBlocks.forEach(b => { if(!requiredFilters.includes(b)) requiredFilters.push(b); });
+       if(!requiredFilters.includes(filterVal)) requiredFilters.push(filterVal);
 
-       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">Fetching live sales data...</td></tr>`;
-
-       if (!isOverallLoaded) {
-           Promise.all([
-               fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: "ALL" }) }).then(r=>r.json()),
-               (filterVal === "ALL") ? Promise.resolve(null) : fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) }).then(r=>r.json())
-           ]).then(results => {
-               let resAll = results[0];
-               let resCur = results[1] || resAll; 
-               
-               if (resAll.success) {
-                   resAll.vleSummary.forEach(v => { masterOverallDataVle[v.id] = v; });
-                   isOverallLoaded = true;
+       try {
+           // ఒకేసారి పంపితే ఎర్రర్ వస్తుంది కాబట్టి, లూప్ లో స్లో గా పంపుతాం
+           for(let i = 0; i < requiredFilters.length; i++) {
+               let f = requiredFilters[i];
+               if(!apiCache[f]) {
+                   tbody.innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">
+                       ⏳ Requesting Server... Fetching Data (${i+1}/${requiredFilters.length}). Please wait!
+                   </td></tr>`;
+                   
+                   await fetchFromApi(f);
+                   await new Promise(r => setTimeout(r, 400)); // 🌟 సర్వర్‌కి ఊపిరి పీల్చుకునే టైమ్ (Delay) 🌟
                }
-               if (resCur.success) {
-                   masterVleData = resCur.vleSummary;
-                   masterDistData = resCur.distSummary;
-                   calculateTotals(masterVleData);
-                   renderCurrentView();
-               } else { showError(); }
-           }).catch(e => showError());
-       } 
-       else {
-           fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterVal }) })
-           .then(res => res.json()).then(res => {
-               if(res.success) {
-                   masterVleData = res.vleSummary;
-                   masterDistData = res.distSummary;
-                   calculateTotals(masterVleData);
-                   renderCurrentView();
-               } else { showError(); }
-           }).catch(e => showError());
+           }
+
+           let allData = apiCache["ALL"];
+           let currentData = apiCache[filterVal];
+
+           if (allData && allData.vleSummary) {
+               masterOverallDataVle = {};
+               allData.vleSummary.forEach(v => { masterOverallDataVle[v.id] = v; });
+           }
+
+           if (!currentData || !currentData.vleSummary || currentData.vleSummary.length === 0) {
+               tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold fs-6">❌ No VLEs found for this selection.</td></tr>`;
+               masterVleData = []; masterDistData = [];
+               resetTopCards();
+               calculateTotals([]); 
+               return;
+           }
+
+           // క్లోజింగ్ బ్యాలెన్స్ లెక్కించడం (క్యుములేటివ్ డేటా)
+           currentCumVleMap = {};
+           currentCumDistMap = {};
+
+           cumBlocks.forEach(block => {
+               let cData = apiCache[block];
+               if(cData && cData.vleSummary) {
+                   cData.vleSummary.forEach(v => {
+                       let used = v.data.d10 + v.data.d20 + v.data.d50 + v.data.d100 + v.data.other + (v.data.dsdCount || 0);
+                       let sales = (v.data.d10*10) + (v.data.d20*20) + (v.data.d50*50) + (v.data.d100*100) + (v.data.otherAmt||0) + (v.data.dsd||0);
+                       if(!currentCumVleMap[v.id]) currentCumVleMap[v.id] = { used: 0, sales: 0 };
+                       currentCumVleMap[v.id].used += used;
+                       currentCumVleMap[v.id].sales += sales;
+                   });
+                   cData.distSummary.forEach(d => {
+                       let used = d.data.d10 + d.data.d20 + d.data.d50 + d.data.d100 + d.data.other + (d.data.dsdCount || 0);
+                       let sales = (d.data.d10*10) + (d.data.d20*20) + (d.data.d50*50) + (d.data.d100*100) + (d.data.otherAmt||0) + (d.data.dsd||0);
+                       if(!currentCumDistMap[d.district]) currentCumDistMap[d.district] = { used: 0, sales: 0 };
+                       currentCumDistMap[d.district].used += used;
+                       currentCumDistMap[d.district].sales += sales;
+                   });
+               }
+           });
+
+           masterVleData = currentData.vleSummary;
+           masterDistData = currentData.distSummary;
+
+           calculateTotals(masterVleData);
+           renderCurrentView();
+
+       } catch(e) {
+           tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold fs-6">❌ Network Connection Error. Please refresh the page and try again.</td></tr>`;
        }
     }
 
     function calculateTotals(data) {
        let d10=0, d20=0, d50=0, d100=0, oth=0;
        
-       // 🌟 1. సేల్స్ (Denominations) కి సంబంధించినవి ఫిల్టర్ చేసిన డేటా నుండి లెక్కించబడతాయి 🌟
        data.forEach(item => {
           d10 += item.data.d10; d20 += item.data.d20; d50 += item.data.d50;
           d100 += item.data.d100; oth += item.data.other;
        });
 
-       // 🌟 2. Total VLEs & Total Papers మాత్రం ఎప్పటికీ Overall డేటా నుండే తీసుకోబడతాయి (ఫిక్స్డ్) 🌟
        let globalVLECount = Object.keys(masterOverallDataVle).length;
        let globalIssued = 0;
        Object.values(masterOverallDataVle).forEach(ov => {
@@ -439,69 +381,66 @@
        const tbody = document.getElementById("reportTbody"); tbody.innerHTML = "";
        let dataToRender = [];
 
-       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtDsd = 0, gtAmt = 0, gtUsed = 0;
+       let gt10 = 0, gt20 = 0, gt50 = 0, gt100 = 0, gtOth = 0, gtDsd = 0, gtCurAmt = 0, gtCurUsed = 0;
+       let gtAvailStock = 0, gtPendingAmt = 0, globalIssued = 0, globalTarget = 0;
 
-       // 🌟 3. Grand Total అట్టడుగు వరుస కోసం మొత్తం రాష్ట్ర/జిల్లా టార్గెట్స్ లెక్కించడం 🌟
-       let globalIssued = 0, globalAvail = 0, globalTarget = 0, globalPending = 0;
        Object.values(masterOverallDataVle).forEach(ov => {
            globalIssued += (ov.data.assignedStock || 0);
-           globalAvail += (ov.data.availableStock || 0);
            globalTarget += (ov.data.targetAmount || 0);
-           globalPending += (ov.data.pendingAmount || 0);
        });
 
        if (currentView === 'DIST') {
           dataToRender = masterDistData;
-          
-          let distExtMap = {};
-          // జిల్లాల వారీగా ఓవరాల్ టార్గెట్ ని మ్యాప్ చేయడం
-          Object.values(masterOverallDataVle).forEach(ov => {
-             let d = ov.data.district;
-             if(!distExtMap[d]) distExtMap[d] = {avail:0, target:0, pending:0, issued:0};
-             
-             distExtMap[d].avail += (ov.data.availableStock || 0);
-             distExtMap[d].target += (ov.data.targetAmount || 0);
-             distExtMap[d].pending += (ov.data.pendingAmount || 0);
-             distExtMap[d].issued += (ov.data.assignedStock || 0);
-          });
-
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
-                let otherAmt = item.data.otherAmt || 0;
-                let dsdCount = item.data.dsdCount || 0;
-                let dsdAmt = item.data.dsd || 0;
-
-                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
-                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
+                let distTarget = 0; let distIssued = 0;
                 
-                let ext = distExtMap[item.district] || {avail:0, target:0, pending:0, issued:0};
+                Object.values(masterOverallDataVle).forEach(ov => {
+                    if(ov.data.district === item.district) {
+                        distTarget += (ov.data.targetAmount || 0);
+                        distIssued += (ov.data.assignedStock || 0);
+                    }
+                });
+
+                let otherAmt = item.data.otherAmt || 0; let dsdCount = item.data.dsdCount || 0; let dsdAmt = item.data.dsd || 0;
+                let curAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
+                let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
+                
+                // 🌟 Present Balance (Closing Balance) మ్యాథ్స్ 🌟
+                let cumUsed = currentCumDistMap[item.district] ? currentCumDistMap[item.district].used : curUsed;
+                let cumSales = currentCumDistMap[item.district] ? currentCumDistMap[item.district].sales : curAmt;
+
+                let availStock = distIssued - cumUsed;
+                let pendingAmt = distTarget - cumSales;
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
-                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
-                gtUsed += usedStock;
+                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; 
+                gtCurAmt += curAmt; gtCurUsed += curUsed; 
+                gtAvailStock += availStock; gtPendingAmt += pendingAmt;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
-                let pendingHtml = ext.pending > 0 ? `<span class="text-danger">₹ ${ext.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success">Achieved</span>`;
+                let pendingHtml = pendingAmt > 0 ? `<span class="text-danger">₹ ${pendingAmt.toLocaleString('en-IN')}</span>` : `<span class="text-success">Achieved</span>`;
 
                 tbody.innerHTML += `<tr class="data-row">
                     <td class="text-start ps-4 fw-bold text-dark search-target">${item.district}</td>
-                    <td class="text-secondary fw-bold">${ext.issued}</td>
+                    <td class="text-secondary fw-bold">${distIssued}</td>
                     <td><span class="badge-qty text-success border-success" style="background:#f0fdf4;">${item.data.d10}</span></td>
                     <td><span class="badge-qty text-info border-info" style="background:#f0f9ff;">${item.data.d20}</span></td>
                     <td><span class="badge-qty text-warning border-warning" style="background:#fefce8;">${item.data.d50}</span></td>
                     <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
                     <td class="text-muted">${otherHtml}</td>
                     <td class="text-secondary">${dsdHtml}</td>
-                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
-                    <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${ext.avail}</span></td>
-                    <td class="text-secondary">₹ ${ext.target.toLocaleString('en-IN')}</td>
-                    <td class="text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${curUsed}</td>
+                    <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${availStock}</span></td>
+                    <td class="text-secondary">₹ ${distTarget.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${curAmt.toLocaleString('en-IN')}</td>
                     <td>${pendingHtml}</td>
                 </tr>`;
              });
              
-             // 🌟 Grand Total వరుసలో లైఫ్‌టైమ్ డేటా ముద్రించడం 🌟
+             let gtPendingHtml = gtPendingAmt > 0 ? `₹ ${gtPendingAmt.toLocaleString('en-IN')}` : `Achieved`;
+
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
                     <td class="text-end pe-4 text-uppercase">Grand Total</td>
@@ -512,13 +451,13 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
-                    <td class="text-primary">${globalAvail}</td>
+                    <td style="color: #0284c7; font-weight: 900;">${gtCurUsed}</td>
+                    <td class="text-primary">${gtAvailStock}</td>
                     <td class="text-primary">₹ ${globalTarget.toLocaleString('en-IN')}</td>
-                    <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-danger pe-3">₹ ${globalPending.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${gtCurAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-danger pe-3">${gtPendingHtml}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="13" class="text-danger py-5 fw-bold fs-6">❌ No sales data found.</td></tr>`; }
+          }
        } 
        else {
           if(currentFilter === 'ALL') dataToRender = masterVleData;
@@ -531,22 +470,24 @@
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
                 let ov = masterOverallDataVle[item.id] || item;
-
-                let otherAmt = item.data.otherAmt || 0;
-                let dsdCount = item.data.dsdCount || 0;
-                let dsdAmt = item.data.dsd || 0;
-
-                let totalAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
-                let usedStock = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
-                
-                let availStock = ov.data.availableStock || 0;
-                let targetAmt = ov.data.targetAmount || 0;
-                let pendingAmt = ov.data.pendingAmount || 0;
                 let assignedStock = ov.data.assignedStock || 0;
+                let targetAmt = ov.data.targetAmount || 0;
+
+                let otherAmt = item.data.otherAmt || 0; let dsdCount = item.data.dsdCount || 0; let dsdAmt = item.data.dsd || 0;
+                let curAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
+                let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
+                
+                // 🌟 Present Balance (Closing Balance) మ్యాథ్స్ 🌟
+                let cumUsed = currentCumVleMap[item.id] ? currentCumVleMap[item.id].used : curUsed;
+                let cumSales = currentCumVleMap[item.id] ? currentCumVleMap[item.id].sales : curAmt;
+
+                let availStock = assignedStock - cumUsed;
+                let pendingAmt = targetAmt - cumSales;
 
                 gt10 += item.data.d10; gt20 += item.data.d20; gt50 += item.data.d50; 
-                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; gtAmt += totalAmt;
-                gtUsed += usedStock;
+                gt100 += item.data.d100; gtOth += item.data.other; gtDsd += dsdCount; 
+                gtCurAmt += curAmt; gtCurUsed += curUsed; 
+                gtAvailStock += availStock; gtPendingAmt += pendingAmt;
 
                 let otherHtml = item.data.other > 0 ? `${item.data.other} <br><span style="font-size:10px; color:#3b82f6;">(₹${otherAmt.toLocaleString('en-IN')})</span>` : `0`;
                 let dsdHtml = dsdCount > 0 ? `${dsdCount} <br><span style="font-size:10px; color:#475569;">(₹${dsdAmt.toLocaleString('en-IN')})</span>` : `0`;
@@ -567,15 +508,16 @@
                     <td><span class="badge-qty text-purple border-purple" style="background:#faf5ff;">${item.data.d100}</span></td>
                     <td class="text-muted">${otherHtml}</td>
                     <td class="text-secondary">${dsdHtml}</td>
-                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${usedStock}</td>
+                    <td style="color: #0284c7; font-weight: 900; font-size: 14px;">${curUsed}</td>
                     <td><span class="badge bg-primary px-2 py-1" style="font-size:11px;">${availStock}</span></td>
                     <td class="text-secondary">₹ ${targetAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-success">₹ ${totalAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${curAmt.toLocaleString('en-IN')}</td>
                     <td class="pe-3">${pendingHtml}</td>
                 </tr>`;
              });
              
-             // 🌟 Grand Total వరుసలో లైఫ్‌టైమ్ డేటా ముద్రించడం 🌟
+             let gtPendingHtml = gtPendingAmt > 0 ? `₹ ${gtPendingAmt.toLocaleString('en-IN')}` : `Achieved`;
+
              tbody.innerHTML += `
                 <tr class="grand-total-row data-row">
                     <td colspan="2" class="text-end pe-4 text-uppercase">Grand Total</td>
@@ -586,13 +528,13 @@
                     <td style="color:#9333ea;">${gt100}</td>
                     <td>${gtOth}</td>
                     <td class="text-secondary">${gtDsd}</td>
-                    <td style="color: #0284c7; font-weight: 900;">${gtUsed}</td>
-                    <td class="text-primary">${globalAvail}</td>
+                    <td style="color: #0284c7; font-weight: 900;">${gtCurUsed}</td>
+                    <td class="text-primary">${gtAvailStock}</td>
                     <td class="text-primary">₹ ${globalTarget.toLocaleString('en-IN')}</td>
-                    <td class="text-success">₹ ${gtAmt.toLocaleString('en-IN')}</td>
-                    <td class="text-danger pe-3">₹ ${globalPending.toLocaleString('en-IN')}</td>
+                    <td class="text-success">₹ ${gtCurAmt.toLocaleString('en-IN')}</td>
+                    <td class="text-danger pe-3">${gtPendingHtml}</td>
                 </tr>`;
-          } else { tbody.innerHTML = `<tr><td colspan="14" class="text-danger py-5 fw-bold fs-6">❌ No VLEs found for this selection.</td></tr>`; }
+          }
        }
        searchTable(); 
     }
@@ -604,20 +546,15 @@
           let targets = row.querySelectorAll(".search-target");
           let match = false;
           targets.forEach(cell => { if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) match = true; });
-          
-          if(row.classList.contains("grand-total-row")) {
-             row.style.display = "";
-          } else {
-             row.style.display = match ? "" : "none";
-          }
+          if(row.classList.contains("grand-total-row")) { row.style.display = ""; } 
+          else { row.style.display = match ? "" : "none"; }
        });
     }
 
     function downloadImage() {
        const captureElement = document.getElementById('captureArea');
        html2canvas(captureElement, { scale: 2, backgroundColor: '#f4f7fe' }).then(canvas => {
-          let link = document.createElement('a');
-          link.download = 'Sales_Report.png'; link.href = canvas.toDataURL("image/png"); link.click();
+          let link = document.createElement('a'); link.download = 'Sales_Report.png'; link.href = canvas.toDataURL("image/png"); link.click();
        });
     }
   </script>
