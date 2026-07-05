@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLE Performance Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    /* 🌟 Master Clean Background 🌟 */
+    body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 20px 15px; min-height: 100vh; color: #334155; }
+
+    /* 🌟 Premium Card Container 🌟 */
+    .premium-card { background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 20px; }
+    .card-header-custom { background: #ffffff; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-top: 5px solid #6366f1; }
+    .card-title { color: #0f172a; font-weight: 900; font-size: 18px; margin: 0; }
+
+    /* 🌟 Summary Cards Styles 🌟 */
+    .stat-card { background: #ffffff; border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #cbd5e1; height: 100%; border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+    .stat-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .stat-value { font-size: 24px; font-weight: 900; color: #1e293b; margin: 0; line-height: 1; }
+    
+    .border-tot { border-top-color: #6366f1; } 
+    .border-10 { border-top-color: #22c55e; } 
+    .border-20 { border-top-color: #0ea5e9; } 
+    .border-50 { border-top-color: #eab308; } 
+    .border-100 { border-top-color: #a855f7; } 
+    .border-oth { border-top-color: #f97316; }
+
+    /* 🌟 Controls & Search 🌟 */
+    .controls-bar { background: #ffffff; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; margin-bottom: 25px; border-top: 5px solid #3b82f6; gap: 15px; }
+    .search-box { width: 350px; border: 2px solid #cbd5e1; border-radius: 8px; padding: 10px 20px; outline: none; font-size: 15px; font-weight: 700; color: #1e293b; background: #f8fafc; transition: 0.3s; text-align: center; letter-spacing: 1px;}
+    .search-box:focus { border-color: #3b82f6; background: #ffffff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+    .btn-search { background: #3b82f6; color: #fff; font-weight: 800; padding: 10px 25px; border-radius: 8px; border: none; font-size: 15px; transition: 0.3s; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
+    .btn-search:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4); }
+    .btn-search:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+    
+    .btn-reset { background: #64748b; color: #fff; font-weight: 800; padding: 10px 20px; border-radius: 8px; border: none; font-size: 15px; transition: 0.3s; box-shadow: 0 4px 6px rgba(100, 116, 139, 0.3); }
+    .btn-reset:hover { background: #475569; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(100, 116, 139, 0.4); }
+
+    /* 🌟 Table Design 🌟 */
+    .table-container { padding: 0; width: 100%; }
+    .table { margin-bottom: 0; white-space: nowrap; width: 100%; table-layout: auto; }
+    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 6px; border: none; }
+    .table tbody tr td { padding: 14px 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 13px; font-weight: 700; }
+    .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
+    .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
+    .table-hover tbody tr:hover td { background-color: #e0e7ff !important; cursor: pointer; }
+    .grand-total-row td { background-color: #cbd5e1 !important; font-weight: 900 !important; color: #0f172a !important; border-top: 3px solid #64748b !important; font-size: 14px; }
+
+    .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 13px; font-weight: 800; padding: 4px 8px; border-radius: 6px; border: 1px solid #a7f3d0; }
+    .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; text-transform: uppercase; border: 1px solid #d8b4fe; }
+    
+    .vle-info-badge { font-size: 15px; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; border: 1px solid #cbd5e1; display: inline-block;}
+
+    .spinner-border { width: 1.5rem; height: 1.5rem; border-width: 0.2em; vertical-align: middle; margin-right: 10px;}
+
+
+</style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
+</head>
+<body>
+
+  <div class="container-fluid px-3" id="captureArea">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+      <div>
+        <h4 class="fw-bold m-0" style="color: #0f172a;">📈 VLE Performance Report</h4>
+        <span class="badge-soft mt-1 d-inline-block">Month-wise Analysis</span>
+      </div>
+      <button class="btn btn-outline-primary fw-bold" onclick="downloadImage()">📸 Download Image</button>
+    </div>
+
+    <div class="controls-bar" data-html2canvas-ignore="true">
+      <input type="text" id="cscIdInput" class="search-box" placeholder="Enter CSC ID (e.g., 179996980010)" maxlength="15">
+      <button class="btn-search" id="btnSearch" onclick="searchVLE()">🔍 Get Report</button>
+      <button class="btn-reset" onclick="resetReport()">🔄 Reset</button>
+    </div>
+
+    <div id="reportArea" style="display: none;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="vle-info-badge">
+                👤 Name: <span id="lblName" class="text-primary">Loading...</span> | 
+                🏢 District: <span id="lblDistrict" class="text-danger">Loading...</span>
+            </div>
+            <div class="vle-info-badge">
+                🆔 CSC ID: <span id="lblCscId" class="text-success">Loading...</span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col"><div class="stat-card border-tot"><div class="stat-title" style="color:#6366f1;">Total Issued Stock</div><div class="stat-value" style="color:#6366f1;" id="totIssued">0</div></div></div>
+          <div class="col"><div class="stat-card border-oth"><div class="stat-title" style="color:#f97316;">Total Used Stock</div><div class="stat-value" style="color:#f97316;" id="totUsed">0</div></div></div>
+          <div class="col"><div class="stat-card border-10"><div class="stat-title" style="color:#16a34a;">Available Stock</div><div class="stat-value" style="color:#16a34a;" id="totAvail">0</div></div></div>
+          <div class="col"><div class="stat-card border-100"><div class="stat-title" style="color:#9333ea;">Total Target (₹)</div><div class="stat-value" style="color:#9333ea;" id="totTarget">0</div></div></div>
+          <div class="col"><div class="stat-card border-20"><div class="stat-title" style="color:#0284c7;">Total Sales (₹)</div><div class="stat-value" style="color:#0284c7;" id="totSales">0</div></div></div>
+          <div class="col"><div class="stat-card border-50"><div class="stat-title" style="color:#ca8a04;">Pending Amount (₹)</div><div class="stat-value" style="color:#ca8a04;" id="totPending">0</div></div></div>
+        </div>
+
+        <div class="premium-card">
+          <div class="card-header-custom">
+            <div class="card-title">📅 Month-wise Transaction History</div>
+          </div>
+          
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="table table-hover table-striped align-middle text-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-start ps-4">Month</th>
+                    <th>₹ 10</th>
+                    <th>₹ 20</th>
+                    <th>₹ 50</th>
+                    <th>₹ 100</th>
+                    <th>Oth.</th>
+                    <th>DSD</th>
+                    <th style="color: #0284c7 !important;">Total Used</th>
+                    <th style="color: #34d399 !important;">Total Sales(₹)</th>
+                  </tr>
+                </thead>
+                <tbody id="monthTbody">
+                  </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+    <div id="msgArea" class="text-center mt-5" style="display: none;">
+        <h5 id="msgText" class="fw-bold" style="color: #64748b;"></h5>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
+    let loggedInUserId = localStorage.getItem("userId") || ""; 
+    
+    let apiCache = {};
+
+    // 🌟 Dual-Fetch Fallback (Safe Fetching) 🌟
+    async function fetchFromApi(filterType) {
+       if (apiCache[filterType]) return apiCache[filterType];
+       let payload = { action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterType };
+       
+       try {
+           let response = await fetch(SCRIPT_URL, { 
+               method: "POST", 
+               headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+               body: JSON.stringify(payload) 
+           });
+           let res = await response.json();
+           if (res && res.vleSummary) { apiCache[filterType] = res; return res; }
+       } catch (e) {}
+
+       try {
+           let response = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+           let res = await response.json();
+           if (res && res.vleSummary) { apiCache[filterType] = res; return res; }
+       } catch (e) {}
+
+       return null; 
+    }
+
+    // 🌟 Reset Report Logic 🌟
+    function resetReport() {
+        document.getElementById("cscIdInput").value = "";
+        document.getElementById("reportArea").style.display = "none";
+        document.getElementById("msgArea").style.display = "none";
+    }
+
+    async function searchVLE() {
+        let cscIdInput = document.getElementById("cscIdInput");
+        let cscId = cscIdInput.value.trim();
+        let reportArea = document.getElementById("reportArea");
+        let msgArea = document.getElementById("msgArea");
+        let msgText = document.getElementById("msgText");
+        let btnSearch = document.getElementById("btnSearch");
+
+        if(cscId === "") {
+            reportArea.style.display = "none";
+            msgArea.style.display = "block";
+            msgText.innerHTML = "⚠️ Please enter a valid CSC ID.";
+            return;
+        }
+
+        reportArea.style.display = "none";
+        msgArea.style.display = "block";
+        btnSearch.disabled = true;
+        
+        // 🌟 Auto-clear input right after clicking Get Report 🌟
+        cscIdInput.value = "";
+        
+        try {
+            msgText.innerHTML = `<span class="spinner-border text-primary"></span> Verifying CSC ID Details...`;
+            let allRes = await fetchFromApi("ALL");
+            
+            if(!allRes || !allRes.vleSummary) {
+                msgText.innerHTML = "❌ Network Error. Unable to reach server. Please check your internet or refresh the page.";
+                btnSearch.disabled = false;
+                return;
+            }
+
+            let masterInfo = allRes.vleSummary.find(v => String(v.id) === String(cscId));
+            if(!masterInfo) {
+                msgText.innerHTML = `❌ No record found for CSC ID: <span class="text-danger">${cscId}</span>`;
+                btnSearch.disabled = false;
+                return;
+            }
+
+            let mData = masterInfo.data || {};
+            let issuedStock = mData.assignedStock || 0;
+            let targetAmt = mData.targetAmount || 0;
+            let vleName = mData.name || "Unknown Name";
+            let vleDistrict = mData.district || "Unknown District";
+
+            // 🌟 Dynamic Month Logic (Only fetch up to Current Month) 🌟
+            let dateObj = new Date();
+            let currMonth = dateObj.getMonth(); // 0 (Jan) to 11 (Dec)
+            // Calculate Financial Year Index (April = 0, May = 1... March = 11)
+            let currentFYIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+
+            const allFilters = ['APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR'];
+            const allLabels = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+            
+            // Slice arrays exactly up to the current month in FY
+            const monthFilters = allFilters.slice(0, currentFYIndex + 1);
+            const monthLabels = allLabels.slice(0, currentFYIndex + 1);
+            
+            let uncachedMonths = monthFilters.filter(f => !apiCache[f]);
+
+            if (uncachedMonths.length > 0) {
+                for(let i=0; i<monthFilters.length; i+=3) {
+                    let chunk = monthFilters.slice(i, i+3);
+                    let labelsChunk = monthLabels.slice(i, i+3);
+                    msgText.innerHTML = `<span class="spinner-border text-success"></span> Extracting data for <b style="color:#3b82f6;">${labelsChunk.join(', ')}</b>...`;
+                    
+                    let chunkPromises = chunk.map(f => fetchFromApi(f));
+                    await Promise.all(chunkPromises);
+                    await new Promise(r => setTimeout(r, 200)); 
+                }
+            } else {
+                msgText.innerHTML = `<span class="spinner-border text-success"></span> Loading instantly from Cache...`;
+            }
+
+            let monthResults = [];
+            for(let i=0; i<monthFilters.length; i++) {
+                let mRes = apiCache[monthFilters[i]];
+                let monthDataObj = { d10:0, d20:0, d50:0, d100:0, other:0, otherAmt:0, dsdCount:0, dsd:0 };
+                
+                if(mRes && mRes.vleSummary) {
+                    let v = mRes.vleSummary.find(x => String(x.id) === String(cscId));
+                    if(v && v.data) monthDataObj = v.data;
+                }
+                monthResults.push({ label: monthLabels[i], data: monthDataObj });
+            }
+
+            renderReport(cscId, vleName, vleDistrict, issuedStock, targetAmt, monthResults);
+            
+            msgArea.style.display = "none";
+            reportArea.style.display = "block";
+
+        } catch (error) {
+            msgText.innerHTML = "❌ Unexpected Error Occurred while fetching data.";
+        }
+        
+        btnSearch.disabled = false;
+    }
+
+    function renderReport(cscId, name, district, issuedStock, targetAmt, monthResults) {
+        document.getElementById("lblName").innerText = name;
+        document.getElementById("lblDistrict").innerText = district;
+        document.getElementById("lblCscId").innerText = cscId;
+
+        let tbody = document.getElementById("monthTbody");
+        tbody.innerHTML = "";
+
+        let gt10=0, gt20=0, gt50=0, gt100=0, gtOth=0, gtDsd=0, gtUsed=0, gtSales=0;
+
+        monthResults.forEach((item) => {
+            let m = item.data;
+            let d10 = m.d10 || 0;
+            let d20 = m.d20 || 0;
+            let d50 = m.d50 || 0;
+            let d100 = m.d100 || 0;
+            let oth = m.other || 0;
+            let othAmt = m.otherAmt || 0;
+            let dsdCount = m.dsdCount || 0;
+            let dsdAmt = m.dsd || 0;
+
+            let usedStock = d10 + d20 + d50 + d100 + oth + dsdCount;
+            let totalSales = (d10*10) + (d20*20) + (d50*50) + (d100*100) + othAmt + dsdAmt;
+
+            gt10 += d10; gt20 += d20; gt50 += d50; gt100 += d100; 
+            gtOth += oth; gtDsd += dsdCount; gtUsed += usedStock; gtSales += totalSales;
+
+            let rowHtml = `<tr class="data-row">
+                <td class="text-start ps-4 fw-bold" style="color: #475569;">${item.label}</td>
+                <td><span class="${d10 > 0 ? 'badge-qty text-success border-success' : 'text-muted'}">${d10}</span></td>
+                <td><span class="${d20 > 0 ? 'badge-qty text-info border-info' : 'text-muted'}">${d20}</span></td>
+                <td><span class="${d50 > 0 ? 'badge-qty text-warning border-warning' : 'text-muted'}">${d50}</span></td>
+                <td><span class="${d100 > 0 ? 'badge-qty text-purple border-purple' : 'text-muted'}">${d100}</span></td>
+                <td class="${oth > 0 ? 'fw-bold' : 'text-muted'}">${oth} ${oth>0?`<br><span style='font-size:9px;color:#3b82f6'>(₹${othAmt.toLocaleString('en-IN')})</span>`:''}</td>
+                <td class="text-muted">${dsdCount > 0 ? dsdCount : '0'}</td>
+                <td style="color: #0284c7; font-weight: 900;">${usedStock}</td>
+                <td class="text-success fw-bold">₹ ${totalSales.toLocaleString('en-IN')}</td>
+            </tr>`;
+            
+            tbody.innerHTML += rowHtml;
+        });
+
+        // Add Grand Total Row
+        tbody.innerHTML += `
+            <tr class="grand-total-row">
+                <td class="text-end pe-4 text-uppercase">Total</td>
+                <td style="color:#16a34a;">${gt10}</td>
+                <td style="color:#0284c7;">${gt20}</td>
+                <td style="color:#ca8a04;">${gt50}</td>
+                <td style="color:#9333ea;">${gt100}</td>
+                <td style="color:#f97316;">${gtOth}</td>
+                <td class="text-secondary">${gtDsd}</td>
+                <td style="color: #0284c7; font-weight: 900; font-size: 15px;">${gtUsed}</td>
+                <td class="text-success" style="font-size: 15px;">₹ ${gtSales.toLocaleString('en-IN')}</td>
+            </tr>
+        `;
+
+        // Update Top Summary Cards (Closing Balances)
+        let availStock = issuedStock - gtUsed;
+        let pendingAmt = targetAmt - gtSales;
+
+        document.getElementById("totIssued").innerText = issuedStock;
+        document.getElementById("totUsed").innerText = gtUsed;
+        document.getElementById("totAvail").innerText = availStock;
+        document.getElementById("totTarget").innerText = `₹ ${targetAmt.toLocaleString('en-IN')}`;
+        document.getElementById("totSales").innerText = `₹ ${gtSales.toLocaleString('en-IN')}`;
+        
+        let pendingEl = document.getElementById("totPending");
+        if(pendingAmt > 0) {
+            pendingEl.innerText = `₹ ${pendingAmt.toLocaleString('en-IN')}`;
+            pendingEl.style.color = "#ca8a04";
+        } else {
+            pendingEl.innerText = "Achieved";
+            pendingEl.style.color = "#16a34a"; // Green
+        }
+    }
+
+    // Enter Key Support
+    document.getElementById("cscIdInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            searchVLE();
+        }
+    });
+
+    function downloadImage() {
+       const captureElement = document.getElementById('captureArea');
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f1f5f9' }).then(canvas => {
+          let cscId = document.getElementById("lblCscId").innerText.trim() || "Report";
+          let link = document.createElement('a'); 
+          link.download = `VLE_Performance_${cscId}.png`; 
+          link.href = canvas.toDataURL("image/png"); 
+          link.click();
+       });
+    }
+  </script>
+</body>
+</html>
