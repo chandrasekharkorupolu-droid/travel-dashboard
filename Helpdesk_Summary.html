@@ -40,7 +40,6 @@
     
     .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #f1f5f9; border: 1px solid #cbd5e1;}
   </style>
-
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
@@ -49,7 +48,6 @@
   gtag('js', new Date());
   gtag('config', 'G-GF2VXY76KN');
 </script>
-  
 </head>
 <body>
 
@@ -174,9 +172,9 @@
 
   </div>
 
-  <script>
-    // 🌟 పాత గూగుల్ షీట్ లింక్ తీసేసి ఫైర్‌బేస్ లింక్ పెట్టాం 🌟
-    const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/helpdeskTickets.json";
+<script>
+    // 🌟 ఫైర్‌బేస్ తీసేసి, మీ Google Apps Script లింక్ పెట్టాం 🌟
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
     
     let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
     let loggedInUserId = localStorage.getItem("userId") || ""; 
@@ -192,64 +190,43 @@
         document.getElementById("reportDateTime").innerText = "Report Generated: " + formatted;
     }
 
-    async function fetchSummaryData() {
-       document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="py-4 text-center fw-bold text-primary">⚡ Fetching from Firebase in milliseconds...</td></tr>`;
+    // 🌟 Refresh బటన్ కోసం forceRefresh పారామీటర్ 🌟
+    async function fetchSummaryData(forceRefresh = false) {
+       document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="py-4 text-center fw-bold text-primary">⚡ Fetching Data... Please wait.</td></tr>`;
        
        try {
-           let res = await fetch(FIREBASE_URL);
-           let rawData = await res.json();
-           
-           let dataArr = [];
-           for(let key in rawData) {
-               if(rawData[key]) dataArr.push(rawData[key]);
-           }
-           
-           // 🌟 DM కి వాళ్ళ జిల్లా డేటా మాత్రమే చూపించే ఫిల్టర్ 🌟
-           if (loggedInDesig === "DM" || loggedInDesig.includes("DISTRICT MANAGER")) {
-               let userDist = (localStorage.getItem("userDistrict") || "").replace(/[^A-Za-z]/g, '').toUpperCase();
-               if(userDist === "VSP") userDist = "VISAKHAPATNAM";
-               
-               dataArr = dataArr.filter(t => {
-                   let tDist = (t.district || "").replace(/[^A-Za-z]/g, '').toUpperCase();
-                   if(tDist === "VSP") tDist = "VISAKHAPATNAM";
-                   return tDist.includes(userDist) || userDist.includes(tDist);
-               });
+           // 🌟 1. ఫాస్ట్ లోడింగ్: బ్రౌజర్ మెమరీలో డేటా ఉందేమో చెక్ చేయడం 🌟
+           let cachedSummary = localStorage.getItem("helpdeskSummaryData");
+
+           if (!forceRefresh && cachedSummary) {
+               renderDashboard(JSON.parse(cachedSummary));
+               return; // మెమరీలో ఉంటే గూగుల్ షీట్ కి వెళ్ళకుండా ఇక్కడే ఆపేస్తాం
            }
 
-           // 🌟 ఫ్రంట్-ఎండ్ లోనే స్పీడ్ గా కాలిక్యులేట్ చేయడం 🌟
-           let summary = { kpi: { total: 0, resolved: 0, escalated: 0, pending: 0 }, districts: {}, resolvers: {}, services: {} };
-           
-           dataArr.forEach(t => {
-               let dist = t.district ? t.district.toUpperCase() : "UNKNOWN";
-               let status = t.status ? t.status.toUpperCase() : "PENDING";
-               let srv = t.service ? t.service.toUpperCase() : "UNKNOWN";
-               let resolver = t.resolvedBy ? t.resolvedBy.toUpperCase() : "";
-
-               summary.kpi.total++;
-               if (status === "RESOLVED") summary.kpi.resolved++;
-               else if (status === "FORWARDED TO HO") summary.kpi.escalated++;
-               else summary.kpi.pending++;
-
-               if (!summary.districts[dist]) summary.districts[dist] = { total: 0, resolved: 0, escalated: 0, pending: 0 };
-               summary.districts[dist].total++;
-               if (status === "RESOLVED") summary.districts[dist].resolved++;
-               else if (status === "FORWARDED TO HO") summary.districts[dist].escalated++;
-               else summary.districts[dist].pending++;
-
-               if (status === "RESOLVED" && resolver !== "") {
-                   if (!summary.resolvers[resolver]) summary.resolvers[resolver] = 0;
-                   summary.resolvers[resolver]++;
-               }
-
-               if (!summary.services[srv]) summary.services[srv] = 0;
-               summary.services[srv]++;
+           // 🌟 2. మెమరీలో లేకపోతే లేదా 'Refresh' నొక్కితే మీ అద్భుతమైన Code.gs కి వెళ్తాం 🌟
+           let res = await fetch(SCRIPT_URL, {
+               method: 'POST',
+               body: JSON.stringify({
+                   action: "getHelpdeskSummary",
+                   role: loggedInDesig,
+                   userId: loggedInUserId
+               })
            });
-
-           renderDashboard(summary);
-           updateDateTime(); 
+           
+           let data = await res.json();
+           
+           if (data.success && data.summary) {
+               // 🌟 3. వచ్చిన కొత్త డేటాని మళ్ళీ బ్రౌజర్ మెమరీలో దాచిపెడతాం 🌟
+               localStorage.setItem("helpdeskSummaryData", JSON.stringify(data.summary));
+               
+               renderDashboard(data.summary);
+               updateDateTime(); 
+           } else {
+               document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ No Data Found or Error in Backend.</td></tr>`;
+           }
 
        } catch (error) {
-           document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ Firebase Connection Error.</td></tr>`;
+           document.getElementById("districtBody").innerHTML = `<tr><td colspan="5" class="text-danger fw-bold py-4 text-center">❌ Google Sheet Connection Error.</td></tr>`;
        }
     }
 

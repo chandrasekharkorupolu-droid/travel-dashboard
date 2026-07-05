@@ -9,7 +9,6 @@
         .header-container h2 { margin: 0; color: #1e293b; font-size: 22px; display: flex; align-items: center; gap: 10px;}
         .header-actions { display: flex; gap: 15px; align-items: center; }
         
-        /* 🌟 కొత్త ఫిల్టర్ స్టైల్స్ 🌟 */
         .status-filter-select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; outline: none; cursor: pointer; background-color: #f8fafc; }
         .status-filter-select:hover { border-color: #ca8a04; }
         
@@ -23,19 +22,18 @@
         .card-stats { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; }
         .stat-resolved { color: #15803d; background: #dcfce7; padding: 5px 10px; border-radius: 6px; border: 1px solid #bbf7d0; }
         .stat-pending { color: #dc2626; background: #fee2e2; padding: 5px 10px; border-radius: 6px; border: 1px solid #fecaca; }
-        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-y: auto; height: calc(100vh - 290px); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background-color: #f1f5f9; color: #475569; padding: 15px; font-size: 14px; border-bottom: 2px solid #e2e8f0; }
+        th { background-color: #f1f5f9; color: #475569; padding: 15px; font-size: 14px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
         td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; }
         tr:hover { background-color: #f8fafc; }
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
         .status-pending { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
         .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .action-btn { background-color: #ca8a04; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
-        .action-btn:hover { background-color: #a16207; }
+        .action-btn:hover { background: #a16207; }
         #loadingMsg { text-align: center; padding: 50px; font-size: 18px; color: #64748b; font-weight: bold; }
         
-        /* 🌟 పాప్-అప్ (MODAL) స్టైల్స్ 🌟 */
         .resolve-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
         .resolve-modal-content { background: #ffffff; width: 90%; max-width: 650px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid #d69e2e; display: flex; flex-direction: column; max-height: 90vh; animation: popIn 0.3s ease-out; }
         .resolve-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px 12px 0 0; }
@@ -71,6 +69,7 @@
 
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
@@ -79,7 +78,6 @@
   gtag('js', new Date());
   gtag('config', 'G-GF2VXY76KN');
 </script>
-    
 </head>
 <body>
 
@@ -113,7 +111,7 @@
             </thead>
             <tbody id="ticketsBody"></tbody>
         </table>
-        <div id="loadingMsg">⚡ Fetching from Firebase in milliseconds...</div>
+        <div id="loadingMsg">⚡ Fetching Data from Google Sheet... Please wait.</div>
     </div>
 
     <div id="resolveModal" class="resolve-modal-overlay">
@@ -176,12 +174,8 @@
     </div>
 
     <script>
-        // ఇది సబ్మిట్ బటన్ కోసం (Google Sheet కి పంపడానికి)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
         
-        // 🌟 ఫైర్‌బేస్ డైరెక్ట్ లింక్ (దీనివల్ల స్పీడ్ 100 రెట్లు పెరుగుతుంది) 🌟
-        const FIREBASE_URL = "https://csc-ap-tour-travels-default-rtdb.firebaseio.com/helpdeskTickets.json";
-
         const adminRole = localStorage.getItem("userDesignation") ? localStorage.getItem("userDesignation").toUpperCase() : "";
         const userId = localStorage.getItem("userId") || "";
         const adminName = localStorage.getItem("userName") || localStorage.getItem("userDesignation") || "SPOC/DM";
@@ -213,47 +207,51 @@
             document.getElementById("customAlert").style.display = "none";
         }
 
-        // 🌟 ఇక్కడ ఉంది అసలైన మ్యాజిక్: Firebase Fetch 🌟
-        async function fetchDataFromServer(forceRefresh = false) {
+       async function fetchDataFromServer(forceRefresh = false) {
             document.getElementById("loadingMsg").style.display = "block";
-            document.getElementById("loadingMsg").innerText = "⚡ Fetching from Firebase in milliseconds...";
+            document.getElementById("loadingMsg").innerText = "⚡ Fetching Data... Please wait.";
             document.getElementById("ticketsBody").innerHTML = "";
 
             try {
-                // ఫైర్‌బేస్ నుండి డైరెక్ట్ గా డేటా లాగడం (Zero delay)
-                let response = await fetch(FIREBASE_URL);
-                let data = await response.json(); 
+                // 🌟 1. ఫాస్ట్ లోడింగ్: బ్రౌజర్ మెమరీలో డేటా ఉందేమో చెక్ చేయడం 🌟
+                let cachedTickets = localStorage.getItem("helpdeskTicketsData");
 
-                let rawTickets = [];
-                for (let key in data) {
-                    if(data[key]) rawTickets.push(data[key]);
+                // ఒకవేళ డేటా మెమరీలో ఉంటే, ఫోర్స్ రిఫ్రెష్ కాకపోతే వెంటనే దాన్ని చూపిస్తాం
+                if (!forceRefresh && cachedTickets) {
+                    allTicketsData = JSON.parse(cachedTickets);
+                    renderTickets();
+                    return; // ఇక్కడితో ఆపేస్తాం, గూగుల్ షీట్ కి వెళ్ళం (Time Saved!)
                 }
 
-                // 🌟 DM లాగిన్ అయితే కేవలం వాళ్ళ జిల్లా డేటా మాత్రమే ఫిల్టర్ చేయడం 🌟
-                if (adminRole === "DM" || adminRole.includes("DISTRICT MANAGER")) {
-                    let userDist = localStorage.getItem("userDistrict") || "";
-                    let normUserDist = userDist.replace(/[^A-Za-z]/g, '').toUpperCase();
-                    if(normUserDist === "VSP") normUserDist = "VISAKHAPATNAM";
+                // 🌟 2. మెమరీలో లేకపోతే లేదా 'Refresh' నొక్కితే గూగుల్ షీట్ కి వెళ్తాం 🌟
+                document.getElementById("loadingMsg").innerText = "⚡ Fetching Live Data from Google Sheet... Please wait.";
 
-                    rawTickets = rawTickets.filter(t => {
-                        let tDist = (t.district || "").replace(/[^A-Za-z]/g, '').toUpperCase();
-                        if(tDist === "VSP") tDist = "VISAKHAPATNAM";
-                        return tDist.includes(normUserDist) || normUserDist.includes(tDist);
-                    });
-                }
-
-                // లేటెస్ట్ టికెట్స్ పైన వచ్చేలా రివర్స్ చేయడం
-                allTicketsData = rawTickets.reverse();
-
-                let dName = (adminRole === "DM" || adminRole.includes("DISTRICT MANAGER")) ? localStorage.getItem("userDistrict") : "ALL";
-                document.getElementById("headerTitle").innerHTML = `🎧 Helpdesk Tickets <span style="font-size:12px; font-weight:bold; color:#1e3a8a; background:#e0e7ff; padding:4px 10px; border-radius:20px; border: 1px solid #bfdbfe;">District: ${dName}</span>`;
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: "getHelpdeskTickets", 
+                        role: adminRole, 
+                        userId: userId 
+                    })
+                });
                 
-                updateServiceCards(); 
+                let res = await response.json(); 
+                let rawTickets = [];
+
+                if (res.success && res.tickets) {
+                    rawTickets = res.tickets;
+                }
+
+                allTicketsData = rawTickets;
+
+                // 🌟 3. వచ్చిన కొత్త డేటాని మళ్ళీ బ్రౌజర్ మెమరీలో దాచిపెడతాం 🌟
+                localStorage.setItem("helpdeskTicketsData", JSON.stringify(allTicketsData));
+
                 renderTickets();      
 
             } catch (error) {
-                document.getElementById("loadingMsg").innerText = "❌ Firebase Connection Error.";
                 console.error(error);
+                document.getElementById("loadingMsg").innerText = "❌ Google Sheet Connection Error. Please check your network.";
             }
         }
 
@@ -309,10 +307,8 @@
                 let tSrv = t.service ? t.service.toUpperCase() : "";
                 let tStat = t.status ? t.status.toUpperCase() : "";
                 
-                // 1. సర్వీస్ ఫిల్టర్ చెకింగ్ 
                 if (currentFilter !== "ALL" && tSrv !== currentFilter) return;
 
-                // 2. స్టేటస్ ఫిల్టర్ చెకింగ్ 
                 let isPendingType = (tStat === "PENDING" || tStat === "FORWARDED TO HO");
                 if (currentStatusFilter === "PENDING" && !isPendingType) return;
                 if (currentStatusFilter === "RESOLVED" && tStat !== "RESOLVED") return;
@@ -325,18 +321,19 @@
                 
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId}</td>
+                    <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId || '-'}</td>
                     <td style="font-size:13px; color:#64748b;">${t.date ? t.date.split(' ')[0] : '-'}</td>
-                    <td style="font-weight:bold;">${t.cscId}</td>
-                    <td>${t.district}</td>
-                    <td><span style="color:#ca8a04; font-weight:bold;">${t.service}</span><br><span style="font-size:12px; color:#475569;">${t.category}</span></td>
+                    <td style="font-weight:bold;">${t.cscId || '-'}</td>
+                    <td>${t.district || '-'}</td>
+                    <td><span style="color:#ca8a04; font-weight:bold;">${t.service || '-'}</span><br><span style="font-size:12px; color:#475569;">${t.category || '-'}</span></td>
                     <td style="font-weight:bold; color:#ef4444;">${agentId}</td>
-                    <td><span class="status-badge ${statusClass}">${t.status}</span></td>
+                    <td><span class="status-badge ${statusClass}">${t.status || 'PENDING'}</span></td>
                     <td><button class="action-btn" onclick="viewTicket('${t.ticketId}')">View / Resolve</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
+            updateServiceCards(); // Update stats
             document.getElementById("loadingMsg").style.display = "none";
             if(displayCount === 0) {
                 document.getElementById("loadingMsg").style.display = "block";
@@ -378,7 +375,7 @@
             document.getElementById('r_desc_text').innerHTML = formattedDesc;
             document.getElementById('r_image_preview').innerHTML = imageGalleryHTML;
             
-            if(t.status.toUpperCase() === "RESOLVED") {
+            if(t.status && t.status.toUpperCase() === "RESOLVED") {
                 document.getElementById('actionFormArea').style.display = "none";
                 document.getElementById('btnResolveSubmit').style.display = "none";
                 document.getElementById('resolvedDetailsArea').style.display = "block";
@@ -391,7 +388,7 @@
                 document.getElementById('btnResolveSubmit').style.display = "block";
                 document.getElementById('resolvedDetailsArea').style.display = "none";
                 
-                if(t.status.toUpperCase() === "FORWARDED TO HO") {
+                if(t.status && t.status.toUpperCase() === "FORWARDED TO HO") {
                     document.getElementById('r_status').value = "Forwarded to HO";
                     document.getElementById('r_remarks').value = t.remarks || "";
                 } else {
@@ -413,10 +410,12 @@
             let csc = t.cscId; let dist = t.district; let srv = t.service; let iss = t.category;
 
             let dataMap = {};
-            t.desc.split('\n').forEach(line => {
-                let parts = line.split(':');
-                if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
-            });
+            if (t.desc) {
+                t.desc.split('\n').forEach(line => {
+                    let parts = line.split(':');
+                    if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
+                });
+            }
 
             let agentId = (t.irctcId && t.irctcId !== "-") ? t.irctcId : "-";
             let vleMob = (t.vleMobile && t.vleMobile !== "-") ? t.vleMobile : "-"; 
@@ -439,7 +438,7 @@
                         <p>The necessary supporting documents have already been attached to this email for your kind perusal.</p><p>Regards,<br><b>CSC District Manager</b></p>
                     </div>`;
             } else {
-                let descClean = t.desc.replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '').trim();
+                let descClean = (t.desc || "").replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '').trim();
                 mailHTML = `
                     <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #000;">
                         <p>Dear HO Team,</p><p>Please look into the following ticket raised by the VLE.</p>
@@ -483,10 +482,12 @@
             let iss = t.category;
 
             let dataMap = {};
-            t.desc.split('\n').forEach(line => {
-                let parts = line.split(':');
-                if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
-            });
+            if (t.desc) {
+                t.desc.split('\n').forEach(line => {
+                    let parts = line.split(':');
+                    if(parts.length >= 2) dataMap[parts[0].trim().toUpperCase()] = parts.slice(1).join(':').trim();
+                });
+            }
 
             let message = `*Ticket Escalation - HO*\n\n*Ticket ID:* ${tId}\n*CSC ID:* ${csc}\n*District:* ${dist}\n*Service:* ${srv}\n*Issue:* ${iss}\n`;
 
@@ -532,7 +533,6 @@
                     showCustomAlert("Success!", "Ticket status updated successfully.");
                     closeResolveModal();
                     
-                    // బ్యాకెండ్ అప్‌డేట్ అయ్యాక ఫైర్‌బేస్ డేటా కోసం 2 సెకన్లు ఆగి రిఫ్రెష్ చేస్తుంది.
                     setTimeout(() => { fetchDataFromServer(true); }, 2000); 
                 } else {
                     showCustomAlert("Failed!", "Failed to update: " + data.message, false);
