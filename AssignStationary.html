@@ -136,6 +136,7 @@
     .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
     .badge-gray { background: #f1f5f9; color: #475569; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
   </style>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
@@ -144,7 +145,7 @@
   gtag('js', new Date());
   gtag('config', 'G-GF2VXY76KN');
 </script>
-  
+
 </head>
 <body>
 
@@ -201,18 +202,42 @@
                 </div>
             </div>
             
-            <!-- 🌟 Compact Scorecards 🌟 -->
+            <!-- 🌟 Compact Scorecards with AUTOMATIC Dropdown 🌟 -->
             <div class="scorecard-container shadow-sm" style="background-color: #f8fafc; border-top: 4px solid #3b82f6 !important;">
-                <h6 class="text-center fw-bold mb-3" style="color: #1e293b; font-size: 13px;">📊 VLE Performance Scorecard (Prime Services)</h6>
-                <div class="score-grid">
-                  <div class="score-item bg-white"><span class="score-title">DIGIPAY</span><span class="score-val" id="score-digipay">-</span></div>
-                  <div class="score-item bg-white"><span class="score-title">TRAVEL</span><span class="score-val text-warning" style="color: #ea580c !important;" id="score-travel">-</span></div>
-                  <div class="score-item bg-white"><span class="score-title">INSURANCE</span><span class="score-val text-success" style="color: #16a34a !important;" id="score-insurance">-</span><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div>
-                  <div class="score-item bg-white"><span class="score-title">AADHAAR</span><span class="score-val" style="color:#9333ea !important;" id="score-aadhaar">-</span></div>
-                  <div class="score-item bg-white"><span class="score-title">NPS</span><span class="score-val text-danger" style="color: #dc2626 !important;" id="score-nps">-</span></div>
-                  <div class="score-item" style="background:#fffbeb; border-color:#fef08a;"><span class="score-title" style="color: #854d0e;">⭐ TOTAL TXNS</span><span class="score-val" style="color: #ca8a04 !important;" id="score-total">-</span></div>
+                
+                <!-- 🌟 100% Automatic Month Filter Dropdown 🌟 -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold m-0" style="color: #1e293b; font-size: 13px;">📊 VLE Scorecard</h6>
+                    <select id="monthFilter" class="form-select form-select-sm" style="width: auto; font-size: 11px; font-weight: bold; cursor: pointer;" onchange="updateScorecard()">
+                        <option value="ALL">Overall (Apr-Jul)</option>
+                        <option value="APR">April 2026</option>
+                        <option value="MAY">May 2026</option>
+                        <option value="JUN">June 2026</option>
+                        <option value="JUL">July 2026</option>
+                        <!-- భవిష్యత్తులో ఆగస్టు (AUG) లాంటి కొత్త నెలలు వస్తే, అవి ఆటోమేటిక్‌గా ఇక్కడ యాడ్ అవుతాయి -->
+                    </select>
                 </div>
-                <button type="button" class="btn btn-sm w-100 mt-3" style="background-color: #e2e8f0; color: #334155; font-weight: bold; border: 1px solid #cbd5e1; font-size: 12px; padding: 8px;" onclick="showAllServicesModal()">👁️ View Detailed Breakdown (45 Services)</button>
+
+                <div class="score-grid">
+                    <div class="score-item bg-white"><span class="score-title">DIGIPAY</span><span class="score-val" id="score-digipay">-</span></div>
+                    <div class="score-item bg-white"><span class="score-title">TRAVEL</span><span class="score-val text-warning" style="color: #ea580c !important;" id="score-travel">-</span></div>
+                    <div class="score-item bg-white"><span class="score-title">INSURANCE</span><span class="score-val text-success" style="color: #16a34a !important;" id="score-insurance">-</span><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div>
+                    
+                    <!-- New Skill and Edu columns with tooltips -->
+                    <div class="score-item bg-white" data-bs-toggle="tooltip" data-bs-placement="top" id="tooltip-skill" title="Products will show here">
+                        <span class="score-title text-primary" style="color: #2563eb !important;">SKILL DEV</span>
+                        <span class="score-val" id="score-skill">-</span>
+                    </div>
+                    
+                    <div class="score-item bg-white" data-bs-toggle="tooltip" data-bs-placement="top" id="tooltip-edu" title="Products will show here">
+                        <span class="score-title" style="color: #0d9488 !important;">EDUCATION</span>
+                        <span class="score-val" id="score-edu">-</span>
+                    </div>
+                    
+                    <div class="score-item bg-white"><span class="score-title">NPS</span><span class="score-val text-danger" style="color: #dc2626 !important;" id="score-nps">-</span></div>
+                    <div class="score-item" style="background:#fffbeb; border-color:#fef08a; grid-column: span 3;"><span class="score-title" style="color: #854d0e;">⭐ TOTAL TXNS</span><span class="score-val" style="color: #ca8a04 !important;" id="score-total">-</span></div>
+                </div>
+                <button type="button" class="btn btn-sm w-100 mt-3" style="background-color: #e2e8f0; color: #334155; font-weight: bold; border: 1px solid #cbd5e1; font-size: 12px; padding: 8px;" onclick="showAllServicesModal()">👁️ View Detailed Breakdown</button>
             </div>
             
             <!-- 🌟 Compact Eligibility 🌟 -->
@@ -222,8 +247,6 @@
 
             <!-- 🌟 Form 🌟 -->
             <form id="dispatchForm" onsubmit="approveRequest(event)">
-              
-              <!-- Inline Input -->
               <div id="divAppQty" class="approval-input-group">
                 <label class="mb-0 fw-bold text-secondary" style="font-size: 13px;">Approved Quantity <span class="text-danger">*</span></label>
                 <input type="number" id="appQty" class="form-control-custom text-purple" style="color: #6d28d9;" required>
@@ -252,7 +275,7 @@
     </div>
   </div>
 
-  <!-- 🌟 All Services Modal (Retaining exact Original Columns) 🌟 -->
+  <!-- 🌟 All Services Modal 🌟 -->
   <div class="modal fade" id="allServicesModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-content-innovative">
@@ -272,7 +295,7 @@
     </div>
   </div>
 
-  <!-- 🌟 Alert & Reject Modals (Retaining exact Text) 🌟 -->
+  <!-- 🌟 Alert & Reject Modals 🌟 -->
   <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content modal-content-innovative p-4 text-center">
@@ -311,6 +334,14 @@
     let myRejectModalInstance = null;
 
     window.onload = function() { checkCacheAndLoadRequests(); };
+
+    // Enable tooltips everywhere
+    document.addEventListener("DOMContentLoaded", function(){
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
 
     function customAlert(msg, isSuccess) {
         let safeMsg = msg ? String(msg) : (isSuccess ? "Action Completed Successfully." : "Action Failed!");
@@ -446,21 +477,69 @@
        document.getElementById("score-travel").innerText = "-";
        document.getElementById("score-insurance").innerText = "-";
        document.getElementById("amt-insurance").innerText = "(₹ 0)";
-       document.getElementById("score-aadhaar").innerText = "-";
+       document.getElementById("score-skill").innerText = "-";
+       document.getElementById("score-edu").innerText = "-";
        document.getElementById("score-nps").innerText = "-";
        document.getElementById("score-total").innerText = "-";
        document.getElementById("lblEligibility").innerHTML = "Calculating Eligibility...";
 
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId }) }).then(res => res.json()).then(res => {
+       // 🌟 AUTOMATIC MONTH DROPDOWN LOGIC 🌟
+       let monthSelect = document.getElementById("monthFilter");
+       let currentSelected = monthSelect ? monthSelect.value : "ALL";
+
+       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId, month: currentSelected }) }).then(res => res.json()).then(res => {
           if(res.success && res.performance) {
              let p = res.performance;
-             document.getElementById("score-digipay").innerText = p.digipay;
-             document.getElementById("score-travel").innerText = p.travel;
-             document.getElementById("score-insurance").innerText = p.insurance;
-             document.getElementById("amt-insurance").innerText = "(₹ " + Math.round(p.insAmt).toLocaleString('en-IN') + ")";
-             document.getElementById("score-aadhaar").innerText = p.aadhaar;
-             document.getElementById("score-nps").innerText = p.nps;
-             document.getElementById("score-total").innerText = p.totalScore;
+             
+             // Populate dropdown based on data from sheet
+             if (p.availableMonths && monthSelect) {
+                 let currentOptions = Array.from(monthSelect.options).map(opt => opt.value);
+                 p.availableMonths.forEach(m => {
+                     let upperM = m.toUpperCase();
+                     if (!currentOptions.includes(upperM)) {
+                         let opt = document.createElement("option");
+                         opt.value = upperM;
+                         opt.innerText = upperM + " 2026";
+                         monthSelect.appendChild(opt);
+                     }
+                 });
+                 monthSelect.value = currentSelected;
+             }
+
+             document.getElementById("score-digipay").innerText = p.digipay || "0";
+             document.getElementById("score-travel").innerText = p.travel || "0";
+             document.getElementById("score-insurance").innerText = p.insurance || "0";
+             document.getElementById("amt-insurance").innerText = "(₹ " + Math.round(p.insAmt || 0).toLocaleString('en-IN') + ")";
+             document.getElementById("score-nps").innerText = p.nps || "0";
+             document.getElementById("score-total").innerText = p.totalScore || "0";
+
+             // Skill Update
+             document.getElementById("score-skill").innerText = p.skill || "0";
+             let skillTooltip = "Products:\n";
+             if (p.skillProducts && Object.keys(p.skillProducts).length > 0) {
+                 for(let sp in p.skillProducts) { skillTooltip += `• ${sp} : ${p.skillProducts[sp]}\n`; }
+             } else { skillTooltip = "No Skill txns"; }
+             
+             let skillElem = document.getElementById("tooltip-skill");
+             let skillBsTooltip = bootstrap.Tooltip.getInstance(skillElem);
+             if (skillBsTooltip) skillBsTooltip.dispose();
+             skillElem.setAttribute("title", skillTooltip);
+             skillElem.setAttribute("data-bs-original-title", skillTooltip);
+             new bootstrap.Tooltip(skillElem);
+
+             // Edu Update
+             document.getElementById("score-edu").innerText = p.edu || "0";
+             let eduTooltip = "Products:\n";
+             if (p.eduProducts && Object.keys(p.eduProducts).length > 0) {
+                 for(let ep in p.eduProducts) { eduTooltip += `• ${ep} : ${p.eduProducts[ep]}\n`; }
+             } else { eduTooltip = "No Education txns"; }
+             
+             let eduElem = document.getElementById("tooltip-edu");
+             let eduBsTooltip = bootstrap.Tooltip.getInstance(eduElem);
+             if (eduBsTooltip) eduBsTooltip.dispose();
+             eduElem.setAttribute("title", eduTooltip);
+             eduElem.setAttribute("data-bs-original-title", eduTooltip);
+             new bootstrap.Tooltip(eduElem);
 
              let listHtml = "";
              for(let srv in p.allServices) {
@@ -471,16 +550,26 @@
              }
              document.getElementById("allServicesList").innerHTML = listHtml || '<tr><td colspan="3" class="text-danger text-center py-3">No active services found.</td></tr>';
 
-             let totalScore = p.totalScore;
+             let totalScore = p.totalScore || 0;
              let eligibleQty = 10; 
              if(totalScore >= 500) eligibleQty = 200;
              else if(totalScore >= 200) eligibleQty = 100;
              else if(totalScore >= 100) eligibleQty = 50;
              else if(totalScore >= 50) eligibleQty = 25;
 
-             document.getElementById("lblEligibility").innerHTML = `⭐ <b style="color: #1e40af;">Overall Total Score:</b> <span style="color: #1e40af; font-weight: bold;">${totalScore} Txns</span> &nbsp; | &nbsp; 📦 <b style="color: #1e40af;">System Recommended Eligibility:</b> <span style="color: #1e40af; font-weight: bold;">~${eligibleQty} Papers</span>`;
+             let monthLabel = currentSelected === "ALL" ? "Overall" : currentSelected;
+             document.getElementById("lblEligibility").innerHTML = `⭐ <b style="color: #1e40af;">Total Score (${monthLabel}):</b> <span style="color: #1e40af; font-weight: bold;">${totalScore} Txns</span> &nbsp; | &nbsp; 📦 <b style="color: #1e40af;">Eligibility:</b> <span style="color: #1e40af; font-weight: bold;">~${eligibleQty} Papers</span>`;
           }
        }).catch(e => { document.getElementById("lblEligibility").innerHTML = "<span class='text-danger'>Error loading data!</span>"; });
+    }
+
+    function updateScorecard() {
+        if (!activeRowIdx) return;
+        let cscId = document.getElementById("lblVleId").innerText.replace('(', '').replace(')', '');
+        let vName = document.getElementById("lblVleName").innerText;
+        let dist = document.getElementById("lblVleDistrict").innerText;
+        let qty = document.getElementById("appQty").value;
+        reviewRequest(activeRowIdx, cscId, vName, dist, qty, currentStep);
     }
 
     function generateSerialsPreview() {
@@ -509,7 +598,6 @@
        let dist = document.getElementById("lblVleDistrict").innerText.trim();
        let vName = document.getElementById("lblVleName").innerText.trim();
        
-       // Remove brackets from ID
        let vIdText = document.getElementById("lblVleId").innerText.trim();
        let vId = vIdText.replace('(', '').replace(')', '');
        
