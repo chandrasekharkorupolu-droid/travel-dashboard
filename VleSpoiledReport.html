@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spoiled Stationary Report</title>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;}
+    
+    .controls-bar { background: #0f172a; border-radius: 12px; padding: 15px 25px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-bottom: 4px solid #ef4444;}
+    .title-sec { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; color: #f8fafc; text-transform: uppercase; margin: 0; display:flex; align-items: center; gap: 10px;}
+    .filter-group { display: flex; align-items: center; gap: 15px; }
+    .dist-select { border: 1px solid #334155; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: bold; outline: none; min-width: 180px; background-color: #1e293b; color: #f1f5f9; cursor: pointer;}
+    .btn-custom { font-size: 14px; font-weight: 800; padding: 8px 20px; border-radius: 8px; transition: 0.2s; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px;}
+    .btn-refresh { background: #3b82f6; } .btn-refresh:hover { background: #2563eb; }
+    .btn-export { background: #10b981; } .btn-export:hover { background: #059669; }
+
+    .table-wrapper { flex: 1; background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; position:relative;}
+    .table-scroll { flex: 1; overflow: auto; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; text-align: center;}
+    thead { position: sticky; top: -1px; z-index: 10; }
+    
+    th { background: #1e293b; color: white; font-weight: 800; font-size: 12px; padding: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #334155;}
+    
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.1s; }
+    tbody tr:hover { background-color: #f8fafc !important; }
+    tbody td { font-weight: 700; padding: 12px; color: #334155; border-right: 1px solid #f1f5f9; }
+    
+    .badge-reason { background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; max-width: 250px; overflow: hidden; text-overflow: ellipsis;}
+    
+    .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #ef4444;}
+    .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #ef4444; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .no-data-msg { padding: 40px; text-align: center; color: #94a3b8; font-weight: bold; font-size: 16px; }
+  </style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
+</head>
+<body>
+
+  <div class="controls-bar">
+    <div class="title-sec">
+        ⚠️ VLE Spoiled Stationary Report <span id="roleBadge" class="badge bg-danger" style="font-size:11px;">Loading...</span>
+    </div>
+    <div class="filter-group">
+      <select id="districtFilterDropdown" class="dist-select" onchange="filterData()">
+          <option value="ALL">All Districts</option>
+      </select>
+
+      <button class="btn-custom btn-refresh" onclick="fetchSpoiledData(true)">🔄 Sync Data</button>
+      <button class="btn-custom btn-export" onclick="exportExcel()">📥 Export Excel</button>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <span>Loading Spoiled Stationary Records...</span>
+    </div>
+    
+    <div class="table-scroll">
+        <table id="spoiledTable">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Date & Time</th>
+                    <th>District</th>
+                    <th>CSC ID</th>
+                    <th>VLE Name</th>
+                    <th>Spoiled Serial No</th>
+                    <th>Reason For Damage</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+        <div id="noData" class="no-data-msg" style="display:none;">No Spoiled Stationary Records Found!</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+    
+    let loggedInUser = localStorage.getItem("userName") || "";
+    let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
+    let loggedInDistrict = localStorage.getItem("district") || ""; 
+    
+    let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+    let allSpoiledRecords = [];
+
+    window.onload = function() {
+        // UI Role Setup
+        let badge = document.getElementById("roleBadge");
+        if(isDM) {
+            badge.innerText = `DM - ${loggedInDistrict}`;
+            document.getElementById("districtFilterDropdown").disabled = true;
+        } else {
+            badge.innerText = "State Head / SPOC";
+        }
+        
+        fetchSpoiledData(false);
+    }
+
+    function normalizeDistrict(distName) {
+        if (!distName) return "";
+        var distMap = { 
+            "ANANTHAPUR": "ANANTAPUR", "ANANTHAPURAM": "ANANTAPUR", "CHITTOOR": "CHITTOOR", 
+            "EAST GODAVARI": "EAST GODAVARI", "GUNTUR": "GUNTUR", "KRISHNA": "KRISHNA", 
+            "KURNOOL": "KURNOOL", "PRAKASAM": "PRAKASAM", "NELLORE": "SPSR NELLORE", "SPSR NELLORE": "SPSR NELLORE", 
+            "SRIKAKULAM": "SRIKAKULAM", "VISAKHAPATNAM": "VISAKHAPATNAM", "VISAKHAPTNAM": "VISAKHAPATNAM", 
+            "VISAKHAPATANAM": "VISAKHAPATNAM", "VIZIANAGARAM": "VIZIANAGARAM", "WEST GODAVARI": "WEST GODAVARI", 
+            "YSR KADAPA": "YSR KADAPA", "Y.S.R.": "YSR KADAPA", "KADAPA": "YSR KADAPA", "Y.S.R": "YSR KADAPA" 
+        };
+        return distMap[distName.toUpperCase()] || distName.toUpperCase();
+    }
+
+async function fetchSpoiledData(force = false) {
+        document.getElementById("loader").style.display = "flex";
+        try {
+            let timestamp = new Date().getTime();
+            let url = API_URL + "?action=getFastMasterData&t=" + timestamp;
+
+            // సింపుల్ డైరెక్ట్ కనెక్షన్ 
+            let response = await fetch(url);
+            let payload = await response.json();
+
+            if(payload && payload.success) {
+                allSpoiledRecords = payload.spoiled || [];
+                populateDistrictDropdown();
+                filterData();
+            } else {
+                alert("Data fetch failed! " + (payload ? payload.message : ""));
+            }
+        } catch(e) {
+            console.error(e);
+            alert("గూగుల్ సర్వర్ కనెక్షన్ బ్లాక్ చేసింది సార్. దయచేసి API లింక్ మరియు పర్మిషన్స్ చెక్ చేయండి.");
+        } finally {
+            document.getElementById("loader").style.display = "none";
+        }
+    }
+
+    function populateDistrictDropdown() {
+        let dropdown = document.getElementById("districtFilterDropdown");
+        dropdown.innerHTML = '<option value="ALL">All Districts</option>';
+        
+        let distSet = new Set();
+        allSpoiledRecords.forEach(r => {
+            if(r.district && r.district !== "Unknown") {
+                distSet.add(normalizeDistrict(r.district));
+            }
+        });
+        
+        let sortedDists = Array.from(distSet).sort();
+        sortedDists.forEach(d => {
+            dropdown.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+    }
+
+    function filterData() {
+        let tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        
+        let selectedFilter = document.getElementById("districtFilterDropdown").value;
+        let filtered = [];
+
+        allSpoiledRecords.forEach(row => {
+            let rowDist = normalizeDistrict(row.district);
+            
+            if (isDM) {
+                // DM Login filter logic
+                let dmDist = normalizeDistrict(loggedInDistrict);
+                if (rowDist === dmDist) {
+                    filtered.push(row);
+                }
+            } else {
+                // State Head Filter Dropdown logic
+                if (selectedFilter === "ALL" || rowDist === selectedFilter) {
+                    filtered.push(row);
+                }
+            }
+        });
+
+        if(filtered.length === 0) {
+            document.getElementById("spoiledTable").style.display = "none";
+            document.getElementById("noData").style.display = "block";
+            return;
+        }
+
+        document.getElementById("spoiledTable").style.display = "table";
+        document.getElementById("noData").style.display = "none";
+
+        filtered.forEach((r, idx) => {
+            let formattedDate = r.timestamp;
+            try {
+                let d = new Date(r.timestamp);
+                if(!isNaN(d.getTime())) {
+                    formattedDate = d.toLocaleString('en-IN', { hour12: true });
+                }
+            } catch(e){}
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td style="color:#64748b;">${formattedDate}</td>
+                    <td style="color:#0f172a; font-weight:900;">${normalizeDistrict(r.district)}</td>
+                    <td class="text-primary">${r.cscId}</td>
+                    <td style="text-align:left; padding-left:15px;">${r.vleName}</td>
+                    <td class="text-danger font-monospace fw-bold">${r.serialNo}</td>
+                    <td style="text-align:left; padding-left:15px;"><span class="badge-reason" title="${r.reason}">${r.reason}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function exportExcel() {
+       let ws = XLSX.utils.table_to_sheet(document.getElementById('spoiledTable'));
+       let wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Spoiled Stamps");
+       XLSX.writeFile(wb, `Spoiled_Stationary_Report.xlsx`);
+    }
+  </script>
+</body>
+</html>
