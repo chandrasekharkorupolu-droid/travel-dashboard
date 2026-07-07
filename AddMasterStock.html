@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DM Master Stock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <title>DM Master Stock</title>
   <style>
     /* 🌟 Colorful Background to make Glass Effect Pop 🌟 */
     body { 
@@ -37,6 +36,7 @@
         max-width: 600px; 
         position: relative;
         animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+        box-sizing: border-box;
     }
 
     @keyframes slideUp { 
@@ -83,7 +83,7 @@
         flex: 1 1 200px; 
     }
     
-    .form-group { margin-bottom: 24px; position: relative; }
+    .form-group { margin-bottom: 24px; position: relative; width: 100%; }
     .form-group label { 
         display: block; 
         font-size: 13px; 
@@ -133,6 +133,7 @@
         text-align: center; 
         margin-bottom: 25px;
         transition: all 0.3s ease;
+        box-sizing: border-box;
     }
     .qty-box:hover {
         border-color: #a78bfa;
@@ -208,10 +209,11 @@
         padding: 35px 30px; 
         border-radius: 20px; 
         text-align: center; 
-        width: 100%;
+        width: 90%;
         max-width: 340px; 
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); 
         animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-sizing: border-box;
     }
     @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     
@@ -219,20 +221,61 @@
         background: #f1f5f9; color: #0f172a; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s;
     }
     .modal-btn:hover { background: #e2e8f0; }
+
+    /* ========================================================================= */
+    /* 📱 MOBILE RESPONSIVENESS (100% మొబైల్ ఫ్రెండ్లీ డిజైన్) 📱 */
+    /* ========================================================================= */
+    @media (max-width: 768px) {
+        body {
+            padding: 20px 10px; /* మొబైల్ లో ప్యాడింగ్ తగ్గింపు */
+        }
+
+        .form-box {
+            padding: 25px 20px; /* ఫారమ్ లోపల ప్యాడింగ్ తగ్గింపు */
+            border-radius: 15px;
+        }
+
+        .title-row h2 {
+            font-size: 20px; /* టైటిల్ కొంచెం చిన్నదిగా */
+        }
+
+        .title-icon {
+            padding: 8px;
+            font-size: 20px;
+        }
+
+        .row-2 {
+            flex-direction: column; /* పక్కపక్కన ఉన్నవి కిందకి ఒకదాని కింద ఒకటి వచ్చేలా */
+            gap: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* ఇన్‌పుట్స్ మధ్య గ్యాప్ సర్దుబాటు */
+        }
+
+        .custom-input, .custom-select {
+            padding: 12px 15px; /* ఇన్‌పుట్ బాక్స్ సైజు అడ్జస్ట్మెంట్ */
+            font-size: 14px;
+        }
+
+        .qty-box {
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .qty-box input {
+            font-size: 32px; /* క్వాంటిటీ నెంబర్ మొబైల్ కి తగ్గట్టు */
+        }
+
+        .submit-btn {
+            padding: 14px;
+            font-size: 14px;
+        }
+    }
   </style>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
-  
 </head>
 <body>
 
-  <!-- Custom Alert Modal -->
   <div class="modal-overlay" id="alertModal">
     <div class="modal-content">
       <div id="alertIcon" style="font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">✅</div>
@@ -249,7 +292,6 @@
     </div>
 
     <div class="row-2">
-      <!-- 🌟 DROPDOWN REMOVED & AUTO-FILL APPLIED 🌟 -->
       <div class="form-group">
         <label>District</label>
         <input type="text" id="districtName" class="custom-input readonly-field" readonly placeholder="Fetching District...">
