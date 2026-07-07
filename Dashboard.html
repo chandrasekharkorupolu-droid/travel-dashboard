@@ -37,6 +37,10 @@
     .designation { color: #dc2626; font-weight: 800; margin-left: 4px; }
     .logout-btn { background-color: #ef4444; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 3px 0 #b91c1c; transition: 0.1s; }
     .logout-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #b91c1c; }
+    
+    /* 🌟 Change Password బటన్ (Header) 🌟 */
+    .btn-pwd { border: 1px solid #dc2626; color: #dc2626; background: transparent; padding: 7px 15px; border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+    .btn-pwd:hover { background: #dc2626; color: white; }
 
     /* 4. మెయిన్ కంటెంట్ ఏరియా */
     .main-content { display: flex; padding: 15px 20px; gap: 20px; height: calc(100vh - 70px); box-sizing: border-box; }
@@ -49,8 +53,6 @@
     .sidebar.collapsed-hover .sidebar-header { opacity: 0; padding: 15px 0; height: 20px; }
     .sidebar.collapsed-hover .report-list li { padding-left: 18px; justify-content: flex-start; }
     .sidebar.collapsed-hover .report-list li .menu-text { opacity: 0; visibility: hidden; width: 0; transition: opacity 0.2s; }
-
-
 
     /* ఓపెన్ (హోవర్) అయినప్పుడు టెక్స్ట్ కనిపించే డిజైన్ */
     .report-list li .menu-text { opacity: 1; visibility: visible; transition: opacity 0.4s; white-space: nowrap; }
@@ -97,18 +99,130 @@
     .access-denied-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; max-width: 450px; margin: auto; border-top: 5px solid #dc2626; animation: popIn 0.3s; }
     @keyframes popIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* 🌟 NEW Badge Blinking 🌟 */
-.new-badge {
-    background-color: #ef4444; color: white; font-size: 8px; font-weight: 800;
-    padding: 2px 5px; border-radius: 4px; margin-left: 5px;
-    animation: blinker 1s linear infinite;
-    vertical-align: middle; text-transform: uppercase;
-}
-@keyframes blinker { 50% { opacity: 0; } }
+    /* 🌟 NEW Badge Blinking 🌟 */
+    .new-badge {
+      background-color: #ef4444; color: white; font-size: 8px; font-weight: 800;
+      padding: 2px 5px; border-radius: 4px; margin-left: 5px;
+      animation: blinker 1s linear infinite;
+      vertical-align: middle; text-transform: uppercase;
+    }
+    @keyframes blinker { 50% { opacity: 0; } }
+
+
+
+/* ========================================================================= */
+    /* 📱 MOBILE RESPONSIVENESS (100% మొబైల్ ఫ్రెండ్లీ డిజైన్) Added by Chandra 📱 */
+    /* ========================================================================= */
+
+    @media (max-width: 768px) {
+        
+        /* 1. టాప్ హెడర్ మరియు బ్రాండింగ్ సెట్టింగ్స్ */
+        .top-header {
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+        }
+        
+        .brand-section {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .csc-logo { height: 35px; }
+        .brand-title { font-size: 16px; text-align: center;}
+        
+        /* 2. నావిగేషన్ మెనూ (మొబైల్ లో బటన్స్ ని పక్కపక్కన కాకుండా గ్రిడ్ లాగా) */
+        .nav-menu {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+        
+        .nav-btn {
+            font-size: 11px;
+            padding: 6px 10px;
+            flex: 1 1 calc(33.333% - 10px); /* మొబైల్ లో ఒక లైన్ కి 3 బటన్స్ */
+            text-align: center;
+            justify-content: center;
+        }
+
+        .menu-divider { display: none; } /* మొబైల్ లో ఈ గీత అవసరం లేదు */
+
+        /* 3. యూజర్ యాక్షన్స్ (పేరు, లాగౌట్, పాస్‌వర్డ్ బటన్) */
+        .user-actions {
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        
+        .user-name { font-size: 12px; }
+        .logout-btn { padding: 6px 15px; font-size: 11px; }
+        .btn-pwd { padding: 5px 12px; font-size: 11px; }
+
+        /* 4. మెయిన్ కంటెంట్ మరియు సైడ్‌బార్ */
+        .main-content {
+            flex-direction: column;
+            padding: 10px;
+            height: auto;
+            min-height: calc(100vh - 150px);
+        }
+
+        /* 🌟 మొబైల్ లో సైడ్‌బార్ పైన రావాలి లేదా హైడ్ అవ్వాలి 🌟 */
+        .sidebar {
+            width: 100% !important;
+            max-height: 250px; /* మొబైల్ లో సైడ్‌బార్ మరీ పొడవు ఉండకుండా */
+            margin-bottom: 15px;
+        }
+        
+        .sidebar.collapsed-hover {
+            display: none !important; /* మొబైల్ లో రిపోర్ట్ ఓపెన్ అయినప్పుడు సైడ్‌బార్ కనిపించకూడదు */
+        }
+        
+        .report-list {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .report-list li {
+            flex: 1 1 50%; /* మొబైల్ లో లిస్ట్ ఐటమ్స్ పక్కపక్కన రెండు వచ్చేలా */
+            font-size: 11px;
+            padding: 10px;
+        }
+
+        /* 5. గ్లోబ్ మరియు హోమ్ స్క్రీన్ సెట్టింగ్స్ */
+        .globe-wrapper {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        .earth-globe {
+            width: 180px;
+            height: 180px;
+        }
+
+        .orbit-text text { font-size: 14px; letter-spacing: 3px; }
+        
+        .welcome-text-area h2 { font-size: 18px !important; }
+        .welcome-text-area p { font-size: 13px !important; }
+
+        /* 6. ఐఫ్రేమ్ (రిపోర్ట్స్) మరియు డాష్‌బోర్డ్ కార్డ్స్ */
+        #reportIframeContainer {
+            min-height: 600px; /* మొబైల్ లో స్క్రోలింగ్ కి ఇబ్బంది లేకుండా */
+        }
+
+        #dashboardCards img {
+            width: 95% !important;
+        }
+    }
+
+
 
   </style>
 
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -116,6 +230,10 @@
   gtag('js', new Date());
   gtag('config', 'G-GF2VXY76KN');
 </script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
@@ -143,6 +261,9 @@
     <div class="user-actions">
       <button onclick="enterFullScreen()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #475569;" title="Full Screen">⛶</button>
       <span class="user-name">Welcome, <span id="headerUserName">User</span> <span class="designation" id="headerDesignation"></span></span>
+      
+      <button class="btn-pwd" data-bs-toggle="modal" data-bs-target="#changePasswordModal" title="Change Password"><i class="fa-solid fa-key"></i></button>
+      
       <button class="logout-btn" onclick="showLogoutPopup()">Logout</button>
     </div>
   </header>
@@ -196,6 +317,34 @@
         <button class="btn-confirm" onclick="confirmLogout()">Logout</button>
       </div>
     </div>
+  </div>
+
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" style="border-radius: 15px; border-top: 4px solid #dc2626; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+              <div class="modal-header border-bottom-0 pb-0">
+                  <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-user-lock text-danger"></i> Change Password</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body p-4">
+                  <form id="changePwdForm" onsubmit="event.preventDefault(); changeMyPassword();">
+                      
+                      <label class="form-label text-muted" style="font-size:12px; font-weight:700;">CURRENT PASSWORD</label>
+                      <input type="password" id="oldPass" class="form-control mb-3" placeholder="Enter Current Password" required style="border-radius: 8px; padding: 10px 15px; border: 2px solid #e2e8f0; font-size:14px; font-weight:bold;">
+                      
+                      <label class="form-label text-muted" style="font-size:12px; font-weight:700;">NEW PASSWORD</label>
+                      <input type="password" id="newPass" class="form-control mb-3" placeholder="Enter New Password" required style="border-radius: 8px; padding: 10px 15px; border: 2px solid #e2e8f0; font-size:14px; font-weight:bold;">
+                      
+                      <label class="form-label text-muted" style="font-size:12px; font-weight:700;">CONFIRM NEW PASSWORD</label>
+                      <input type="password" id="confirmNewPass" class="form-control mb-4" placeholder="Confirm New Password" required style="border-radius: 8px; padding: 10px 15px; border: 2px solid #e2e8f0; font-size:14px; font-weight:bold;">
+                      
+                      <button type="submit" class="btn w-100 fw-bold text-white" id="btnChangePwd" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 12px; border-radius: 8px; border:none; transition: 0.3s;">
+                          Update Password <i class="fa-solid fa-floppy-disk"></i>
+                      </button>
+                  </form>
+              </div>
+          </div>
+      </div>
   </div>
 
 
@@ -350,7 +499,7 @@
       document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
       
       document.getElementById('sidebar').style.display = 'flex';
-      document.getElementById('sidebar').classList.remove('collapsed-hover'); // ఓపెన్ అవ్వగానే సైడ్‌బార్ ఫుల్ గా కనపడాలి
+      document.getElementById('sidebar').classList.remove('collapsed-hover'); 
       
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
       
@@ -377,14 +526,14 @@
               options = [
                   { id: 'RaiseTicket', icon: '📝', name: 'Raise a Ticket' },
                   { id: 'TrackStatus', icon: '🔍', name: 'Track Status' },
-                  { id: 'UserManuals', icon: '📚', name: 'User Manuals & Forms' } // 🌟 కొత్తగా యాడ్ చేసిన లైన్
+                  { id: 'UserManuals', icon: '📚', name: 'User Manuals & Forms' } 
               ];
           } else {
               options = [
                   { id: 'HelpdeskAdmin', icon: '🎛️', name: 'Helpdesk Dashboard' },
                   { id: 'HelpdeskSummary', icon: '📊', name: 'Helpdesk Summary' },
                   { id: 'TrackStatus', icon: '🔍', name: 'Track Ticket' },
-                  { id: 'UserManuals', icon: '📚', name: 'User Manuals & Forms' } // 🌟 అడ్మిన్ కి కూడా కనిపించడానికి
+                  { id: 'UserManuals', icon: '📚', name: 'User Manuals & Forms' } 
                   ];
           }
 
@@ -416,28 +565,27 @@
       } else {
         let reports = reportMenus[moduleName] || [];
        
-reports.forEach(reportName => { 
-    let li = document.createElement('li'); 
-    
-    // 🌟 NEW Badge Logic 🌟
-    let badgeHtml = '';
-    var launchDate = new Date("2026-07-05"); // రిపోర్ట్ యాడ్ చేసిన డేట్
-    var today = new Date();
-    var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24)); // రోజుల లెక్క
-    
-    // కేవలం "VLE Performance Report" అనే పేరు ఉన్నప్పుడు మాత్రమే బ్లింక్ అవుతుంది (7 రోజుల వరకు)
-    if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
-        badgeHtml = '<span class="new-badge">NEW</span>';
-    }
+        reports.forEach(reportName => { 
+            let li = document.createElement('li'); 
+            
+            // 🌟 NEW Badge Logic 🌟
+            let badgeHtml = '';
+            var launchDate = new Date("2026-07-05"); 
+            var today = new Date();
+            var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24)); 
+            
+            if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
+                badgeHtml = '<span class="new-badge">NEW</span>';
+            }
 
-    li.innerHTML = '<span class="menu-icon">📄</span> <span class="menu-text">' + reportName + '</span>' + badgeHtml; 
-    li.onclick = function() { 
-        document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-        li.classList.add('active-item'); 
-        loadReport(moduleName, reportName); 
-    }; 
-    list.appendChild(li); 
-});
+            li.innerHTML = '<span class="menu-icon">📄</span> <span class="menu-text">' + reportName + '</span>' + badgeHtml; 
+            li.onclick = function() { 
+                document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
+                li.classList.add('active-item'); 
+                loadReport(moduleName, reportName); 
+            }; 
+            list.appendChild(li); 
+        });
         
         document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
         document.getElementById('dashboardCards').style.display = 'flex';
@@ -448,7 +596,7 @@ reports.forEach(reportName => {
     function loadAccessDenied() { 
       document.getElementById('reportIframeContainer').style.display = 'flex'; 
       document.getElementById('dashboardCards').style.display = 'none'; 
-      document.getElementById('sidebar').classList.add('collapsed-hover'); // హైడ్ అవుతుంది
+      document.getElementById('sidebar').classList.add('collapsed-hover'); 
       document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:50px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions.</p></div>`; 
     }
     
@@ -525,7 +673,7 @@ reports.forEach(reportName => {
       else {
           document.getElementById('reportIframeContainer').style.display = 'flex'; 
           document.getElementById('dashboardCards').style.display = 'none';
-          document.getElementById('sidebar').classList.add('collapsed-hover'); // హైడ్ అవుతుంది
+          document.getElementById('sidebar').classList.add('collapsed-hover'); 
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #f8fafc; padding: 12px 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;"><h5 style="margin:0; color:#1e293b; font-weight:800;">📄 ${reportName}</h5><button onclick="closeActiveReport()" style="background:#ef4444; color:white; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">✖ Close Report (ESC)</button></div><div style="text-align:center; padding:50px;"><h2 style="color:#1e3a8a;">${reportName}</h2><p style="color:#ea580c; font-weight:bold;">ఈ రిపోర్ట్ త్వరలో డిజైన్ చేయబడుతుంది.</p></div>`; 
           return;
       }
@@ -534,7 +682,6 @@ reports.forEach(reportName => {
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('reportIframeContainer').style.display = 'flex';
       
-      // రిపోర్ట్ ఓపెన్ అవ్వగానే సైడ్‌బార్ ఆటోమేటిక్ గా సన్నగా (Icon view) మారుతుంది
       document.getElementById('sidebar').classList.add('collapsed-hover'); 
       
       document.getElementById('reportIframeContainer').innerHTML = `<iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; border-radius:12px; background:white;"></iframe>`;
@@ -585,6 +732,61 @@ reports.forEach(reportName => {
           document.getElementById('syncPopupContent').innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">Unable to fetch status.</span>'; 
       };
       document.body.appendChild(script);
+    }
+    
+   /* 🌟 Change Password Function 🌟 */
+    function changeMyPassword() {
+        let oldP = document.getElementById('oldPass').value;
+        let newP = document.getElementById('newPass').value;
+        let confP = document.getElementById('confirmNewPass').value;
+        
+        let loggedInId = localStorage.getItem("userId"); 
+
+        if(newP !== confP) {
+            alert("❌ New Password and Confirm Password do not match!");
+            return;
+        }
+
+        if(oldP === newP) {
+            alert("⚠️ New password cannot be the same as the old password!");
+            return;
+        }
+
+        let btn = document.getElementById('btnChangePwd');
+        btn.innerHTML = "Updating... ⏳"; 
+        btn.disabled = true;
+
+        /* ఇక్కడ మీ Google Apps Script కి రిక్వెస్ట్ పంపుతున్నాం */
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: "changePasswordDashboard", 
+                userId: loggedInId, 
+                oldPass: oldP, 
+                newPass: newP 
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            btn.innerHTML = "Update Password <i class='fa-solid fa-floppy-disk'></i>"; 
+            btn.disabled = false;
+            
+            if(res.success) {
+                alert("✅ " + res.message);
+                
+                document.getElementById('changePwdForm').reset();
+                var myModalEl = document.getElementById('changePasswordModal');
+                var modal = bootstrap.Modal.getInstance(myModalEl);
+                modal.hide();
+            } else {
+                alert("❌ " + res.message);
+            }
+        })
+        .catch(err => {
+            btn.innerHTML = "Update Password <i class='fa-solid fa-floppy-disk'></i>"; 
+            btn.disabled = false;
+            alert("❌ నెట్‌వర్క్ ఎర్రర్. దయచేసి ఇంటర్నెట్ చెక్ చేయండి.");
+        });
     }
   </script>
 
@@ -641,19 +843,17 @@ reports.forEach(reportName => {
       let yearSpan = document.getElementById("currentYear");
       if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
 
-
-// 🌟 బ్యాడ్జ్ ని క్రియేట్ చేసే ఫంక్షన్ 🌟
-function getBadgeHtml(reportName) {
-    var launchDate = new Date("2026-07-05"); 
-    var today = new Date();
-    var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
-    
-    // "VLE Performance Report" అనే పేరు ఉంటేనే 7 రోజుల వరకు బ్లింక్ అవుతుంది
-    if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
-        return '<span class="new-badge">NEW</span>';
-    }
-    return '';
-}
+      // 🌟 బ్యాడ్జ్ ని క్రియేట్ చేసే ఫంక్షన్ 🌟
+      function getBadgeHtml(reportName) {
+          var launchDate = new Date("2026-07-05"); 
+          var today = new Date();
+          var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+          
+          if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
+              return '<span class="new-badge">NEW</span>';
+          }
+          return '';
+      }
   </script>
 
 </body>
