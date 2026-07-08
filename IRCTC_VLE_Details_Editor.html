@@ -80,9 +80,55 @@
         #accessDeniedMsg h1 { color: #dc2626; font-size: 40px; margin-bottom: 10px; font-weight: 900;}
         #accessDeniedMsg p { font-size: 18px; color: #334155; font-weight: 700; }
         #accessDeniedMsg span { font-size: 14px; color: #64748b; margin-top: 5px; font-weight: 600;}
+
+/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+
+        /* 🌟 Top Controls 🌟 */
+        .top-controls {
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
+        .page-heading { font-size: 15px; }
+        #fullscreenBtn { display: none; }
+
+        /* 🌟 Search Card 🌟 */
+        .search-card { padding: 15px; }
+        .search-input-group { 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        .search-input, .btn-find {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* 🌟 Form Grid (మొబైల్ లో ఒకే కాలమ్) 🌟 */
+        .form-grid {
+            grid-template-columns: 1fr;
+            padding: 20px;
+            gap: 15px;
+        }
+        .form-group.full-width {
+            grid-column: span 1;
+        }
+
+        /* 🌟 Action Buttons 🌟 */
+        .form-actions {
+            padding: 15px 20px;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+        }
+    }
     </style>
 
-    <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -102,7 +148,6 @@
 
     <div class="editor-container" id="editorMainSection">
         
-        <!-- Search Card -->
         <div class="search-card">
             <div class="search-title">🔍 Search VLE to Update Details</div>
             <div class="search-input-group">
@@ -111,7 +156,6 @@
             </div>
         </div>
 
-        <!-- Editor Form Card -->
         <div class="editor-card" id="editorFormCard">
             <div class="card-header">
                 <span>📝 Edit Information</span>
@@ -174,14 +218,12 @@
 
     </div> 
     
-    <!-- Access Denied View -->
     <div id="accessDeniedMsg">
         <h1>🚫 Access Denied</h1>
         <p>You do not have permission to view or edit VLE details.</p>
         <span>Only State Head / SPOC can access this page.</span>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast">✅ Details Updated Successfully!</div>
 
     <script>
@@ -194,7 +236,6 @@
         window.onload = function() {
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             
-            // --- SECURITY CHECK FOR DISTRICT MANAGER ---
             if (userDesignation === "District Manager") {
                 document.getElementById("topControlsSection").style.display = "none";
                 document.getElementById("editorMainSection").style.display = "none";
@@ -207,7 +248,6 @@
 
         async function fetchSheetData() {
             try {
-                // 🌟 FIX: Fetching from session storage if exists to speed up load time 🌟
                 let cachedData = sessionStorage.getItem("cscTravelData");
                 let rawData;
                 
@@ -383,7 +423,8 @@
             }, 300); 
         }
 
-        async function saveVLEChanges() {
+        // 🌟 ZERO DELAY BACKGROUND SAVING LOGIC 🌟
+        function saveVLEChanges() {
             if (selectedVleIndex === -1) return;
 
             let cscId = document.getElementById("editCscId").value;
@@ -402,7 +443,7 @@
 
             let btn = document.getElementById("btnSaveChanges");
             let originalText = btn.innerText;
-            btn.innerText = "⏳ SAVING TO GOOGLE SHEET...";
+            btn.innerText = "⏳ SAVING...";
             btn.disabled = true;
 
             let payload = {
@@ -417,60 +458,50 @@
                 horemarks: hoRemarks
             };
 
-            try {
-                let response = await fetch(apiURL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-                
-                let result = await response.text();
+            // 1. Send data to Google Sheet in the Background (No await)
+            fetch(apiURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            }).then(response => response.text())
+              .then(result => console.log("Google Sheet Updated:", result))
+              .catch(err => console.error("Background Save Error:", err));
 
-                if (result.includes("Success") || result.includes("success")) {
-                    
-                    // Update Local
-                    let v = globalVlesList[selectedVleIndex];
-                    v.vlename = vleName;
-                    v.irctc = irctcId;
-                    v.olddist = oldDist;
-                    v.newdist = newDist;
-                    v.mob = mob;
-                    v.vlemob = vleMob;
-                    v.hoRemark = hoRemarks;
+            // 2. Instantly update the local UI Data (Optimistic Update)
+            let v = globalVlesList[selectedVleIndex];
+            v.vlename = vleName;
+            v.irctc = irctcId;
+            v.olddist = oldDist;
+            v.newdist = newDist;
+            v.mob = mob;
+            v.vlemob = vleMob;
+            v.hoRemark = hoRemarks;
 
-                    let hoLower = hoRemarks.toLowerCase();
-                    if(hoLower.includes('suspend') || hoLower.includes('blacklist') || hoLower.includes('block')) {
-                        v.status = 'blocked';
-                    } else if(v.lifetimeTxns === 0) {
-                        v.status = 'never';
-                    } else if(v.fy27 === 0) {
-                        v.status = 'inactive';
-                    } else {
-                        v.status = 'active';
-                    }
+            let hoLower = hoRemarks.toLowerCase();
+            if(hoLower.includes('suspend') || hoLower.includes('blacklist') || hoLower.includes('block')) {
+                v.status = 'blocked';
+            } else if(v.lifetimeTxns === 0) {
+                v.status = 'never';
+            } else if(v.fy27 === 0) {
+                v.status = 'inactive';
+            } else {
+                v.status = 'active';
+            }
 
-                    // 🌟 FIX: Force clear session storage so data updates everywhere on next load
-                    sessionStorage.removeItem("cscTravelData");
+            // Remove caches globally so updates show on next load
+            sessionStorage.removeItem("cscTravelData");
+            localStorage.removeItem("cscGlobalData");
 
-                    showToast("🎉 Details Updated in Google Sheet Successfully!");
+            showToast("🎉 Details Updated Successfully!");
 
-                    setTimeout(() => {
-                        document.getElementById("editorFormCard").style.display = "none";
-                        document.getElementById("vleSearchInput").value = "";
-                        selectedVleIndex = -1;
-                    }, 1200);
-
-                } else {
-                    showToast("❌ Server Error: " + result);
-                }
-
-            } catch (error) {
-                console.error("Error saving data:", error);
-                showToast("❌ Network error. Failed to save to Sheet!");
-            } finally {
+            // 3. Quickly reset the UI within half a second!
+            setTimeout(() => {
+                document.getElementById("editorFormCard").style.display = "none";
+                document.getElementById("vleSearchInput").value = "";
+                selectedVleIndex = -1;
                 btn.innerText = originalText;
                 btn.disabled = false;
-            }
+            }, 600);
         }
 
         function showToast(msg) {
@@ -487,7 +518,6 @@
             }
         }
 
-        /* 🌟 Full Screen API Fix 🌟 */
         function toggleFullScreen() {
             let btn = document.getElementById("fullscreenBtn");
             try {

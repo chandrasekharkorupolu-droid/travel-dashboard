@@ -85,9 +85,109 @@
         .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; height: 100%;}
         .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========================================================================= */
+        /* 📱 MOBILE RESPONSIVENESS FOR MONTHLY PROGRESS (Added by Chandra) 📱 */
+        /* ========================================================================= */
+        @media (max-width: 768px) {
+            
+            /* 1. పేజీ స్క్రోల్ లాక్ తీసేయడం */
+            html, body {
+                height: auto;
+                overflow: auto !important; /* మొబైల్ లో ఫ్రీగా స్క్రోల్ అవ్వడానికి */
+            }
+            
+            body { 
+                padding: 10px; 
+                gap: 15px; 
+            }
+
+            /* 2. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
+            .target-control-panel {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 15px;
+                position: relative; /* స్టికీ ఎఫెక్ట్ తీసేసాను */
+                gap: 12px;
+            }
+
+            .filter-group-custom {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .filter-group-custom span {
+                margin-bottom: 2px;
+                text-align: left;
+            }
+
+            .filter-group-custom select, .btn-action {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-bottom: 5px;
+                justify-content: center;
+                text-align: center;
+            }
+
+            /* 3. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
+            .report-header h1 { font-size: 16px; line-height: 1.4; margin-bottom: 5px; }
+            .report-header span { font-size: 11px; }
+
+            .summary-cards-container {
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .card {
+                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
+                min-width: 130px;
+                flex-direction: column; /* లేబుల్ పైన, వాల్యూ కింద */
+                text-align: center;
+                padding: 10px;
+                gap: 5px;
+            }
+
+            .card-label { 
+                font-size: 9px; 
+                white-space: normal; /* పెద్ద పదాలు ఉంటే కిందకి వస్తాయి */
+            }
+            .card-value { 
+                font-size: 18px; 
+            }
+
+            /* 4. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
+            #captureArea {
+                overflow: visible;
+                padding: 10px 5px;
+            }
+
+            .table-wrapper {
+                max-height: 450px;
+                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ */
+            }
+
+            table {
+                min-width: 900px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా సెట్ చేయడం */
+            }
+
+            th, td {
+                font-size: 10px !important;
+                padding: 10px 5px !important;
+            }
+
+            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
+            .col-dist, th.col-1, tfoot tr td:first-child {
+                position: static !important;
+                border-right: 1px solid #e2e8f0 !important;
+                text-align: center !important;
+                padding-left: 5px !important;
+            }
+        }
     </style>
 
-    <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
