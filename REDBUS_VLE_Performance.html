@@ -400,16 +400,15 @@
         applyFilters();
     };
 
- function applyFilters() {
+function applyFilters() {
         let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
         let selDist = document.getElementById("distSelect").value;
         let searchTxt = document.getElementById("searchInput").value.toUpperCase();
 
-        processedData = rawData.filter(r => {
-            // 🌟 అసలైన ఫిల్టర్ లాజిక్ ఇక్కడ ఉంది 🌟
+        // 🌟 1. ముందుగా డిస్ట్రిక్ట్ & సెర్చ్ ప్రకారం డేటా ఫిల్టర్ చేయాలి 🌟
+        let baseData = rawData.filter(r => {
             let matchDist = true;
             if (isNew) {
-                // ఒకవేళ DM అయితే, కేవలం తనకి సంబంధించిన New District డేటా మాత్రమే ఉండాలి
                 if (isDM && !r.isMyNewDist) return false; 
                 let rowDist = toProperCase((r.newDist || "").trim());
                 matchDist = (selDist === "ALL" || rowDist === selDist);
@@ -422,12 +421,24 @@
             return matchDist && matchSearch;
         });
 
-        // KPI లు అప్డేట్ చేయడానికి processedData వాడుతున్నాం
-        updateKPIs(processedData);
+        // 🌟 2. KPI నంబర్స్ జీరో అవ్వకుండా ఈ బేస్ డేటాతోనే కౌంట్స్ అప్డేట్ చేయాలి 🌟
+        updateKPIs(baseData);
+
+        // 🌟 3. ఇప్పుడు KPI ఏది క్లిక్ చేస్తే ఆ డేటా మాత్రమే టేబుల్ కి వెళ్ళాలి 🌟
+        processedData = baseData.filter(r => {
+            if (currentKpiFilter === "ALL") return true;
+            if (currentKpiFilter === "DSP25") return r.dsp2526 > 0;
+            if (currentKpiFilter === "RB25") return r.srv2526 > 0;
+            if (currentKpiFilter === "DSP26") return r.dsp2627 > 0;
+            if (currentKpiFilter === "RB26") return r.srv2627 > 0;
+            if (currentKpiFilter === "PDSP25") return (r.dsp2526 > 0 && r.dsp2627 == 0);
+            if (currentKpiFilter === "PRB25") return (r.srv2526 > 0 && r.srv2627 == 0);
+            return true;
+        });
+
         currentPage = 1;
         renderTablePage();
     }
-
 function updateKPIs(data) {
         let tTot = data.length, tD25 = 0, tR25 = 0, tD26 = 0, tR26 = 0, tPD25 = 0, tPR25 = 0;
         let tD26_Old = 0, tD26_New = 0, tR26_Old = 0, tR26_New = 0;
