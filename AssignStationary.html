@@ -136,8 +136,7 @@
     .badge-soft { background: #f3e8ff; color: #7c3aed; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; }
     .badge-gray { background: #f1f5f9; color: #475569; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
 
-
-/* ========================================================================= */
+    /* ========================================================================= */
     /* 📱 MOBILE RESPONSIVENESS FOR STOCK REQUESTS (Added by Chandra) 📱 */
     /* ========================================================================= */
     @media (max-width: 992px) {
@@ -150,7 +149,7 @@
         .table-responsive {
             max-height: 400px !important;
         }
-        table { min-width: 700px !important; }
+        table { min-width: 800px !important; } 
         
         /* కంటెంట్ సెట్టింగ్స్ */
         .stock-box { padding: 10px 5px; }
@@ -195,10 +194,18 @@
           <div class="table-responsive" style="max-height: calc(100vh - 100px); overflow-y: auto;">
             <table class="table table-hover align-middle mb-0">
               <thead class="sticky-top">
-                <tr><th>Date</th><th>CSC ID</th><th>VLE Name</th><th>District</th><th>Qty</th><th>Action</th></tr>
+                <tr>
+                    <th>Date</th>
+                    <th>CSC ID</th>
+                    <th>Req No</th>
+                    <th>VLE Name</th>
+                    <th>District</th>
+                    <th>Qty</th>
+                    <th>Action</th>
+                </tr>
               </thead>
               <tbody id="pendingTableBody">
-                <tr><td colspan="6" class="text-center py-5 text-muted fw-bold">Loading requests...</td></tr>
+                <tr><td colspan="7" class="text-center py-5 text-muted fw-bold">Loading requests...</td></tr>
               </tbody>
             </table>
           </div>
@@ -247,7 +254,6 @@
                         <option value="MAY">May 2026</option>
                         <option value="JUN">June 2026</option>
                         <option value="JUL">July 2026</option>
-                        <!-- భవిష్యత్తులో ఆగస్టు (AUG) లాంటి కొత్త నెలలు వస్తే, అవి ఆటోమేటిక్‌గా ఇక్కడ యాడ్ అవుతాయి -->
                     </select>
                 </div>
 
@@ -404,19 +410,23 @@
 
     function refreshLiveRequests() {
        localStorage.removeItem("pendingRequestsCache");
-       document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 fw-bold" style="color:#6d28d9;">Refreshing live data...</td></tr>`;
+       document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="7" class="text-center py-4 fw-bold" style="color:#6d28d9;">Refreshing live data...</td></tr>`;
        fetchPendingRequests();
     }
 
     function fetchPendingRequests() {
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPendingRequests", role: loggedInDesig, userId: loggedInUserId }) })
+      fetch(SCRIPT_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "getPendingRequests", role: loggedInDesig, userId: loggedInUserId }) 
+      })
       .then(res => res.json()).then(res => {
          if(res.data) {
             localStorage.setItem("pendingRequestsCache", JSON.stringify(res.data));
             localStorage.setItem("pendingRequestsTime", new Date().getTime().toString());
             renderRequestsTable(res.data);
          } else { renderRequestsTable([]); }
-      }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">Error loading data.</td></tr>`; });
+      }).catch(e => { document.getElementById("pendingTableBody").innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger fw-bold">Error loading data.</td></tr>`; });
     }
 
     function renderRequestsTable(data) {
@@ -428,6 +438,9 @@
              let rUpper = loggedInDesig.toUpperCase();
              let isDM = (rUpper === "DM" || rUpper.indexOf("DISTRICT MANAGER") !== -1);
              let currentStatus = req.status ? req.status.trim() : "";
+             
+             // 🌟 UPDATED: Handling Multiple Possible Backend Keys for "Req No" 🌟
+             let reqNoDisplay = req['Stock Holding Request No'] || req.stockHoldingRequestNo || req.StockHoldingRequestNo || req.reqNo || req.requestNo || "N/A";
              
              if (isDM && currentStatus === "Pending") {
                  btnHtml = `<button class="btn-action" style="background:#6d28d9; color:white;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1)">Recommend</button>`;
@@ -442,13 +455,14 @@
              tbody.innerHTML += `<tr>
                 <td style="font-size:12px; color:#64748b;">${req.date}</td>
                 <td class="fw-bold" style="color:#6d28d9; font-size:13px;">${req.cscId}</td>
+                <td class="fw-bold text-success" style="font-size:12px;">${reqNoDisplay}</td>
                 <td class="fw-bold text-dark">${req.vleName}</td>
                 <td><span class="badge-soft" style="background-color:#7c3aed; color:white;">${req.district}</span></td>
                 <td class="fw-bold text-danger" style="font-size:14px;">${req.reqQty}</td>
                 <td>${btnHtml}</td>
              </tr>`;
           });
-       } else { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-success fw-bold fs-6">🎉 No pending stock requests found!</td></tr>`; }
+       } else { tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-success fw-bold fs-6">🎉 No pending stock requests found!</td></tr>`; }
     }
 
     function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
@@ -475,7 +489,11 @@
        lblAvail.innerText = "⏳ Loading..";
        lblAvail.className = "stock-value text-secondary";
        
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getDistrictStockSummary", role: loggedInDesig, userId: loggedInUserId }) })
+       fetch(SCRIPT_URL, { 
+           method: "POST", 
+           headers: { "Content-Type": "text/plain;charset=utf-8" },
+           body: JSON.stringify({ action: "getDistrictStockSummary", role: loggedInDesig, userId: loggedInUserId }) 
+       })
        .then(res => res.json()).then(res => {
            if(res.success && res.summary) {
                let distKey = Object.keys(res.summary).find(k => k.toUpperCase() === district.toUpperCase());
@@ -516,15 +534,17 @@
        document.getElementById("score-total").innerText = "-";
        document.getElementById("lblEligibility").innerHTML = "Calculating Eligibility...";
 
-       // 🌟 AUTOMATIC MONTH DROPDOWN LOGIC 🌟
        let monthSelect = document.getElementById("monthFilter");
        let currentSelected = monthSelect ? monthSelect.value : "ALL";
 
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVlePerformance", vleId: cscId, month: currentSelected }) }).then(res => res.json()).then(res => {
+       fetch(SCRIPT_URL, { 
+           method: "POST", 
+           headers: { "Content-Type": "text/plain;charset=utf-8" },
+           body: JSON.stringify({ action: "getVlePerformance", vleId: cscId, month: currentSelected }) 
+       }).then(res => res.json()).then(res => {
           if(res.success && res.performance) {
              let p = res.performance;
              
-             // Populate dropdown based on data from sheet
              if (p.availableMonths && monthSelect) {
                  let currentOptions = Array.from(monthSelect.options).map(opt => opt.value);
                  p.availableMonths.forEach(m => {
@@ -546,7 +566,6 @@
              document.getElementById("score-nps").innerText = p.nps || "0";
              document.getElementById("score-total").innerText = p.totalScore || "0";
 
-             // Skill Update
              document.getElementById("score-skill").innerText = p.skill || "0";
              let skillTooltip = "Products:\n";
              if (p.skillProducts && Object.keys(p.skillProducts).length > 0) {
@@ -560,7 +579,6 @@
              skillElem.setAttribute("data-bs-original-title", skillTooltip);
              new bootstrap.Tooltip(skillElem);
 
-             // Edu Update
              document.getElementById("score-edu").innerText = p.edu || "0";
              let eduTooltip = "Products:\n";
              if (p.eduProducts && Object.keys(p.eduProducts).length > 0) {
@@ -611,7 +629,12 @@
         var btnPreview = document.getElementById("btnPreviewSerials");
         if(!qty || qty <= 0) { customAlert("దయచేసి Approved Quantity ఎంటర్ చేయండి!", false); return; }
         btnPreview.disabled = true; btnPreview.innerText = "⏳ Generating Serials...";
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "previewAutoDispatch", district: dist, appQty: qty }) })
+        
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "previewAutoDispatch", district: dist, appQty: qty }) 
+        })
         .then(res => res.json()).then(res => {
             btnPreview.disabled = false; btnPreview.innerText = "🔍 Generate Serial Numbers";
             if(res.success) {
@@ -627,7 +650,8 @@
     }
 
     function approveRequest(e) {
-       e.preventDefault(); if(!activeRowIdx) return;
+       e.preventDefault(); 
+       if(!activeRowIdx) return;
        let dist = document.getElementById("lblVleDistrict").innerText.trim();
        let vName = document.getElementById("lblVleName").innerText.trim();
        
@@ -637,11 +661,18 @@
        let aQty = document.getElementById("appQty").value;
        var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: vId, vleName: vName, district: dist, appQty: aQty, approvedBy: loggedInUser };
        var btn = document.getElementById("btnApprove"); btn.disabled = true; 
+       
        if (currentStep === 1) { btn.innerText = "Processing Recommendation..."; }
        else if (currentStep === 2) { btn.innerText = "Processing Approval..."; }
        else { btn.innerText = "Processing Auto-Dispatch..."; }
        
-       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(res => {
+       fetch(SCRIPT_URL, { 
+           method: "POST", 
+           headers: { "Content-Type": "text/plain;charset=utf-8" },
+           body: JSON.stringify(payload) 
+       })
+       .then(res => res.json())
+       .then(res => {
           btn.disabled = false;
           if(res.success) { 
              if (currentStep === 3) {
@@ -651,10 +682,19 @@
                  navigator.clipboard.writeText(waMsg).then(() => {
                      customAlert(res.message + "\n\n✅ వాట్సాప్ మెసేజ్ మీ క్లిప్‌బోర్డ్ లో కాపీ అయ్యింది! వాట్సాప్ లో పేస్ట్ (Ctrl + V) చేసి పంపించండి.", true);
                  }).catch(err => { customAlert(res.message, true); });
-             } else { customAlert(res.message, true); }
-             localStorage.removeItem("pendingRequestsCache"); hideApprovalPanel(); fetchPendingRequests(); 
-          } else { customAlert(res.message, false); }
-       }).catch(e => { btn.disabled = false; customAlert("Network error!", false); });
+             } else { 
+                 customAlert(res.message, true); 
+             }
+             localStorage.removeItem("pendingRequestsCache"); 
+             hideApprovalPanel(); 
+             fetchPendingRequests(); 
+          } else { 
+              customAlert(res.message, false); 
+          }
+       }).catch(e => { 
+           btn.disabled = false; 
+           customAlert("Network error! " + e.message, false); 
+       });
     }
 
     function showRejectModal() {
@@ -676,6 +716,9 @@
         
         fetch(SCRIPT_URL, { 
             method: "POST", 
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
             body: JSON.stringify({ action: "rejectVleRequest", role: loggedInDesig, rowIdx: activeRowIdx, vleId: vId, reason: reason }) 
         })
         .then(res => res.json())
@@ -688,7 +731,11 @@
                     localStorage.removeItem("pendingRequestsCache"); hideApprovalPanel(); fetchPendingRequests(); 
                 } else { customAlert(res.message || "Failed to reject.", false); }
             }, 500);
-        }).catch(err => { btn.disabled = false; btn.innerText = "Confirm Rejection"; if(myRejectModalInstance) myRejectModalInstance.hide(); setTimeout(() => customAlert("Network Error!", false), 500); });
+        }).catch(err => { 
+            btn.disabled = false; btn.innerText = "Confirm Rejection"; 
+            if(myRejectModalInstance) myRejectModalInstance.hide(); 
+            setTimeout(() => customAlert("Network Error: " + err.message, false), 500); 
+        });
     }
 
     function hideApprovalPanel() { document.getElementById("approvalPanel").style.display = "none"; activeRowIdx = null; }

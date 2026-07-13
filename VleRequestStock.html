@@ -78,6 +78,47 @@
         letter-spacing: 0.5px;
     }
 
+    /* 🌟 Custom Input Group for Prefix (COL) 🌟 */
+    .input-group-custom {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .input-group-custom:focus-within {
+        background: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .input-prefix {
+        background: #e2e8f0;
+        color: #1e293b;
+        font-weight: 900;
+        padding: 14px 16px;
+        font-size: 16px;
+        border-right: 1px solid #cbd5e1;
+    }
+
+    .form-control-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 14px 16px;
+        outline: none;
+        letter-spacing: 1px;
+    }
+
+    .form-control-input::placeholder { color: #94a3b8; font-weight: 500; letter-spacing: normal;}
+
     .form-control-custom {
         width: 100%;
         background: #f8fafc;
@@ -136,7 +177,7 @@
         transform: none;
     }
 
-    /* 🌟 Premium Alert Modal (Updated) 🌟 */
+    /* 🌟 Premium Alert Modal 🌟 */
     .modal-content-innovative {
         background: #ffffff;
         border: none;
@@ -159,65 +200,24 @@
     .btn-modal.error { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 8px 15px rgba(239, 68, 68, 0.2); }
     .btn-modal:hover { transform: translateY(-2px); }
 
-
-
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
+    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
     @media (max-width: 768px) {
-        body {
-            padding: 20px 10px; /* మొబైల్ లో పైన, సైడ్స్ గ్యాప్ తగ్గింపు */
-        }
-        .premium-card {
-            border-radius: 20px;
-        }
-        .card-header-custom {
-            padding: 20px 20px 15px 20px; /* హెడర్ లోపల గ్యాప్ తగ్గింపు */
-        }
-        .title-icon {
-            font-size: 18px;
-            padding: 8px;
-        }
-        .card-title {
-            font-size: 19px; /* మొబైల్ లో టైటిల్ సైజ్ సెట్టింగ్ */
-        }
-        .card-body-custom {
-            padding: 20px; /* ఫామ్ చుట్టూ ఉన్న గ్యాప్ తగ్గింపు */
-        }
-        .form-control-custom {
-            padding: 12px 14px;
-            font-size: 15px;
-        }
-        .btn-submit {
-            padding: 14px;
-            font-size: 15px;
-        }
-        
-        /* అలర్ట్ (Popup) బాక్స్ మొబైల్ సెట్టింగ్స్ */
-        .modal-content-innovative {
-            padding: 30px 20px;
-            margin: 10px;
-        }
-        .icon-circle {
-            width: 65px;
-            height: 65px;
-            font-size: 30px;
-            margin-bottom: 15px;
-        }
-        #alertTitle {
-            font-size: 22px !important;
-        }
-        .alert-message-text {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .btn-modal {
-            width: 100%; /* బటన్ మొబైల్ స్క్రీన్ కి తగ్గట్టు ఫుల్ విడ్త్ */
-            padding: 12px 20px;
-            font-size: 15px;
-        }
+        body { padding: 20px 10px; }
+        .premium-card { border-radius: 20px; }
+        .card-header-custom { padding: 20px 20px 15px 20px; }
+        .title-icon { font-size: 18px; padding: 8px; }
+        .card-title { font-size: 19px; }
+        .card-body-custom { padding: 20px; }
+        .form-control-custom, .input-prefix, .form-control-input { padding: 12px 14px; font-size: 15px; }
+        .btn-submit { padding: 14px; font-size: 15px; }
+        .modal-content-innovative { padding: 30px 20px; margin: 10px; }
+        .icon-circle { width: 65px; height: 65px; font-size: 30px; margin-bottom: 15px; }
+        #alertTitle { font-size: 22px !important; }
+        .alert-message-text { font-size: 14px; margin-bottom: 20px; }
+        .btn-modal { width: 100%; padding: 12px 20px; font-size: 15px; }
     }
   </style>
 
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -248,7 +248,10 @@
     <div class="card-body-custom">
       <div class="form-group">
         <label class="form-label-custom">Stock Holding Request No (SHQ)</label>
-        <input type="text" id="shqNo" class="form-control-custom" placeholder="Ex: SHQ12345ABC" oninput="this.value = this.value.toUpperCase()">
+        <div class="input-group-custom">
+            <span class="input-prefix">COL</span>
+            <input type="text" id="shqNo" class="form-control-input" placeholder="Ex: 0907202675252" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+        </div>
       </div>
       
       <div class="form-group">
@@ -265,7 +268,6 @@
     let loggedInId = localStorage.getItem("userId") || "";
     let loggedInUser = localStorage.getItem("userName") || "";
 
-    // 🌟 న్యూ స్మూత్ అండ్ ప్రీమియం అలర్ట్ 🌟
     function customAlert(msg, isSuccess) {
         let safeMsg = msg ? String(msg) : (isSuccess ? "Request Submitted Successfully." : "Request Failed!");
         const iconContainer = document.getElementById("alertIconContainer");
@@ -291,10 +293,18 @@
     }
 
     function submitRequest() {
-        var shqNo = document.getElementById('shqNo').value.trim(); 
+        var shqInput = document.getElementById('shqNo').value.trim(); 
         var qty = document.getElementById('reqQty').value;
         
-        if(!shqNo) { customAlert("దయచేసి Stock Holding Request No ఎంటర్ చేయండి!", false); return; } 
+        // 🌟 Validation: ఖచ్చితంగా 13 అంకెలు ఉండాలి 🌟
+        if(shqInput.length !== 13) { 
+            customAlert("దయచేసి సరైన Stock Holding Number ని ఎంటర్ చేయండి. \n(ఖచ్చితంగా 13 అంకెలు ఉండాలి!)", false); 
+            return; 
+        } 
+        
+        // సబ్మిట్ చేసేటప్పుడు COL కి నెంబర్ యాడ్ చేసి పంపిస్తున్నాం (e.g., COL0907202675252)
+        var finalShqNo = "COL" + shqInput;
+
         if(!qty || qty <= 0) { customAlert("దయచేసి ఎన్ని పేపర్లు కావాలో కరెక్ట్ గా ఎంటర్ చేయండి!", false); return; }
         
         var btn = document.getElementById('btnReqStock'); 
@@ -303,7 +313,7 @@
         
         fetch(SCRIPT_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: 'vleRequestStock', vleId: loggedInId, vleName: loggedInUser, quantity: qty, shqNo: shqNo }) 
+            body: JSON.stringify({ action: 'vleRequestStock', vleId: loggedInId, vleName: loggedInUser, quantity: qty, shqNo: finalShqNo }) 
         })
         .then(res => res.json())
         .then(res => { 
@@ -314,7 +324,6 @@
                 document.getElementById('shqNo').value = ''; 
                 document.getElementById('reqQty').value = ''; 
             } else { 
-                // ముందున్న "Error: " తీసేశాను, డైరెక్ట్ మెసేజ్ వస్తుంది!
                 customAlert(res.message, false); 
             } 
         })
