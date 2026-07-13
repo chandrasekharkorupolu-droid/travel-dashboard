@@ -63,15 +63,12 @@
     .table-responsive::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
     .table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-
-/* ========================================================================= */
+    /* ========================================================================= */
     /* 📱 MOBILE RESPONSIVENESS FOR TABLE REPORTS (Added by Chandra) 📱 */
     /* ========================================================================= */
     @media (max-width: 768px) {
-        /* 1. బాడీ ప్యాడింగ్ తగ్గింపు */
         body { padding: 10px 5px; }
 
-        /* 2. హెడర్ సెక్షన్ మరియు డౌన్‌లోడ్ బటన్ సెట్టింగ్స్ */
         .card-header-custom, 
         .d-flex.justify-content-between.align-items-center {
             flex-direction: column !important;
@@ -79,7 +76,6 @@
             gap: 10px !important;
         }
 
-        /* 3. ఫిల్టర్స్ (డ్రాప్‌డౌన్, సెర్చ్) స్క్రీన్ కి తగ్గట్టుగా సెట్ అవ్వడం */
         .d-flex.align-items-center.gap-2 {
             width: 100%;
             flex-direction: column;
@@ -93,7 +89,6 @@
             max-width: 100% !important;
         }
 
-        /* 4. కంట్రోల్ బార్ (వ్యూ బటన్స్ మరియు సెర్చ్) */
         .controls-bar {
             flex-direction: column;
             gap: 15px;
@@ -113,58 +108,36 @@
             font-size: 11px;
         }
 
-        /* 5. టాప్ స్టాట్ కార్డ్స్ (బాక్సులు పక్కపక్కన సరిపోవడానికి) */
         .row.g-3 {
             display: flex;
             flex-wrap: wrap;
         }
         
         .col {
-            flex: 1 1 30%; /* ఒక లైన్ కి 3 బాక్సులు */
+            flex: 1 1 30%; 
             min-width: 100px;
         }
         
-        .stat-card {
-            padding: 10px 5px;
-        }
-        
+        .stat-card { padding: 10px 5px; }
         .stat-title { font-size: 9px; }
         .stat-value { font-size: 18px; }
 
-        /* 6. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
         .premium-card {
             border-radius: 12px;
             margin-bottom: 10px;
         }
 
         .table-responsive {
-            max-height: 500px !important; /* మొబైల్ లో టేబుల్ హైట్ ఫిక్స్ చేయడం */
-            -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ కోసం */
+            max-height: 500px !important; 
+            -webkit-overflow-scrolling: touch; 
         }
         
-        .table thead th {
-            font-size: 9px; /* హెడ్డింగ్స్ చిన్నవిగా చేయడం */
-            padding: 8px 4px;
-        }
-        
-        .table tbody tr td {
-            font-size: 11px; /* డేటా చిన్నదిగా చేయడం */
-            padding: 8px 4px;
-        }
-        
-        /* క్వాంటిటీ బ్యాడ్జ్‌లు మొబైల్ కి తగ్గట్టు */
-        .badge-qty {
-            padding: 2px 5px;
-            font-size: 10px;
-        }
+        .table thead th { font-size: 9px; padding: 8px 4px; }
+        .table tbody tr td { font-size: 11px; padding: 8px 4px; }
+        .badge-qty { padding: 2px 5px; font-size: 10px; }
     }
-
-
-
-
   </style>
 
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -182,7 +155,8 @@
         <h4 class="fw-bold m-0" style="color: #0f172a;">📊 E-Stamping Denomination Sales</h4>
         <span class="badge-soft mt-1 d-inline-block" id="lblScope">Access Level: Loading...</span>
       </div>
-      <div class="d-flex align-items-center gap-2" data-html2canvas-ignore="true">
+      
+      <div class="d-flex align-items-center gap-2 flex-wrap" data-html2canvas-ignore="true">
         <select id="dateFilter" class="form-select-custom" style="width:220px;" onchange="fetchReportData()">
           <option value="ALL">All Time (Overall)</option>
           <optgroup label="Monthly (Current FY)">
@@ -199,6 +173,8 @@
             <option value="FY">Current Financial Year</option>
           </optgroup>
         </select>
+        
+        <button class="btn-outline-custom" onclick="refreshData()">🔄 Refresh</button>
         <button class="btn-outline-custom" onclick="downloadImage()">📸 Download Image</button>
       </div>
     </div>
@@ -281,8 +257,12 @@
     let masterVleData = [];
     let masterDistData = [];
     
-    // 🌟 డేటాను భద్రపరిచే మ్యాప్స్ 🌟
-    let apiCache = {};
+    // 🌟 సెషన్ స్టోరేజ్ (Session Storage) కోసం కీ (Key) సెటప్ 🌟
+    const CACHE_KEY = "ESTAMP_SALES_CACHE_" + loggedInUserId;
+    
+    // 🌟 పాత మెమరీ ఉంటే లోడ్ చేయడం లేదా కొత్త ఆబ్జెక్ట్ క్రియేట్ చేయడం 🌟
+    let apiCache = JSON.parse(sessionStorage.getItem(CACHE_KEY)) || {};
+    
     let masterOverallDataVle = {}; 
     let currentCumVleMap = {};
     let currentCumDistMap = {};
@@ -303,23 +283,38 @@
        document.getElementById("totOth").innerText = "0";
     }
 
+    // 🌟 కొత్త రిఫ్రెష్ ఫంక్షన్ (యూజర్ బటన్ నొక్కినప్పుడు పాత మెమరీ క్లియర్ చేసి మళ్ళీ లోడ్ చేయడానికి) 🌟
+    function refreshData() {
+       sessionStorage.removeItem(CACHE_KEY); // సెషన్ స్టోరేజ్ క్లియర్
+       apiCache = {}; // వేరియబుల్ క్లియర్
+       document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">🔄 Refreshing fresh data from server...</td></tr>`;
+       fetchReportData();
+    }
+
     // 🌟 సర్వర్ క్రాష్ అవ్వకుండా నిరోధించే సెక్యూర్ ఫెచ్ (CORS Bypass Headers తో) 🌟
     async function fetchFromApi(filterType) {
+       // పాత మెమరీ (sessionStorage) లో డేటా ఉంటే మళ్ళీ సర్వర్ కి వెళ్లకుండా ఇక్కడినుండే ఇచ్చేస్తుంది
        if (apiCache[filterType]) return apiCache[filterType];
+       
        let payload = { action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterType };
        try {
            let response = await fetch(SCRIPT_URL, { 
                method: "POST", 
-               headers: { "Content-Type": "text/plain;charset=utf-8" }, // 🌟 బ్రౌజర్ ఎర్రర్ రాకుండా కాపాడే బ్రహ్మాస్త్రం 🌟
+               headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                body: JSON.stringify(payload) 
            });
            let res = await response.json();
-           if (res && res.success) { apiCache[filterType] = res; return res; }
+           if (res && res.success) { 
+               apiCache[filterType] = res; 
+               // 🌟 బ్రౌజర్ సెషన్ స్టోరేజ్ లో శాశ్వతంగా (సెషన్ ఉన్నంతవరకు) సేవ్ చేస్తున్నాం 🌟
+               sessionStorage.setItem(CACHE_KEY, JSON.stringify(apiCache)); 
+               return res; 
+           }
        } catch (e) { console.error("Fetch failed for:", filterType, e); }
        return null;
     }
 
-    // 🌟 క్లోజింగ్ బ్యాలెన్స్ కోసం పాత నెలలు లాగే లాజిక్ (తక్కువ రిక్వెస్ట్స్ వాడేలా) 🌟
+    // 🌟 క్లోజింగ్ బ్యాలెన్స్ కోసం పాత నెలలు లాగే లాజిక్ 🌟
     function getCumBlocks(filter) {
         switch(filter) {
             case 'APR': return ['APR'];
@@ -346,7 +341,6 @@
         }
     }
 
-    // 🌟 సర్వర్ క్రాష్ అవ్వకుండా "ఒకదాని తర్వాత ఒకటి (Sequential)" లాగే లాజిక్ 🌟
     async function fetchReportData() {
        let filterVal = document.getElementById("dateFilter").value;
        let filterText = document.getElementById("dateFilter").options[document.getElementById("dateFilter").selectedIndex].text;
@@ -360,7 +354,6 @@
        if(!requiredFilters.includes(filterVal)) requiredFilters.push(filterVal);
 
        try {
-           // ఒకేసారి పంపితే ఎర్రర్ వస్తుంది కాబట్టి, లూప్ లో స్లో గా పంపుతాం
            for(let i = 0; i < requiredFilters.length; i++) {
                let f = requiredFilters[i];
                if(!apiCache[f]) {
@@ -369,7 +362,7 @@
                    </td></tr>`;
                    
                    await fetchFromApi(f);
-                   await new Promise(r => setTimeout(r, 400)); // 🌟 సర్వర్‌కి ఊపిరి పీల్చుకునే టైమ్ (Delay) 🌟
+                   await new Promise(r => setTimeout(r, 400)); 
                }
            }
 
@@ -506,7 +499,6 @@
                 let curAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
                 let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
                 
-                // 🌟 Present Balance (Closing Balance) మ్యాథ్స్ 🌟
                 let cumUsed = currentCumDistMap[item.district] ? currentCumDistMap[item.district].used : curUsed;
                 let cumSales = currentCumDistMap[item.district] ? currentCumDistMap[item.district].sales : curAmt;
 
@@ -577,7 +569,6 @@
                 let curAmt = (item.data.d10 * 10) + (item.data.d20 * 20) + (item.data.d50 * 50) + (item.data.d100 * 100) + otherAmt + dsdAmt;
                 let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + dsdCount;
                 
-                // 🌟 Present Balance (Closing Balance) మ్యాథ్స్ 🌟
                 let cumUsed = currentCumVleMap[item.id] ? currentCumVleMap[item.id].used : curUsed;
                 let cumSales = currentCumVleMap[item.id] ? currentCumVleMap[item.id].sales : curAmt;
 
