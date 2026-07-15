@@ -1,180 +1,775 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <title>CSC AP Tour & Travels | Official Portal</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <meta name="description" content="Welcome to CSC AP Tour & Travels. The official and secure portal for VLEs in Andhra Pradesh to manage IRCTC, APSRTC, Airways, and RedBus services.">
-
-  <link rel="icon" type="image/png" href="logo.png">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-    .login-container { display: flex; width: 900px; height: 500px; background: #ffffff; border-radius: 15px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); overflow: hidden; transition: opacity 0.5s ease-out; }
-    .left-panel { flex: 1; background: linear-gradient(135deg, #475569, #1e293b); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; text-align: center; padding: 30px; }
-    .left-panel h1 { font-size: 30px; margin: 0 0 10px 0; z-index: 2; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
-    .left-panel p { font-size: 18px; margin: 0; color: #cbd5e1; z-index: 2; font-weight: 500; letter-spacing: 2px; }
-    .falling-icon { position: absolute; font-size: 60px; color: rgba(255, 255, 255, 0.1); animation: dropDown linear infinite; z-index: 1; }
-    .icon-train { left: 15%; animation-duration: 8s; animation-delay: 0s; }
-    .icon-bus { left: 50%; animation-duration: 10s; animation-delay: 3s; font-size: 70px; }
-    .icon-flight { left: 80%; animation-duration: 7s; animation-delay: 1s; font-size: 50px; }
-    @keyframes dropDown { 0% { top: -100px; transform: rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 600px; transform: rotate(20deg); opacity: 0; } }
-    .right-panel { flex: 1; padding: 50px; display: flex; flex-direction: column; justify-content: center; }
-    .right-panel-header { text-align: center; margin-bottom: 25px; }
-    .right-panel-header h2 { color: #334155; margin: 0 0 5px 0; font-size: 28px; font-weight: 800; }
-    .right-panel-header p.sub-text { color: #64748b; margin: 0; font-size: 14px; font-weight: 600; }
-    .input-group { margin-bottom: 20px; text-align: left; }
-    .input-group label { display: block; color: #475569; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
-    .input-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; background-color: #f8fafc; transition: all 0.3s ease; }
-    .input-group input:focus { outline: none; border-color: #475569; box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1); }
-    .login-btn { width: 100%; padding: 14px; background-color: #334155; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-    .login-btn:hover { background-color: #1e293b; }
-    .extras { display: flex; justify-content: space-between; margin-top: 20px; font-size: 13px; }
-    .extras a { color: #475569; text-decoration: none; font-weight: 600; cursor: pointer; }
-    .extras a:hover { text-decoration: underline; }
-    .message { margin-top: 15px; font-size: 14px; text-align: center; min-height: 20px; font-weight: 600; }
-    .custom-loader-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
-    .travel-icons-loader { display: flex; gap: 30px; font-size: 60px; margin-bottom: 20px; }
+    :root {
+        --primary-blue: #0284c7;
+        --dark-navy: #0f172a;
+        --soft-bg: #f8fafc;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--soft-bg);
+        color: var(--text-dark);
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* 🌟 Clean Navbar 🌟 */
+    .custom-navbar {
+        background-color: #ffffff;
+        padding: 4px 0; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        border-bottom: 1px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .navbar-brand img { height: 55px; transition: 0.3s; }
+    
+    .nav-link-custom {
+        color: var(--text-dark);
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 15px;
+        text-decoration: none;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .nav-link-custom i { color: #64748b; font-size: 15px; transition: 0.3s;}
+    .nav-link-custom:hover, .nav-link-custom:hover i { color: var(--primary-blue); }
+
+    .btn-helpdesk-outline {
+        color: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
+        background: transparent;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 6px 18px;
+        border-radius: 8px;
+        margin-left: 15px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-helpdesk-outline:hover { background-color: var(--primary-blue); color: white; }
+
+    /* 🌟 Marquee Ticker 🌟 */
+    .news-ticker {
+        background-color: var(--dark-navy);
+        color: #e2e8f0;
+        padding: 6px 20px;
+        font-size: 12.5px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+    }
+    .ticker-badge {
+        background-color: #f59e0b;
+        color: #ffffff;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-weight: 700;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        font-size: 11px;
+    }
+
+    /* 🌟 Hero Section 🌟 */
+    .hero-section {
+        position: relative;
+        padding: 60px 0 100px 0; 
+        background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 60%, #bae6fd 100%);
+        overflow: hidden;
+    }
+
+    .watermark-1, .watermark-2 {
+        position: absolute;
+        color: var(--primary-blue);
+        opacity: 0.03;
+        z-index: 0;
+    }
+    .watermark-1 { right: -50px; bottom: 0px; font-size: 300px; transform: rotate(-15deg); }
+    .watermark-2 { left: 5%; top: 10%; font-size: 150px; transform: rotate(20deg); }
+
+    .hero-container { position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; padding: 0 30px; width: 100%; }
+
+    .hero-badge {
+        font-size: 11px; color: var(--primary-blue); font-weight: 700; background: #ffffff;
+        padding: 6px 14px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;
+        margin-bottom: 20px; border: 1px solid #bae6fd;
+    }
+
+    .hero-title {
+        font-size: 54px; 
+        font-weight: 900; color: var(--text-dark); line-height: 1.15;
+        margin-bottom: 20px; letter-spacing: -1px;
+    }
+    .text-highlight { color: var(--primary-blue); }
+
+    .hero-subtitle {
+        font-size: 15px; 
+        color: var(--text-muted); font-weight: 400; line-height: 1.6;
+        margin-bottom: 25px; max-width: 95%;
+    }
+
+    .feature-badges span {
+        font-size: 12.5px; font-weight: 600; color: var(--text-dark); background: #ffffff;
+        padding: 8px 15px; border-radius: 8px; margin-right: 12px; margin-bottom: 10px;
+        display: inline-flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        border: 1px solid #e2e8f0;
+    }
+    .feature-badges i { margin-right: 6px; font-size: 14px; }
+
+    /* 🌟 Login Box 🌟 */
+    .login-container { transition: opacity 0.5s ease-out; }
+    
+    .login-box-wrapper {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 35px 30px;
+        box-shadow: 0 15px 40px rgba(2, 132, 199, 0.1);
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        max-width: 380px; 
+        margin-left: auto;
+    }
+
+    .login-box-wrapper h3 { font-weight: 900; color: var(--text-dark); font-size: 24px; margin-bottom: 5px; }
+    .login-box-wrapper p { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; } 
+
+    .input-wrapper { position: relative; margin-bottom: 22px; }
+    .input-wrapper label {
+        position: absolute; top: -9px; left: 12px; background: white; padding: 0 5px;
+        font-size: 11px; color: var(--text-muted); font-weight: 700; z-index: 2;
+    }
+    .input-wrapper input {
+        width: 100%; border: 2px solid #cbd5e1; border-radius: 8px;
+        padding: 12px 15px 12px 40px; font-size: 14px; font-weight: 600;
+        color: var(--text-dark); outline: none; transition: 0.3s;
+    }
+    .input-wrapper input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+    .input-wrapper input:focus + label, .input-wrapper input:not(:placeholder-shown) + label { color: var(--primary-blue); }
+    .input-wrapper input::placeholder { color: transparent; }
+    
+    .icon-left { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 15px; z-index: 2; transition: 0.3s;}
+    .input-wrapper input:focus ~ .icon-left { color: var(--primary-blue); }
+    .icon-right { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 15px; cursor: pointer; z-index: 2; }
+
+    .remember-forgot {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 12px; font-weight: 600; margin-bottom: 25px; color: var(--text-dark);
+    }
+    .remember-forgot a { color: var(--primary-blue); text-decoration: none; font-weight: 700; }
+
+    .btn-login {
+        background: var(--primary-blue);
+        color: white; width: 100%; padding: 12px; border-radius: 8px;
+        font-weight: 700; font-size: 15px; border: none; transition: 0.3s;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+    .btn-login:hover { background: #0369a1; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(2, 132, 199, 0.3); }
+
+    .message { margin-top: 15px; font-size: 13px; text-align: center; min-height: 20px; font-weight: 600; }
+
+    /* 🌟 Services Section 🌟 */
+    .services-overlay-section { 
+        position: relative; z-index: 10; margin-top: -60px; 
+        background-color: #ffffff; border-top-left-radius: 40px; border-top-right-radius: 40px;
+        padding: 40px 20px 50px 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+    }
+    .services-wrapper { max-width: 1250px; margin: 0 auto; }
+    
+    .services-title { text-align: center; font-weight: 800; color: var(--text-dark); font-size: 24px; margin-bottom: 5px; position: relative; display: inline-block; left: 50%; transform: translateX(-50%);}
+    .services-title::before { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: var(--primary-blue); border-radius: 5px;}
+    .services-subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 35px; }
+
+    .service-pill-premium {
+        display: flex; align-items: center; padding: 12px 15px; border-radius: 12px;
+        text-decoration: none; transition: 0.3s;
+        border: 1px solid #f1f5f9; background: #ffffff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    .service-pill-premium:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+
+    .sp-irctc:hover { border-color: #fecdd3; background: #fff1f2;}
+    .sp-irctc .sp-icon { color: #e11d48; background: #fff1f2;}
+    
+    .sp-redbus:hover { border-color: #fed7aa; background: #fff7ed;}
+    .sp-redbus .sp-icon { color: #ea580c; background: #fff7ed;}
+    
+    .sp-airways:hover { border-color: #bae6fd; background: #f0f9ff;}
+    .sp-airways .sp-icon { color: #0284c7; background: #f0f9ff;}
+    
+    .sp-apsrtc:hover { border-color: #a7f3d0; background: #ecfdf5;}
+    .sp-apsrtc .sp-icon { color: #10b981; background: #ecfdf5;}
+    
+    .sp-estamp:hover { border-color: #e9d5ff; background: #faf5ff;}
+    .sp-estamp .sp-icon { color: #9333ea; background: #faf5ff;}
+
+    .sp-helpdesk:hover { border-color: #c7d2fe; background: #eef2ff;}
+    .sp-helpdesk .sp-icon { color: #4f46e5; background: #eef2ff;}
+
+    .sp-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; margin-right: 12px; transition: 0.3s; border: 1px solid #f1f5f9;
+    }
+    .sp-text { flex: 1; }
+    .sp-text h6 { font-weight: 800; color: var(--text-dark); font-size: 14px; margin-bottom: 2px; }
+    .sp-text p { font-size: 11px; color: var(--text-muted); margin: 0; }
+    .sp-arrow { font-size: 13px; opacity: 0; transform: translateX(-5px); transition: 0.3s; }
+    .service-pill-premium:hover .sp-arrow { opacity: 1; transform: translateX(0); }
+    
+    /* 🌟 Updated Blue Footer Section 🌟 */
+    .main-footer-container {
+        background-color: var(--primary-blue); /* Title కలర్ అప్లై చేశాను */
+        padding: 50px 20px 20px 20px;
+        color: #ffffff; /* టెక్స్ట్ తెలుపు రంగులో */
+    }
+    .footer-content-wrapper {
+        max-width: 1250px;
+        margin: 0 auto;
+    }
+    .footer-col h5 {
+        font-size: 17px;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 15px;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    /* అండర్ లైన్ కలర్ వైట్ కి మార్చాను */
+    .footer-col h5::after {
+        content: ''; position: absolute; bottom: 0; left: 0; width: 40px; height: 3px; background-color: #ffffff; border-radius: 2px;
+    }
+    .footer-col p {
+        font-size: 13.5px;
+        color: rgba(255, 255, 255, 0.9); /* లైట్ వైట్ కలర్ */
+        line-height: 1.6;
+    }
+    .social-links {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    .social-links a {
+        width: 35px; height: 35px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.15); color: #ffffff;
+        display: flex; align-items: center; justify-content: center; font-size: 15px; text-decoration: none; transition: 0.3s;
+    }
+    .social-links a:hover {
+        background-color: #ffffff; color: var(--primary-blue); transform: translateY(-3px);
+    }
+    .footer-address-list {
+        list-style: none; padding: 0; margin: 0;
+    }
+    .footer-address-list li {
+        font-size: 13.5px; color: rgba(255, 255, 255, 0.9); margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .footer-address-list li i {
+        color: #ffffff; margin-top: 3px; font-size: 15px;
+    }
+
+    /* Bottom Policy Links Bar */
+    .footer-bottom-bar {
+        border-top: 1px solid rgba(255, 255, 255, 0.2); /* బార్డర్ లైట్ గా చేశాను */
+        margin-top: 40px;
+        padding-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .policy-links-div {
+        display: flex; gap: 15px;
+    }
+    .policy-links-div a {
+        font-size: 13px; color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: 600; transition: 0.3s; cursor: pointer;
+    }
+    .policy-links-div a:hover {
+        color: #ffffff; text-decoration: underline;
+    }
+    .copyright-txt {
+        font-size: 13px; color: rgba(255, 255, 255, 0.9); font-weight: 500; margin: 0;
+    }
+
+    /* 🌟 Modals (Popups) CSS 🌟 */
+    .custom-modal .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .custom-modal .modal-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 16px 16px 0 0;
+        padding: 15px 25px;
+    }
+    .custom-modal .modal-title {
+        font-weight: 800;
+        color: var(--primary-blue);
+        font-size: 18px;
+    }
+    .custom-modal .modal-body {
+        padding: 25px;
+        font-size: 14px;
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+    .custom-modal .modal-body h6 {
+        font-weight: 800;
+        color: var(--dark-navy);
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+    .custom-modal .modal-body p, .custom-modal .modal-body ul {
+        color: var(--text-muted);
+    }
+    .custom-modal .btn-close {
+        font-size: 12px;
+    }
+
+    /* Loader */
+    .custom-loader-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+    .travel-icons-loader { display: flex; gap: 30px; font-size: 40px; margin-bottom: 20px; }
     .travel-icons-loader span { display: inline-block; animation: bounce 1.5s infinite ease-in-out; }
     .icon-1 { animation-delay: 0s; } .icon-2 { animation-delay: 0.2s; } .icon-3 { animation-delay: 0.4s; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-25px); } }
-    .loader-text { color: #334155; font-size: 18px; font-weight: 800; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    .loader-text { color: var(--primary-blue); font-size: 16px; font-weight: 800; letter-spacing: 1px; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-
-
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
-    @media (max-width: 768px) {
-        body {
-            height: auto;
-            padding: 20px 10px;
-            display: flex;
-            align-items: center;
-        }
-        .login-container {
-            flex-direction: column; /* మొబైల్ లో ఒకదాని కింద ఒకటి వచ్చేలా */
-            width: 100%;
-            max-width: 450px;
-            height: auto;
-        }
-        .left-panel {
-            padding: 40px 20px;
-            min-height: 200px;
-        }
-        .left-panel h1 {
-            font-size: 24px;
-            white-space: normal; /* టెక్స్ట్ కట్ అవ్వకుండా కిందకి వస్తుంది */
-        }
-        .left-panel p {
-            font-size: 14px;
-        }
-        .falling-icon { font-size: 40px; }
-        .icon-bus { font-size: 45px; }
-        .icon-flight { font-size: 35px; }
-        
-        .right-panel {
-            padding: 30px 25px;
-        }
-        .right-panel-header h2 {
-            font-size: 24px;
-        }
-        .right-panel-header p.sub-text {
-            font-size: 13px;
-        }
-        .input-group input {
-            padding: 10px 14px;
-        }
-        .login-btn {
-            padding: 12px;
-            font-size: 15px;
-        }
-        .extras {
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
+    /* Mobile Responsive */
+    @media (max-width: 992px) {
+        .hero-title { font-size: 40px; }
+        .hero-subtitle { font-size: 14px; max-width: 100%;}
+        .hero-container { padding: 20px; text-align: center; }
+        .feature-badges { justify-content: center; }
+        .login-box-wrapper { margin: 30px auto 0 auto; padding: 25px 20px; }
+        .nav-links-container { display: none; }
+        .services-overlay-section { margin-top: -30px; border-radius: 25px 25px 0 0; padding: 40px 15px;}
+        .footer-bottom-bar { flex-direction: column; text-align: center; justify-content: center; }
+        .policy-links-div { justify-content: center; flex-wrap: wrap; gap: 10px; }
     }
   </style>
 </head>
 <body>
 
-  <div class="login-container" id="loginBox">
-    <div class="left-panel">
-      <div class="falling-icon icon-train">🚆</div>
-      <div class="falling-icon icon-bus">🚌</div>
-      <div class="falling-icon icon-flight">✈️</div>
-      <h1>CSC TOUR & TRAVELS</h1>
-      <p>Andhra Pradesh</p>
+  <nav class="navbar custom-navbar">
+    <div class="container-fluid px-4 px-lg-5 d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="#">
+        <img src="Logo.PNG" alt="CSC Logo" style="font-weight: 900; color: #0284c7; font-size: 22px;">
+      </a>
+      <div class="d-none d-lg-flex align-items-center nav-links-container">
+        <a href="#" class="nav-link-custom"><i class="fa-solid fa-house-chimney"></i> Home</a>
+        <a href="#" class="nav-link-custom"><i class="fa-solid fa-border-all"></i> Services</a>
+        <a href="#" class="nav-link-custom"><i class="fa-brands fa-youtube"></i> Training Videos</a>
+        <a href="#" class="nav-link-custom"><i class="fa-solid fa-download"></i> Downloads</a>
+        <button class="btn-helpdesk-outline" data-bs-toggle="modal" data-bs-target="#contactModal"><i class="fa-solid fa-headset"></i> Helpdesk</button>
+      </div>
     </div>
+  </nav>
 
-    <div class="right-panel">
-      <div class="right-panel-header">
-        <h2>Welcome Back</h2>
-        <p class="sub-text">Please login to your account</p>
-      </div>
+  <div class="news-ticker">
+    <div class="ticker-badge"><i class="fa-solid fa-bolt"></i> LATEST UPDATES</div>
+    <marquee behavior="scroll" direction="left" scrollamount="6" style="flex: 1;">
+      Welcome to AP Tour & Travels Official Portal! Please ensure all E-Stamping logs are uploaded daily before 8 PM. | For any IRCTC/RedBus login issues, please raise a ticket in the Helpdesk section.
+    </marquee>
+  </div>
+
+  <div class="hero-section">
+    <i class="fa-solid fa-monument watermark-1"></i>
+    <i class="fa-solid fa-plane-departure watermark-2"></i>
+    
+    <div class="hero-container row align-items-center justify-content-between">
       
-      <div class="input-group">
-        <label for="userId">User ID</label>
-        <input type="text" id="userId" placeholder="Enter User ID" autofocus required>
-      </div>
-      
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter Password" required>
-      </div>
-      
-      <button class="login-btn" id="loginBtn" onclick="submitLogin()">Secure Login</button>
-      
-      <div class="extras">
-        <a onclick="alert('దీని ఫంక్షనాలిటీ త్వరలో అందుబాటులోకి వస్తుంది.')">Forgot Password?</a>
-        <a onclick="alert('హెల్ప్‌డెస్క్ ఫీచర్ త్వరలో యాడ్ చేయబడుతుంది.')">Contact Helpdesk</a>
+      <div class="col-lg-6 pe-lg-5">
+        <div class="hero-badge">
+          <i class="fa-solid fa-shield-check"></i> State Authorized Platform
+        </div>
+        
+        <h1 class="hero-title"><span class="text-highlight">AP Tour & Travels</span></h1>
+        
+        <p class="hero-subtitle">
+          The centralized analytics and management portal for AP District Managers. Seamlessly track VLE targets, daily transactions, and monthly activations across IRCTC, APSRTC, Flights, and E-Stamping. Featuring an integrated VLE Helpdesk and complete E-Stamping inventory management.
+        </p>
+        <div class="feature-badges">
+            <span><i class="fa-solid fa-shield-halved text-success"></i> 100% Secure</span>
+            <span><i class="fa-solid fa-chart-line text-primary"></i> Real-time Dashboard</span>
+            <span><i class="fa-solid fa-bolt text-warning"></i> Fast Reporting</span>
+        </div>
       </div>
 
-      <div class="message" id="msg"></div>
+      <div class="col-lg-5 login-container" id="loginBox">
+        <div class="login-box-wrapper">
+          <h3>Welcome Back! 👋</h3>
+          <p>Enter your credentials to access your dashboard</p>
+
+          <form onsubmit="submitLogin(event)">
+              
+              <div class="input-wrapper">
+                  <label>User ID (CSC ID / Admin ID)</label>
+                  <i class="fa-regular fa-user icon-left"></i>
+                  <input type="text" id="userId" placeholder=" " required autocomplete="off" autofocus>
+              </div>
+
+              <div class="input-wrapper">
+                  <label>Password</label>
+                  <i class="fa-solid fa-lock icon-left"></i>
+                  <input type="password" id="password" placeholder=" " required>
+                  <i class="fa-regular fa-eye-slash icon-right" id="togglePassword" onclick="togglePass()"></i>
+              </div>
+              
+              <div class="remember-forgot">
+                  <div>
+                      <input type="checkbox" id="remember" class="me-1"> <label for="remember">Remember me</label>
+                  </div>
+                  <a href="#" onclick="alert('Feature coming soon!')">Forgot Password?</a>
+              </div>
+
+              <button type="submit" class="btn-login" id="loginBtn">
+                  Sign In to Dashboard <i class="fa-solid fa-arrow-right ms-2"></i>
+              </button>
+          </form>
+          
+          <div id="msg" class="message text-danger"></div>
+
+          </div>
+      </div>
+
     </div>
   </div>
 
+  <div class="services-overlay-section">
+    <div class="services-wrapper">
+        <h3 class="services-title">Our Core Services</h3>
+        <p class="services-subtitle">Everything you need to grow your travel business</p>
+
+        <div class="row g-3 justify-content-center">
+          
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-irctc">
+              <div class="sp-icon"><i class="fa-solid fa-train"></i></div>
+              <div class="sp-text"><h6>IRCTC</h6><p>Railway</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right text-danger"></i></div>
+            </a>
+          </div>
+
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-redbus">
+              <div class="sp-icon"><i class="fa-solid fa-bus-simple"></i></div>
+              <div class="sp-text"><h6>RedBus</h6><p>Private Bus</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right text-warning"></i></div>
+            </a>
+          </div>
+
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-airways">
+              <div class="sp-icon"><i class="fa-solid fa-plane-departure"></i></div>
+              <div class="sp-text"><h6>Airways</h6><p>Flights</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right text-primary"></i></div>
+            </a>
+          </div>
+
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-apsrtc">
+              <div class="sp-icon"><i class="fa-solid fa-bus"></i></div>
+              <div class="sp-text"><h6>APSRTC</h6><p>State Bus</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right text-success"></i></div>
+            </a>
+          </div>
+
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-estamp">
+              <div class="sp-icon"><i class="fa-solid fa-file-signature"></i></div>
+              <div class="sp-text"><h6>E-Stamping</h6><p>Documents</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right" style="color: #9333ea;"></i></div>
+            </a>
+          </div>
+
+          <div class="col-xl-auto col-lg-2 col-md-4 col-sm-6 col-6 flex-fill">
+            <a href="#" class="service-pill-premium sp-helpdesk" data-bs-toggle="modal" data-bs-target="#contactModal">
+              <div class="sp-icon"><i class="fa-solid fa-headset"></i></div>
+              <div class="sp-text"><h6>Help Desk</h6><p>Support</p></div>
+              <div class="sp-arrow"><i class="fa-solid fa-arrow-right" style="color: #4f46e5;"></i></div>
+            </a>
+          </div>
+
+        </div>
+    </div>
+  </div>
+
+  <!-- 🌟 Blue Footer Section 🌟 -->
+  <footer class="main-footer-container">
+    <div class="footer-content-wrapper">
+      <div class="row g-4">
+        
+        <!-- Column 1: About -->
+        <div class="col-lg-4 col-md-12 footer-col">
+          <h5>About AP Tour & Travels</h5>
+          <p>
+            The primary goal of this platform is to provide a seamless, one-stop solution for all Tour & Travel operations. We aim to empower VLEs by offering easy access to ticket bookings, performance tracking dashboards, and the latest updates in the sector.
+          </p>
+        </div>
+
+        <!-- Column 2: Address -->
+        <div class="col-lg-4 col-md-6 footer-col">
+          <h5>State Office Address</h5>
+          <ul class="footer-address-list">
+            <li>
+              <i class="fa-solid fa-location-dot mt-1"></i>
+              <span>23-9-18, 2nd floor, Sri Raja Rajeswari Nilayam,<br>Opp Library, Mangalampalli Balamurali Krishna street,<br>Satyanarayanapuram, Vijayawada - 520011.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Contact -->
+        <div class="col-lg-4 col-md-6 footer-col">
+          <h5>Contact with Us</h5>
+          <ul class="footer-address-list">
+            <li>
+              <i class="fa-solid fa-envelope"></i>
+              <span>chandrasekhar.korupolu@gmail.com</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-envelope"></i>
+              <span>chandrasekhara.babu@csc.gov.in</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-phone"></i>
+              <span>+91 9440115828</span>
+            </li>
+          </ul>
+          <div class="social-links">
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar with Links -->
+      <div class="footer-bottom-bar">
+        <p class="copyright-txt">CSC AP Tour & Travel Analytics Platform © 2026 | Designed & Developed with ❤️ by Chandra Sekhara Babu K</p>
+        
+        <div class="policy-links-div">
+          <a data-bs-toggle="modal" data-bs-target="#tncModal">Terms & Conditions</a>
+          <a data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+          <a data-bs-toggle="modal" data-bs-target="#disclaimerModal">Disclaimer</a>
+          <a data-bs-toggle="modal" data-bs-target="#aboutModal">About Us</a>
+          <a data-bs-toggle="modal" data-bs-target="#contactModal">Contact Us</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- 🌟 MODALS (POPUPS) SECTION 🌟 -->
+
+  <!-- 1. Terms & Conditions Modal -->
+  <div class="modal fade custom-modal" id="tncModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Terms & Conditions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Last Updated: July 2026</strong></p>
+          <p>Welcome to CSC AP Tour & Travels. These terms and conditions outline the rules and regulations for the use of our centralized portal.</p>
+          <p>By accessing this website, we assume you accept these terms and conditions in full.</p>
+          
+          <h6>1. Use of Services (Travel & e-Stamping)</h6>
+          <p>This portal is specifically designed to assist Common Service Centre (CSC) Village Level Entrepreneurs (VLEs) in Andhra Pradesh. All bookings (IRCTC, Redbus, Airways) and e-Stamping requests must be made following the official guidelines provided by CSC SPV.</p>
+          
+          <h6>2. Accuracy of Materials</h6>
+          <p>Users are responsible for providing accurate and truthful information while filling out passenger details for ticket bookings. CSC AP Tour & Travels does not warrant that any of the materials on its website are entirely error-free.</p>
+          
+          <h6>3. Limitation of Liability</h6>
+          <p>In no event shall CSC AP Tour & Travels or its developers be held liable for any damages, ticket booking failures, or monetary loss arising out of server downtimes from IRCTC or other API partners.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Privacy Policy Modal -->
+  <div class="modal fade custom-modal" id="privacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Privacy Policy</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Effective Date: July 2026</strong></p>
+          <p>At CSC AP Tour & Travels, we prioritize the privacy of our VLEs and citizens. This document contains types of information that is collected and how we use it.</p>
+          
+          <h6>1. Information We Collect</h6>
+          <p>When you use our portal for Travel or e-Stamping services, we may collect:</p>
+          <ul>
+            <li><strong>Contact Information:</strong> Mobile Number, Email Address.</li>
+            <li><strong>Official Identifiers:</strong> [Aadhaar Redacted], PAN Card Number, CSC ID Number.</li>
+            <li><strong>Passenger Data:</strong> Details required strictly for ticket booking purposes.</li>
+          </ul>
+          
+          <h6>2. How We Use Your Information</h6>
+          <p>We use the information to process and manage your ticket bookings, provide technical support, and prevent fraudulent activities. We do not sell or rent your data to any third-party marketing agencies.</p>
+          
+          <h6>3. Data Security</h6>
+          <p>We strive to use commercially acceptable means of protecting personal information. Data transmitted during bookings is secured via official APIs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Disclaimer Modal -->
+  <div class="modal fade custom-modal" id="disclaimerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Disclaimer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>The information and booking interfaces provided by CSC AP Tour & Travels are for authorized VLE use only.</p>
+          
+          <h6>1. External Links & API Dependencies</h6>
+          <p>Our portal acts as a bridge connecting VLEs to primary booking platforms (IRCTC, Redbus, MakeMyTrip, APSRTC). We do not guarantee the uptime of these third-party servers.</p>
+          
+          <h6>2. Booking & Refund Policy</h6>
+          <p>All ticket cancellations and refunds are subject to the policies of the respective travel partner (e.g., Indian Railways). We encourage VLEs to consult the official support of the respective merchant for delayed refunds.</p>
+          
+          <h6>3. Use at Your Own Risk</h6>
+          <p>All software and reporting tools provided on this site are for the convenience of VLEs. Use of this portal during critical booking hours is solely at your own risk.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. About Us Modal -->
+  <div class="modal fade custom-modal" id="aboutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">About Us</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Welcome to <strong>CSC AP Tour & Travels Analytics Platform</strong>, your trusted and centralized portal for booking and e-Stamping services in Andhra Pradesh.</p>
+          
+          <h6>Who We Are</h6>
+          <p>Hello, I am Chandra Sekhara Babu K, the developer behind this portal. As a dedicated SPOC for CSC e-Governance Services India Limited in Andhra Pradesh, I deeply understand the technical and operational challenges faced by VLEs at the ground level.</p>
+          
+          <h6>Our Mission</h6>
+          <p>The primary goal of this platform is to provide a seamless, one-stop solution for all Tour & Travel operations. We aim to empower VLEs by offering easy access to ticket bookings, performance tracking dashboards, and the latest updates in the sector.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Contact Us Modal -->
+  <div class="modal fade custom-modal" id="contactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Contact Us</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Welcome to CSC AP Tour & Travels. We are dedicated to providing the best technical support and information for CSC Travel and e-Stamping services in Andhra Pradesh.</p>
+          
+          <h6>Contact Details</h6>
+          <ul>
+            <li><strong>Phone:</strong> +91 9440115828</li>
+            <li><strong>Email:</strong> chandrasekhara.babu@csc.gov.in / chandrasekhar.korupolu@gmail.com</li>
+          </ul>
+
+          <h6>Operating Hours</h6>
+          <ul>
+            <li><strong>Mon to Sat:</strong> 10:00 AM – 06:00 PM</li>
+            <li><strong>Sunday:</strong> Closed (Support via Email only)</li>
+          </ul>
+          
+          <h6>State Office Address</h6>
+          <p>
+            <strong>CSC SPV Andhra Pradesh</strong><br>
+            23-9-18, 2nd floor, Sri Raja Rajeswari Nilayam,<br>
+            Opp Library, Mangalampalli Balamurali Krishna street,<br>
+            Satyanarayanapuram, Vijayawada - 520011.
+          </p>
+
+          <h6>Get in Touch</h6>
+          <p class="text-primary fw-bold">For faster support, please mention your CSC ID and District name in your email or message so we can assist you more effectively.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
   <div class="custom-loader-screen" id="travelLoader">
     <div class="travel-icons-loader">
       <span class="icon-1">🚆</span>
       <span class="icon-2">🚌</span>
       <span class="icon-3">✈️</span>
     </div>
-    <div class="loader-text">Preparing Dashboard Data...</div>
+    <div class="loader-text">Authenticating...</div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    // 🌟🌟 మీ Web App URL ఇక్కడ పేస్ట్ చేయండి 🌟🌟
+    function togglePass() {
+        var pwdInput = document.getElementById("password");
+        var icon = document.getElementById("togglePassword");
+        if (pwdInput.type === "password") {
+            pwdInput.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            pwdInput.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    }
+
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    document.getElementById('userId').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') document.getElementById('password').focus();
-    });
-
-    document.getElementById('password').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') submitLogin();
-    });
-
-    function submitLogin() {
+    function submitLogin(e) {
+      if(e) e.preventDefault();
+      
       var uId = document.getElementById('userId').value;
       var pwd = document.getElementById('password').value;
       var msgDiv = document.getElementById('msg');
       var btn = document.getElementById('loginBtn');
 
       if(SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
-        msgDiv.style.color = "#dc2626";
         msgDiv.innerHTML = "దయచేసి కోడ్‌లో మీ Google Web App URL ని అప్‌డేట్ చేయండి.";
         return;
       }
 
-      if(uId === "" || pwd === "") {
-        msgDiv.style.color = "#dc2626";
-        msgDiv.innerHTML = "దయచేసి User ID మరియు Password ఎంటర్ చేయండి.";
-        return;
-      }
-
-      btn.innerHTML = "Checking credentials...";
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Checking...';
       btn.disabled = true;
       msgDiv.innerHTML = ""; 
 
@@ -182,29 +777,28 @@
       
       window[callbackName] = function(data) {
         if(data.success) {
-          btn.innerHTML = "Login Successful!"; 
+          btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Success!'; 
           document.getElementById('loginBox').style.opacity = '0';
           
           setTimeout(function() {
-            document.getElementById('loginBox').style.display = 'none';
+            document.querySelector('.hero-section').style.display = 'none';
+            document.querySelector('.services-overlay-section').style.display = 'none';
+            document.querySelector('.main-footer-container').style.display = 'none';
             document.getElementById('travelLoader').style.display = 'flex';
             
             localStorage.setItem("userName", data.name);
             localStorage.setItem("userDesignation", data.designation);
             localStorage.setItem("userId", uId); 
-            
-            // 🌟🌟 E-Stamping పర్మిషన్ ఫ్లాగ్ ని ఇక్కడ సేవ్ చేస్తున్నాం 🌟🌟
             localStorage.setItem("hasEstamp", data.hasEstamp); 
 
             setTimeout(function() {
               window.location.href = "Dashboard.html"; 
-            }, 3000); 
+            }, 2500); 
             
           }, 500);
         } else {
-          btn.innerHTML = "Secure Login";
+          btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right ms-2"></i>';
           btn.disabled = false;
-          msgDiv.style.color = "#dc2626";
           msgDiv.innerHTML = data.message;
         }
         delete window[callbackName];
@@ -214,10 +808,9 @@
       script.src = SCRIPT_URL + "?userId=" + encodeURIComponent(uId) + "&password=" + encodeURIComponent(pwd) + "&callback=" + callbackName;
       
       script.onerror = function() {
-        btn.innerHTML = "Secure Login";
+        btn.innerHTML = 'Sign In to Dashboard <i class="fa-solid fa-arrow-right ms-2"></i>';
         btn.disabled = false;
-        msgDiv.style.color = "#dc2626";
-        msgDiv.innerHTML = "సర్వర్ కనెక్షన్ ఎర్రర్. లింక్ లేదా ఇంటర్నెట్ చెక్ చేయండి.";
+        msgDiv.innerHTML = "సర్వర్ కనెక్షన్ ఎర్రర్. ఇంటర్నెట్ చెక్ చేయండి.";
       };
 
       document.body.appendChild(script);

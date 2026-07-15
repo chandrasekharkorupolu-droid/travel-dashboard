@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Daily Performance Emails</title>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .email-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 550px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            background: #fff7ed;
+            color: #ea580c;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 35px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 10px 20px rgba(234, 88, 12, 0.15);
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            color: #0f172a;
+            font-size: 26px;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+        }
+
+        p.desc {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: left;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #334155;
+            font-weight: 600;
+        }
+        .info-box i { color: #3b82f6; width: 20px;}
+
+        .btn-send {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(234, 88, 12, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(234, 88, 12, 0.4);
+        }
+
+        .btn-send:active {
+            transform: translateY(2px);
+            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-send:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loader-container { display: none; margin-top: 20px; }
+        .email-loader { font-size: 45px; color: #0284c7; animation: fly 2s infinite ease-in-out; display: inline-block;}
+        @keyframes fly {
+            0% { transform: translate(-20px, 10px) rotate(-10deg); opacity: 0; }
+            50% { transform: translate(0px, -10px) rotate(5deg); opacity: 1; }
+            100% { transform: translate(20px, 10px) rotate(-10deg); opacity: 0; }
+        }
+        .status-text { color: #0284c7; font-weight: 800; font-size: 15px; margin-top: 10px; animation: pulse 1.5s infinite;}
+        @keyframes pulse { 0% {opacity:0.6;} 50% {opacity:1;} 100% {opacity:0.6;} }
+
+        .result-box {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            animation: slideUp 0.4s ease;
+            text-align: left;
+            box-sizing: border-box;
+        }
+        @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        
+        .success-res { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; text-align: center; }
+        .error-res { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+        .hard-error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; text-align: center; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #ffffff;
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-sizing: border-box;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-icon { font-size: 50px; color: #ea580c; margin-bottom: 15px; }
+        .modal-title { font-size: 22px; font-family: 'Outfit', sans-serif; color: #0f172a; margin-bottom: 10px; font-weight: 800;}
+        .modal-desc { font-size: 14px; color: #64748b; margin-bottom: 25px; line-height: 1.5; font-weight: 500;}
+        .modal-buttons { display: flex; gap: 15px; }
+        .btn-cancel {
+            flex: 1; padding: 12px; background: #f1f5f9; color: #475569; border: none;
+            border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 15px;
+        }
+        .btn-cancel:hover { background: #e2e8f0; }
+        .btn-confirm {
+            flex: 1; padding: 12px; background: #ea580c; color: white; border: none;
+            border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3); font-size: 15px;
+        }
+        .btn-confirm:hover { background: #c2410c; transform: translateY(-2px); }
+
+        /* 📱 MOBILE RESPONSIVE CODE 📱 */
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .email-card { padding: 25px 20px; border-radius: 15px; }
+            .header-icon { width: 60px; height: 60px; font-size: 26px; margin-bottom: 15px; }
+            h2 { font-size: 22px; }
+            p.desc { font-size: 13px; margin-bottom: 20px; }
+            
+            .info-box { padding: 12px; }
+            .info-box p { font-size: 12px; }
+            
+            .btn-send { padding: 12px 20px; font-size: 15px; }
+            
+            .modal-content { padding: 25px 20px; }
+            .modal-icon { font-size: 40px; margin-bottom: 10px; }
+            .modal-title { font-size: 18px; }
+            .modal-desc { font-size: 13px; margin-bottom: 20px; }
+            
+            /* మొబైల్ లో బటన్స్ పక్కపక్కన కాకుండా కిందకి వచ్చేలా (Stacked) */
+            .modal-buttons { flex-direction: column; gap: 10px; }
+            .btn-cancel, .btn-confirm { width: 100%; padding: 12px; font-size: 14px; }
+            
+            .result-box { padding: 15px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="email-card">
+        <div class="header-icon" id="mainIcon">
+            <i class="fa-regular fa-paper-plane"></i>
+        </div>
+        <h2>Dispatch Daily Reports</h2>
+        <p class="desc">Send automated consolidated performance emails to all District Managers and the State Head.</p>
+
+        <div class="info-box" id="infoBox">
+            <p><i class="fa-solid fa-check-circle"></i> Extracts latest data from IRCTC, RedBus & Airways.</p>
+            <p><i class="fa-solid fa-check-circle"></i> Generates personalized DM performance summaries.</p>
+            <p><i class="fa-solid fa-check-circle"></i> Compiles the State Head overall snapshot.</p>
+        </div>
+
+        <button class="btn-send" id="sendBtn" onclick="showConfirmModal()">
+            <i class="fa-solid fa-rocket"></i> Send Emails Now
+        </button>
+
+        <div class="loader-container" id="loaderBox">
+            <div class="email-loader"><i class="fa-solid fa-envelope"></i></div>
+            <div class="status-text">Generating & Dispatching Emails... Please wait.</div>
+        </div>
+
+        <div class="result-box" id="resultBox"></div>
+    </div>
+
+    <!-- Center Custom Confirmation Popup -->
+    <div class="modal-overlay" id="customConfirmModal">
+        <div class="modal-content">
+            <div class="modal-icon"><i class="fa-solid fa-circle-question"></i></div>
+            <div class="modal-title">Confirm Dispatch</div>
+            <div class="modal-desc">Are you sure you want to send Daily Performance Emails to all DMs and the State Head?</div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn-confirm" onclick="proceedToSendEmails()">Yes, Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 👇 దయచేసి ఇక్కడ మీ Google Apps Script URL కచ్చితంగా పేస్ట్ చేయండి
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+
+        function showConfirmModal() {
+            document.getElementById('customConfirmModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('customConfirmModal').style.display = 'none';
+        }
+
+        function proceedToSendEmails() {
+            closeConfirmModal();
+
+            const btn = document.getElementById("sendBtn");
+            const loader = document.getElementById("loaderBox");
+            const resultBox = document.getElementById("resultBox");
+            const infoBox = document.getElementById("infoBox");
+            const mainIcon = document.getElementById("mainIcon");
+
+            btn.disabled = true;
+            btn.style.display = "none";
+            infoBox.style.display = "none";
+            loader.style.display = "block";
+            resultBox.style.display = "none";
+            mainIcon.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color:#0284c7;"></i>`;
+            mainIcon.style.background = "#e0f2fe";
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "sendDailyEmails" })
+            })
+            .then(res => res.json())
+            .then(res => {
+                loader.style.display = "none";
+                resultBox.style.display = "block";
+
+                if(res.status === "success" || res.success) {
+                    
+                    if (res.errors && res.errors.length > 0) {
+                        mainIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+                        mainIcon.style.background = "#fff7ed";
+                        mainIcon.style.color = "#ea580c";
+                        
+                        let errStr = res.errors.join("<br> • ");
+                        resultBox.className = "result-box error-res";
+                        resultBox.innerHTML = `⚠️ <b>ప్రొసెస్ కంప్లీట్ అయ్యింది, కానీ కొన్ని మెయిల్స్ వెళ్ళలేదు:</b><br><br><span style="font-size:12px;"> • ${errStr}</span><br><br><span style="color:#64748b; font-size:11px;">(కారణం: గూగుల్ ఈమెయిల్ పర్మిషన్ లేకపోవడం, లేదా రోజువారీ మెసేజ్ లిమిట్ అయిపోవడం)</span>`;
+                        btn.style.display = "flex"; btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Try Again`;
+                    } 
+                    else if (res.dmSent === 0 && !res.stateHeadSent) {
+                        mainIcon.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i>`;
+                        mainIcon.style.background = "#fefce8";
+                        mainIcon.style.color = "#ca8a04";
+                        
+                        resultBox.className = "result-box error-res";
+                        resultBox.innerHTML = `⚠️ <b>No Emails Sent! (సున్నా మెయిల్స్ వెళ్లాయి)</b><br><br><span style="font-size:12px; color:#475569;">కారణం: <b>Users</b> షీట్ లో ఉన్న పేర్లు, మరియు <b>IRCTC/REDBUS</b> షీట్ లో ఉన్న "Employee Name" పేర్లు మ్యాచ్ కాలేదు. పేర్ల మధ్య ఉన్న స్పేస్‌లను ఒకసారి చెక్ చేయండి.</span>`;
+                        btn.style.display = "flex"; btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Try Again`;
+                    } 
+                    else {
+                        mainIcon.innerHTML = `<i class="fa-solid fa-check"></i>`;
+                        mainIcon.style.background = "#dcfce7";
+                        mainIcon.style.color = "#16a34a";
+                        mainIcon.style.boxShadow = "0 10px 20px rgba(22, 163, 74, 0.15)";
+                        
+                        resultBox.className = "result-box success-res";
+                        resultBox.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:24px; margin-bottom:10px; display:block;"></i> 
+                                               <span style="font-size:16px;">Emails dispatched successfully!</span><br><br>
+                                               <span style="font-size:13px; font-weight:600; color:#475569;">Sent to ${res.dmSent} District Managers.</span>`;
+                        if(res.stateHeadSent) {
+                            resultBox.innerHTML += `<br><span style="font-size:13px; font-weight:600; color:#475569;">Sent to State Head.</span>`;
+                        }
+                    }
+                } else {
+                    mainIcon.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+                    mainIcon.style.background = "#fee2e2";
+                    mainIcon.style.color = "#dc2626";
+                    
+                    resultBox.className = "result-box hard-error";
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-xmark" style="font-size:20px; margin-bottom:10px; display:block;"></i> 
+                                           Failed to send emails. <br><span style="font-weight:500; font-size:12px;">${res.message || "Unknown error"}</span>`;
+                    
+                    btn.style.display = "flex"; btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Try Again`;
+                }
+            })
+            .catch(err => {
+                loader.style.display = "none";
+                resultBox.style.display = "block";
+                
+                mainIcon.innerHTML = `<i class="fa-solid fa-wifi"></i>`;
+                mainIcon.style.background = "#ffedd5";
+                mainIcon.style.color = "#ea580c";
+
+                resultBox.className = "result-box hard-error";
+                resultBox.style.background = "#fff7ed";
+                resultBox.style.color = "#ea580c";
+                resultBox.style.borderColor = "#fed7aa";
+                resultBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size:20px; margin-bottom:10px; display:block;"></i> 
+                                       Network Error. Please check your connection and try again.`;
+
+                btn.style.display = "flex"; btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Try Again`;
+            });
+        }
+    </script>
+</body>
+</html>
