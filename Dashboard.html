@@ -298,27 +298,6 @@
     }
     @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-    /* 🌟 Mobile Responsiveness 🌟 */
-    @media (max-width: 992px) {
-        .top-header { flex-direction: column; padding: 15px; gap: 15px; }
-        .nav-menu { flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
-        .nav-btn { font-size: 12px; padding: 8px 12px; flex: 1 1 calc(33.333% - 10px); justify-content: center; }
-        .menu-divider { display: none; }
-        .user-actions { width: 100%; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
-        .main-content { flex-direction: column; padding: 15px; height: auto; min-height: calc(100vh - 150px); }
-        .sidebar { width: 100% !important; max-height: 250px; margin-bottom: 15px; }
-        .sidebar.collapsed-hover { display: none !important; }
-        .report-list { display: flex; flex-wrap: wrap; }
-        .report-list li { flex: 1 1 50%; font-size: 12px; padding: 10px; margin-bottom:0;}
-        
-        .globe-wrapper { width: 100%; max-width: 300px; height: 300px; margin:0 auto;}
-        .earth-globe { width: 180px; height: 180px; }
-        .orbit-text text { font-size: 16px; letter-spacing: 3px; }
-        #reportIframeContainer { min-height: 600px; }
-        .welcome-title { font-size: 22px;}
-        .welcome-greeting { font-size: 14px;}
-    }
-
     /* 🌟 Footer 🌟 */
     .dashboard-footer {
         position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px; 
@@ -327,61 +306,81 @@
     }
     .footer-highlight { color: #38bdf8; font-weight: 800; font-family: 'Outfit', sans-serif;}
 
-
-/* ========================================================================= */
-    /* 📱 MOBILE RESPONSIVENESS FOR MAIN DASHBOARD (Added by Chandra) 📱 */
+    /* ========================================================================= */
+    /* 📱 MOBILE RESPONSIVENESS FOR MAIN DASHBOARD (Unified & Cleaned) 📱 */
     /* ========================================================================= */
     @media (max-width: 992px) {
-        body { padding: 5px; }
+        body { padding: 0; }
 
         /* టాప్ హెడర్ సెట్టింగ్స్ */
         .top-header { 
-            padding: 10px; 
+            padding: 10px 15px; 
             flex-direction: column; 
-            gap: 10px; 
+            gap: 12px; 
             height: auto;
         }
         
         .brand-section { width: 100%; justify-content: center; }
         
+        /* Nav Menu Horizontal Scroll for Mobile */
         .nav-menu { 
             width: 100%; 
             overflow-x: auto; 
             white-space: nowrap; 
-            padding-bottom: 5px;
+            flex-wrap: nowrap;
+            padding-bottom: 8px;
             justify-content: flex-start;
+            -webkit-overflow-scrolling: touch;
         }
+        /* Custom scrollbar for mobile nav */
+        .nav-menu::-webkit-scrollbar { height: 4px; }
+        .nav-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         
-        .nav-btn { font-size: 11px; padding: 6px 10px; }
+        .nav-btn { font-size: 11px; padding: 8px 12px; flex-shrink: 0; }
+        .menu-divider { display: none; }
         
         .user-actions { 
             width: 100%; 
             justify-content: center; 
-            gap: 8px; 
+            flex-wrap: wrap;
+            gap: 10px; 
             margin-top: 5px;
         }
 
-        /* సైడ్‌బార్ సెట్టింగ్స్ */
+        .main-content { flex-direction: column; padding: 10px; height: auto; min-height: calc(100vh - 140px); }
+        
+        /* సైడ్‌బార్ మొబైల్ సెట్టింగ్స్ - డిఫాల్ట్ గా దాచిపెట్టబడుతుంది */
         .sidebar { 
             width: 100% !important; 
-            max-height: 200px; 
+            min-width: 100% !important;
+            max-height: max-content; 
             margin-bottom: 15px; 
-            display: none; /* క్లిక్ చేసినప్పుడు మాత్రమే కనిపించేలా */
+            display: none; 
         }
+        
+        .sidebar.collapsed-hover { display: none !important; }
+        
+        .report-list { display: flex; flex-wrap: wrap; }
+        .report-list li { flex: 1 1 100%; font-size: 13px; padding: 12px 10px; margin-bottom: 5px; }
         
         /* హోమ్ స్క్రీన్ లోగోస్ & ఎనిమేషన్స్ */
         .globe-wrapper { 
-            width: 250px !important; 
-            height: 250px !important; 
+            width: 100%; 
+            max-width: 250px; 
+            height: 250px; 
+            margin: 0 auto;
         }
         .earth-globe { 
-            width: 150px !important; 
-            height: 150px !important; 
+            width: 150px; 
+            height: 150px; 
         }
-        .orbit-text text { font-size: 14px; }
+        .orbit-text text { font-size: 15px; letter-spacing: 2px; }
         
-        .welcome-text-area { padding: 10px; }
-        .welcome-title { font-size: 18px; }
+        #reportIframeContainer { min-height: 500px; }
+        
+        .welcome-text-area { padding: 15px; }
+        .welcome-title { font-size: 20px; }
+        .welcome-greeting { font-size: 13px; }
         
         /* మోడల్ పాపప్స్ (Popups) */
         .modal-box { 
@@ -423,7 +422,7 @@
       <button class="nav-btn color-helpdesk" id="navHelpdesk" onclick="openModule('HELPDESK')"><i class="fa-solid fa-headset"></i> HELPDESK</button>
       <button class="nav-btn color-master" id="navMaster" onclick="openModule('MASTER')"><i class="fa-solid fa-chart-pie"></i> MASTER</button>
 
-        <button class="nav-btn color-irctc" id="navAction" onclick="openModule('ACTION CENTER')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-bolt"></i> TASKS</button>
+      <button class="nav-btn color-irctc" id="navAction" onclick="openModule('ACTION CENTER')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-bolt"></i> TASKS</button>
 
     </div>
 
@@ -582,7 +581,8 @@
       });
       
       sidebar.addEventListener('mouseleave', function() {
-        if (this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') {
+        // Mobile view checks added so we don't collapse on small screens inappropriately
+        if (window.innerWidth > 992 && this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') {
           this.classList.add('collapsed-hover');
         }
       });
@@ -632,10 +632,7 @@
 
     // 🌟 ACTIVE TOP NAV HIGHLIGHT FUNCTION 🌟
     function setActiveNav(moduleId) {
-        // Remove active class from all buttons
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
-        
-        // Add active class to the clicked button
         if(moduleId) {
             let btn = document.getElementById(moduleId);
             if(btn) btn.classList.add('active-nav');
@@ -644,7 +641,7 @@
 
     function loadHome() {
       enterFullScreen(); 
-      setActiveNav('navHome'); // Highlight HOME button
+      setActiveNav('navHome'); 
       
       document.documentElement.style.setProperty('--theme-bg', '#ffffff');
       document.getElementById('sidebar').style.display = 'none';
@@ -663,9 +660,12 @@
         
         if(activeModule === "E-STAMPING" || document.getElementById('dashboardCards').innerHTML.trim() !== '') {
             document.getElementById('dashboardCards').style.display = 'flex';
-            document.getElementById('sidebar').classList.remove('collapsed-hover');
+            document.getElementById('sidebar').style.display = 'flex';
+            if (window.innerWidth > 992) {
+                document.getElementById('sidebar').classList.remove('collapsed-hover');
+            }
         } else {
-            loadHome(); // Safe return to home state
+            loadHome(); 
         }
         document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
     }
@@ -703,10 +703,11 @@
     }
 
     function openModule(moduleName) {
-      enterFullScreen(); 
+      if (window.innerWidth > 992) {
+          enterFullScreen(); 
+      }
       
-      // Highlight the clicked Top Nav Button
-      const navIdMap = { "IRCTC": "navIrctc", "REDBUS": "navRedbus", "AIRWAYS": "navAirways", "APSRTC": "navApsrtc", "E-STAMPING": "navEstamp", "HELPDESK": "navHelpdesk", "MASTER": "navMaster" };
+      const navIdMap = { "IRCTC": "navIrctc", "REDBUS": "navRedbus", "AIRWAYS": "navAirways", "APSRTC": "navApsrtc", "E-STAMPING": "navEstamp", "HELPDESK": "navHelpdesk", "MASTER": "navMaster", "ACTION CENTER": "navAction" };
       setActiveNav(navIdMap[moduleName]);
       
       let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
@@ -746,7 +747,9 @@
       document.documentElement.style.setProperty('--theme-bg', t.b);
       
       document.getElementById('sidebar').style.display = 'flex';
-      document.getElementById('sidebar').classList.remove('collapsed-hover'); 
+      if (window.innerWidth > 992) {
+          document.getElementById('sidebar').classList.remove('collapsed-hover'); 
+      }
       
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
       
@@ -797,12 +800,12 @@
 
       }
 
-          else if(moduleName === 'ACTION CENTER') {
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
-    document.getElementById('navAction').classList.add('active-nav');
-    loadReport('ACTION CENTER', '🚀 DM Action Center - Priority Tasks'); // 👈 ఇక్కడ మార్చాను
-    return;
-}
+      else if(moduleName === 'ACTION CENTER') {
+          document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
+          document.getElementById('navAction').classList.add('active-nav');
+          loadReport('ACTION CENTER', '🚀 DM Action Center - Priority Tasks'); 
+          return;
+      }
 
       else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
@@ -829,7 +832,6 @@
         }; 
         list.appendChild(li1);
         
-        // 🌟 NEW: SEND DAILY EMAILS BUTTON 🌟
         let li2 = document.createElement('li'); 
         li2.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-envelope-circle-check" style="color:#ea580c;"></i></span> <span class="menu-text">Send Daily Emails</span>'; 
         li2.onclick = function() { 
@@ -869,7 +871,11 @@
     function loadAccessDenied() { 
       document.getElementById('reportIframeContainer').style.display = 'flex'; 
       document.getElementById('dashboardCards').style.display = 'none'; 
-      document.getElementById('sidebar').classList.add('collapsed-hover'); 
+      if(window.innerWidth > 992) {
+          document.getElementById('sidebar').classList.add('collapsed-hover'); 
+      } else {
+          document.getElementById('sidebar').style.display = 'none';
+      }
       document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:80px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions to view this page.</p></div>`; 
     }
     
@@ -947,7 +953,13 @@
       else {
           document.getElementById('reportIframeContainer').style.display = 'flex'; 
           document.getElementById('dashboardCards').style.display = 'none';
-          document.getElementById('sidebar').classList.add('collapsed-hover'); 
+          
+          if (window.innerWidth <= 992) {
+              document.getElementById('sidebar').style.display = 'none';
+          } else {
+              document.getElementById('sidebar').classList.add('collapsed-hover'); 
+          }
+          
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #ffffff; padding: 15px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0;"><h5 style="margin:0; color:#0f172a; font-weight:800;"><i class="fa-solid fa-file-lines text-primary me-2"></i> ${reportName}</h5><button onclick="closeActiveReport()" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; padding:8px 15px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:0.3s;" onmouseover="this.style.background='#fee2e2'; this.style.color='#dc2626';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';"><i class="fa-solid fa-xmark me-1"></i> Close (ESC)</button></div><div style="text-align:center; padding:80px;"><i class="fa-solid fa-hammer" style="font-size:50px; color:#cbd5e1; margin-bottom:20px;"></i><h2 style="font-family:'Outfit', sans-serif; font-weight:900; color:#1e293b;">${reportName}</h2><p style="color:#64748b; font-size:15px;">This report is currently under development.</p></div>`; 
           return;
       }
@@ -956,7 +968,12 @@
       document.getElementById('dashboardCards').style.display = 'none';
       document.getElementById('reportIframeContainer').style.display = 'flex';
       
-      document.getElementById('sidebar').classList.add('collapsed-hover'); 
+      // 📱 Mobile responsive hide sidebar when report opens
+      if (window.innerWidth <= 992) {
+          document.getElementById('sidebar').style.display = 'none';
+      } else {
+          document.getElementById('sidebar').classList.add('collapsed-hover'); 
+      }
       
       document.getElementById('reportIframeContainer').innerHTML = `
         <div style="background: #ffffff; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0;">
