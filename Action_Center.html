@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Action Center | CSC AP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #f4f7fe; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        /* 🌟 COMMON STYLES 🌟 */
+        .task-header { background: #ffffff; padding: 25px 20px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px; border-radius:16px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.02);}
+        .task-title { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .loader-box { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:99; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        
+        /* 🌟 DM UI STYLES 🌟 */
+        .dm-container { flex: 1; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
+        .dm-overall-stats { display: flex; justify-content: center; align-items: center; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 30px; padding: 10px 25px; font-size: 14px; font-weight: 800; color: #334155; margin: 0 auto 15px auto; width: fit-content; flex-wrap: wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-divider { color: #cbd5e1; font-weight: 400; }
+        .dm-overall-stats b { font-size: 16px; font-family: 'Outfit', sans-serif;}
+
+        .task-selector { width: 100%; max-width: 500px; padding: 14px 20px; border-radius: 12px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer; margin: 0 auto;}
+        .progress-bar-container { background: #e2e8f0; height: 8px; width: 100%; position: relative; border-radius: 10px; overflow: hidden; margin-bottom: 15px;}
+        .progress-bar-fill { background: linear-gradient(90deg, #10b981, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 0 4px 4px 0;}
+        .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:20px; min-height: 450px;}
+        
+        .vle-card { width: 100%; max-width: 500px; background: #fff; border-radius: 24px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); position:absolute; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); display:flex; flex-direction:column; border: 1px solid #f1f5f9; }
+        .card-active { transform: translateY(0) scale(1); opacity: 1; z-index:5;}
+        .card-next { transform: translateY(100%); opacity: 0; z-index:4;} 
+        .card-done { transform: translateY(-100%) scale(0.9); opacity: 0; z-index:1;} 
+        .vle-card-header { padding: 20px; text-align: center; color: white; font-weight: 900; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; border-radius: 24px 24px 0 0; }
+        
+        .bg-irctc { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+        .bg-redbus { background: linear-gradient(135deg, #fb7185, #e11d48); }
+        .bg-both { background: linear-gradient(135deg, #4f46e5, #312e81); } 
+        .bg-special { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        
+        .vle-info { padding: 30px; text-align: center; flex:1; display: flex; flex-direction: column; justify-content: space-between;}
+        .vle-details h2 { font-size: 26px; font-family: 'Outfit', sans-serif; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+        .vle-details p { font-size: 14px; font-weight: 700; color: #64748b; background: #f1f5f9; display: inline-block; padding: 6px 16px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;}
+        .txn-badge { display:flex; justify-content:space-between; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px 18px; border-radius: 12px; margin-bottom: 15px; font-size:14px; font-weight:700;}
+        
+        .action-btn-group { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 15px; }
+        .call-btn { flex: 1; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; text-decoration: none; display:flex; align-items:center; justify-content:center; gap:8px;}
+        .wa-btn { flex: 1; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; text-decoration: none; display:flex; align-items:center; justify-content:center; gap:8px;}
+        
+        .lock-message { background: #fffbeb; border: 1px dashed #f59e0b; color: #b45309; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; margin-bottom: 15px; transition: 0.3s;}
+        
+        .vle-action { transition: 0.3s; }
+        .vle-action select { width: 100%; padding: 16px; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 15px; outline:none; font-weight:700; font-size: 14px; color: #1e293b; background: #f8fafc; cursor: pointer;}
+        .other-input-box { width: 100%; padding: 14px; border-radius: 12px; border: 2px dashed #94a3b8; margin-bottom: 15px; outline:none; font-weight:700; font-size: 14px; color: #0f172a; background: #ffffff; display: none; transition: 0.3s; }
+        .other-input-box:focus { border-color: #3b82f6; }
+        
+        .submit-btn { width: 100%; background: #0f172a; color: #fff; padding: 16px; border-radius: 12px; font-weight: 800; border:none; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 15px rgba(15, 23, 42, 0.2);}
+        .submit-btn:hover { transform: translateY(-2px); }
+
+        .summary-view { display: none; width: 100%; margin: 0 auto; padding: 10px; }
+        .summary-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+        .summary-info h4 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .summary-info p { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 5px; }
+        .summary-remark { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+        .summary-call-btn { background: #10b981; color: white; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);}
+
+        /* 🌟 SPOC DASHBOARD STYLES 🌟 */
+        .spoc-container { padding: 20px; max-width: 1300px; margin: auto; width: 100%; }
+        
+        /* 🌟 COMPACT KPI STATS 🌟 */
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
+        .stat-box { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .stat-box h3 { font-size: 26px; font-weight: 900; margin-bottom: 4px; font-family: 'Outfit', sans-serif; line-height: 1; color: #0f172a;}
+        .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        .view-selector { width: 100%; max-width: 400px; margin: 0 auto 25px auto; display: block; padding: 12px 20px; border-radius: 30px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer;}
+        
+        .dash-section-title { font-size: 18px; font-family: 'Outfit', sans-serif; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 25px;}
+        
+        .dm-item { padding: 18px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
+        .dm-info h4 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 10px;}
+        .tgt-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; display: inline-block; font-weight: 800; margin-right: 6px; margin-bottom: 10px;}
+        .tgt-irctc { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;}
+        .tgt-redbus { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;}
+        .dm-calls-text { font-size: 13px; font-weight: 800; color: #059669; margin-bottom: 5px;}
+        .dm-login-text { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 8px;}
+        .dm-status { font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; background: #dcfce7; color: #166534; display: inline-block;}
+
+        .live-feed-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #3b82f6; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;}
+        .live-feed-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
+        .live-feed-header h4 { font-size: 14px; font-weight: 900; color: #0f172a; line-height: 1.3;}
+        .feed-dm { font-size: 11px; font-weight: 800; color: #4f46e5; background: #e0e7ff; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;}
+        .feed-rmk { display: inline-block; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; margin-top: 8px; align-self: flex-start;}
+        .feed-duration { font-size: 11px; font-weight: 700; color: #10b981; margin-top: 6px;}
+        .feed-actions { display: flex; gap: 10px; margin-top: 12px; }
+        .feed-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none; cursor: pointer;}
+        .f-call { background: #f8fafc; color: #4f46e5; border: 1px solid #e0e7ff; }
+        .f-wa { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+        .dm-action-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #10b981; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .dm-action-item h4 { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 6px;}
+        .dm-action-item p { font-size: 12px; font-weight: 700; color: #64748b; margin-top: 8px;}
+        
+        /* 🌟 NO SCROLLING BOX - FULL PAGE STICKY HEADER TABLE 🌟 */
+        .report-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; margin-top: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
+        
+        .report-table-container { width: 100%; padding-bottom: 20px; } 
+        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+        
+        /* 🌟 HIGHLIGHTED STICKY HEADERS 🌟 */
+        .report-table th { 
+            position: -webkit-sticky; 
+            position: sticky; 
+            top: 0; 
+            background: #e0e7ff; 
+            color: #312e81; 
+            padding: 16px 12px; 
+            font-weight: 900; 
+            border-bottom: 3px solid #a5b4fc; 
+            white-space: nowrap; 
+            z-index: 100; 
+        }
+        
+        .report-table td { padding: 16px 12px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 800; white-space: nowrap; background: #fff;} 
+        .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; }
+        .sub-stat { display: block; font-size: 10px; color: #64748b; font-weight: 700; margin-top: 3px;}
+        
+        .dl-btn { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
+        .dl-btn:hover { transform: translateY(-2px);}
+        .dl-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        @media (max-width: 768px) { .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px;} .grid-container { grid-template-columns: 1fr; } .vle-card { max-width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <!-- 🌟 SPOC MONITORING VIEW 🌟 -->
+    <div id="spocScreen" style="display:none;" class="spoc-container">
+        
+        <div class="stat-grid">
+            <div class="stat-box" style="border-color:#e2e8f0; background:#f8fafc;"><h3 id="spocCallsToday" style="color:#0f172a;">0</h3><p>Calls Made</p></div>
+            <div class="stat-box" style="border-color:#bbf7d0; background:#f0fdf4;"><h3 id="spocActiveDMs" style="color:#16a34a;">0</h3><p style="color:#166534;">Active DMs</p></div>
+            <div class="stat-box" style="border-color:#bae6fd; background:#f0f9ff;"><h3 id="spocIrctcPending" style="color:#0284c7;">0</h3><p style="color:#075985;">IRCTC Pend</p></div>
+            <div class="stat-box" style="border-color:#fecaca; background:#fef2f2;"><h3 id="spocRedbusPending" style="color:#dc2626;">0</h3><p style="color:#991b1b;">REDBUS Pend</p></div>
+        </div>
+
+        <select id="spocViewSelector" class="view-selector" onchange="switchSpocView()">
+            <option value="spoc-live">🟢 Live Feed & Active DMs</option>
+            <option value="spoc-report">📊 State Head Report</option>
+            <option value="spoc-followup">🚀 DM Follow-Up Center</option>
+        </select>
+        
+        <div id="spoc-live">
+            <div class="dash-section-title">🟢 Active DMs (Logged In)</div>
+            <div id="activeDmsGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Fetching Active DMs...</p></div>
+
+            <div class="dash-section-title" style="margin-top: 15px; justify-content: space-between;">
+                <div>🔴 Live Call Feed</div>
+                <select id="spocFeedFilter" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 800; color: #334155; outline: none; background:#fff; max-width:200px; cursor:pointer;" onchange="filterSpocFeed()">
+                    <option value="ALL">All DMs</option>
+                </select>
+            </div>
+            <div id="liveFeedGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Fetching live logs...</p></div>
+        </div>
+
+        <div id="spoc-report" style="display:none;">
+            <div id="reportCardToCapture" class="report-card">
+                <div class="report-header">
+                    <div style="text-align:left;">
+                        <h3 style="font-size:20px; font-family:'Outfit'; color:#2563eb;">📊 IRCTC & BUS Priority Followup Report</h3>
+                        <p style="font-size:12px; color:#64748b; font-weight:700; margin-top:4px;" id="reportDateText">(Date)</p>
+                    </div>
+                    <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport()">📸 Save Report</button>
+                </div>
+                <div class="report-table-container">
+                    <table class="report-table">
+                        <thead>
+                            <tr><th>S.No</th><th>Employee Name</th><th>Total Target</th><th>✅ Act. (Total)</th><th>⏳ Pending</th><th>🎯 Assigned (Today)</th><th>📞 Attempted</th><th>⏱️ Avg Time</th></tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="spoc-followup" style="display:none;">
+            <div class="dash-section-title" style="color:#059669; font-size: 20px;">🚀 DM Follow-Up Center</div>
+            <div id="dmFollowUpGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Loading DM Data...</p></div>
+        </div>
+    </div>
+
+    <!-- 🌟 DM ACTION CENTER VIEW 🌟 -->
+    <div id="dmScreen" style="display:none;" class="dm-container">
+        
+        <div class="task-header" id="dmHeader">
+            <div class="task-title">🎯 My Action Center</div>
+            
+            <div class="dm-overall-stats" id="dmOverallStats" style="display:none;">
+                <span>Total Inactive: <b id="dmTotalInactive">0</b></span>
+                <span class="stat-divider">|</span>
+                <span style="color:#0284c7;">IRCTC: <b id="dmTotalIrctc">0</b></span>
+                <span class="stat-divider">|</span>
+                <span style="color:#dc2626;">REDBUS: <b id="dmTotalRedbus">0</b></span>
+            </div>
+
+            <select id="taskSelector" class="task-selector" onchange="filterCardsByTask()">
+                <option value="" disabled selected>Loading tasks...</option>
+            </select>
+            <div style="font-size:13px; font-weight:700; color:#64748b; text-align:center; margin-top:5px;" id="targetLabelBox">
+                Today's Target: <span id="pendingCount" style="color:#ef4444; font-weight:900; font-size:15px;">0</span>
+            </div>
+        </div>
+        
+        <div class="progress-bar-container" id="dmProgress"><div class="progress-bar-fill" id="progressBar"></div></div>
+
+        <!-- Cards Container -->
+        <div class="card-stack" id="cardStack"></div>
+
+        <!-- SUMMARY SCREEN -->
+        <div id="summaryView" class="summary-view">
+            <h2 style="font-family:'Outfit'; font-size:24px; color:#10b981; text-align:center; margin-bottom:8px;">🎉 Task Completed!</h2>
+            <p style="text-align:center; color:#64748b; font-size:14px; font-weight:600; margin-bottom:30px;">Here is the list of VLEs you called today.</p>
+            <div id="summaryListContainer"></div>
+        </div>
+    </div>
+
+    <div id="loader" class="loader-box">
+        <h3 style="color:#10b981; font-family:'Outfit'; font-size:24px; margin-bottom:10px;">Fetching Data...</h3>
+        <p style="color:#64748b; font-size:14px; font-weight:600;" id="loaderText">Syncing with HO Database</p>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        
+        let rawRole = (sessionStorage.getItem("designation") || localStorage.getItem("designation") || sessionStorage.getItem("userRole") || localStorage.getItem("userRole") || "").toUpperCase();
+        let rawName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toUpperCase();
+        
+        let isSpoc = false;
+        if (rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.includes("CHANDRA SEKHARA")) {
+            isSpoc = true;
+        }
+
+        let dmName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toLowerCase().trim();
+        let allTaskGroups = {}; let filteredQueue = []; let currentIndex = 0; let todayCalledVLEs = []; let globalSpocLogs = [];
+        let activeCallStartTime = null; 
+        let serverCalledIds = new Set(); // 🌟 NEW STATELESS TRACKING
+
+        window.onload = async () => {
+            if (isSpoc) {
+                document.getElementById("spocScreen").style.display = "block";
+                document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
+                let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                document.getElementById("reportDateText").innerText = "(" + todayStr + ")";
+                await loadSpocDashboard();
+            } else {
+                document.getElementById("dmScreen").style.display = "flex";
+                if(!dmName) { alert("Please login through the dashboard."); document.getElementById("loader").style.display = "none"; return; }
+                await fetchDMData();
+            }
+        };
+
+        function switchSpocView() {
+            let val = document.getElementById('spocViewSelector').value;
+            document.getElementById('spoc-live').style.display = 'none';
+            document.getElementById('spoc-report').style.display = 'none';
+            document.getElementById('spoc-followup').style.display = 'none';
+            document.getElementById(val).style.display = 'block';
+        }
+
+        window.downloadStateHeadReport = function() {
+            let card = document.getElementById("reportCardToCapture");
+            let btn = document.getElementById("dlBtn");
+            let ths = document.querySelectorAll(".report-table th");
+            
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Saving...";
+            btn.disabled = true;
+            
+            ths.forEach(th => th.style.position = "static");
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
+                    let link = document.createElement('a');
+                    let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                    link.download = `State_Head_Report_${todayStr}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                }).catch(err => {
+                    console.error("Screenshot Error:", err);
+                    alert("Failed to save image. Please try again.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                });
+            }, 300);
+        };
+
+        function formatTalkTime(sec) {
+            if(!sec || sec == 0 || isNaN(sec)) return "0s";
+            sec = parseInt(sec);
+            if(sec < 60) return sec + "s";
+            let m = Math.floor(sec / 60); let s = sec % 60;
+            return s > 0 ? `${m}m ${s}s` : `${m}m`;
+        }
+
+        // ==========================================
+        // 🌟 1. DM VIEW LOGIC (STATELESS FIX) 🌟
+        // ==========================================
+        async function fetchDMData() {
+            try {
+                // 🌟 FETCH LOGS & TARGETS SIMULTANEOUSLY FOR BULLETPROOF STATE TRACKING
+                let [targetRes, logsRes] = await Promise.all([
+                    fetch(SCRIPT_URL + "?sheet=App_Targets"),
+                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
+                ]);
+                
+                let targetRaw = await targetRes.json();
+                let logsRaw = await logsRes.json();
+                
+                let today = new Date();
+                let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
+                let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
+                let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
+
+                // 🌟 1. RECONSTRUCT CALLED LIST FROM SERVER LOGS (SURVIVES LOGOUT) 🌟
+                serverCalledIds.clear();
+                todayCalledVLEs = [];
+                for(let i=1; i<logsRaw.length; i++) {
+                    let logDate = logsRaw[i][0];
+                    let logDmName = (logsRaw[i][3] || "").toString().toLowerCase().trim();
+                    if (logDmName === dmName && isToday(logDate)) {
+                        let logCscId = (logsRaw[i][1] || "").toString().trim();
+                        let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
+                        let logRemark = logsRaw[i][4] || "";
+                        
+                        serverCalledIds.add(logCscId + "_" + logService);
+                        todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
+                    }
+                }
+
+                let rawDMTargets = [];
+                let totalDmIrctc = 0; let totalDmRedbus = 0;
+
+                // 🌟 2. BUILD TARGET LIST (DO NOT EXCLUDE CALLED ONES - KEEPS DROPDOWN ALIVE) 🌟
+                for(let i=1; i<targetRaw.length; i++) {
+                    let rDmName = (targetRaw[i][3]||"").toString().toLowerCase().trim();
+                    let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
+                    let cscId = (targetRaw[i][0]||"").toString().trim();
+                    let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
+                    
+                    if(rDmName === dmName && status === "PENDING") {
+                        rawDMTargets.push({
+                            cscId: cscId, name: targetRaw[i][1], mobile: targetRaw[i][2],
+                            taskName: taskNameStr, extraData: targetRaw[i][5] || "0"
+                        });
+                        
+                        // Calculate REAL Pending Count (Excluding what was done today)
+                        if(!serverCalledIds.has(cscId + "_" + taskNameStr)) {
+                            if(taskNameStr === "IRCTC") totalDmIrctc++;
+                            if(taskNameStr === "REDBUS") totalDmRedbus++;
+                        }
+                    }
+                }
+
+                if (totalDmIrctc > 0 || totalDmRedbus > 0) {
+                    document.getElementById("dmTotalIrctc").innerText = totalDmIrctc;
+                    document.getElementById("dmTotalRedbus").innerText = totalDmRedbus;
+                    document.getElementById("dmTotalInactive").innerText = (totalDmIrctc + totalDmRedbus);
+                    document.getElementById("dmOverallStats").style.display = "flex";
+                } else {
+                    document.getElementById("dmOverallStats").style.display = "none";
+                }
+
+                let standardMap = {}; let specialTasks = {};
+                rawDMTargets.forEach(t => {
+                    if (t.taskName === "IRCTC" || t.taskName === "REDBUS") {
+                        if(!standardMap[t.cscId]) {
+                            standardMap[t.cscId] = { ...t };
+                            if(t.taskName === "IRCTC") { standardMap[t.cscId].iTxn = t.extraData; standardMap[t.cscId].rTxn = "0"; } 
+                            else { standardMap[t.cscId].iTxn = "0"; standardMap[t.cscId].rTxn = t.extraData; }
+                        } else {
+                            standardMap[t.cscId].taskName = "BOTH";
+                            if(t.taskName === "IRCTC") standardMap[t.cscId].iTxn = t.extraData;
+                            if(t.taskName === "REDBUS") standardMap[t.cscId].rTxn = t.extraData;
+                        }
+                    } else {
+                        if(!specialTasks[t.taskName]) specialTasks[t.taskName] = [];
+                        specialTasks[t.taskName].push(t);
+                    }
+                });
+
+                let standardFollowUps = Object.values(standardMap);
+                allTaskGroups = { ...specialTasks };
+                if (standardFollowUps.length > 0) { allTaskGroups["STANDARD_TRAVEL"] = standardFollowUps; }
+
+                let selectHtml = `<option value="" disabled selected>Select Task to Start...</option>`;
+                if (Object.keys(allTaskGroups).length === 0) {
+                    document.getElementById("taskSelector").style.display = "none";
+                    document.getElementById("targetLabelBox").style.display = "none";
+                    showSummaryScreen("");
+                } else {
+                    if (allTaskGroups["STANDARD_TRAVEL"]) selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`;
+                    Object.keys(specialTasks).forEach(k => { selectHtml += `<option value="${k}">Special Task: ${k}</option>`; });
+                    document.getElementById("cardStack").innerHTML = `<p style="color:#64748b; font-weight:700; font-size:15px;">Please select a task from the dropdown above.</p>`;
+                }
+                
+                document.getElementById("taskSelector").innerHTML = selectHtml;
+                document.getElementById("loader").style.display = "none";
+
+            } catch(e) {
+                alert("Error connecting to server. Please try again.");
+                document.getElementById("loader").style.display = "none";
+            }
+        }
+
+        window.unlockActions = function(idx, method) {
+            document.getElementById(`lock-msg-${idx}`).style.display = "none";
+            document.getElementById(`action-area-${idx}`).style.display = "block";
+            activeCallStartTime = new Date(); 
+        };
+
+        window.handleRemarkChange = function(sel, idx) {
+            let inputBox = document.getElementById(`otherRemark-${idx}`);
+            if(sel.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); } 
+            else { inputBox.style.display = "none"; inputBox.value = ""; }
+        };
+
+        function filterCardsByTask() {
+            let selectedTask = document.getElementById("taskSelector").value;
+            let fullList = allTaskGroups[selectedTask] || [];
+            
+            // 🌟 DETERMINISTIC QUEUE: Always grabs the exact same X users for the day 🌟
+            let today = new Date().getDay(); 
+            let limit = (today === 5) ? 20 : 8; 
+            let baseQueue = fullList.slice(0, limit);
+
+            // 🌟 FILTER COMPLETED ONES ON THE FLY 🌟
+            filteredQueue = baseQueue.filter(item => {
+                if(item.taskName === "BOTH") {
+                    return !serverCalledIds.has(item.cscId + "_IRCTC") && !serverCalledIds.has(item.cscId + "_REDBUS");
+                } else {
+                    return !serverCalledIds.has(item.cscId + "_" + item.taskName);
+                }
+            });
+
+            if (filteredQueue.length === 0) { showSummaryScreen(selectedTask); return; }
+            
+            currentIndex = 0;
+            document.getElementById("dmProgress").style.display = "block";
+            document.getElementById("cardStack").style.display = "flex";
+            document.getElementById("summaryView").style.display = "none";
+            document.getElementById("targetLabelBox").style.display = "block";
+            renderCards(); updateUI();
+        }
+
+        function renderCards() {
+            let html = ""; let myName = localStorage.getItem("userName") || "State Office";
+            filteredQueue.forEach((v, i) => {
+                let cleanMob = v.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+                let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
+                let headerClass = isTravel ? (v.taskName === "BOTH" ? "bg-both" : (v.taskName === "IRCTC" ? "bg-irctc" : "bg-redbus")) : "bg-special";
+                let emoji = isTravel ? (v.taskName === "BOTH" ? "🤝" : (v.taskName === "IRCTC" ? "🚆" : "🚌")) : "⚡";
+                let titleText = isTravel ? (v.taskName === "BOTH" ? "IRCTC & REDBUS COMBINED" : `${v.taskName} FOLLOW-UP`) : v.taskName;
+                
+                let txnBoxHtml = ""; let msg = "";
+                if (isTravel) {
+                    if (v.taskName === "BOTH") {
+                        txnBoxHtml = `<div class="txn-badge"><span>🚆 IRCTC Last Year:</span> <span>${v.iTxn}</span></div><div class="txn-badge" style="margin-top:-10px;"><span>🚌 REDBUS Last Year:</span> <span>${v.rTxn}</span></div>`;
+                        msg = `Dear ${v.name} గారు,\n\nగత ఫైనాన్షియల్ ఇయర్‌ లో మీరు *IRCTC* & *REDBUS* ద్వారా అద్భుతమైన ప్రదర్శన కనబరిచారు. కానీ ఈ ఏడాది మీరు ఇంకా యాక్టివేట్ కాలేదు. దయచేసి వెంటనే ఒక టికెట్ బుక్ చేసి మీ ID ను యాక్టివ్‌గా ఉంచుకోండి.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                    } else {
+                        txnBoxHtml = `<div class="txn-badge"><span>📊 Last Year Txns:</span> <span>${v.extraData}</span></div>`;
+                        msg = `Dear ${v.name} గారు,\n\nగత ఏడాది మీరు *${v.taskName}* లో మంచి పెర్ఫార్మన్స్ ఇచ్చారు. కానీ ఈ ఏడాది ఇంకా సర్వీస్ వాడలేదు. దయచేసి వెంటనే పని మొదలుపెట్టగలరు.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                    }
+                } else {
+                    txnBoxHtml = `<div class="txn-badge"><span>📌 Target Data:</span> <span style="color:#b91c1c;">${v.extraData}</span></div>`;
+                    msg = `Dear ${v.name} గారు,\n\nThis is regarding the special task: *${v.taskName}*. దయచేసి ఈ టాస్క్ ని పూర్తి చేయగలరు.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                }
+                let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+                html += `
+                <div class="vle-card" id="card-${i}">
+                    <div class="vle-card-header ${headerClass}">${emoji} ${titleText}</div>
+                    <div class="vle-info">
+                        <div class="vle-details">
+                            <h2>${v.name}</h2>
+                            <p>CSC ID: ${v.cscId}</p>
+                            ${txnBoxHtml}
+                            <div class="action-btn-group">
+                                <a href="tel:${v.mobile}" class="call-btn" onclick="unlockActions(${i}, 'Call')">📞 Call</a>
+                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp')" target="_blank">💬 WhatsApp</a>
+                            </div>
+                        </div>
+                        <div id="lock-msg-${i}" class="lock-message">🔒 Tap Call or WhatsApp to unlock Submit</div>
+                        <div class="vle-action" id="action-area-${i}" style="display:none;">
+                            <select id="remark-${i}" onchange="handleRemarkChange(this, ${i})">
+                                <option value="" disabled selected>Select Call Outcome...</option>
+                                <option value="Activated">Activated</option>
+                                <option value="Promised to do Today / Tomorrow">Promised to do Today / Tomorrow</option>
+                                <option value="Did not lift / Not Reachable">Did not lift / Not Reachable</option>
+                                <option value="DSP e-KYC Problem">DSP e-KYC Problem</option>
+                                <option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option>
+                                <option value="ID Recovery Pending">ID Recovery Pending</option>
+                                <option value="Password Reset / Login Issue">Password Reset / Login Issue</option>
+                                <option value="Mobile No change">Mobile No change</option>
+                                <option value="Others">Others (Type reason below)</option>
+                            </select>
+                            <input type="text" id="otherRemark-${i}" class="other-input-box" placeholder="Type actual reason here...">
+                            <button class="submit-btn" onclick="submitCall(${i})">Submit & Next</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById("cardStack").innerHTML = html;
+        }
+
+        function updateUI() {
+            if(filteredQueue.length === 0) return;
+            let percent = (currentIndex / filteredQueue.length) * 100; 
+            document.getElementById("progressBar").style.width = `${percent}%`;
+            document.getElementById("pendingCount").innerText = (filteredQueue.length - currentIndex);
+            for(let i=0; i<filteredQueue.length; i++) { 
+                let c = document.getElementById(`card-${i}`); if(!c) continue; 
+                if(i < currentIndex) c.className = "vle-card card-done"; 
+                else if(i === currentIndex) c.className = "vle-card card-active"; 
+                else if(i === currentIndex + 1) c.className = "vle-card card-next"; 
+                else c.className = "vle-card"; 
+            }
+            activeCallStartTime = null;
+        }
+
+        function submitCall(idx) {
+            let rmk = document.getElementById(`remark-${idx}`).value; if(!rmk) { alert("Please select an outcome reason!"); return; }
+            if(rmk === "Others") {
+                let otherVal = document.getElementById(`otherRemark-${idx}`).value.trim();
+                if(!otherVal) { alert("Please type the actual reason."); return; }
+                rmk = "Others: " + otherVal;
+            }
+            let btn = event.target; btn.innerText = "⏳ Saving..."; btn.disabled = true; let v = filteredQueue[idx];
+            let dur = activeCallStartTime ? Math.round((new Date() - activeCallStartTime) / 1000) : 12;
+
+            // Update local memory and global tracker simultaneously
+            if(v.taskName === "BOTH") {
+                serverCalledIds.add(v.cscId + "_IRCTC");
+                serverCalledIds.add(v.cscId + "_REDBUS");
+            } else {
+                serverCalledIds.add(v.cscId + "_" + v.taskName);
+            }
+            todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, task: v.taskName, remark: rmk });
+
+            // Update stats dynamically if activated
+            if(rmk.includes("Activated") || rmk.includes("Withdrawn")) {
+                let dI = parseInt(document.getElementById("dmTotalIrctc").innerText || 0); let dR = parseInt(document.getElementById("dmTotalRedbus").innerText || 0);
+                if(v.taskName === "BOTH" || v.taskName === "IRCTC") dI = Math.max(0, dI - 1);
+                if(v.taskName === "BOTH" || v.taskName === "REDBUS") dR = Math.max(0, dR - 1);
+                if(document.getElementById("dmTotalIrctc")) document.getElementById("dmTotalIrctc").innerText = dI; 
+                if(document.getElementById("dmTotalRedbus")) document.getElementById("dmTotalRedbus").innerText = dR;
+                if(document.getElementById("dmTotalInactive")) document.getElementById("dmTotalInactive").innerText = (dI + dR);
+            }
+
+            // Sync with Server silently
+            if(v.taskName === "BOTH") {
+                fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "IRCTC", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
+                setTimeout(() => { fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "REDBUS", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) }); }, 1500);
+            } else {
+                fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: v.taskName, dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
+            }
+
+            setTimeout(() => { currentIndex++; if(currentIndex < filteredQueue.length) { updateUI(); } else { let selectedTask = document.getElementById("taskSelector").value; showSummaryScreen(selectedTask); } }, 600); 
+        }
+
+        function showSummaryScreen(selectedTask) {
+            document.getElementById("dmProgress").style.display = "none"; document.getElementById("cardStack").style.display = "none";
+            document.getElementById("targetLabelBox").style.display = "none"; document.getElementById("summaryView").style.display = "block";
+            let taskCalledVLEs = todayCalledVLEs;
+            if (selectedTask) { taskCalledVLEs = todayCalledVLEs.filter(t => selectedTask === "STANDARD_TRAVEL" ? (t.task === "IRCTC" || t.task === "REDBUS" || t.task === "BOTH") : t.task === selectedTask); }
+            if(taskCalledVLEs.length === 0) { document.getElementById("summaryListContainer").innerHTML = `<p style="text-align:center; color:#64748b; font-weight:700;">No tasks completed today yet.</p>`; return; }
+            let html = "";
+            taskCalledVLEs.forEach(c => {
+                let isActivated = c.remark.includes("Activated");
+                let isRed = c.remark.includes("Not Reachable") || c.remark.includes("lift") || c.remark.includes("Closed") || c.remark.includes("Problem") || c.remark.includes("Pending") || c.remark.includes("Issue") || c.remark.includes("change");
+                let badgeColor = isActivated ? "background:#dcfce7; color:#166534;" : (isRed ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
+                
+                // Show name safely
+                let displayName = c.name && c.name.length > 3 ? c.name : "VLE Action Tracked";
+
+                html += `<div class="summary-card"><div class="summary-info"><h4>${displayName}</h4><p>${c.task} Follow-up</p><span class="summary-remark" style="${badgeColor}">${c.remark}</span></div></div>`;
+            });
+            document.getElementById("summaryListContainer").innerHTML = html;
+        }
+
+        // ==========================================
+        // 🌟 2. SPOC MONITORING VIEW 🌟
+        // ==========================================
+        async function loadSpocDashboard() {
+            try {
+                let [logsRes, targetsRes, usersRes] = await Promise.all([
+                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs"), fetch(SCRIPT_URL + "?sheet=App_Targets"), fetch(SCRIPT_URL + "?sheet=Users")
+                ]);
+                let logs = await logsRes.json(); let targets = await targetsRes.json(); let users = await usersRes.json();
+                let today = new Date();
+                let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
+                let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
+                let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
+
+                let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
+
+                users.forEach(u => { 
+                    if((u[2]||"").toLowerCase().includes("manager") && u[0]) { 
+                        let dmKey = u[5].trim();
+                        uniqueDMs[dmKey] = { name: dmKey, mobile: u[0], irctcTotal: 0, redbusTotal: 0, irctcPending: 0, redbusPending: 0, irctcAct: 0, redbusAct: 0, calledToday: 0, totalDuration: 0 }; 
+                    } 
+                });
+
+                let spocIrctc = 0; let spocRedbus = 0; let activatedVLEs = new Set();
+                for(let i=1; i<logs.length; i++) { if((logs[i][4] || "").includes("Activated")) activatedVLEs.add(logs[i][1]); }
+
+                for(let i=1; i<targets.length; i++) {
+                    let rDmName = (targets[i][3]||"").trim(); let srv = (targets[i][4]||"").trim().toUpperCase(); let cscId = targets[i][0];
+                    let isReallyActivated = activatedVLEs.has(cscId);
+                    if(uniqueDMs[rDmName] && (srv === "IRCTC" || srv === "REDBUS")) {
+                        if(srv === "IRCTC") { uniqueDMs[rDmName].irctcTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].irctcPending++; spocIrctc++; } else { uniqueDMs[rDmName].irctcAct++; } }
+                        if(srv === "REDBUS") { uniqueDMs[rDmName].redbusTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].redbusPending++; spocRedbus++; } else { uniqueDMs[rDmName].redbusAct++; } }
+                    }
+                }
+
+                for(let i = logs.length - 1; i >= 1; i--) {
+                    if(isToday(logs[i][0])) {
+                        totalCallsToday++;
+                        let logDmName = (logs[i][3]||"").trim();
+                        let timeStr = String(logs[i][0]).split(" ")[1] || "Just now";
+                        let isActivated = logs[i][4].includes("Activated");
+                        let isRed = logs[i][4].includes("Not Reachable") || logs[i][4].includes("lift") || logs[i][4].includes("Closed") || logs[i][4].includes("Problem") || logs[i][4].includes("Pending") || logs[i][4].includes("Issue") || logs[i][4].includes("change");
+                        let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
+                        
+                        let durationSec = parseInt(logs[i][5] || 0);
+
+                        if(uniqueDMs[logDmName]) {
+                            uniqueDMs[logDmName].calledToday++;
+                            uniqueDMs[logDmName].totalDuration += durationSec; 
+                            if(!activeDMsMap[logDmName]) {
+                                activeDMsMap[logDmName] = { name: logDmName, calls: 0, time: timeStr, iT: uniqueDMs[logDmName].irctcTotal, rT: uniqueDMs[logDmName].redbusTotal, iP: uniqueDMs[logDmName].irctcPending, rP: uniqueDMs[logDmName].redbusPending };
+                            }
+                            activeDMsMap[logDmName].calls++;
+                        }
+                        let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
+                        
+                        globalSpocLogs.push({
+                            dmName: logDmName, vleName: logs[i][1], service: logs[i][2],
+                            time: timeStr, rmkBadge: rmkBadge, rmk: logs[i][4], actionBtns: actionBtns,
+                            durationText: formatTalkTime(durationSec) 
+                        });
+                    }
+                }
+
+                let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs</option>`;
+                Object.values(activeDMsMap).forEach(adm => {
+                    filterHtml += `<option value="${adm.name}">${adm.name}</option>`;
+                    let iD = adm.iT - adm.iP; let rD = adm.rT - adm.rP;
+                    activeDMsHtml += `<div class="dm-item"><div class="dm-info"><h4>${adm.name}</h4><span class="tgt-badge tgt-irctc">IRCTC: ${iD}/${adm.iT}</span><span class="tgt-badge tgt-redbus">REDBUS: ${rD}/${adm.rT}</span><div class="dm-calls-text">Calls Today: ${adm.calls}</div><div class="dm-login-text">Logged in: ${adm.time}</div></div><span class="dm-status">Online</span></div>`;
+                });
+
+                document.getElementById("spocFeedFilter").innerHTML = filterHtml;
+                document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs are online yet.</p>";
+                renderSpocFeed("ALL"); 
+
+                document.getElementById("spocCallsToday").innerText = totalCallsToday;
+                document.getElementById("spocActiveDMs").innerText = Object.keys(activeDMsMap).length;
+                document.getElementById("spocIrctcPending").innerText = spocIrctc;
+                document.getElementById("spocRedbusPending").innerText = spocRedbus;
+                
+                let tableHtml = "";
+                let sno = 1; let isFriday = new Date().getDay() === 5; let iLimit = isFriday ? 20 : 8; 
+
+                Object.values(uniqueDMs).forEach(dm => {
+                    let tTotal = dm.irctcTotal + dm.redbusTotal;
+                    if(tTotal > 0) {
+                        let aTotal = dm.irctcAct + dm.redbusAct; let pTotal = dm.irctcPending + dm.redbusPending;
+                        let assigned = Math.min(pTotal, iLimit); let attemptColor = dm.calledToday > 0 ? "#dc2626" : "#0f172a"; 
+                        let avgSec = dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0;
+                        let avgTimeText = formatTalkTime(avgSec);
+
+                        tableHtml += `<tr>
+                            <td>${sno++}</td>
+                            <td style="font-weight:800;">${dm.name}</td>
+                            <td>${tTotal}<span class="sub-stat">(I:${dm.irctcTotal}, R:${dm.redbusTotal})</span></td>
+                            <td style="color:#16a34a;">${aTotal}<span class="sub-stat">(I:${dm.irctcAct}, R:${dm.redbusAct})</span></td>
+                            <td style="color:#dc2626;">${pTotal}</td>
+                            <td style="color:#2563eb;">${assigned}</td>
+                            <td style="color:${attemptColor}; font-weight:900;">${dm.calledToday}</td>
+                            <td style="color:#10b981; font-weight:800;">${avgTimeText}</td>
+                        </tr>`;
+                    }
+                });
+                document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>`;
+
+                let followUpHtml = "";
+                let hour = new Date().getHours();
+                let greeting = hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening");
+
+                Object.values(uniqueDMs).forEach(dm => {
+                    let pTotal = dm.irctcPending + dm.redbusPending;
+                    if(pTotal > 0) {
+                        let assigned = Math.min(pTotal, iLimit);
+                        let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${pTotal}* pending Inactive VLEs (*IRCTC (${dm.irctcPending})* & *RedBus (${dm.redbusPending})*) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
+                        followUpHtml += `<div class="dm-action-item"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>${dm.name}</h4><span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px;">${pTotal} Pending</span></div><p>Total: ${dm.irctcTotal + dm.redbusTotal} | Assigned Today: ${assigned} | Called: <b style="color:${dm.calledToday!=='0'?'#10b981':'#ef4444'};">${dm.calledToday}</b></p><div class="action-btn-group" style="margin-top:15px; margin-bottom:0;"><a href="tel:${dm.mobile}" class="call-btn" style="padding:10px; font-size:13px; text-align:center; color:#166534; background:#dcfce7; border-color:#bbf7d0;">📞 Call</a><a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(waMsg)}" class="wa-btn" style="padding:10px; font-size:13px; text-align:center;">💬 WhatsApp</a></div></div>`;
+                    }
+                });
+                document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
+                document.getElementById("loader").style.display = "none";
+            } catch(e) { document.getElementById("loader").style.display = "none"; alert("Error loading SPOC Dashboard"); }
+        }
+
+        window.renderSpocFeed = function(filterVal) {
+            let feedHtml = "";
+            globalSpocLogs.forEach(log => {
+                if(filterVal === "ALL" || log.dmName === filterVal) {
+                    feedHtml += `<div class="live-feed-item"><div><div class="live-feed-header"><h4>${log.vleName} <span style="font-size:11px; color:#64748b;">(${log.service})</span></h4><span style="font-size:11px; color:#64748b;">🕒 ${log.time}</span></div><span class="feed-dm">👤 ${log.dmName}</span><br><span class="feed-rmk" style="${log.rmkBadge}">${log.rmk}</span><div class="feed-duration">⏱️ Talk Time: ${log.durationText}</div></div>${log.actionBtns}</div>`;
+                }
+            });
+            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px;'>No calls found.</p>";
+        };
+        window.filterSpocFeed = function() { let val = document.getElementById("spocFeedFilter").value; renderSpocFeed(val); };
+    </script>
+</body>
+</html>
