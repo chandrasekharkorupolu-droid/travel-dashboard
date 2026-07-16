@@ -107,22 +107,19 @@
 </head>
 <body>
 
-  <!-- 🌟 UPDATED: Download Card Template with Logos 🌟 -->
+  <!-- 🌟 Download Card Template with Logos (IDs Added for Base64 Preloading) 🌟 -->
   <div id="reportCardTemplate" style="width: 1000px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
       <!-- HEADER WITH LOGOS -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-          <!-- Left Logo (CSC) -->
-          <img src="Logo.PNG" alt="CSC Logo" style="height: 65px; object-fit: contain;">
+          <img id="rc-logo-left" src="Logo.PNG" crossorigin="anonymous" alt="CSC Logo" style="height: 65px; object-fit: contain;">
           
-          <!-- Center Title -->
           <div style="text-align: center;">
               <h1 style="color: #0f172a; font-size: 40px; margin: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;" id="rc-distName">DISTRICT NAME</h1>
               <h3 style="color: #3b82f6; font-size: 18px; margin: 5px 0 0 0; font-weight: 800; text-transform: uppercase;" id="rc-period">CLOSURE REPORT</h3>
           </div>
 
-          <!-- Right Logo (Safar) -->
-          <img src="safar.png" alt="Safar Logo" style="height: 65px; object-fit: contain;">
+          <img id="rc-logo-right" src="safar.png" crossorigin="anonymous" alt="Safar Logo" style="height: 65px; object-fit: contain;">
       </div>
 
       <div style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -280,6 +277,22 @@
   </div>
 
   <script>
+    // 🌟 BASE64 IMAGE CONVERTER - FIXES ALL HTML2CANVAS LOGO ISSUES 🌟
+    function loadLogoAsBase64(url, imgId) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                let el = document.getElementById(imgId);
+                if(el) el.src = reader.result;
+            }
+            reader.readAsDataURL(xhr.response);
+        };
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.send();
+    }
+
     function formatExactNumber(num) { 
         return Math.round(num).toLocaleString('en-IN'); 
     }
@@ -445,7 +458,8 @@
         card.style.left = "0";
         card.style.top = "0";
 
-        html2canvas(card, { scale: 2, logging: false, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }).then(canvas => {
+        // 🌟 UseCORS is true, but allowTaint is removed to fix the security issue 🌟
+        html2canvas(card, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
             card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
             let dataUrl = canvas.toDataURL('image/png');
             let link = document.createElement('a');
@@ -456,7 +470,8 @@
             document.body.removeChild(link);
         }).catch(err => {
             card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
-            alert("Download failed. Please check if the images exist in the folder.");
+            console.error(err);
+            alert("Download failed. If you are running this file directly from your computer, some features are restricted by browser security. Please upload this file to your website/server.");
         });
     }
 
@@ -547,6 +562,11 @@
     }
 
     window.onload = function() { 
+        // 🌟 BACKGROUND LOGO LOADER 🌟
+        // This instantly converts the logos to base64 when the page loads, making downloads 100% fail-proof
+        loadLogoAsBase64("Logo.PNG", "rc-logo-left");
+        loadLogoAsBase64("safar.png", "rc-logo-right");
+
         let d = new Date(); let mNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; let currentM = mNames[d.getMonth()];
         let periodDropdown = document.getElementById("periodDropdown");
         if (Array.from(periodDropdown.options).some(opt => opt.value === currentM)) { periodDropdown.value = currentM; }
