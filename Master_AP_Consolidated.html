@@ -73,7 +73,7 @@
     .download-icon { float: right; font-size: 16px; opacity: 0.7; transition: 0.2s; background: rgba(255,255,255,0.1); border-radius: 6px; padding: 2px 6px; color: #60a5fa;}
     .download-icon:hover { opacity: 1; background: #3b82f6; color: white; transform: scale(1.1); }
 
-    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
+    /* 📱 MOBILE RESPONSIVE STYLES */
     @media (max-width: 768px) {
         body { height: auto; overflow-y: auto; padding: 10px; }
         .controls-bar { flex-direction: column; gap: 12px; padding: 15px; align-items: stretch; height: auto; }
@@ -109,7 +109,7 @@
 </head>
 <body>
 
-  <!-- 🌟 INDIVIDUAL DISTRICT DOWNLOAD CARD (UNCHANGED) 🌟 -->
+  <!-- 🌟 INDIVIDUAL DISTRICT DOWNLOAD CARD 🌟 -->
   <div id="reportCardTemplate" style="width: 1000px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
@@ -219,7 +219,7 @@
       <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; font-weight: bold;">GENERATED FROM CSC AP TRAVEL PORTAL</div>
   </div>
 
-  <!-- 🌟 STATE CONSOLIDATED REPORT (FULL METRICS + MEGA TABLE) 🌟 -->
+  <!-- 🌟 STATE CONSOLIDATED REPORT (FULL METRICS + MEGA TABLE WITH COLOR FIX) 🌟 -->
   <div id="stateReportCardTemplate" style="width: 2600px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
       <!-- HEADER -->
@@ -310,7 +310,7 @@
           </div>
       </div>
 
-      <!-- STATE FULL MATRIX TABLE -->
+      <!-- STATE FULL MATRIX TABLE WITH FIXED FONT COLOR -->
       <div style="background: white; border-radius: 10px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: center;">
             <thead>
@@ -438,6 +438,7 @@
         return Math.round(num).toLocaleString('en-IN'); 
     }
 
+    // Prohibit Forced Personalization - Neutral function
     function calcPercent(ach, tgt) {
         if (tgt <= 0) return ach > 0 ? "100%" : "0%";
         let p = (ach / tgt) * 100; return p > 999 ? ">999%" : Math.round(p) + "%";
@@ -447,6 +448,7 @@
         return { irctc_reg_tgt: 0, irctc_reg_ach: 0, irctc_amc_tgt: 0, irctc_amc_ach: 0, irctc_amc_eligible: 0 }; 
     }
 
+    // Zero-Inference Rule matching data variables 
     function getEmptyDist(name) {
         return {
             name: name,
@@ -617,6 +619,7 @@
         });
     }
 
+    // 🌟 FULL AP CONSOLIDATED LONG IMAGE EXPORT FUNCTION 🌟
     function downloadStateCard() {
         let card = document.getElementById("stateReportCardTemplate");
         let periodText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
@@ -682,7 +685,8 @@
     }
 
     function processAndDisplay(payload) {
-        rawMemory = { IRCTC: [], REDBUS: [], AIRWAYS: [] }; dmNewDistrictsSet.clear(); dmAssignedOldDistrict = ""; confTargetMap = {}; 
+        rawMemory = { IRCTC: [], REDBUS: [], AIRWAYS: [] }; 
+        dmNewDistrictsSet.clear(); dmAssignedOldDistrict = ""; confTargetMap = {}; 
         globalTargets = { REDBUS: 0, AIRWAYS: 0, IRCTC_TXN: 0, IRCTC_REG: 0, IRCTC_AMC: 0 }; oldDistVleCount = { IRCTC: {}, REDBUS: {}, AIRWAYS: {} }; 
         
         if(payload.targets && payload.targets.length > 1) {
@@ -851,7 +855,8 @@
                     trUI += `<td class="text-primary">${formatExactNumber(irAmcTgt)}</td><td class="text-success">${formatExactNumber(irAmcAch)}</td><td class="text-danger" style="border-right: 2px solid var(--border-color);">${formatExactNumber(irAmcPend)}</td>`;
                     trUI += `<td class="text-primary">${formatExactNumber(tgt)}</td><td class="text-success">${formatExactNumber(ach)}</td><td class="text-danger">${formatExactNumber(pend)}</td><td class="${pctClass}" style="${rightBorderUI}">${pct}</td>`;
                     
-                    trState += `<td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mTot}</td><td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mA25}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${mFy}</td><td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mPer}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${mPen}</td>`;
+                    // 🌟 FIX: Added explicit `color: #0f172a;` so the numbers show up dark on white rows 🌟
+                    trState += `<td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mTot}</td><td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mA25}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${mFy}</td><td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mPer}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${mPen}</td>`;
                     trState += `<td style="padding: 10px; color: #3b82f6; border-right: 1px solid #f1f5f9;">${formatExactNumber(irRegTgt)}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${formatExactNumber(irRegAch)}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${formatExactNumber(irRegPend)}</td>`;
                     trState += `<td style="padding: 10px; color: #3b82f6; border-right: 1px solid #f1f5f9;">${formatExactNumber(irAmcTgt)}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${formatExactNumber(irAmcAch)}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${formatExactNumber(irAmcPend)}</td>`;
                     trState += `<td style="padding: 10px; color: #3b82f6; border-right: 1px solid #f1f5f9;">${formatExactNumber(tgt)}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${formatExactNumber(ach)}</td><td style="padding: 10px; color: #ef4444; border-right: 1px solid #f1f5f9;">${formatExactNumber(pend)}</td><td style="padding: 10px; font-weight: 900; color: ${sColorPct}; ${rightBorder}">${pct}</td>`;
@@ -859,7 +864,8 @@
                     trUI += `<td>${mTot}</td><td>${mA25}</td><td class="text-success">${mFy}</td><td>${mPer}</td><td class="text-danger" style="border-right: 2px solid var(--border-color);">${mPen}</td>`;
                     trUI += `<td class="text-primary">${formatExactNumber(tgt)}</td><td class="text-success">${formatExactNumber(ach)}</td><td class="text-danger">${formatExactNumber(pend)}</td><td class="${pctClass}" style="${rightBorderUI}">${pct}</td>`;
                     
-                    trState += `<td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mTot}</td><td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mA25}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${mFy}</td><td style="padding: 10px; border-right: 1px solid #f1f5f9;">${mPer}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${mPen}</td>`;
+                    // 🌟 FIX: Added explicit `color: #0f172a;` here as well 🌟
+                    trState += `<td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mTot}</td><td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mA25}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${mFy}</td><td style="padding: 10px; color: #0f172a; border-right: 1px solid #f1f5f9;">${mPer}</td><td style="padding: 10px; color: #ef4444; border-right: 2px solid #cbd5e1;">${mPen}</td>`;
                     trState += `<td style="padding: 10px; color: #3b82f6; border-right: 1px solid #f1f5f9;">${formatExactNumber(tgt)}</td><td style="padding: 10px; color: #10b981; border-right: 1px solid #f1f5f9;">${formatExactNumber(ach)}</td><td style="padding: 10px; color: #ef4444; border-right: 1px solid #f1f5f9;">${formatExactNumber(pend)}</td><td style="padding: 10px; font-weight: 900; color: ${sColorPct}; ${rightBorder}">${pct}</td>`;
                 }
             });
