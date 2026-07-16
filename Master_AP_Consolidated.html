@@ -24,9 +24,11 @@
     .filter-group { display: flex; align-items: center; gap: 12px; }
     .dist-select { border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 15px; font-size: 13px; font-weight: bold; outline: none; background-color: #0f172a; color: #f1f5f9; cursor: pointer;}
     .period-select { border: 2px solid #3b82f6; background-color: #1e3a8a; }
-    .btn-custom { font-size: 13px; font-weight: 800; padding: 8px 15px; border-radius: 6px; border: none; color: white; cursor: pointer;}
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 8px 15px; border-radius: 6px; border: none; color: white; cursor: pointer; transition: 0.2s;}
+    .btn-custom:hover { transform: translateY(-2px); }
     .btn-refresh { background: linear-gradient(135deg, #2563eb, #3b82f6); } 
     .btn-export { background: linear-gradient(135deg, #059669, #10b981); }
+    .btn-state-img { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
 
     .kpi-section { display: flex; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
     .kpi-block { flex: 1; border-radius: 10px; padding: 12px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);}
@@ -95,19 +97,10 @@
         .td-dist { left: 0 !important; min-width: 110px; font-size: 12px; }
     }
   </style>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
-  <!-- 🌟 Download Card Template with Logos 🌟 -->
+  <!-- 🌟 INDIVIDUAL DISTRICT DOWNLOAD CARD 🌟 -->
   <div id="reportCardTemplate" style="width: 1000px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
       <!-- HEADER WITH LOGOS -->
@@ -223,6 +216,79 @@
       <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; font-weight: bold;">GENERATED FROM CSC AP TRAVEL PORTAL</div>
   </div>
 
+  <!-- 🌟 NEW: ALL DISTRICTS STATE CONSOLIDATED REPORT TEMPLATE (LONG IMAGE) 🌟 -->
+  <div id="stateReportCardTemplate" style="width: 1200px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
+      
+      <!-- HEADER WITH LOGOS -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+          <img id="rc-state-logo-left" src="logo.png" alt="CSC Logo" style="height: 65px; object-fit: contain;">
+          
+          <div style="text-align: center;">
+              <h1 style="color: #0f172a; font-size: 36px; margin: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">ANDHRA PRADESH - STATE OVERALL</h1>
+              <h3 style="color: #3b82f6; font-size: 18px; margin: 5px 0 0 0; font-weight: 800; text-transform: uppercase;" id="state-rc-period">CONSOLIDATED REPORT</h3>
+          </div>
+
+          <img id="rc-state-logo-right" src="Safar.png" alt="Safar Logo" style="height: 65px; object-fit: contain;">
+      </div>
+
+      <!-- STATE GRAND TOTALS -->
+      <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+          <!-- IRCTC TOTAL -->
+          <div style="flex: 1; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align:center;">
+              <div style="font-size: 16px; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">🚆 IRCTC STATE TOTAL</div>
+              <div style="display: flex; justify-content: space-around;">
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">TARGET</span><br><strong style="font-size: 22px;" id="state-ir-tgt">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">ACHIEVED</span><br><strong style="font-size: 22px; color: #a7f3d0;" id="state-ir-ach">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">PENDING</span><br><strong style="font-size: 22px; color: #fde047;" id="state-ir-pend">0</strong></div>
+              </div>
+          </div>
+          <!-- REDBUS TOTAL -->
+          <div style="flex: 1; background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align:center;">
+              <div style="font-size: 16px; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">🚌 REDBUS STATE TOTAL</div>
+              <div style="display: flex; justify-content: space-around;">
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">TARGET</span><br><strong style="font-size: 22px;" id="state-rb-tgt">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">ACHIEVED</span><br><strong style="font-size: 22px; color: #a7f3d0;" id="state-rb-ach">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">PENDING</span><br><strong style="font-size: 22px; color: #fde047;" id="state-rb-pend">0</strong></div>
+              </div>
+          </div>
+          <!-- AIRWAYS TOTAL -->
+          <div style="flex: 1; background: linear-gradient(135deg, #075985 0%, #0284c7 100%); border-radius: 12px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align:center;">
+              <div style="font-size: 16px; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">✈️ AIRWAYS STATE TOTAL</div>
+              <div style="display: flex; justify-content: space-around;">
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">TARGET</span><br><strong style="font-size: 22px;" id="state-aw-tgt">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">ACHIEVED</span><br><strong style="font-size: 22px; color: #a7f3d0;" id="state-aw-ach">0</strong></div>
+                  <div><span style="font-size: 11px; font-weight: bold; opacity: 0.8;">PENDING</span><br><strong style="font-size: 22px; color: #fde047;" id="state-aw-pend">0</strong></div>
+              </div>
+          </div>
+      </div>
+
+      <!-- FULL TABLE FOR ALL DISTRICTS -->
+      <div style="background: white; border-radius: 10px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center;">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="background:#0f172a; color:white; padding: 12px; border-right: 2px solid #334155; text-align: left; padding-left: 20px;">DISTRICT NAME</th>
+                    <th colspan="4" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 10px; border-right: 2px solid #334155;">🚆 IRCTC (TXNS)</th>
+                    <th colspan="4" style="background: linear-gradient(135deg, #7f1d1d, #dc2626); color: white; padding: 10px; border-right: 2px solid #334155;">🚌 REDBUS (TXNS)</th>
+                    <th colspan="4" style="background: linear-gradient(135deg, #075985, #0284c7); color: white; padding: 10px;">✈️ AIRWAYS (TXNS)</th>
+                </tr>
+                <tr style="background:#f8fafc; color:#475569; font-size: 11px; font-weight: 900; text-transform: uppercase;">
+                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#3b82f6;">Target</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#10b981;">Achieved</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#ef4444;">Pending</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 2px solid #94a3b8; color:#f59e0b;">% Ach</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#3b82f6;">Target</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#10b981;">Achieved</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#ef4444;">Pending</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 2px solid #94a3b8; color:#f59e0b;">% Ach</th>
+                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#3b82f6;">Target</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#10b981;">Achieved</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #e2e8f0; color:#ef4444;">Pending</th><th style="padding: 10px; border-bottom: 2px solid #cbd5e1; color:#f59e0b;">% Ach</th>
+                </tr>
+            </thead>
+            <tbody id="stateReportTableBody">
+                <!-- Rows will be injected here dynamically -->
+            </tbody>
+            <tfoot id="stateReportTableFoot">
+                <!-- Footer will be injected here dynamically -->
+            </tfoot>
+        </table>
+      </div>
+      <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; font-weight: bold;">GENERATED FROM CSC AP TRAVEL PORTAL</div>
+  </div>
+
 
   <div class="controls-bar">
     <div class="title-sec">🏢 AP TRAVEL DASHBOARD <span id="filterBadge" class="filter-badge" onclick="clearDistrictFilter()">FILTERED (CLICK TO CLEAR) ❌</span></div>
@@ -232,6 +298,10 @@
           <option value="APR">APR-2026</option><option value="MAY">MAY-2026</option><option value="JUN">JUN-2026</option><option value="JUL">JUL-2026</option><option value="AUG">AUG-2026</option><option value="SEP">SEP-2026</option><option value="OCT">OCT-2026</option><option value="NOV">NOV-2026</option><option value="DEC">DEC-2026</option><option value="JAN">JAN-2027</option><option value="FEB">FEB-2027</option><option value="MAR">MAR-2027</option><option value="Q1">Q1 (Apr-Jun)</option><option value="Q2">Q2 (Jul-Sep)</option><option value="Q3">Q3 (Oct-Dec)</option><option value="Q4">Q4 (Jan-Mar)</option><option value="H1">H1 (Half Yearly)</option><option value="FY" selected>FY 26-27 (Yearly)</option>
       </select>
       <button class="btn-custom btn-refresh" onclick="fetchData(true)">🔄 Sync Live Data</button>
+      
+      <!-- 🌟 NEW BUTTON FOR STATE LONG IMAGE 🌟 -->
+      <button class="btn-custom btn-state-img" onclick="downloadStateCard()">📸 State Image</button>
+      
       <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Export Excel</button>
     </div>
   </div>
@@ -303,7 +373,6 @@
         let p = (ach / tgt) * 100; return p > 999 ? ">999%" : Math.round(p) + "%";
     }
 
-    // 🌟 Added irctc_amc_eligible field here 🌟
     function getEmptySubStats() { 
         return { irctc_reg_tgt: 0, irctc_reg_ach: 0, irctc_amc_tgt: 0, irctc_amc_ach: 0, irctc_amc_eligible: 0 }; 
     }
@@ -330,6 +399,11 @@
     
     let globalDistDataMap = {};
     let globalDistSubStatsMap = {}; 
+
+    // Global variables to store generated HTML for the State Report Image
+    let stateTableBodyHTML = "";
+    let stateTableFootHTML = "";
+    let stateKPIs = {};
 
     const dbName = "APTravelDB"; const storeName = "DashboardCache";
 
@@ -422,7 +496,6 @@
         document.getElementById("rc-tg-reg-ach").innerText = formatExactNumber(irRegAch);
         document.getElementById("rc-tg-reg-pend").innerText = formatExactNumber(Math.max(0, irRegTgt - irRegAch));
 
-        // 🌟 FIX: Added the fallback formula logic here for the download card! 🌟
         let targetRatio = 1.0; 
         let period = document.getElementById("periodDropdown").value;
         if(period === "Q1") targetRatio = 0.20; else if(period === "Q2") targetRatio = 0.25; else if(period === "Q3") targetRatio = 0.35; else if(period === "Q4") targetRatio = 0.20; else if(period === "H1") targetRatio = 0.45; else if(period === "H2") targetRatio = 0.55; else if(['APR','MAY','JUN'].includes(period)) targetRatio = 0.20 / 3; else if(['JUL','AUG','SEP'].includes(period)) targetRatio = 0.25 / 3; else if(['OCT','NOV','DEC'].includes(period)) targetRatio = 0.35 / 3; else if(['JAN','FEB','MAR'].includes(period)) targetRatio = 0.20 / 3;
@@ -472,6 +545,7 @@
             scale: 2, 
             logging: false, 
             useCORS: !isLocal, 
+            allowTaint: isLocal,
             backgroundColor: '#ffffff' 
         }).then(canvas => {
             card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
@@ -493,6 +567,61 @@
             }).catch(finalErr => {
                 alert("Download failed. Please upload this file to your website/server.");
             });
+        });
+    }
+
+    // 🌟 NEW FUNCTION: Download Long Image containing ALL Districts 🌟
+    function downloadStateCard() {
+        let card = document.getElementById("stateReportCardTemplate");
+        let periodText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
+        
+        document.getElementById("state-rc-period").innerText = "CONSOLIDATED REPORT : " + periodText;
+
+        // Populate KPIs
+        document.getElementById("state-ir-tgt").innerText = formatExactNumber(stateKPIs.irTgt);
+        document.getElementById("state-ir-ach").innerText = formatExactNumber(stateKPIs.irAch);
+        document.getElementById("state-ir-pend").innerText = formatExactNumber(stateKPIs.irPend);
+
+        document.getElementById("state-rb-tgt").innerText = formatExactNumber(stateKPIs.rbTgt);
+        document.getElementById("state-rb-ach").innerText = formatExactNumber(stateKPIs.rbAch);
+        document.getElementById("state-rb-pend").innerText = formatExactNumber(stateKPIs.rbPend);
+
+        document.getElementById("state-aw-tgt").innerText = formatExactNumber(stateKPIs.awTgt);
+        document.getElementById("state-aw-ach").innerText = formatExactNumber(stateKPIs.awAch);
+        document.getElementById("state-aw-pend").innerText = formatExactNumber(stateKPIs.awPend);
+
+        // Inject HTML
+        document.getElementById("stateReportTableBody").innerHTML = stateTableBodyHTML;
+        document.getElementById("stateReportTableFoot").innerHTML = stateTableFootHTML;
+
+        // Make visible for html2canvas
+        card.style.position = "static";
+        card.style.left = "0";
+        card.style.top = "0";
+
+        let isLocal = window.location.protocol === 'file:';
+        
+        html2canvas(card, { 
+            scale: 2, 
+            logging: false, 
+            useCORS: !isLocal, 
+            allowTaint: isLocal,
+            backgroundColor: '#f1f5f9' 
+        }).then(canvas => {
+            card.style.position = "absolute"; 
+            card.style.left = "-9999px"; 
+            card.style.top = "-9999px";
+            
+            let dataUrl = canvas.toDataURL('image/png');
+            let link = document.createElement('a');
+            link.download = `AP_State_Consolidated_Report_${periodText}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(err => {
+            card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
+            alert("Download failed. Please upload this file to your website/server.");
         });
     }
 
@@ -585,6 +714,10 @@
     window.onload = function() { 
         loadLogoAsBase64("logo.png", "rc-logo-left");
         loadLogoAsBase64("Safar.png", "rc-logo-right");
+        
+        // Also load for the State template
+        loadLogoAsBase64("logo.png", "rc-state-logo-left");
+        loadLogoAsBase64("Safar.png", "rc-state-logo-right");
 
         let d = new Date(); let mNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; let currentM = mNames[d.getMonth()];
         let periodDropdown = document.getElementById("periodDropdown");
@@ -632,7 +765,7 @@
 
                 if (service === "IRCTC") {
                     tStats.IRCTC_AMC.eligible++; 
-                    globalDistSubStatsMap[dName].irctc_amc_eligible++; // 🌟 Track district level eligible VLEs
+                    globalDistSubStatsMap[dName].irctc_amc_eligible++; 
                     globalDistSubStatsMap[dName].irctc_amc_tgt += (oTgt.IRCTC_AMC / totVles) * targetRatio;
                     if (row.creationDate) {
                         let cDate = parseDateString(row.creationDate);
@@ -674,26 +807,47 @@
         let validDistricts = Object.values(distStats).filter(d => d.name !== "Unknown" && d.name !== "-"); validDistricts.sort((a,b) => a.name.localeCompare(b.name));
         let tbody = document.getElementById("tableBody"); let tfoot = document.getElementById("tableFoot"); tbody.innerHTML = ""; tfoot.innerHTML = ""; let gt = getEmptyDist("GRAND TOTAL");
 
+        stateTableBodyHTML = ""; 
+
         validDistricts.forEach(d => {
             globalDistDataMap[d.name] = { ...d }; 
             let trText = `<tr ondblclick="handleRowDoubleClick('${d.name}')" title="Double click to filter this district"><td class="td-dist">${d.name} <span class="download-icon" onclick="event.stopPropagation(); downloadCard('${d.name}')" title="Download Report Card">📥</span></td>`;
+            
+            // For State Card Output
+            let trStateText = `<tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; font-weight: 800; color: #0f172a; text-align: left; padding-left: 20px; border-right: 2px solid #cbd5e1;">${d.name}</td>`;
+
             ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(s => {
                 gt[s].tot += d[s].tot; gt[s].a25 += d[s].a25; gt[s].a26_fy += d[s].a26_fy; gt[s].a26_period += d[s].a26_period; gt[s].id_pend += d[s].id_pend; gt[s].tgt += d[s].tgt; gt[s].ach += d[s].ach;
                 
                 let tgt = Math.round(d[s].tgt); let ach = d[s].ach; let pend = Math.max(0, tgt - ach); let pct = calcPercent(ach, tgt);
                 let pctClass = ""; let rawPct = tgt === 0 ? (ach>0?100:0) : (ach/tgt)*100; if (rawPct >= 100) pctClass = "text-success fw-bold"; else if (rawPct >= 50) pctClass = "text-warning fw-bold"; else pctClass = "text-danger";
+                
                 trText += `<td class="text-primary">${formatExactNumber(tgt)}</td><td class="text-success">${formatExactNumber(ach)}</td><td class="text-danger">${formatExactNumber(pend)}</td><td class="col-sep ${pctClass}">${pct}</td>`;
+
+                // Build State Card Columns
+                let sColorPct = rawPct >= 100 ? "#10b981" : (rawPct >= 50 ? "#f59e0b" : "#ef4444");
+                let rightBorder = s === 'AIRWAYS' ? '' : 'border-right: 2px solid #cbd5e1;';
+                trStateText += `<td style="padding: 12px; color: #3b82f6; font-weight: bold; border-right: 1px solid #f1f5f9;">${formatExactNumber(tgt)}</td><td style="padding: 12px; color: #10b981; font-weight: bold; border-right: 1px solid #f1f5f9;">${formatExactNumber(ach)}</td><td style="padding: 12px; color: #ef4444; font-weight: bold; border-right: 1px solid #f1f5f9;">${formatExactNumber(pend)}</td><td style="padding: 12px; font-weight: 900; color: ${sColorPct}; ${rightBorder}">${pct}</td>`;
             });
             trText += `</tr>`; tbody.innerHTML += trText;
+            trStateText += `</tr>`; stateTableBodyHTML += trStateText;
         });
 
         let tFootText = `<tr class="t-row-total"><td class="td-dist">${gt.name}</td>`;
+        let tStateFootText = `<tr style="background:#0f172a; color:white;"><td style="padding: 14px 12px; font-weight: 900; text-align: left; padding-left: 20px; border-right: 2px solid #334155; color: #ef4444;">${gt.name}</td>`;
+
         ['IRCTC', 'REDBUS', 'AIRWAYS'].forEach(s => {
             let tgt = Math.round(gt[s].tgt); let ach = gt[s].ach; let pend = Math.max(0, tgt - ach); let pct = calcPercent(ach, tgt);
             let pctClass = ""; let rawPct = tgt === 0 ? (ach>0?100:0) : (ach/tgt)*100; if (rawPct >= 100) pctClass = "text-success fw-bold"; else if (rawPct >= 50) pctClass = "text-warning fw-bold"; else pctClass = "text-danger";
+            
             tFootText += `<td class="text-primary">${formatExactNumber(tgt)}</td><td class="text-success">${formatExactNumber(ach)}</td><td class="text-danger">${formatExactNumber(pend)}</td><td class="col-sep ${pctClass}">${pct}</td>`;
+
+            let sColorPct = rawPct >= 100 ? "#10b981" : (rawPct >= 50 ? "#f59e0b" : "#ef4444");
+            let rightBorder = s === 'AIRWAYS' ? '' : 'border-right: 2px solid #334155;';
+            tStateFootText += `<td style="padding: 14px 12px; font-weight: bold;">${formatExactNumber(tgt)}</td><td style="padding: 14px 12px; font-weight: bold;">${formatExactNumber(ach)}</td><td style="padding: 14px 12px; font-weight: bold;">${formatExactNumber(pend)}</td><td style="padding: 14px 12px; font-weight: 900; color: ${sColorPct}; ${rightBorder}">${pct}</td>`;
         });
         tFootText += `</tr>`; tfoot.innerHTML = tFootText;
+        tStateFootText += `</tr>`; stateTableFootHTML = tStateFootText;
 
         document.getElementById("irctc-csc").innerText = formatExactNumber(gt.IRCTC.tot); 
         document.getElementById("irctc-a25").innerText = formatExactNumber(gt.IRCTC.a25); 
@@ -718,6 +872,13 @@
         let irTxnTgt = Math.round(activeTargets.IRCTC_TXN * targetRatio); let irTxnPend = Math.max(0, irTxnTgt - tStats.IRCTC_TXN.ach); document.getElementById("tgt-irctc-txn").innerText = formatExactNumber(irTxnTgt); document.getElementById("ach-irctc-txn").innerText = formatExactNumber(tStats.IRCTC_TXN.ach); document.getElementById("pend-irctc-txn").innerText = formatExactNumber(irTxnPend);
         let irRegTgt = Math.round(activeTargets.IRCTC_REG * targetRatio); let irRegPend = Math.max(0, irRegTgt - tStats.IRCTC_REG.ach); document.getElementById("tgt-irctc-reg").innerText = formatExactNumber(irRegTgt); document.getElementById("ach-irctc-reg").innerText = formatExactNumber(tStats.IRCTC_REG.ach); document.getElementById("pend-irctc-reg").innerText = formatExactNumber(irRegPend);
         let irAmcTgt = activeTargets.IRCTC_AMC > 0 ? Math.round(activeTargets.IRCTC_AMC * targetRatio) : Math.round(tStats.IRCTC_AMC.eligible * targetRatio); let irAmcPend = Math.max(0, irAmcTgt - tStats.IRCTC_AMC.ach); document.getElementById("tgt-irctc-amc").innerText = formatExactNumber(irAmcTgt); document.getElementById("ach-irctc-amc").innerText = formatExactNumber(tStats.IRCTC_AMC.ach); document.getElementById("pend-irctc-amc").innerText = formatExactNumber(irAmcPend);
+
+        // Store State totals for Long Image Export
+        stateKPIs = {
+            irTgt: irTxnTgt, irAch: tStats.IRCTC_TXN.ach, irPend: irTxnPend,
+            rbTgt: rbTgt, rbAch: tStats.REDBUS.ach, rbPend: rbPend,
+            awTgt: awTgt, awAch: tStats.AIRWAYS.ach, awPend: awPend
+        };
     }
 
     function exportToExcel() { let ws = XLSX.utils.table_to_sheet(document.getElementById('dataTable')); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Consolidated Report"); XLSX.writeFile(wb, `AP_Travel_Consolidated_Report.xlsx`); }
