@@ -107,21 +107,18 @@
 </head>
 <body>
 
-  <!-- 🌟 FIX: Updated Download Card Template with EXACT user-provided Logo names 🌟 -->
+  <!-- 🌟 Download Card Template with Logos 🌟 -->
   <div id="reportCardTemplate" style="width: 1000px; background: #f1f5f9; padding: 40px; position: absolute; left: -9999px; top: -9999px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; z-index: -1;">
       
       <!-- HEADER WITH LOGOS -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-          <!-- Left Logo -->
           <img id="rc-logo-left" src="logo.png" alt="CSC Logo" style="height: 65px; object-fit: contain;">
           
-          <!-- Center Title -->
           <div style="text-align: center;">
               <h1 style="color: #0f172a; font-size: 40px; margin: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;" id="rc-distName">DISTRICT NAME</h1>
               <h3 style="color: #3b82f6; font-size: 18px; margin: 5px 0 0 0; font-weight: 800; text-transform: uppercase;" id="rc-period">CLOSURE REPORT</h3>
           </div>
 
-          <!-- Right Logo -->
           <img id="rc-logo-right" src="Safar.png" alt="Safar Logo" style="height: 65px; object-fit: contain;">
       </div>
 
@@ -280,8 +277,9 @@
   </div>
 
   <script>
-    // 🌟 BASE64 IMAGE CONVERTER - FIXES CORS SECURITY ISSUES ON LIVE SERVER 🌟
     function loadLogoAsBase64(url, imgId) {
+        if (window.location.protocol === 'file:') return; 
+        
         var xhr = new XMLHttpRequest();
         xhr.onload = function() {
             var reader = new FileReader();
@@ -305,8 +303,9 @@
         let p = (ach / tgt) * 100; return p > 999 ? ">999%" : Math.round(p) + "%";
     }
 
+    // 🌟 Added irctc_amc_eligible field here 🌟
     function getEmptySubStats() { 
-        return { irctc_reg_tgt: 0, irctc_reg_ach: 0, irctc_amc_tgt: 0, irctc_amc_ach: 0 }; 
+        return { irctc_reg_tgt: 0, irctc_reg_ach: 0, irctc_amc_tgt: 0, irctc_amc_ach: 0, irctc_amc_eligible: 0 }; 
     }
 
     function getEmptyDist(name) {
@@ -423,7 +422,13 @@
         document.getElementById("rc-tg-reg-ach").innerText = formatExactNumber(irRegAch);
         document.getElementById("rc-tg-reg-pend").innerText = formatExactNumber(Math.max(0, irRegTgt - irRegAch));
 
-        let irAmcTgt = Math.round(sub.irctc_amc_tgt); let irAmcAch = sub.irctc_amc_ach;
+        // 🌟 FIX: Added the fallback formula logic here for the download card! 🌟
+        let targetRatio = 1.0; 
+        let period = document.getElementById("periodDropdown").value;
+        if(period === "Q1") targetRatio = 0.20; else if(period === "Q2") targetRatio = 0.25; else if(period === "Q3") targetRatio = 0.35; else if(period === "Q4") targetRatio = 0.20; else if(period === "H1") targetRatio = 0.45; else if(period === "H2") targetRatio = 0.55; else if(['APR','MAY','JUN'].includes(period)) targetRatio = 0.20 / 3; else if(['JUL','AUG','SEP'].includes(period)) targetRatio = 0.25 / 3; else if(['OCT','NOV','DEC'].includes(period)) targetRatio = 0.35 / 3; else if(['JAN','FEB','MAR'].includes(period)) targetRatio = 0.20 / 3;
+
+        let irAmcTgt = sub.irctc_amc_tgt > 0 ? Math.round(sub.irctc_amc_tgt) : Math.round((sub.irctc_amc_eligible || 0) * targetRatio);
+        let irAmcAch = sub.irctc_amc_ach;
         document.getElementById("rc-tg-amc-tgt").innerText = formatExactNumber(irAmcTgt);
         document.getElementById("rc-tg-amc-ach").innerText = formatExactNumber(irAmcAch);
         document.getElementById("rc-tg-amc-pend").innerText = formatExactNumber(Math.max(0, irAmcTgt - irAmcAch));
@@ -461,7 +466,14 @@
         card.style.left = "0";
         card.style.top = "0";
 
-        html2canvas(card, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+        let isLocal = window.location.protocol === 'file:';
+        
+        html2canvas(card, { 
+            scale: 2, 
+            logging: false, 
+            useCORS: !isLocal, 
+            backgroundColor: '#ffffff' 
+        }).then(canvas => {
             card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
             let dataUrl = canvas.toDataURL('image/png');
             let link = document.createElement('a');
@@ -472,8 +484,15 @@
             document.body.removeChild(link);
         }).catch(err => {
             card.style.position = "absolute"; card.style.left = "-9999px"; card.style.top = "-9999px";
-            console.error(err);
-            alert("Download failed. If you are running this file directly from your computer, some features are restricted by browser security. Please upload this file to your website/server.");
+            
+            html2canvas(card, { scale: 2, useCORS: false, backgroundColor: '#ffffff' }).then(c2 => {
+                let link = document.createElement('a');
+                link.download = `${d.name}_Closure_Report_${periodText}.png`;
+                link.href = c2.toDataURL('image/png');
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            }).catch(finalErr => {
+                alert("Download failed. Please upload this file to your website/server.");
+            });
         });
     }
 
@@ -564,7 +583,6 @@
     }
 
     window.onload = function() { 
-        // 🌟 LOAD LOGOS AS BASE64 TO PREVENT SERVER CORS BLOCKS DURING DOWNLOAD 🌟
         loadLogoAsBase64("logo.png", "rc-logo-left");
         loadLogoAsBase64("Safar.png", "rc-logo-right");
 
@@ -613,7 +631,9 @@
                 if (service === "IRCTC") tStats.IRCTC_TXN.ach += periodTxn; else tStats[service].ach += periodTxn;
 
                 if (service === "IRCTC") {
-                    tStats.IRCTC_AMC.eligible++; globalDistSubStatsMap[dName].irctc_amc_tgt += (oTgt.IRCTC_AMC / totVles) * targetRatio;
+                    tStats.IRCTC_AMC.eligible++; 
+                    globalDistSubStatsMap[dName].irctc_amc_eligible++; // 🌟 Track district level eligible VLEs
+                    globalDistSubStatsMap[dName].irctc_amc_tgt += (oTgt.IRCTC_AMC / totVles) * targetRatio;
                     if (row.creationDate) {
                         let cDate = parseDateString(row.creationDate);
                         if (cDate) {
