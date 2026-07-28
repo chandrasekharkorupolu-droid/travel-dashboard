@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLE Details - AP Tour & Travels</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+  <style>
+    body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #1e293b; padding: 15px; margin: 0; }
+    
+    .header-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; }
+    
+    /* Compact Search Card */
+    .search-card { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; margin-bottom: 12px; }
+    
+    .search-row { display: flex; flex-wrap: nowrap; gap: 12px; align-items: flex-end; width: 100%; }
+    
+    .input-col { flex: 1.5; display: flex; flex-direction: column; gap: 4px; }
+    .input-col label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* Reduced heights for sleek look */
+    .custom-input { height: 38px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 500; outline: none; transition: 0.2s; width: 100%; box-sizing: border-box; color: #0f172a; }
+    .custom-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+    
+    .or-divider { font-weight: 800; color: #94a3b8; padding-bottom: 10px; font-size: 12px; flex: 0; white-space: nowrap; }
+
+    .action-buttons { display: flex; gap: 8px; flex: 1; }
+    .search-btn { background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; height: 38px; flex: 2; display: flex; align-items: center; justify-content: center; }
+    .search-btn:hover { background: #1d4ed8; }
+    
+    .reset-btn { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; height: 38px; flex: 1; display: flex; align-items: center; justify-content: center; }
+    .reset-btn:hover { background: #e2e8f0; color: #1e293b; }
+
+    /* 🌟 COMPACT SINGLE LINE ACTION TOOLBAR 🌟 */
+    .action-toolbar { display: none; justify-content: space-between; align-items: center; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; margin-bottom: 15px; gap: 15px; animation: fadeIn 0.3s ease-out; }
+    
+    .live-search-wrapper { display: flex; align-items: center; gap: 8px; flex: 1; border: 1px solid #cbd5e1; padding: 0 12px; border-radius: 6px; height: 34px; background: #f8fafc; transition: 0.2s; }
+    .live-search-wrapper:focus-within { border-color: #10b981; background: white; }
+    .live-search-input { border: none; outline: none; font-size: 13px; font-weight: 500; color: #0f172a; background: transparent; width: 100%; }
+    
+    .result-stats { font-weight: 700; color: #0284c7; font-size: 13px; white-space: nowrap; background: #f0f9ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; }
+    
+    .download-btn { background: #16a34a; color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; height: 34px; display: flex; align-items: center; white-space: nowrap; }
+    .download-btn:hover { background: #15803d; }
+
+    /* Table Styles */
+    .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; overflow: hidden; display: none; animation: fadeIn 0.3s ease-out; }
+    .table-wrapper { overflow-x: auto; max-height: calc(100vh - 210px); } 
+    
+    .custom-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; font-size: 12.5px; }
+    .custom-table thead { position: sticky; top: 0; background: #0f172a; z-index: 10; }
+    .custom-table th { padding: 12px; color: #f8fafc; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.05); }
+    .custom-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500; color: #334155; vertical-align: middle; }
+    
+    .custom-table tbody tr:hover { background-color: #f8fafc; }
+    .custom-table tbody tr:nth-child(even) { background-color: #fafbfc; }
+
+    .badge-csc { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 700; border: 1px solid #cbd5e1; color: #0f172a; display: inline-block; font-size: 11.5px;}
+    .text-vle { color: #2563eb; font-weight: 700; font-size: 13px; }
+    .text-dm { color: #059669; font-weight: 600; }
+
+    #vleSearchLoader { display: none; text-align: center; padding: 30px; color: #64748b; }
+    .loader-text { font-size: 13px; font-weight: 600; margin-top: 10px; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* MOBILE RESPONSIVE CSS */
+    @media (max-width: 992px) {
+        .search-row { flex-direction: column; align-items: stretch; gap: 12px; }
+        .or-divider { text-align: center; padding-bottom: 0; }
+        .action-buttons { flex-direction: row; }
+        .action-toolbar { flex-direction: column; align-items: stretch; }
+        
+        .table-wrapper { max-height: none; overflow-x: hidden; }
+        .custom-table, .custom-table tbody { display: block; width: 100%; min-width: auto; }
+        .custom-table thead { display: none; }
+        
+        .custom-table tr { display: block; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 12px; background: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .custom-table td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding: 10px 0; text-align: right; }
+        .custom-table td:last-child { border-bottom: none; }
+        .custom-table td::before { content: attr(data-label); font-weight: 700; color: #64748b; text-transform: uppercase; font-size: 11px; text-align: left; margin-right: 15px; }
+        .custom-table td[data-label="S.No"] { justify-content: center; background: #f8fafc; border-radius: 6px 6px 0 0; margin: -5px -12px 0 -12px; padding: 8px; color: #1e293b; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; }
+        .custom-table td[data-label="S.No"]::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+    <div class="header-title"><i class="fa-solid fa-users-viewfinder text-primary me-2"></i> VLE Master List</div>
+    
+    <div class="search-card">
+        <div class="search-row">
+            <div class="input-col">
+                <label>VLE CSC ID</label>
+                <input type="text" id="searchCscId" class="custom-input" placeholder="e.g. 123456789012" oninput="clearDistrict()">
+            </div>
+            
+            <div class="or-divider">(OR)</div>
+
+            <div class="input-col">
+                <label>Select Old District</label>
+                <select id="searchDistrict" class="custom-input" onchange="clearCscId()">
+                    <option value="">-- Select AP Old District --</option>
+                    <option value="ANANTAPUR">Anantapur</option>
+                    <option value="CHITTOOR">Chittoor</option>
+                    <option value="EAST GODAVARI">East Godavari</option>
+                    <option value="GUNTUR">Guntur</option>
+                    <option value="KRISHNA">Krishna</option>
+                    <option value="KURNOOL">Kurnool</option>
+                    <option value="PRAKASAM">Prakasam</option>
+                    <option value="SPSR NELLORE">SPSR Nellore</option>
+                    <option value="SRIKAKULAM">Srikakulam</option>
+                    <option value="VISAKHAPATNAM">Visakhapatnam</option>
+                    <option value="VIZIANAGARAM">Vizianagaram</option>
+                    <option value="WEST GODAVARI">West Godavari</option>
+                    <option value="YSR KADAPA">YSR Kadapa</option>
+                </select>
+            </div>
+
+            <div class="action-buttons">
+                <button class="search-btn" onclick="fetchVleData()"><i class="fa-solid fa-magnifying-glass me-2"></i> Search</button>
+                <button class="reset-btn" onclick="resetAll()"><i class="fa-solid fa-rotate-right me-1"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="vleSearchLoader">
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: #2563eb;"></i>
+        <div class="loader-text">Loading data... Please wait (One-time fetch)</div>
+    </div>
+
+    <!-- 🌟 COMPACT ACTION TOOLBAR (Search, Stats, Download in ONE line) 🌟 -->
+    <div id="actionToolbar" class="action-toolbar">
+        <div class="live-search-wrapper">
+            <i class="fa-solid fa-filter" style="color: #10b981; font-size: 14px;"></i>
+            <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Search by Name, CSC ID, or District in this list..." onkeyup="applyLiveSearch()">
+        </div>
+        
+        <div id="resultStats" class="result-stats"></div>
+        
+        <button class="download-btn" onclick="downloadStyledExcel()"><i class="fa-solid fa-file-excel me-2"></i> Download Excel</button>
+    </div>
+
+    <div class="table-container" id="resultsTableContainer">
+        <div class="table-wrapper">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">S.No</th>
+                        <th>CSC ID</th>
+                        <th>VLE Name</th>
+                        <th>Mobile No</th>
+                        <th>Old District</th>
+                        <th>New District</th>
+                        <th>District Manager</th>
+                    </tr>
+                </thead>
+                <tbody id="vleTableBody">
+                    <!-- JS will inject rows here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+        let globalMasterData = []; 
+        let currentFilteredData = [];
+        let dataToExport = []; 
+
+        function clearDistrict() { document.getElementById("searchDistrict").value = ""; }
+        function clearCscId() { document.getElementById("searchCscId").value = ""; }
+
+        function resetAll() {
+            document.getElementById("searchCscId").value = "";
+            document.getElementById("searchDistrict").value = "";
+            document.getElementById("liveSearchInput").value = "";
+            
+            document.getElementById("resultsTableContainer").style.display = "none";
+            document.getElementById("actionToolbar").style.display = "none";
+            
+            document.getElementById("vleTableBody").innerHTML = "";
+            currentFilteredData = [];
+            dataToExport = [];
+        }
+
+        function fetchVleData() {
+            var cscId = document.getElementById("searchCscId").value.trim().toUpperCase();
+            var district = document.getElementById("searchDistrict").value.trim().toUpperCase();
+
+            if(cscId === "" && district === "") {
+                alert("Please enter CSC ID or select a District!");
+                return;
+            }
+
+            if(globalMasterData.length > 0) {
+                processLocalData(cscId, district);
+                return;
+            }
+
+            document.getElementById("resultsTableContainer").style.display = "none";
+            document.getElementById("actionToolbar").style.display = "none";
+            document.getElementById("vleSearchLoader").style.display = "block";
+
+            var payload = { action: "searchVleDetails" };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(response => {
+                document.getElementById("vleSearchLoader").style.display = "none";
+
+                if(response.success) {
+                    globalMasterData = response.data; 
+                    processLocalData(cscId, district); 
+                } else {
+                    alert("❌ " + response.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById("vleSearchLoader").style.display = "none";
+                alert("Server error. Please check your internet connection.");
+            });
+        }
+
+        function processLocalData(cscId, district) {
+            currentFilteredData = globalMasterData.filter(v => {
+                if(cscId) {
+                    return v.cscId.includes(cscId);
+                } else if(district) {
+                    return v.oldDistrict.toUpperCase().includes(district) || v.newDistrict.toUpperCase().includes(district);
+                }
+                return true;
+            });
+
+            if(currentFilteredData.length === 0) {
+                alert("❌ No data found for your search!");
+                resetAll();
+                return;
+            }
+
+            renderTable(currentFilteredData);
+            document.getElementById("actionToolbar").style.display = "flex";
+            document.getElementById("liveSearchInput").value = ""; 
+        }
+
+        function applyLiveSearch() {
+            var query = document.getElementById("liveSearchInput").value.trim().toUpperCase();
+            
+            if(query === "") {
+                renderTable(currentFilteredData);
+                return;
+            }
+
+            var liveFiltered = currentFilteredData.filter(v => {
+                return v.vleName.toUpperCase().includes(query) ||
+                       v.cscId.includes(query) ||
+                       v.oldDistrict.toUpperCase().includes(query) ||
+                       v.newDistrict.toUpperCase().includes(query) ||
+                       v.mobile.includes(query);
+            });
+
+            renderTable(liveFiltered);
+        }
+
+        function renderTable(dataArray) {
+            dataToExport = dataArray; 
+
+            document.getElementById("resultStats").innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> <strong>${dataArray.length}</strong> record(s) found.`;
+
+            var tbody = document.getElementById("vleTableBody");
+            var rowsHtml = "";
+
+            dataArray.forEach((v, index) => {
+                rowsHtml += `
+                <tr>
+                    <td data-label="S.No" style="text-align: center; color: #64748b; font-weight: 700;">#${index + 1}</td>
+                    <td data-label="CSC ID"><span class="badge-csc">${v.cscId}</span></td>
+                    <td data-label="VLE Name" class="text-vle">${v.vleName}</td>
+                    <td data-label="Mobile No">
+                        <a href="tel:${v.mobile}" style="text-decoration: none; color: #0f172a; font-weight: 600; background: #f8fafc; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0; display: inline-block; transition: 0.2s;">
+                            <i class="fa-solid fa-phone" style="color: #2563eb; font-size: 11px; margin-right: 4px;"></i> ${v.mobile}
+                        </a>
+                    </td>
+                    <td data-label="Old District">${v.oldDistrict}</td>
+                    <td data-label="New District">${v.newDistrict}</td>
+                    <td data-label="District Manager" class="text-dm"><i class="fa-solid fa-user-tie me-1"></i> ${v.dmName}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = rowsHtml;
+            document.getElementById("resultsTableContainer").style.display = "block";
+        }
+
+        // Professional Excel Export
+        async function downloadStyledExcel() {
+            if(dataToExport.length === 0) {
+                alert("No data available to download!");
+                return;
+            }
+
+            var cscIdVal = document.getElementById("searchCscId").value.trim().toUpperCase();
+            var districtVal = document.getElementById("searchDistrict").value.trim();
+            var liveSearchVal = document.getElementById("liveSearchInput").value.trim();
+
+            var reportTitle = "VLEs Data";
+            var fileName = "VLEs_Data";
+
+            if (districtVal !== "") {
+                let properDist = districtVal.charAt(0).toUpperCase() + districtVal.slice(1).toLowerCase();
+                reportTitle = properDist + " VLEs Data";
+                fileName = districtVal.toUpperCase() + "_VLEs_Data";
+            } else if (cscIdVal !== "") {
+                reportTitle = "VLEs Data (CSC ID: " + cscIdVal + ")";
+                fileName = "VLE_Data_" + cscIdVal;
+            }
+
+            if (liveSearchVal !== "") {
+                reportTitle += " (Filtered)";
+                fileName += "_Filtered";
+            }
+            fileName += ".xlsx";
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('VLE Data');
+
+            const titleRow = worksheet.addRow([reportTitle]);
+            worksheet.mergeCells('A1:G1');
+            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; 
+            titleRow.getCell(1).font = { color: { argb: 'FFFFFFFF' }, size: 14, bold: true };
+            titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' }; 
+            titleRow.height = 28;
+
+            worksheet.addRow([]); 
+
+            const headers = ["S.No", "CSC ID", "VLE Name", "Mobile No", "Old District", "New District", "District Manager"];
+            const headerRow = worksheet.addRow(headers);
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }; 
+                cell.font = { color: { argb: 'FF0F172A' }, bold: true, size: 11 };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+            });
+            headerRow.height = 22;
+
+            dataToExport.forEach((v, index) => {
+                const row = worksheet.addRow([
+                    index + 1,
+                    v.cscId,
+                    v.vleName,
+                    v.mobile,
+                    v.oldDistrict,
+                    v.newDistrict,
+                    v.dmName
+                ]);
+                
+                row.eachCell((cell) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                });
+            });
+
+            worksheet.getColumn(1).width = 8;   
+            worksheet.getColumn(2).width = 20;  
+            worksheet.getColumn(3).width = 40;  
+            worksheet.getColumn(4).width = 16;  
+            worksheet.getColumn(5).width = 20;  
+            worksheet.getColumn(6).width = 25;  
+            worksheet.getColumn(7).width = 25;  
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+    </script>
+</body>
+</html>
