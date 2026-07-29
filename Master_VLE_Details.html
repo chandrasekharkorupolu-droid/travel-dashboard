@@ -95,8 +95,7 @@
 
     <div class="header-title">
         <i class="fa-solid fa-users-viewfinder text-primary me-2"></i> VLE Master List
-        <!-- 🌟 NEW: Force Refresh Button 🌟 -->
-        <button onclick="forceRefresh()" style="margin-left:auto; background:#e0f2fe; color:#0284c7; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center;" onmouseover="this.style.background='#bae6fd';" onmouseout="this.style.background='#e0f2fe';" title="Fetch fresh data from server">
+        <button onclick="forceRefreshData()" style="margin-left:auto; background:#e0f2fe; color:#0284c7; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center;" onmouseover="this.style.background='#bae6fd';" onmouseout="this.style.background='#e0f2fe';" title="Fetch fresh data from server">
             <i class="fa-solid fa-rotate me-1"></i> Sync Latest Data
         </button>
     </div>
@@ -183,13 +182,65 @@
         let currentFilteredData = [];
         let dataToExport = []; 
 
-        // 🌟 NEW: On Page Load, check if we already have data stored in Session Memory 🌟
-        document.addEventListener("DOMContentLoaded", function() {
-            let cachedData = sessionStorage.getItem("VLE_MASTER_DATA_CACHE");
-            if (cachedData) {
-                globalMasterData = JSON.parse(cachedData);
-            }
-        });
+        // 🌟 IndexedDB Setup for Permanent Bullet-proof Caching 🌟
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                let request = indexedDB.open("VleMasterDatabase", 1);
+                request.onupgradeneeded = function(e) {
+                    let db = e.target.result;
+                    if (!db.objectStoreNames.contains("masterStore")) {
+                        db.createObjectStore("masterStore", { keyPath: "id" });
+                    }
+                };
+                request.onsuccess = function(e) { resolve(e.target.result); };
+                request.onerror = function(e) { reject(e); };
+            });
+        }
+
+        async function saveToDB(data) {
+            try {
+                let db = await initDB();
+                let tx = db.transaction("masterStore", "readwrite");
+                let store = tx.objectStore("masterStore");
+                store.put({ id: "vleData", value: data, timestamp: Date.now() });
+                
+                // Save Last Search State
+                let csc = document.getElementById("searchCscId").value.trim();
+                let dist = document.getElementById("searchDistrict").value;
+                store.put({ id: "lastSearch", csc: csc, dist: dist });
+            } catch(e) { console.error("DB Save Error:", e); }
+        }
+
+        async function loadFromDB() {
+            try {
+                let db = await initDB();
+                let tx = db.transaction("masterStore", "readonly");
+                let store = tx.objectStore("masterStore");
+                
+                let dataReq = store.get("vleData");
+                let searchReq = store.get("lastSearch");
+
+                dataReq.onsuccess = function() {
+                    if(dataReq.result && (Date.now() - dataReq.result.timestamp < 86400000)) { // 24 Hours validity
+                        globalMasterData = dataReq.result.value;
+                        
+                        searchReq.onsuccess = function() {
+                            if(searchReq.result) {
+                                document.getElementById("searchCscId").value = searchReq.result.csc || "";
+                                document.getElementById("searchDistrict").value = searchReq.result.dist || "";
+                                
+                                if(searchReq.result.csc || searchReq.result.dist) {
+                                    setTimeout(() => { processLocalData(searchReq.result.csc, searchReq.result.dist); }, 100);
+                                }
+                            }
+                        };
+                    }
+                };
+            } catch(e) { console.error("DB Load Error:", e); }
+        }
+
+        // Run DB Load when page opens
+        document.addEventListener("DOMContentLoaded", loadFromDB);
 
         function clearDistrict() { document.getElementById("searchDistrict").value = ""; }
         function clearCscId() { document.getElementById("searchCscId").value = ""; }
@@ -198,21 +249,29 @@
             document.getElementById("searchCscId").value = "";
             document.getElementById("searchDistrict").value = "";
             document.getElementById("liveSearchInput").value = "";
-            
             document.getElementById("resultsTableContainer").style.display = "none";
             document.getElementById("actionToolbar").style.display = "none";
-            
             document.getElementById("vleTableBody").innerHTML = "";
             currentFilteredData = [];
             dataToExport = [];
+            
+            // Clear last search from DB
+            initDB().then(db => {
+                let tx = db.transaction("masterStore", "readwrite");
+                tx.objectStore("masterStore").put({ id: "lastSearch", csc: "", dist: "" });
+            });
         }
 
-        // 🌟 NEW: Force Refresh function to clear cache and fetch fresh data 🌟
-        function forceRefresh() {
-            sessionStorage.removeItem("VLE_MASTER_DATA_CACHE");
+        async function forceRefreshData() {
+            try {
+                let db = await initDB();
+                let tx = db.transaction("masterStore", "readwrite");
+                tx.objectStore("masterStore").clear();
+            } catch(e) {}
+            
             globalMasterData = [];
             resetAll();
-            alert("✅ Data cache cleared! Now search again to get fresh data from the server.");
+            alert("✅ Cache Cleared! Please click 'Search' to download fresh data.");
         }
 
         function copyText(text) {
@@ -221,22 +280,19 @@
                 toast.innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> Copied: <strong>${text}</strong>`;
                 toast.className = "copy-toast show";
                 setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 2500);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
+            }).catch(err => { console.error('Failed to copy: ', err); });
         }
 
         function fetchVleData() {
             var cscId = document.getElementById("searchCscId").value.trim().toUpperCase();
-            var district = document.getElementById("searchDistrict").value.trim().toUpperCase();
+            var district = document.getElementById("searchDistrict").value.trim();
 
             if(cscId === "" && district === "") {
                 alert("Please enter CSC ID or select a District!");
                 return;
             }
 
-            // If we already have the data in memory, show it instantly!
-            if(globalMasterData.length > 0) {
+            if(globalMasterData && globalMasterData.length > 0) {
                 processLocalData(cscId, district);
                 return;
             }
@@ -255,32 +311,41 @@
             .then(response => {
                 document.getElementById("vleSearchLoader").style.display = "none";
 
-                if(response.success) {
+                if(response && response.success) {
                     globalMasterData = response.data; 
-                    
-                    // 🌟 Save to browser memory (Session Storage) 🌟
-                    try {
-                        sessionStorage.setItem("VLE_MASTER_DATA_CACHE", JSON.stringify(globalMasterData));
-                    } catch(e) { console.warn("Could not save to session storage", e); }
-
+                    saveToDB(globalMasterData); // Save to DB
                     processLocalData(cscId, district); 
                 } else {
-                    alert("❌ " + response.message);
+                    let errMsg = (response && response.message) ? response.message : "Failed to load data.";
+                    alert("❌ Server Error: " + errMsg);
                 }
             })
             .catch(error => {
                 document.getElementById("vleSearchLoader").style.display = "none";
-                alert("Server error. Please check your internet connection.");
+                alert("❌ Connection Error: Please check your internet connection.");
             });
         }
 
         function processLocalData(cscId, district) {
+            if(!globalMasterData || globalMasterData.length === 0) {
+                alert("❌ Data is empty. Please click 'Sync Latest Data'.");
+                resetAll();
+                return;
+            }
+
+            // Save search action state
+            initDB().then(db => {
+                let tx = db.transaction("masterStore", "readwrite");
+                tx.objectStore("masterStore").put({ id: "lastSearch", csc: cscId, dist: district });
+            });
+
             currentFilteredData = globalMasterData.filter(v => {
-                if(cscId) {
-                    return v.cscId.includes(cscId);
-                } else if(district) {
-                    return v.oldDistrict.toUpperCase().includes(district) || v.newDistrict.toUpperCase().includes(district);
-                }
+                let vCscId = v.cscId ? v.cscId.toString().toUpperCase() : "";
+                let vOldD = v.oldDistrict ? v.oldDistrict.toString().toUpperCase() : "";
+                let vNewD = v.newDistrict ? v.newDistrict.toString().toUpperCase() : "";
+
+                if(cscId) { return vCscId.includes(cscId); }
+                else if(district) { return vOldD.includes(district.toUpperCase()) || vNewD.includes(district.toUpperCase()); }
                 return true;
             });
 
@@ -297,18 +362,16 @@
 
         function applyLiveSearch() {
             var query = document.getElementById("liveSearchInput").value.trim().toUpperCase();
-            
-            if(query === "") {
-                renderTable(currentFilteredData);
-                return;
-            }
+            if(query === "") { renderTable(currentFilteredData); return; }
 
             var liveFiltered = currentFilteredData.filter(v => {
-                return v.vleName.toUpperCase().includes(query) ||
-                       v.cscId.includes(query) ||
-                       v.oldDistrict.toUpperCase().includes(query) ||
-                       v.newDistrict.toUpperCase().includes(query) ||
-                       v.mobile.includes(query);
+                let vCscId = v.cscId ? v.cscId.toString().toUpperCase() : "";
+                let vName = v.vleName ? v.vleName.toString().toUpperCase() : "";
+                let vOldD = v.oldDistrict ? v.oldDistrict.toString().toUpperCase() : "";
+                let vNewD = v.newDistrict ? v.newDistrict.toString().toUpperCase() : "";
+                let vMob = v.mobile ? v.mobile.toString() : "";
+
+                return vName.includes(query) || vCscId.includes(query) || vOldD.includes(query) || vNewD.includes(query) || vMob.includes(query);
             });
 
             renderTable(liveFiltered);
@@ -316,7 +379,6 @@
 
         function renderTable(dataArray) {
             dataToExport = dataArray; 
-
             document.getElementById("resultStats").innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> <strong>${dataArray.length}</strong> record(s) found.`;
 
             var tbody = document.getElementById("vleTableBody");
@@ -357,10 +419,7 @@
         }
 
         async function downloadStyledExcel() {
-            if(dataToExport.length === 0) {
-                alert("No data available to download!");
-                return;
-            }
+            if(dataToExport.length === 0) { alert("No data available to download!"); return; }
 
             var cscIdVal = document.getElementById("searchCscId").value.trim().toUpperCase();
             var districtVal = document.getElementById("searchDistrict").value.trim();
@@ -378,10 +437,7 @@
                 fileName = "VLE_Data_" + cscIdVal;
             }
 
-            if (liveSearchVal !== "") {
-                reportTitle += " (Filtered)";
-                fileName += "_Filtered";
-            }
+            if (liveSearchVal !== "") { reportTitle += " (Filtered)"; fileName += "_Filtered"; }
             fileName += ".xlsx";
 
             const workbook = new ExcelJS.Workbook();
@@ -408,15 +464,8 @@
 
             dataToExport.forEach((v, index) => {
                 const row = worksheet.addRow([
-                    index + 1,
-                    v.cscId,
-                    v.vleName,
-                    v.mobile,
-                    v.oldDistrict,
-                    v.newDistrict,
-                    v.dmName
+                    index + 1, v.cscId, v.vleName, v.mobile, v.oldDistrict, v.newDistrict, v.dmName
                 ]);
-                
                 row.eachCell((cell) => {
                     cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
                     cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
