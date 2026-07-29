@@ -46,7 +46,6 @@
     .download-btn { background: #16a34a; color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; height: 34px; display: flex; align-items: center; white-space: nowrap; }
     .download-btn:hover { background: #15803d; }
 
-    /* Table Styles */
     .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; overflow: hidden; display: none; animation: fadeIn 0.3s ease-out; }
     .table-wrapper { overflow-x: auto; max-height: calc(100vh - 210px); } 
     
@@ -73,7 +72,6 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* MOBILE RESPONSIVE CSS */
     @media (max-width: 992px) {
         .search-row { flex-direction: column; align-items: stretch; gap: 12px; }
         .or-divider { text-align: center; padding-bottom: 0; }
@@ -95,7 +93,13 @@
 </head>
 <body>
 
-    <div class="header-title"><i class="fa-solid fa-users-viewfinder text-primary me-2"></i> VLE Master List</div>
+    <div class="header-title">
+        <i class="fa-solid fa-users-viewfinder text-primary me-2"></i> VLE Master List
+        <!-- 🌟 NEW: Force Refresh Button 🌟 -->
+        <button onclick="forceRefresh()" style="margin-left:auto; background:#e0f2fe; color:#0284c7; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center;" onmouseover="this.style.background='#bae6fd';" onmouseout="this.style.background='#e0f2fe';" title="Fetch fresh data from server">
+            <i class="fa-solid fa-rotate me-1"></i> Sync Latest Data
+        </button>
+    </div>
     
     <div class="search-card">
         <div class="search-row">
@@ -179,6 +183,14 @@
         let currentFilteredData = [];
         let dataToExport = []; 
 
+        // 🌟 NEW: On Page Load, check if we already have data stored in Session Memory 🌟
+        document.addEventListener("DOMContentLoaded", function() {
+            let cachedData = sessionStorage.getItem("VLE_MASTER_DATA_CACHE");
+            if (cachedData) {
+                globalMasterData = JSON.parse(cachedData);
+            }
+        });
+
         function clearDistrict() { document.getElementById("searchDistrict").value = ""; }
         function clearCscId() { document.getElementById("searchCscId").value = ""; }
 
@@ -193,6 +205,14 @@
             document.getElementById("vleTableBody").innerHTML = "";
             currentFilteredData = [];
             dataToExport = [];
+        }
+
+        // 🌟 NEW: Force Refresh function to clear cache and fetch fresh data 🌟
+        function forceRefresh() {
+            sessionStorage.removeItem("VLE_MASTER_DATA_CACHE");
+            globalMasterData = [];
+            resetAll();
+            alert("✅ Data cache cleared! Now search again to get fresh data from the server.");
         }
 
         function copyText(text) {
@@ -215,6 +235,7 @@
                 return;
             }
 
+            // If we already have the data in memory, show it instantly!
             if(globalMasterData.length > 0) {
                 processLocalData(cscId, district);
                 return;
@@ -236,6 +257,12 @@
 
                 if(response.success) {
                     globalMasterData = response.data; 
+                    
+                    // 🌟 Save to browser memory (Session Storage) 🌟
+                    try {
+                        sessionStorage.setItem("VLE_MASTER_DATA_CACHE", JSON.stringify(globalMasterData));
+                    } catch(e) { console.warn("Could not save to session storage", e); }
+
                     processLocalData(cscId, district); 
                 } else {
                     alert("❌ " + response.message);
@@ -295,7 +322,6 @@
             var tbody = document.getElementById("vleTableBody");
             var rowsHtml = "";
 
-            // 🌟 FIX: Separated the Number (for Copying) and the Icon (for Calling) 🌟
             dataArray.forEach((v, index) => {
                 rowsHtml += `
                 <tr>
