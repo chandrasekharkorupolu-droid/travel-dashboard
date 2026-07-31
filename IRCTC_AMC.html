@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMC MaxGain Report - CSC TravelCloud</title>
+    <!-- 🌟 Added html2canvas for Image and ExcelJS for Excel Export 🌟 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
         /* 🌟 Iframe Friendly Basic Settings 🌟 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -24,6 +26,10 @@
 
         .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        
+        /* 🌟 New Excel Button Style 🌟 */
+        #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
+        #downloadExcelBtn:hover { background-color: #059669; }
 
         /* KPI Cards */
         .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 20px; }
@@ -131,119 +137,37 @@
         .btn-save:active { transform: translateY(3px); box-shadow: 0 0 0 #047857; }
         .btn-save:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
 
-
-/* ========================================================================= */
+        /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR AMC REPORT (Added by Chandra) 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                gap: 15px;
-            }
+            body { padding: 10px; gap: 15px; }
 
-            /* 1. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .target-control-panel {
-                flex-direction: column;
-                align-items: stretch; /* బాక్సులు ఫుల్ విడ్త్ వస్తాయి */
-                padding: 15px;
-                gap: 12px;
-                position: relative; /* మొబైల్ లో స్టికీ తీసేసాను, స్పేస్ సేవ్ అవుతుంది */
-            }
+            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; gap: 12px; position: relative; }
+            .page-heading { justify-content: center; font-size: 16px; text-align: center; }
+            .filter-group { flex-wrap: wrap; width: 100%; }
+            .search-box, .filter-group select { width: 100%; min-width: 100%; padding: 10px 12px; }
+            .btn-action { flex: 1 1 calc(50% - 5px); justify-content: center; padding: 10px; font-size: 11px; }
 
-            .page-heading {
-                justify-content: center;
-                font-size: 16px;
-                text-align: center;
-            }
-
-            .filter-group {
-                flex-wrap: wrap;
-                width: 100%;
-            }
-
-            .search-box, .filter-group select {
-                width: 100%;
-                min-width: 100%;
-                padding: 10px 12px;
-            }
-
-            .btn-action {
-                flex: 1 1 calc(50% - 5px); /* మొబైల్ లో 2 బటన్స్ పక్కపక్కన వస్తాయి */
-                justify-content: center;
-                padding: 10px;
-                font-size: 11px;
-            }
-
-            /* 2. KPI కార్డ్స్ సెట్టింగ్స్ */
-            .kpi-grid {
-                flex-wrap: wrap; /* పక్కపక్కన సరిపోకపోతే కిందకి వస్తాయి */
-                gap: 10px;
-                margin-bottom: 10px;
-            }
-
-            .kpi-card {
-                flex: 1 1 calc(50% - 10px); /* 2x2 గ్రిడ్ లాగా వస్తాయి */
-                min-width: 130px;
-                padding: 10px;
-                flex-direction: column; /* టైటిల్, వాల్యూ ఒకదాని కింద ఒకటి */
-                align-items: center;
-                text-align: center;
-            }
-
+            .kpi-grid { flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+            .kpi-card { flex: 1 1 calc(50% - 10px); min-width: 130px; padding: 10px; flex-direction: column; align-items: center; text-align: center; }
             .kpi-title { font-size: 9px; margin-bottom: 5px; }
             .kpi-value { font-size: 18px; }
 
-            /* 3. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            .table-container {
-                max-height: 500px;
-                -webkit-overflow-scrolling: touch;
-            }
+            .table-container { max-height: 500px; -webkit-overflow-scrolling: touch; }
+            table { min-width: 1000px; }
+            th, td { font-size: 10px !important; padding: 10px 5px !important; }
+            .col-district, .th-dist { position: static !important; border-right: 1px solid #e2e8f0 !important; }
 
-            table {
-                min-width: 1000px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా ఉండేలా కనీస వెడల్పు */
-            }
+            .btn-promo, .btn-amc-activate { font-size: 9px; padding: 6px 10px; }
+            .amc-card, .amc-card-expired, .amc-card-pending { max-width: 100%; font-size: 9px; }
 
-            th, td {
-                font-size: 10px !important;
-                padding: 10px 5px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
-            .col-district, .th-dist {
-                position: static !important;
-                border-right: 1px solid #e2e8f0 !important;
-            }
-
-            .btn-promo, .btn-amc-activate {
-                font-size: 9px;
-                padding: 6px 10px;
-            }
-
-            .amc-card, .amc-card-expired, .amc-card-pending {
-                max-width: 100%;
-                font-size: 9px;
-            }
-
-            /* 4. మోడల్ (పాప్-అప్) అడ్జస్ట్‌మెంట్స్ */
-            .modal-content {
-                width: 95%;
-                padding: 20px 15px;
-            }
-
+            .modal-content { width: 95%; padding: 20px 15px; }
             .modal-header { font-size: 16px; margin-bottom: 15px; }
             .form-control { font-size: 13px; padding: 8px 10px; }
             .btn-save { font-size: 14px; padding: 10px; }
         }
-
     </style>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
@@ -260,6 +184,8 @@
                 <option value="All">All Districts</option>
             </select>
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <!-- 🌟 EXCEL EXPORT BUTTON ADDED 🌟 -->
+            <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()">📊 Download Excel</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
@@ -357,7 +283,6 @@
 
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 మీ ఒరిజినల్ కోడ్ లో ఉన్న గ్లోబల్ వేరియబుల్స్ 🌟
         let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
         let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
         let loggedInUserName = localStorage.getItem("userName") || ""; 
@@ -367,7 +292,6 @@
         let dmMappedOldDistricts = new Set();
         let dmMappedNewDistricts = new Set();
 
-        // 🌟 బ్రహ్మాస్త్రం: పేరు మ్యాచింగ్ లాజిక్ 🌟
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
             let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -417,7 +341,6 @@
                     if(usersData && usersData.length > 0) {
                         let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                         
-                        // 🌟 DM ఫిల్టరింగ్ (Old District) లాజిక్ 🌟
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
 
@@ -457,7 +380,6 @@
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             
-            // 🌟 STRICT COLUMN FILTER: Pending, DSP లాంటివి ఎక్స్ క్యూడ్ చేస్తుంది 🌟
             let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
             let idx27 = cleanHeaders.findIndex(h => (h.includes('202627') || h.includes('2627') || h.includes('txns26')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
 
@@ -503,7 +425,6 @@
                 let oldKey = oldDist.toLowerCase();
                 let newKey = newDist.toLowerCase();
 
-                // 🌟 100% పక్కా DM ఫిల్టరింగ్ లాజిక్ 🌟
                 let allowedForOld = true;
                 let allowedForNew = true;
                 
@@ -512,7 +433,6 @@
                     allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
                 }
 
-                // ఏ ఒక్కటి మ్యాచ్ అయినా సెట్ లో యాడ్ అవుతుంది
                 if (allowedForOld && oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
                 if (allowedForNew && newDist !== 'Unknown') newDistrictsSet.add(newDist);
 
@@ -542,8 +462,6 @@
                     amcEnd: amcEnd,
                     isEligible: isEligible, 
                     status: idxstatus > -1 ? (row[idxstatus] || 'Active').toString().toUpperCase().trim() : 'ACTIVE',
-                    
-                    // 🌟 ఏ జిల్లాలో ఈ డేటా చూపించాలో లాక్ చేస్తున్నాం 🌟
                     allowedForOld: allowedForOld,
                     allowedForNew: allowedForNew
                 });
@@ -600,19 +518,14 @@
             let currentDate = new Date();
 
             globalAllData.forEach((row, index) => {
-                // 🌟 DM అయితే ఆయనకు సంబంధం లేని రోస్ ని కట్ చేస్తుంది 🌟
                 if (isDM && distType === 'old' && !row.allowedForOld) return;
                 if (isDM && distType === 'new' && !row.allowedForNew) return;
 
                 let dist = row[distKey];
-
                 let statusText = row.status || 'ACTIVE';
-                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) {
-                    return; 
-                }
+                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) return; 
                 
                 if (selectedDist !== "All" && dist !== selectedDist) return;
-                
                 if (searchQuery === "" && !row.isEligible) return;
                 if (searchQuery !== "") {
                     let text = `${row.vlename} ${row.cscid}`.toLowerCase();
@@ -625,11 +538,8 @@
 
                 if(isPaid) {
                     let endDate = new Date(row.amcEnd);
-                    if(!isNaN(endDate.getTime()) && endDate < currentDate) {
-                        isExpired = true;
-                    } else {
-                        isActivated = true;
-                    }
+                    if(!isNaN(endDate.getTime()) && endDate < currentDate) isExpired = true;
+                    else isActivated = true;
                 }
                 
                 counts.total++;
@@ -707,6 +617,131 @@
             document.getElementById("val-pending").innerText = counts.pending;
         }
 
+        // 🌟 NEW EXCEL DOWNLOAD FUNCTION 🌟
+        async function downloadExcel() {
+            if(globalAllData.length === 0) {
+                alert("No data available to download!");
+                return;
+            }
+
+            const btn = document.getElementById("downloadExcelBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Exporting...";
+            btn.disabled = true;
+
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            let currentDate = new Date();
+
+            let exportData = [];
+
+            // Apply all current filters to grab exact data (excluding the 300 row limit)
+            globalAllData.forEach(row => {
+                if (isDM && distType === 'old' && !row.allowedForOld) return;
+                if (isDM && distType === 'new' && !row.allowedForNew) return;
+
+                let dist = row[distKey];
+                let statusText = row.status || 'ACTIVE';
+                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) return;
+                
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                if (searchQuery === "" && !row.isEligible) return;
+                
+                if (searchQuery !== "") {
+                    let text = `${row.vlename} ${row.cscid}`.toLowerCase();
+                    if (!text.includes(searchQuery)) return;
+                }
+
+                let isPaid = row.amcStatus && row.amcStatus.toLowerCase().includes('paid');
+                let isExpired = false;
+                let isActivated = false;
+
+                if(isPaid) {
+                    let endDate = new Date(row.amcEnd);
+                    if(!isNaN(endDate.getTime()) && endDate < currentDate) isExpired = true;
+                    else isActivated = true;
+                }
+
+                if(currentKpiFilter === 'active' && !isActivated) return;
+                if(currentKpiFilter === 'expired' && !isExpired) return;
+                if(currentKpiFilter === 'pending' && (isActivated || isExpired)) return;
+
+                let exportStatus = "Pending";
+                let expiryDate = "-";
+                
+                if(isActivated) {
+                    exportStatus = `Activated (${row.amcStatus})`;
+                    expiryDate = formatDisplayDate(row.amcEnd);
+                } else if(isExpired) {
+                    exportStatus = `Expired (${row.amcStatus})`;
+                    expiryDate = formatDisplayDate(row.amcEnd);
+                }
+
+                exportData.push([
+                    dist, row.cscid, row.vlename, row.mobile, row.vlemob,
+                    row.txns_25_26, row.txns_26_27, exportStatus, expiryDate
+                ]);
+            });
+
+            if(exportData.length === 0) {
+                alert("No records found with the current filters!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('AMC MaxGain Data');
+
+            // Header Row
+            const headers = ["District", "CSC ID", "VLE Name", "Mobile No", "VLE Mobile No", "FY 25-26 Txns", "FY 26-27 Txns", "AMC Status", "AMC Expiry"];
+            const headerRow = worksheet.addRow(headers);
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 11 };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+            });
+
+            // Data Rows
+            exportData.forEach(rowData => {
+                const r = worksheet.addRow(rowData);
+                r.eachCell((cell, colNumber) => {
+                    cell.alignment = { vertical: 'middle', horizontal: (colNumber >= 6 && colNumber <= 7) ? 'center' : 'left' };
+                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                });
+            });
+
+            // Set Column Widths
+            worksheet.getColumn(1).width = 20;
+            worksheet.getColumn(2).width = 18;
+            worksheet.getColumn(3).width = 35;
+            worksheet.getColumn(4).width = 15;
+            worksheet.getColumn(5).width = 15;
+            worksheet.getColumn(6).width = 15;
+            worksheet.getColumn(7).width = 15;
+            worksheet.getColumn(8).width = 25;
+            worksheet.getColumn(9).width = 15;
+
+            // Generate File
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            
+            let d = new Date();
+            let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+            let fileName = selectedDist !== "All" ? `AMC_MaxGain_${selectedDist}_${dateStr}.xlsx` : `AMC_MaxGain_Report_${dateStr}.xlsx`;
+            
+            link.download = fileName;
+            link.click();
+
+            btn.innerHTML = "✅ Downloaded";
+            setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+        }
+
         function filterByDistrictIndex(index) {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -774,7 +809,7 @@
             }
         }
 
-        async function saveAMCData() {
+       function saveAMCData() {
             let cscId = document.getElementById("modalCscId").value;
             let pkg = document.getElementById("amcPackage").value;
             let start = document.getElementById("amcStartDate").value;
@@ -789,28 +824,29 @@
             let statusText = `Paid (${pkg})`;
 
             let btn = document.getElementById("saveAmcBtn");
-            btn.innerText = "⏳ Saving to Server...";
+            btn.innerHTML = "⏳ Saving to Server...";
             btn.disabled = true;
 
-            try {
-                let payload = {
-                    action: "updateAMC",
-                    cscid: cscId,
-                    amcStatus: statusText,
-                    startDate: formattedStart,
-                    endDate: end
-                };
+            let payload = {
+                action: "updateAMC",
+                cscid: cscId,
+                amcStatus: statusText,
+                startDate: formattedStart,
+                endDate: end
+            };
 
-                fetch(apiURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            fetch(apiURL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(result => {
+                btn.innerHTML = "Save & Activate";
+                btn.disabled = false;
 
-                sessionStorage.removeItem("cscTravelData");
-
-                setTimeout(() => {
+                if(result.success) {
+                    sessionStorage.removeItem("cscTravelData"); 
+                    
                     let row = globalAllData.find(r => String(r.cscid) === String(cscId));
                     if(row) {
                         row.amcStatus = statusText;
@@ -818,18 +854,20 @@
                         row.amcEnd = end;
                         row.isEligible = true; 
                     }
+                    
                     renderTable();
                     closeAMCModal();
-                    
                     showToast("✅ AMC Activated Successfully!");
-                    
-                }, 800);
-
-            } catch(e) {
-                alert("Something went wrong!");
-                btn.innerText = "Save & Activate";
+                } else {
+                    alert("❌ " + (result.message || "Failed to update"));
+                }
+            })
+            .catch(err => {
+                btn.innerHTML = "Save & Activate";
                 btn.disabled = false;
-            }
+                console.error("Fetch Error:", err);
+                alert("❌ సర్వర్ కనెక్షన్ ఎర్రర్. దయచేసి మళ్ళీ ప్రయత్నించండి.");
+            });
         }
 
         function toggleFullScreen() {
