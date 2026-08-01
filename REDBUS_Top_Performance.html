@@ -6,18 +6,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
-    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; }
+    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0; }
     
-    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
-    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
-    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
+    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.05); border: 1px solid #fca5a5; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
+    
+    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
+    .filter-group { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
+    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px;}
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    .form-select, .search-box, .dist-select { border: 1px solid #ef4444; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; }
+    .search-box { width: 200px; }
     .period-select { border: 2px solid #dc2626; color: #991b1b; background-color: #fef2f2; }
     
-    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 15px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; cursor: pointer; height: 35px;}
-    .btn-img { background: #dcfce7; color: #16a34a; border-color: #86efac; font-size: 14px;} .btn-img:hover:not(:disabled) { background: #86efac; color: #064e3b; }
-    .btn-img:disabled { opacity: 0.7; cursor: not-allowed; }
-    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
-    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 35px;}
+    .btn-reset { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; } .btn-reset:hover { background: #fca5a5; color: white; }
+    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
+    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
+    .btn-full { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-full:hover { background: #cbd5e1; color: #0f172a;}
 
     .content-wrapper { flex: 1; display: flex; justify-content: center; overflow-y: auto; padding-bottom: 20px;}
 
@@ -38,7 +44,7 @@
     .poster-board::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index:1;}
     .poster-board::after { content: ''; position: absolute; bottom: -50px; left: -50px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; z-index:1;}
 
-    /* 🌟 స్మార్ట్ లోగో అప్లోడ్ సెక్షన్ (CORS ఎర్రర్స్ రావు) 🌟 */
+    /* 🌟 స్మార్ట్ లోగో అప్లోడ్ సెక్షన్ 🌟 */
     .logo-box { position: absolute; top: 25px; z-index: 10; cursor: pointer; transition: 0.2s;}
     .logo-box:hover { transform: scale(1.05); }
     .logo-box.left { left: 30px; }
@@ -129,84 +135,23 @@
     .theme-neon .runner-item { background: transparent; border-radius: 0px; border: 1px solid rgba(56, 189, 248, 0.5); }
     .theme-neon .r-txns { background: #0c4a6e; color: #38bdf8; border-color: #0284c7;}
 
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
+    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
     @media (max-width: 768px) {
-        body { 
-            height: auto; 
-            overflow-y: auto; 
-            padding: 10px; 
-        }
-
-        /* 🌟 Top Controls (ఫిల్టర్స్ & బటన్స్) 🌟 */
-        .controls-bar {
-            flex-direction: column;
-            gap: 15px;
-            padding: 15px;
-            align-items: stretch;
-            height: auto;
-        }
-        .title-sec {
-            width: 100%;
-            justify-content: center;
-            text-align: center;
-            margin-right: 0 !important;
-            margin-bottom: 5px;
-            font-size: 15px;
-            white-space: normal;
-        }
-        
-        .filter-group { 
-            width: 100%; 
-            flex-direction: column; 
-            gap: 10px; 
-        }
-        .filter-label { display: none; } /* మొబైల్ లో లేబుల్స్ హైడ్ చేశాం */
-        
-        .dist-select, .search-box {
-            width: 100% !important;
-            height: 42px !important; 
-            font-size: 13px;
-        }
-
-        /* బటన్స్ పక్కపక్కన వచ్చేలా */
-        .filter-group:nth-child(2) {
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-        .filter-group:nth-child(2) .dist-select {
-            flex: 1 1 100%;
-        }
-        .filter-group:nth-child(2) .btn-custom {
-            flex: 1 1 calc(50% - 5px);
-            margin: 0 !important;
-            height: 42px;
-            justify-content: center;
-        }
-
-        #fsBtn { display: none !important; } /* మొబైల్ కి ఫుల్ స్క్రీన్ వద్దు */
-
-        /* 🌟 Poster Area (Horizontal Scroll for HD Quality) 🌟 */
-        .content-wrapper { 
-            padding: 10px; 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch; 
-            justify-content: flex-start; /* సెంటర్ అలైన్మెంట్ తీసేసి స్క్రోల్ అవ్వడానికి లెఫ్ట్ కి మార్చాం */
-        }
-        .poster-board {
-            margin: 0; /* స్క్రోల్ ఫ్రీ గా అవ్వడానికి మార్జిన్ ఆటో తీసేశాం */
-        }
+        body { height: auto; overflow-y: auto; padding: 10px; }
+        .controls-bar { flex-direction: column; gap: 15px; padding: 15px; align-items: stretch; height: auto; }
+        .title-sec { width: 100%; justify-content: center; text-align: center; margin-right: 0 !important; margin-bottom: 5px; font-size: 15px; white-space: normal; }
+        .filter-group { width: 100%; flex-direction: column; gap: 10px; }
+        .filter-label { display: none; } 
+        .dist-select, .search-box { width: 100% !important; height: 42px !important; font-size: 13px; }
+        .filter-group:nth-child(2) { flex-direction: row; flex-wrap: wrap; }
+        .filter-group:nth-child(2) .dist-select { flex: 1 1 100%; }
+        .filter-group:nth-child(2) .btn-custom { flex: 1 1 calc(50% - 5px); margin: 0 !important; height: 42px; justify-content: center; }
+        #fsBtn { display: none !important; }
+        .content-wrapper { padding: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
+        .poster-board { margin: 0; }
     }
 
   </style>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
@@ -227,8 +172,8 @@
       <select id="periodDropdown" class="dist-select period-select" onchange="processData()">
           <option value="apr">APR-2026</option>
           <option value="may">MAY-2026</option>
-          <option value="jun" selected>JUN-2026</option>
-          <option value="jul">JUL-2026</option>
+          <option value="jun">JUN-2026</option>
+          <option value="jul" selected>JUL-2026</option>
           <option value="aug">AUG-2026</option>
           <option value="sep">SEP-2026</option>
           <option value="oct">OCT-2026</option>
@@ -240,15 +185,14 @@
           <option value="srv2627">FY 26-27</option>
       </select>
       
-      <button id="dlBtn" class="btn-custom btn-img ms-2" onclick="downloadPoster()">📸 Download Poster</button>
+      <button class="btn-custom btn-reset ms-2" onclick="refreshData()">🔄 Refresh</button>
+      <button id="dlBtn" class="btn-custom btn-img ms-1" onclick="downloadPoster()">📸 Download Poster</button>
       <button id="fsBtn" class="btn-custom btn-full ms-1" onclick="toggleFullScreen()">⛶ Fullscreen</button>
     </div>
   </div>
 
   <div class="content-wrapper">
-    <div class="poster-board theme-default" id="posterArea">
-        
-        <!-- 🌟 ఇక్కడే లోగోల మ్యాజిక్ జరుగుతుంది 🌟 -->
+    <div class="poster-board theme-jul" id="posterArea">
         <div class="logo-box left" onclick="document.getElementById('file-csc').click();" title="Click to upload CSC Logo">
             <img id="img-csc" src="" style="display:none;" class="poster-logo">
             <div id="csc-placeholder" class="logo-placeholder">➕ Upload logo.png</div>
@@ -265,7 +209,7 @@
             <h4 class="brand-title">🏆 CSC <span id="scopeText">ANDHRA PRADESH</span> 🏆</h4>
             <h1 class="main-title">REDBUS STARS OF THE MONTH</h1>
             <div class="congrats-title">🎉 CONGRATULATIONS 🎉</div>
-            <div class="month-badge" id="monthBadgeText">JUN-2026</div>
+            <div class="month-badge" id="monthBadgeText">JUL-2026</div>
         </div>
 
         <div id="posterContent">
@@ -292,7 +236,6 @@
         const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
         document.getElementById('footerDate').innerText = "Generated by CSC AP on: " + new Date().toLocaleDateString('en-US', dateOptions);
         
-        // 🌟 పేజీ లోడ్ అయిన వెంటనే బ్రౌజర్ మెమరీలో ఉన్న పాత లోగోలను మళ్ళీ గీస్తాం 🌟
         let savedCsc = localStorage.getItem('saved_img-csc');
         if(savedCsc) {
             document.getElementById('img-csc').src = savedCsc;
@@ -315,7 +258,6 @@
         }
     };
 
-    // లోగో అప్లోడ్ & ఆటో-సేవ్ ఫంక్షన్
     window.saveLogo = function(event, imgId, placeholderId) {
         let file = event.target.files[0];
         if(file) {
@@ -325,8 +267,6 @@
                 document.getElementById(imgId).src = base64Data;
                 document.getElementById(imgId).style.display = 'block';
                 document.getElementById(placeholderId).style.display = 'none';
-                
-                // 🌟 ఇక్కడే బ్రౌజర్ మెమరీలో పర్మినెంట్ గా సేవ్ అవుతుంది! 🌟
                 localStorage.setItem('saved_' + imgId, base64Data);
             };
             reader.readAsDataURL(file);
@@ -338,8 +278,24 @@
     async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
     async function saveToCache(key, dataObj) { try { let db = await openDB(); let tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put({ data: dataObj, timestamp: Date.now() }, key); } catch(e) { console.error(e); } }
 
-    function fetchDataFromServer() {
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+    function refreshData() {
+        localStorage.removeItem(CACHE_KEY);
+        let dbRequest = indexedDB.open(DB_NAME, 1);
+        dbRequest.onsuccess = function(e) {
+            let db = e.target.result;
+            try {
+                let tx = db.transaction(STORE_NAME, "readwrite");
+                let store = tx.objectStore(STORE_NAME);
+                store.delete(CACHE_KEY);
+            } catch(ex) {}
+        };
+        document.getElementById("posterContent").innerHTML = "<div class='loader'>⏳ Fetching Live Data...</div>";
+        fetchDataFromServer();
+    }
+
+   function fetchDataFromServer() {
+        // ఇక్కడ getPosterMakerData అని మార్చాము
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
         .then(res => res.json()).then(res => { 
             if(res.success && res.data) { 
                 rawData = res.data; 
@@ -351,9 +307,10 @@
     
     function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
 
+    // 🌟 SMART PROCESS DATA FUNCTION 🌟
     function processData() {
         let isNew = document.getElementById("distTypeDropdown").value === "NEW";
-        let periodKey = document.getElementById("periodDropdown").value;
+        let periodKey = document.getElementById("periodDropdown").value; // e.g. "jun", "jul"
         
         let posterElement = document.getElementById("posterArea");
         if(periodKey === "srv2627") posterElement.className = "poster-board theme-default";
@@ -367,13 +324,44 @@
         let distSet = new Set();
         finalSortedData = [];
 
+        let fullMonthMap = {
+            'jan': 'january', 'feb': 'february', 'mar': 'march', 'apr': 'april',
+            'may': 'may', 'jun': 'june', 'jul': 'july', 'aug': 'august',
+            'sep': 'september', 'oct': 'october', 'nov': 'november', 'dec': 'december'
+        };
+        let fullMonth = fullMonthMap[periodKey] || periodKey;
+
         rawData.forEach(r => {
             if (isNew && isDM && !r.isMyNewDist) return; 
             let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
             if(distName === "Unknown") return;
             distSet.add(distName);
 
-            let txns = parseFloat(r[periodKey]) || 0;
+            let txns = 0;
+            
+            for (let key in r) {
+                let cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                
+                if (periodKey === "srv2627") {
+                    if (cleanKey.includes("srv2627") || cleanKey.includes("fy2627") || cleanKey.includes("total")) { 
+                        txns = parseFloat(r[key]) || 0; 
+                        if(txns > 0) break; 
+                    }
+                } else {
+                    // 🌟 SMART SCANNER: నెల పేరు ఉండి, amount/revenue కానిది లాగేస్తుంది 🌟
+                    let isMonthMatch = cleanKey.includes(periodKey) || cleanKey.includes(fullMonth);
+                    let isNotAmount = !cleanKey.includes('amt') && !cleanKey.includes('rev') && !cleanKey.includes('dsp');
+                    
+                    if (isMonthMatch && isNotAmount) {
+                        let val = parseFloat(r[key]) || 0;
+                        if(val > 0) {
+                            txns = val;
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (txns > 0) {
                 finalSortedData.push({ dist: distName, name: r.vleName || "CSC VLE", cscId: r.cscId || "-", txns: txns });
             }
@@ -381,17 +369,15 @@
 
         finalSortedData.sort((a, b) => b.txns - a.txns);
 
-        let distArr = Array.from(distSet).sort();
         let distDropdown = document.getElementById("distDropdown");
         let currentSelection = distDropdown.value;
         distDropdown.innerHTML = '<option value="">All AP (State Level)</option>';
-        distArr.forEach(d => { distDropdown.innerHTML += `<option value="${d}">${d}</option>`; });
+        Array.from(distSet).sort().forEach(d => { distDropdown.innerHTML += `<option value="${d}">${d}</option>`; });
         distDropdown.value = currentSelection;
 
         renderPoster();
     }
 
-    // ఫుల్ స్క్రీన్ లాజిక్
     window.toggleFullScreen = function() {
         let fsBtn = document.getElementById("fsBtn");
         if (!document.fullscreenElement && !document.webkitFullscreenElement) { 
@@ -443,26 +429,36 @@
         let dropDownVal = document.getElementById("distDropdown").value;
         let pText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
         
-        let filtered = finalSortedData.filter(d => (dropDownVal === "" || d.dist === dropDownVal));
-
-        if (filtered.length === 0) {
-            document.getElementById("posterContent").innerHTML = `<div class="loader" style="color:#fca5a5;">⚠️ No Transactions Found.</div>`;
-            return;
-        }
-
         let scopeText = dropDownVal === "" ? "ANDHRA PRADESH" : dropDownVal.toUpperCase() + " DISTRICT";
 
-        // 🌟 ఇక్కడ ఆటోమేటిక్ గా పేర్లు మారుతాయి 🌟
         document.getElementById("scopeText").innerText = scopeText;
         document.getElementById("monthBadgeText").innerText = pText;
 
+        let filtered = finalSortedData.filter(d => (dropDownVal === "" || d.dist === dropDownVal));
+
+        if (filtered.length === 0) {
+            // 🌟 DEBUG INFO INJECTOR 🌟
+            let debugHTML = "";
+            if (rawData.length > 0) {
+                let allKeys = Object.keys(rawData[0]);
+                debugHTML = `<br><br><div style="font-size:11px; color:#fff; background:rgba(0,0,0,0.6); padding:15px; border-radius:8px; border:1px dashed #fca5a5; text-align:left; max-width:600px; margin:0 auto; line-height:1.5;">
+                <strong style="color:#fbbf24;">🔍 DEBUG INFO (కాలమ్స్ పేర్లు):</strong><br>
+                మీ గూగుల్ షీట్ లో ఈ కింది పేర్లతో కాలమ్స్ ఉన్నాయి:<br><br>
+                <span style="color:#a7f3d0;">${allKeys.join(", ")}</span><br><br>
+                వీటిలో జులై (JUL) కి సంబంధించిన కాలమ్ ఏ పేరుతో ఉందో చూసి చెప్పండి. లేదా అందులో జులై కాలమ్ లేకపోతే షీట్ లో యాడ్ చేయండి.
+                </div>`;
+            }
+            
+            document.getElementById("posterContent").innerHTML = `<div class="loader" style="color:#fca5a5; padding-top:20px;">⚠️ No Transactions Found.<br>ఈ నెలకు ఎవరికీ టార్గెట్ లేదా ట్రాన్సాక్షన్స్ లేవా? ${debugHTML}</div>`;
+            return;
+        }
+
         let html = `<div class="podium-container">`;
 
-        // Rank 2
         if(filtered[1]) {
             html += `<div class="podium-wrapper wrapper-rank2">
                         <div class="photo-area" onclick="document.getElementById('file-r2').click();">
-                            <span class="upload-hint">Upload Photo</span>
+                            <span class="upload-hint" style="display:none;">Upload Photo</span>
                             <img id="img-r2" src="${defaultAvatar}" class="vle-photo">
                             <div class="rank-badge">2</div>
                         </div>
@@ -476,11 +472,10 @@
                      </div>`;
         } else { html += `<div class="podium-wrapper" style="opacity:0;"></div>`; }
 
-        // Rank 1
         if(filtered[0]) {
             html += `<div class="podium-wrapper wrapper-rank1">
                         <div class="photo-area" onclick="document.getElementById('file-r1').click();">
-                            <span class="upload-hint">Upload Photo</span>
+                            <span class="upload-hint" style="display:none;">Upload Photo</span>
                             <img id="img-r1" src="${defaultAvatar}" class="vle-photo">
                             <div class="rank-badge">1</div>
                         </div>
@@ -494,11 +489,10 @@
                      </div>`;
         }
 
-        // Rank 3
         if(filtered[2]) {
             html += `<div class="podium-wrapper wrapper-rank3">
                         <div class="photo-area" onclick="document.getElementById('file-r3').click();">
-                            <span class="upload-hint">Upload Photo</span>
+                            <span class="upload-hint" style="display:none;">Upload Photo</span>
                             <img id="img-r3" src="${defaultAvatar}" class="vle-photo">
                             <div class="rank-badge">3</div>
                         </div>
@@ -514,7 +508,6 @@
 
         html += `</div>`;
 
-        // 🌟 టాప్ 5 (Rank 4 & 5) గ్రిడ్ 🌟
         if(filtered.length > 3) {
             html += `<div class="runners-title">⭐ SUPER STAR PERFORMERS ⭐</div><div class="runners-grid">`;
             let limit = filtered.length > 5 ? 5 : filtered.length; 
@@ -540,7 +533,6 @@
         document.getElementById("posterContent").innerHTML = html;
     }
 
-    // 🌟 పక్కా లోకల్ ఇమేజ్ డౌన్‌లోడ్ ఫిక్స్ (Try-Catch తో) 🌟
     function downloadPoster() {
        let btn = document.getElementById('dlBtn');
        let originalText = btn.innerHTML;
@@ -555,23 +547,18 @@
            html2canvas(captureArea, { scale: 3, useCORS: true, backgroundColor: null, scrollY: 0, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight })
            .then(canvas => {
               document.documentElement.classList.remove("exporting");
-              
               try {
-                  // ఇక్కడే పాత కోడ్ ఆగిపోయేది. ఇప్పుడు పక్కాగా డౌన్లోడ్ అవుతుంది.
                   let dataUrl = canvas.toDataURL("image/png");
                   let link = document.createElement('a');
                   let mText = document.getElementById("periodDropdown").options[document.getElementById("periodDropdown").selectedIndex].text;
                   link.download = `Top_Performers_Poster_${mText}.png`; 
                   link.href = dataUrl; 
                   link.click();
-
                   btn.innerHTML = "✅ Downloaded!";
               } catch(e) {
-                  console.error(e);
-                  alert("⚠️ బ్రౌజర్ సెక్యూరిటీ ఎర్రర్: మీ లోకల్ ఇమేజ్ ల వల్ల క్రోమ్ డౌన్లోడ్ బ్లాక్ చేసింది. దయచేసి 'Upload logo.png' బాక్స్ మీద క్లిక్ చేసి మీ ఇమేజ్ సెలెక్ట్ చేయండి. అప్పుడు 100% పనిచేస్తుంది!");
+                  alert("⚠️ బ్రౌజర్ సెక్యూరిటీ ఎర్రర్: మీ లోకల్ ఇమేజ్ ల వల్ల క్రోమ్ డౌన్లోడ్ బ్లాక్ చేసింది.");
                   btn.innerHTML = "❌ Failed";
               }
-              
               setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 3000);
            })
            .catch(err => {
