@@ -659,7 +659,6 @@
       });
       
       sidebar.addEventListener('mouseleave', function() {
-        // Mobile view checks added so we don't collapse on small screens inappropriately
         if (window.innerWidth > 992 && this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') {
           this.classList.add('collapsed-hover');
         }
@@ -708,7 +707,6 @@
       }
     };
 
-    // 🌟 ACTIVE TOP NAV HIGHLIGHT FUNCTION 🌟
     function setActiveNav(moduleId) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
         if(moduleId) {
@@ -810,7 +808,6 @@
           }
       }
 
-      // 🔥 Set Dynamic Sidebar Color Based on Module 🔥
       const themes = { 
           "IRCTC": {c: "#ea580c", b: "#fff7ed"}, 
           "REDBUS": {c: "#dc2626", b: "#fef2f2"}, 
@@ -1175,35 +1172,62 @@ let li3 = document.createElement('li');
         return '';
     }
 
-    // Prefetch Data Logic
-    document.addEventListener("DOMContentLoaded", function() {
-        let loggedInDesig = localStorage.getItem("userDesignation") || ""; 
+    // 🌟 BACKGROUND PRE-FETCHING LOGIC (SILENT LOADER) 🌟
+    
+    const DB_NAME = "CscTravelDB"; 
+    const STORE_NAME = "ReportsData";
+    
+    function openDB() { 
+        return new Promise((res, rej) => { 
+            let req = indexedDB.open(DB_NAME, 1); 
+            req.onupgradeneeded = (e) => { 
+                let db = e.target.result; 
+                if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); 
+            }; 
+            req.onsuccess = (e) => res(e.target.result); 
+            req.onerror = (e) => rej(e.target.error); 
+        }); 
+    }
+    
+    async function saveToCache(key, dataObj) { 
+        try { 
+            let db = await openDB(); 
+            let tx = db.transaction(STORE_NAME, "readwrite"); 
+            tx.objectStore(STORE_NAME).put({ data: dataObj, timestamp: Date.now() }, key); 
+        } catch(e) { console.error(e); } 
+    }
+
+    function preloadTravelReports() {
+        let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
         let loggedInUserId = localStorage.getItem("userId") || ""; 
-        if(loggedInUserId && loggedInDesig) { prefetchRedbusData(loggedInUserId, loggedInDesig); }
+
+        if(!loggedInUserId) return; 
+
+        // 🚌 REDBUS Data
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json())
+        .then(res => { 
+            if(res.success && res.data) { 
+                saveToCache("TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId, res.data); 
+                console.log("✅ Redbus Data Pre-loaded Successfully!");
+            } 
+        }).catch(e => console.log("Redbus pre-load failed"));
+
+        // ✈️ AIRWAYS Data
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "AIRWAYS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json())
+        .then(res => { 
+            if(res.success && res.data) { 
+                saveToCache("TRAVEL_CACHE_V6_AIRWAYS_" + loggedInUserId, res.data); 
+                console.log("✅ Airways Data Pre-loaded Successfully!");
+            } 
+        }).catch(e => console.log("Airways pre-load failed"));
+    }
+
+    window.addEventListener('load', function() {
+        setTimeout(preloadTravelReports, 3000); 
     });
 
-    function prefetchRedbusData(userId, designation) {
-        const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + userId;
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: designation, userId: userId })
-        })
-        .then(res => res.json())
-        .then(res => {
-            if(res.success && res.data) {
-                let req = indexedDB.open("CscTravelDB", 1);
-                req.onupgradeneeded = (e) => {
-                    let db = e.target.result;
-                    if (!db.objectStoreNames.contains("ReportsData")) { db.createObjectStore("ReportsData"); }
-                };
-                req.onsuccess = (e) => {
-                    let db = e.target.result;
-                    let tx = db.transaction("ReportsData", "readwrite");
-                    tx.objectStore("ReportsData").put({ data: res.data, timestamp: Date.now() }, CACHE_KEY);
-                };
-            }
-        }).catch(err => console.log("Prefetch failed:", err));
-    }
   </script>
 
 </body>
