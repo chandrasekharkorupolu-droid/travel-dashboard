@@ -280,9 +280,9 @@
             fetchSheetData();
         };
 
-        // 🌟 ZERO-SECOND LOADING LOGIC 🌟
+        // 🌟 SEQUENTIAL LOADING LOGIC TO PREVENT GOOGLE SERVER CRASH 🌟
         async function fetchSheetData() {
-            document.getElementById("reportTableBody").innerHTML = "<tr class='loader-row'><td colspan='15'><div class='spinner'></div> Fetching Configuration Data...</td></tr>";
+            document.getElementById("reportTableBody").innerHTML = "<tr class='loader-row'><td colspan='15'><div class='spinner'></div> Fetching Configuration Data... Please Wait...</td></tr>";
             
             try {
                 let cachedProcessedData = localStorage.getItem("cscRedbusProcessedTargets");
@@ -296,16 +296,19 @@
                     window.dmNewDistrictsSet = new Set(parsedData.dmNewDistrictsArray);
                     
                     updateDistrictsDropdown();
-                    return; // 🌟 క్యాచ్ ఉంటే అసలు నెట్వర్క్ నుండి డేటా లాగదు, క్షణాల్లో పేజీ ఓపెన్ అవుతుంది! 🌟
+                    return; 
                 }
 
                 let timestamp = new Date().getTime();
                 
-                // 1. చిన్న షీట్స్ డైరెక్ట్ గా లాగడం
-                let confPromise = fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).catch(() => null);
-                let usersPromise = fetch(apiURL + "?sheet=Users&t=" + timestamp).then(r => r.json()).catch(() => null);
+                // 1. First fetch Targets Data securely
+                let confData = await fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).catch(() => null);
+                if (!confData || confData.length === 0) throw new Error("Config Load Failed");
+
+                // 2. Fetch Users securely (Not crashing other requests)
+                let usersData = await fetch(apiURL + "?sheet=Users&t=" + timestamp).then(r => r.json()).catch(() => null);
                 
-                // 2. 34,000 రికార్డ్స్ ఉన్న REDBUS డేటాని లోకల్ క్యాచ్ నుండి పక్కాగా లాగడం 🚀
+                // 3. Fetch Heavy VLE data (Cached logic)
                 let vlesData = null;
                 let cachedVleData = await getCachedData(CACHE_KEY);
                 
@@ -318,8 +321,6 @@
                         setCachedData(CACHE_KEY, vlesData);
                     }
                 }
-
-                let [confData, usersData] = await Promise.all([confPromise, usersPromise]);
 
                 if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
                     let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
@@ -344,17 +345,15 @@
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='15' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ Network Error / Server Timeout. Please click Refresh Config.</td></tr>";
+                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='15' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ Error loading Target Config from server. Please click Refresh Config.</td></tr>";
             }
         }
 
-        // 🌟 ఈ బటన్ నొక్కితే క్యాచ్ క్లియర్ అయి కొత్త డేటా వస్తుంది 🌟
         function refreshData() {
             localStorage.removeItem("cscRedbusProcessedTargets");
             dmAssignedOldDistrict = "";
             window.dmNewDistrictsSet.clear();
             
-            // ఇండెక్స్ డిబి క్యాచ్ ని కూడా డిలీట్ చేస్తోంది
             openDB().then(db => {
                 let tx = db.transaction(STORE_NAME, "readwrite");
                 tx.objectStore(STORE_NAME).delete(CACHE_KEY);
@@ -442,7 +441,6 @@
                 oldDistrictsList = ["Ananthapuramu", "Chittoor", "East Godavari", "Guntur", "Krishna", "Kurnool", "Prakasam", "Sri Potti Sriramulu Nellore", "Srikakulam", "Visakhapatnam", "Vizianagaram", "West Godavari", "Y.S.R."];
             }
 
-            // 🌟 SMART COMPRESSION CACHE (Saves the processed data) 🌟
             try {
                 let processedCache = {
                     rawOldTargets: window.rawOldTargets,
@@ -530,7 +528,6 @@
             }
 
             function calculateAndAppendRow(name, cTotal, rTotal) {
-                // RATIOS FOR BOOKINGS: Q1(20%), Q2(25%), Q3(35%), Q4(20%)
                 let cAnn = Math.round(cTotal);
                 let cQ1 = Math.round(cAnn * 0.20); 
                 let cQ2 = Math.round(cAnn * 0.25); 
@@ -583,7 +580,6 @@
 
             document.getElementById("reportTableBody").innerHTML = bodyHtml;
 
-            // Grand Total
             document.getElementById("grandTotalRow").innerHTML = `
                 <td class="col-dist">GRAND TOTAL</td>
                 <td class="text-count">${gt.cAnn.toLocaleString('en-IN')}</td>
@@ -612,20 +608,8 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'REDBUS Txn Target (Count)',
-                            data: countData,
-                            backgroundColor: '#dc2626',
-                            borderRadius: 4,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'REDBUS Revenue Target (₹)',
-                            data: revData,
-                            backgroundColor: '#10b981',
-                            borderRadius: 4,
-                            yAxisID: 'y1'
-                        }
+                        { label: 'REDBUS Txn Target (Count)', data: countData, backgroundColor: '#dc2626', borderRadius: 4, yAxisID: 'y' },
+                        { label: 'REDBUS Revenue Target (₹)', data: revData, backgroundColor: '#10b981', borderRadius: 4, yAxisID: 'y1' }
                     ]
                 },
                 options: {
@@ -646,10 +630,7 @@
             loadPerformanceReport();
         }
 
-        function resetFilters() {
-            document.getElementById("districtType").value = "old";
-            updateDistrictsDropdown();
-        }
+        function resetFilters() { document.getElementById("districtType").value = "old"; updateDistrictsDropdown(); }
 
         function toggleFullScreen() {
             try {
@@ -673,33 +654,17 @@
             let btn = document.getElementById("downloadBtn");
             let originalText = btn.innerHTML;
             
-            btn.innerHTML = "⏳ Processing...";
-            btn.style.opacity = "0.7";
-            
-            let originalOverflow = reportElement.style.overflow;
-            let originalHeight = reportElement.style.height;
-            
-            reportElement.style.overflow = 'visible';
-            reportElement.style.height = 'auto';
+            btn.innerHTML = "⏳ Processing..."; btn.style.opacity = "0.7";
+            let originalOverflow = reportElement.style.overflow; let originalHeight = reportElement.style.height;
+            reportElement.style.overflow = 'visible'; reportElement.style.height = 'auto';
 
             setTimeout(() => {
-                html2canvas(reportElement, { 
-                    scale: 2, 
-                    backgroundColor: "#ffffff",
-                    windowWidth: reportElement.scrollWidth,
-                    windowHeight: reportElement.scrollHeight
-                }).then(canvas => {
-                    let link = document.createElement('a'); 
-                    let d = new Date();
+                html2canvas(reportElement, { scale: 2, backgroundColor: "#ffffff", windowWidth: reportElement.scrollWidth, windowHeight: reportElement.scrollHeight }).then(canvas => {
+                    let link = document.createElement('a'); let d = new Date();
                     let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-                    link.download = `REDBUS_Targets_Matrix_${dateStr}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-
-                    reportElement.style.overflow = originalOverflow;
-                    reportElement.style.height = originalHeight;
-                    btn.innerHTML = originalText;
-                    btn.style.opacity = "1";
+                    link.download = `REDBUS_Targets_Matrix_${dateStr}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+                    reportElement.style.overflow = originalOverflow; reportElement.style.height = originalHeight;
+                    btn.innerHTML = originalText; btn.style.opacity = "1";
                 });
             }, 300);
         }
