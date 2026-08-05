@@ -235,11 +235,20 @@
                     return; 
                 }
 
-                // ఒకే ఒక్క రిక్వెస్ట్ ద్వారా బ్యాకెండ్ నుండి అన్ని షీట్స్ (Targets, Users, REDBUS) తెచ్చుకోవడం
                 let timestamp = new Date().getTime();
-                let masterRes = await fetch(apiURL + "?action=getFastMasterData&t=" + timestamp).then(r => r.json()).catch(() => null);
+                let fetchUrl = apiURL + "?action=getFastMasterData&t=" + timestamp;
                 
-                if (!masterRes || !masterRes.success) throw new Error("Master Data Load Failed");
+                let rawRes = await fetch(fetchUrl);
+                let textRes = await rawRes.text();
+                
+                let masterRes;
+                try {
+                    masterRes = JSON.parse(textRes);
+                } catch(e) {
+                    throw new Error("Server Error (Not JSON). Please check App Script Deployment!");
+                }
+                
+                if (!masterRes || !masterRes.success) throw new Error(masterRes.message || "Master Data Load Failed");
 
                 let confData = masterRes.targets;
                 let usersData = masterRes.users;
@@ -262,7 +271,7 @@
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("reportTableBody").innerHTML = "<tr><td colspan='15' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ Error loading Target Config from server. Please click Refresh Config.</td></tr>";
+                document.getElementById("reportTableBody").innerHTML = `<tr><td colspan='15' style='color:#dc2626; text-align:center; padding: 30px; font-size:16px; font-weight:800;'>❌ ${error.message} <br><br><span style='font-size:13px; color:#475569;'>*Hint: Did you forget to Deploy the App Script as "New Version"?</span></td></tr>`;
             }
         }
 
@@ -312,7 +321,6 @@
             let newSets = new Set();
 
             if (vlesData && vlesData.length > 0) {
-                // ఫాస్ట్ API ద్వారా వచ్చిన ముక్కలు చేసిన డేటాని ఇక్కడ వాడుకుంటున్నాం
                 vlesData.forEach(row => {
                     let oldD = row[0] || 'Unknown';
                     let newD = row[1] || 'Unknown';
