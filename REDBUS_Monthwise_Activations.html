@@ -49,6 +49,7 @@
     .th-month { background-color: #475569 !important; color: #ffffff !important; }
     .th-q1 { background-color: #7e22ce !important; color: #ffffff !important; } 
     .th-q2 { background-color: #059669 !important; color: #ffffff !important; } 
+    .th-q3 { background-color: #9d174d !important; color: #ffffff !important; } 
     .th-hy { background-color: #0f766e !important; color: #ffffff !important; } 
     .th-tot { background-color: #4338ca !important; color: #ffffff !important; } 
     .th-yet { background-color: #ea580c !important; color: #ffffff !important; } 
@@ -68,7 +69,6 @@
     .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
     .clickable-dist:hover { color: #1d4ed8 !important; text-decoration: none !important; }
     
-    /* 🌟 గ్రాండ్ టోటల్ ప్రాబ్లమ్: position: sticky తీసేశాను 🌟 */
     .t-row-total { background-color: #e2e8f0 !important; border-top: 2px solid #94a3b8 !important; }
     .t-row-total td { color: #0f172a !important; font-size: 12px !important; font-weight: 900 !important; text-align: center; padding: 8px;}
     .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
@@ -81,131 +81,34 @@
     .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
     .chart-title { font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #fee2e2; padding-bottom: 5px;}
 
-    /* ఇమేజ్ డౌన్‌లోడ్ కి పక్కా "ప్రింట్ మోడ్" లాజిక్ */
     html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
     html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
     html.exporting thead { position: static !important; transform: none !important; }
     html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; }
 
-
-/* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR REDBUS MONTH-WISE ACTIVATIONS (Added by Chandra) 📱 */
-        /* ========================================================================= */
         @media (max-width: 768px) {
-            
-            /* 1. పేజీ స్క్రోల్ లాక్ తీసేయడం */
-            html, body {
-                height: auto !important;
-                overflow: auto !important; /* మొబైల్ లో ఫ్రీగా స్క్రోల్ అవ్వడానికి */
-            }
-            
-            body { 
-                padding: 10px; 
-                display: block; 
-            }
-
-            /* 2. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .controls-bar {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                height: auto;
-                gap: 15px;
-            }
-
-            .title-sec {
-                justify-content: center;
-                font-size: 15px;
-                white-space: normal;
-                text-align: center;
-                line-height: 1.4;
-            }
-
-            .filter-group {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-                gap: 10px;
-            }
-
+            html, body { height: auto !important; overflow: auto !important; }
+            body { padding: 10px; display: block; }
+            .controls-bar { flex-direction: column; align-items: stretch; padding: 15px; height: auto; gap: 15px; }
+            .title-sec { justify-content: center; font-size: 15px; white-space: normal; text-align: center; line-height: 1.4; }
+            .filter-group { flex-direction: column; width: 100%; align-items: stretch; gap: 10px; }
             .radio-group { justify-content: center; margin: 0; padding: 5px 0;}
             .search-box, .dist-select { width: 100%; min-width: 100%; }
-
-            .d-flex.gap-2 {
-                flex-wrap: wrap;
-                width: 100%;
-            }
-
-            .d-flex.gap-2 > * {
-                flex: 1 1 calc(50% - 10px); /* బటన్స్ పక్కపక్కన రెండు వచ్చేలా */
-                text-align: center;
-                justify-content: center;
-            }
-
-            /* 3. రిపోర్ట్ హెడర్ & టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            .content-wrapper {
-                padding: 15px 5px;
-                height: auto;
-                overflow: visible;
-                display: block;
-            }
-
+            .d-flex.gap-2 { flex-wrap: wrap; width: 100%; }
+            .d-flex.gap-2 > * { flex: 1 1 calc(50% - 10px); text-align: center; justify-content: center; }
+            .content-wrapper { padding: 15px 5px; height: auto; overflow: visible; display: block; }
             .report-main-title { font-size: 15px; line-height: 1.4; margin-bottom: 5px; padding: 0 10px; }
             .report-date-text { font-size: 11px; margin-top: 5px; }
-
-            .scrollable-area {
-                overflow-y: visible;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ */
-                padding-right: 0;
-                margin-bottom: 20px;
-            }
-
-            table {
-                min-width: 1000px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా సెట్ చేయడం (కాలమ్స్ ఎక్కువ కాబట్టి వెడల్పు పెంచాను) */
-            }
-
-            th, td {
-                font-size: 9px !important;
-                padding: 8px 4px !important;
-            }
-
-            .sub-th {
-                font-size: 8px !important;
-                padding: 4px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
+            .scrollable-area { overflow-y: visible; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-right: 0; margin-bottom: 20px; }
+            table { min-width: 1000px; }
+            th, td { font-size: 9px !important; padding: 8px 4px !important; }
+            .sub-th { font-size: 8px !important; padding: 4px !important; }
             .clickable-dist, .th-dist, .t-row-total td:first-child,
-            thead tr:nth-child(1) th:first-child, td:first-child {
-                position: static !important;
-                border-right: 1px solid #cbd5e1 !important;
-                text-align: center !important;
-                padding-left: 5px !important;
-            }
-
-            /* 4. చార్ట్స్ సెట్టింగ్స్ */
-            .charts-container {
-                position: static !important;
-                flex-direction: column; /* గ్రాఫ్స్ ఒకదాని కింద ఒకటి వస్తాయి */
-                width: 100% !important;
-                height: auto !important;
-                margin-top: 10px;
-                padding: 0 10px;
-                gap: 15px;
-            }
-
-            .chart-box {
-                min-width: 100%; /* ఫుల్ విడ్త్ */
-                height: 250px; /* ఎత్తు తగ్గింపు */
-                padding: 10px;
-            }
-            
-            .chart-title {
-                font-size: 13px;
-            }
+            thead tr:nth-child(1) th:first-child, td:first-child { position: static !important; border-right: 1px solid #cbd5e1 !important; text-align: center !important; padding-left: 5px !important; }
+            .charts-container { position: static !important; flex-direction: column; width: 100% !important; height: auto !important; margin-top: 10px; padding: 0 10px; gap: 15px; }
+            .chart-box { min-width: 100%; height: 250px; padding: 10px; }
+            .chart-title { font-size: 13px; }
         }
-
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -219,10 +122,8 @@
 </head>
 <body>
 
-  <!-- కంట్రోల్ బార్ -->
   <div class="controls-bar" data-html2canvas-ignore="true">
     <div class="title-sec">🚌 REDBUS: MONTH-WISE ACTIVATIONS</div>
-    
     <div class="filter-group">
       <div class="radio-group">
         <label><input type="radio" name="distType" value="OLD" checked onchange="processData()"> Old Dist</label>
@@ -233,7 +134,6 @@
       </select>
       <input type="text" id="searchInput" class="search-box" placeholder="Search District..." onkeyup="renderView()">
     </div>
-    
     <div class="d-flex gap-2">
       <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
       <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
@@ -248,19 +148,15 @@
         <p class="report-date-text" id="reportDateTxt"></p>
     </div>
 
-    <!-- స్క్రోలబుల్ ఏరియా -->
     <div class="scrollable-area" id="scrollableArea">
       <table id="reportTable">
-        <thead id="reportHead">
-          <!-- జావాస్క్రిప్ట్ ద్వారా డేట్ ని బట్టి ఆటోమేటిక్ గా హెడ్డింగ్స్ వస్తాయి -->
-        </thead>
+        <thead id="reportHead"></thead>
         <tbody id="reportBody">
           <tr><td colspan="30" class="text-danger py-4 text-center fw-bold">Loading District Data...</td></tr>
         </tbody>
         <tfoot id="reportFoot"></tfoot>
       </table>
 
-      <!-- 🌟 చార్ట్స్ సెక్షన్ (ఇప్పుడు పక్కాగా వస్తాయి) 🌟 -->
       <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
         <div class="chart-box" style="flex: 2;">
           <div class="chart-title">📈 Month-Wise Participation Trend</div>
@@ -281,22 +177,20 @@
     let loggedInUserId = localStorage.getItem("userId") || ""; 
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     
-    const CACHE_KEY = "TRAVEL_CACHE_V7_REDBUS_" + loggedInUserId;
+    const CACHE_KEY = "TRAVEL_MONTHWISE_REAL_V4_REDBUS_" + loggedInUserId;
 
     let rawData = [];
     let districtAggregatedData = [];
     let selectedDistFilter = ""; 
-
     let barChartInstance = null;
     let pieChartInstance = null;
 
-    // ఆటోమేటిక్ గా నెలల లెక్కలు తీసే మ్యాజిక్ లాజిక్
     const MONTH_KEYS = ['apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar'];
     const MONTH_LABELS = ['APR 26', 'MAY 26', 'JUN 26', 'JUL 26', 'AUG 26', 'SEP 26', 'OCT 26', 'NOV 26', 'DEC 26', 'JAN 27', 'FEB 27', 'MAR 27'];
     
     let dDate = new Date();
     let currentY = dDate.getFullYear();
-    let currentM = dDate.getMonth(); // 0=Jan, 5=Jun
+    let currentM = dDate.getMonth(); 
     
     let monthsToShow = 3; 
     if (currentY === 2026 && currentM >= 3) { monthsToShow = currentM - 3 + 1; } 
@@ -305,6 +199,11 @@
     
     if(monthsToShow < 1) monthsToShow = 1;
     if(monthsToShow > 12) monthsToShow = 12;
+
+    let startMonthIndex = 0;
+    if (monthsToShow >= 10) startMonthIndex = 9; 
+    else if (monthsToShow >= 7) startMonthIndex = 6; 
+    else if (monthsToShow >= 4) startMonthIndex = 3; 
 
     window.onload = async function() {
         const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
@@ -327,23 +226,33 @@
             <th rowspan="2" class="th-main">TOTAL<br>CSC IDS</th>
             <th rowspan="2" class="th-main">ACTIVE<br>(FY 25-26)</th>`;
 
-        for(let i=0; i<monthsToShow; i++) { headHtml += `<th colspan="3" class="th-month">${MONTH_LABELS[i]}</th>`; }
         if (monthsToShow >= 4) { headHtml += `<th colspan="3" class="th-q1">Q1 TOTAL (APR-JUN)</th>`; }
         if (monthsToShow >= 7) { 
             headHtml += `<th colspan="3" class="th-q2">Q2 TOTAL (JUL-SEP)</th>`; 
             headHtml += `<th colspan="3" class="th-hy">HALF YEARLY (H1)</th>`; 
         }
+        if (monthsToShow >= 10) { headHtml += `<th colspan="3" class="th-q3">Q3 TOTAL (OCT-DEC)</th>`; }
+
+        for(let i = startMonthIndex; i < monthsToShow; i++) { 
+            headHtml += `<th colspan="3" class="th-month">${MONTH_LABELS[i]}</th>`; 
+        }
+        
         headHtml += `<th colspan="3" class="th-tot">TOTAL ACTIVE (FY 26-27)</th>
                      <th rowspan="2" class="th-yet">YET TO<br>ACTIVATE</th>
                      <th rowspan="2" class="th-ina">TOTAL<br>INACTIVE</th>
                      </tr><tr>`;
 
-        for(let i=0; i<monthsToShow; i++) { headHtml += `<th class="sub-th">PARTICIPATED</th><th class="sub-th">ACT. OLD</th><th class="sub-th">ACT. NEW</th>`; }
         if (monthsToShow >= 4) { headHtml += `<th class="sub-th">UNIQUE TOTAL</th><th class="sub-th">OLD</th><th class="sub-th">NEW</th>`; }
         if (monthsToShow >= 7) { 
             headHtml += `<th class="sub-th">UNIQUE TOTAL</th><th class="sub-th">OLD</th><th class="sub-th">NEW</th>`; 
             headHtml += `<th class="sub-th">UNIQUE TOTAL</th><th class="sub-th">OLD</th><th class="sub-th">NEW</th>`; 
         }
+        if (monthsToShow >= 10) { headHtml += `<th class="sub-th">UNIQUE TOTAL</th><th class="sub-th">OLD</th><th class="sub-th">NEW</th>`; }
+
+        for(let i = startMonthIndex; i < monthsToShow; i++) { 
+            headHtml += `<th class="sub-th">PARTICIPATED</th><th class="sub-th">ACT. OLD</th><th class="sub-th">ACT. NEW</th>`; 
+        }
+        
         headHtml += `<th class="sub-th">UNIQUE TOTAL</th><th class="sub-th">OLD</th><th class="sub-th">NEW</th></tr>`;
 
         document.getElementById('reportHead').innerHTML = headHtml;
@@ -351,11 +260,34 @@
 
     const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
     function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    
     async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
     
+    // 🌟 MISSING లాజిక్: సర్వర్ నుండి వచ్చిన డేటాని క్యాచ్ లో సేవ్ చేయడం 🌟
+    async function setCachedData(key, data) {
+        try {
+            let db = await openDB();
+            let tx = db.transaction(STORE_NAME, "readwrite");
+            tx.objectStore(STORE_NAME).put({ data: data, timestamp: Date.now() }, key);
+        } catch(e) { console.error("Cache save failed:", e); }
+    }
+
     function fetchDataFromServer() {
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
-        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
+        document.getElementById("reportBody").innerHTML = `<tr><td colspan="30" class="text-danger py-4 text-center fw-bold">Fetching Live Data from Server...</td></tr>`;
+        
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
+        .then(res => res.json())
+        .then(res => { 
+            if(res.success && res.data) { 
+                rawData = res.data; 
+                // 🌟 డేటాని క్యాచ్ లో సేవ్ చేస్తున్నాం 🌟
+                setCachedData(CACHE_KEY, rawData);
+                processData(); 
+            } else {
+                alert("Data fetch failed. Error: " + (res.message || "Unknown"));
+            }
+        })
+        .catch(e => { alert("Network Error"); });
     }
     
     function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
@@ -363,6 +295,11 @@
     function processData() {
         let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
         let distMap = {};
+
+        let oldYearKey = null;
+        if(rawData.length > 0) {
+            oldYearKey = Object.keys(rawData[0]).find(k => (k.includes('25') && (k.includes('txn') || k.includes('26'))) && !k.includes('target') && !k.includes('dsp') && !k.includes('amt'));
+        }
 
         rawData.forEach(r => {
             if (isNew && isDM && !r.isMyNewDist) return; 
@@ -373,7 +310,9 @@
                 distMap[distName] = { 
                     name: distName, totCsc: 0, act25: 0,
                     monthsData: Array(12).fill(0).map(()=>({part:0, old:0, new:0})),
-                    q1: {part:0, old:0, new:0}, q2: {part:0, old:0, new:0}, hy: {part:0, old:0, new:0},
+                    q1: {part:0, old:0, new:0}, q2: {part:0, old:0, new:0}, 
+                    q3: {part:0, old:0, new:0}, q4: {part:0, old:0, new:0}, 
+                    hy: {part:0, old:0, new:0},
                     tot: {part:0, old:0, new:0}, yet: 0, ina: 0
                 };
             }
@@ -381,17 +320,19 @@
             let d = distMap[distName];
             d.totCsc++;
             
-            let isOldUser = r.srv2526 > 0;
-            if(isOldUser) d.act25++;
+            let isOldUser = false;
+            if (oldYearKey && (parseFloat(r[oldYearKey]) || 0) > 0) isOldUser = true;
+            if (isOldUser) d.act25++;
 
             let hasActiveThisYear = false;
-            let didQ1 = false, didQ2 = false;
+            let didQ1 = false, didQ2 = false, didQ3 = false, didQ4 = false;
 
             for(let i=0; i<monthsToShow; i++) {
-                let mKey = MONTH_KEYS[i];
-                let val = (typeof r[mKey] !== 'undefined') ? r[mKey] : (r.srv2627 > 0 ? (Math.random() > 0.6 ? 1 : 0) : 0);
+                let prefix = MONTH_KEYS[i];
+                let mKey = Object.keys(r).find(k => k.includes(prefix) && !k.includes('dsp') && !k.includes('amt') && !k.includes('rev') && !k.includes('target'));
+                let val = mKey ? (parseFloat(r[mKey]) || 0) : 0;
                 
-                if(val > 0 || (i===0 && r.srv2627 > 0)) { 
+                if(val > 0) { 
                     hasActiveThisYear = true;
                     d.monthsData[i].part++;
                     if(isOldUser) d.monthsData[i].old++; else d.monthsData[i].new++;
@@ -400,13 +341,17 @@
                         if(!didQ1) { didQ1 = true; d.q1.part++; if(isOldUser) d.q1.old++; else d.q1.new++; }
                     } else if(i < 6) {
                         if(!didQ2) { didQ2 = true; d.q2.part++; if(isOldUser) d.q2.old++; else d.q2.new++; }
+                    } else if(i < 9) {
+                        if(!didQ3) { didQ3 = true; d.q3.part++; if(isOldUser) d.q3.old++; else d.q3.new++; }
+                    } else if(i < 12) {
+                        if(!didQ4) { didQ4 = true; d.q4.part++; if(isOldUser) d.q4.old++; else d.q4.new++; }
                     }
                 }
             }
 
             if(didQ1 || didQ2) { d.hy.part++; if(isOldUser) d.hy.old++; else d.hy.new++; }
 
-            if(r.srv2627 > 0 || hasActiveThisYear) {
+            if(hasActiveThisYear) {
                 d.tot.part++;
                 if(isOldUser) d.tot.old++; else d.tot.new++;
             } else {
@@ -423,7 +368,6 @@
         renderView();
     }
 
-    // రీసెట్ బటన్
     window.resetFilters = function() {
         document.getElementById("searchInput").value = "";
         document.getElementById("distDropdown").value = "";
@@ -456,7 +400,6 @@
             return d.name.toUpperCase().includes(searchTxt) && (selectedDistFilter === "" || d.name === selectedDistFilter) && (dropDownVal === "" || d.name === dropDownVal);
         });
         
-        // 🌟 రెండు ఫంక్షన్స్ కాల్ అవుతాయి (టేబుల్ & చార్ట్స్) 🌟
         renderTable(filteredData);
         renderCharts(filteredData);
     }
@@ -473,50 +416,57 @@
 
         let tCsc=0, tA25=0, tYet=0, tIna=0;
         let tm = Array(12).fill(0).map(()=>({p:0, o:0, n:0}));
-        let tq1={p:0, o:0, n:0}, tq2={p:0, o:0, n:0}, thy={p:0, o:0, n:0}, ttot={p:0, o:0, n:0};
+        let tq1={p:0, o:0, n:0}, tq2={p:0, o:0, n:0}, tq3={p:0, o:0, n:0}, thy={p:0, o:0, n:0}, ttot={p:0, o:0, n:0};
 
         dataArray.forEach(d => {
             tCsc += d.totCsc; tA25 += d.act25; tYet += d.yet; tIna += d.ina;
             tq1.p += d.q1.part; tq1.o += d.q1.old; tq1.n += d.q1.new;
             tq2.p += d.q2.part; tq2.o += d.q2.old; tq2.n += d.q2.new;
+            tq3.p += d.q3.part; tq3.o += d.q3.old; tq3.n += d.q3.new;
             thy.p += d.hy.part; thy.o += d.hy.old; thy.n += d.hy.new;
             ttot.p += d.tot.part; ttot.o += d.tot.old; ttot.n += d.tot.new;
 
             let rowHtml = `<tr><td class="clickable-dist text-primary" ondblclick="toggleDistFilter('${d.name}')">${d.name}</td>
                            <td class="fw-bold">${d.totCsc}</td><td style="color:#0f766e;">${d.act25}</td>`;
             
-            for(let i=0; i<monthsToShow; i++) {
-                tm[i].p += d.monthsData[i].part; tm[i].o += d.monthsData[i].old; tm[i].n += d.monthsData[i].new;
-                rowHtml += `<td style="color:#334155;">${d.monthsData[i].part}</td><td style="color:#059669;">${d.monthsData[i].old}</td><td style="color:#d97706;">${d.monthsData[i].new}</td>`;
-            }
             if(monthsToShow >= 4) { rowHtml += `<td style="color:#7e22ce;">${d.q1.part}</td><td style="color:#7e22ce;">${d.q1.old}</td><td style="color:#7e22ce;">${d.q1.new}</td>`; }
             if(monthsToShow >= 7) { 
                 rowHtml += `<td style="color:#059669;">${d.q2.part}</td><td style="color:#059669;">${d.q2.old}</td><td style="color:#059669;">${d.q2.new}</td>`; 
                 rowHtml += `<td style="color:#0f766e;">${d.hy.part}</td><td style="color:#0f766e;">${d.hy.old}</td><td style="color:#0f766e;">${d.hy.new}</td>`; 
             }
+            if(monthsToShow >= 10) { rowHtml += `<td style="color:#9d174d;">${d.q3.part}</td><td style="color:#9d174d;">${d.q3.old}</td><td style="color:#9d174d;">${d.q3.new}</td>`; }
+
+            for(let i = startMonthIndex; i < monthsToShow; i++) {
+                tm[i].p += d.monthsData[i].part; tm[i].o += d.monthsData[i].old; tm[i].n += d.monthsData[i].new;
+                rowHtml += `<td style="color:#334155;">${d.monthsData[i].part}</td><td style="color:#059669;">${d.monthsData[i].old}</td><td style="color:#d97706;">${d.monthsData[i].new}</td>`;
+            }
+            
             rowHtml += `<td style="color:#4338ca;">${d.tot.part}</td><td style="color:#4338ca;">${d.tot.old}</td><td style="color:#4338ca;">${d.tot.new}</td>
                         <td style="color:#ea580c;">${d.yet}</td><td style="color:#64748b;">${d.ina}</td></tr>`;
             tbody.innerHTML += rowHtml;
         });
 
-        // 🌟 గ్రాండ్ టోటల్ పక్కాగా లాస్ట్ లో అలైన్ అవుతుంది 🌟
         let tfootHtml = `<tr class="t-row-total"><td class="text-start ps-3 text-danger">GRAND TOTAL</td><td>${tCsc}</td><td style="color:#0f766e;">${tA25}</td>`;
-        for(let i=0; i<monthsToShow; i++) { tfootHtml += `<td style="color:#334155;">${tm[i].p}</td><td style="color:#059669;">${tm[i].o}</td><td style="color:#d97706;">${tm[i].n}</td>`; }
+        
         if(monthsToShow >= 4) { tfootHtml += `<td style="color:#7e22ce;">${tq1.p}</td><td style="color:#7e22ce;">${tq1.o}</td><td style="color:#7e22ce;">${tq1.n}</td>`; }
         if(monthsToShow >= 7) { 
             tfootHtml += `<td style="color:#059669;">${tq2.p}</td><td style="color:#059669;">${tq2.o}</td><td style="color:#059669;">${tq2.n}</td>`; 
             tfootHtml += `<td style="color:#0f766e;">${thy.p}</td><td style="color:#0f766e;">${thy.o}</td><td style="color:#0f766e;">${thy.n}</td>`; 
         }
+        if(monthsToShow >= 10) { tfootHtml += `<td style="color:#9d174d;">${tq3.p}</td><td style="color:#9d174d;">${tq3.o}</td><td style="color:#9d174d;">${tq3.n}</td>`; }
+
+        for(let i = startMonthIndex; i < monthsToShow; i++) { 
+            tfootHtml += `<td style="color:#334155;">${tm[i].p}</td><td style="color:#059669;">${tm[i].o}</td><td style="color:#d97706;">${tm[i].n}</td>`; 
+        }
+        
         tfootHtml += `<td style="color:#4338ca;">${ttot.p}</td><td style="color:#4338ca;">${ttot.o}</td><td style="color:#4338ca;">${ttot.n}</td>
                       <td style="color:#ea580c;">${tYet}</td><td style="color:#64748b;">${tIna}</td></tr>`;
         tfoot.innerHTML = tfootHtml;
     }
 
-    // 🌟 మర్చిపోయిన చార్ట్స్ లాజిక్ ఇక్కడ రాశాను 🌟
     function renderCharts(dataArray) {
         if(dataArray.length === 0) return;
 
-        // 1. నెలల వారీగా ట్రెండ్ కి డేటా
         let monthLabels = [];
         let monthData = [];
         for(let i=0; i<monthsToShow; i++) {
@@ -526,7 +476,6 @@
             monthData.push(mTotal);
         }
 
-        // 2. ఓవరాల్ పాతవాళ్లు vs కొత్తవాళ్లు (Pie Chart) కి డేటా
         let totOld = 0, totNew = 0;
         dataArray.forEach(d => { totOld += d.tot.old; totNew += d.tot.new; });
 
