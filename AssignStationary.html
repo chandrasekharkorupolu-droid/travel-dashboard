@@ -228,6 +228,13 @@
                     <span class="badge-soft ms-auto text-white" style="background-color:#7c3aed;" id="lblVleDistrict">District</span>
                 </div>
             </div>
+
+            <!-- 🌟 NEW: Last Request Details Box 🌟 -->
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded shadow-sm" style="background-color: #fffbeb; border: 1px dashed #f59e0b;">
+                <div style="font-size: 11px;"><span style="color: #b45309; font-weight: 800;">🕒 Last Request:</span> <br><span id="lblLastReqDate" class="fw-bold text-dark" style="font-size: 13px;">Loading...</span></div>
+                <div style="font-size: 11px; text-align: center;"><span style="color: #b45309; font-weight: 800;">📦 Qty:</span> <br><span id="lblLastReqQty" class="fw-bold text-danger" style="font-size: 13px;">-</span></div>
+                <div style="font-size: 11px; text-align: right;"><span style="color: #b45309; font-weight: 800;">📌 Status:</span> <br><span id="lblLastReqStatus" class="fw-bold text-primary" style="font-size: 13px;">-</span></div>
+            </div>
             
             <!-- 🌟 Stock Side-by-Side (Space Saver) 🌟 -->
             <div class="d-flex gap-2 mb-3">
@@ -439,7 +446,6 @@
              let isDM = (rUpper === "DM" || rUpper.indexOf("DISTRICT MANAGER") !== -1);
              let currentStatus = req.status ? req.status.trim() : "";
              
-             // 🌟 UPDATED: Handling Multiple Possible Backend Keys for "Req No" 🌟
              let reqNoDisplay = req['Stock Holding Request No'] || req.stockHoldingRequestNo || req.StockHoldingRequestNo || req.reqNo || req.requestNo || "N/A";
              
              if (isDM && currentStatus === "Pending") {
@@ -472,6 +478,36 @@
        document.getElementById("lblVleId").innerText = "("+cscId+")";
        document.getElementById("lblVleDistrict").innerText = district;
        document.getElementById("lblReqQty").innerText = reqQty;
+       
+       // 🌟 Reset Last Request Info 🌟
+       document.getElementById("lblLastReqDate").innerText = "Loading...";
+       document.getElementById("lblLastReqQty").innerText = "-";
+       document.getElementById("lblLastReqStatus").innerText = "-";
+
+       // 🌟 Fetch VLE's Last Request History 🌟
+       fetch(SCRIPT_URL, {
+           method: "POST",
+           headers: { "Content-Type": "text/plain;charset=utf-8" },
+           body: JSON.stringify({ action: "checkVleStatus", vleId: cscId })
+       })
+       .then(res => res.json())
+       .then(res => {
+           if(res.success && res.data && res.data.length > 1) {
+               // Index 0 is the current pending request. Index 1 is the previous one.
+               let lastReq = res.data[1]; 
+               document.getElementById("lblLastReqDate").innerText = lastReq.date.split(' ')[0] || lastReq.date;
+               document.getElementById("lblLastReqQty").innerText = lastReq.qty + " Papers";
+               document.getElementById("lblLastReqStatus").innerText = lastReq.status;
+           } else if (res.success && res.data && res.data.length === 1) {
+               document.getElementById("lblLastReqDate").innerText = "First Time Request";
+               document.getElementById("lblLastReqQty").innerText = "N/A";
+               document.getElementById("lblLastReqStatus").innerText = "N/A";
+           } else {
+               document.getElementById("lblLastReqDate").innerText = "No Data Found";
+           }
+       }).catch(e => {
+           document.getElementById("lblLastReqDate").innerText = "Error Loading";
+       });
        
        let qtyInput = document.getElementById("appQty");
        let btnApprove = document.getElementById("btnApprove");
