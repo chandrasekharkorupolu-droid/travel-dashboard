@@ -137,7 +137,7 @@
     .badge-gray { background: #f1f5f9; color: #475569; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
 
     /* ========================================================================= */
-    /* 📱 MOBILE RESPONSIVENESS FOR STOCK REQUESTS (Added by Chandra) 📱 */
+    /* 📱 MOBILE RESPONSIVENESS FOR STOCK REQUESTS */
     /* ========================================================================= */
     @media (max-width: 992px) {
         body { padding: 10px; }
@@ -145,26 +145,19 @@
         .row.g-3 { flex-direction: column; }
         .col-lg-7, .col-lg-5 { width: 100%; }
 
-        /* టేబుల్ సెట్టింగ్స్ */
-        .table-responsive {
-            max-height: 400px !important;
-        }
+        .table-responsive { max-height: 400px !important; }
         table { min-width: 800px !important; } 
         
-        /* కంటెంట్ సెట్టింగ్స్ */
         .stock-box { padding: 10px 5px; }
         .stock-value { font-size: 18px; }
         
         .score-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        
-        /* మోడల్ పాప్-అప్స్ */
         .modal-dialog { margin: 10px; }
     }
 
     @media (max-width: 576px) {
         .card-header-custom { flex-direction: column; align-items: flex-start; gap: 10px; }
         .card-title { font-size: 15px; }
-        
         .score-grid { grid-template-columns: 1fr !important; }
     }
   </style>
@@ -229,7 +222,7 @@
                 </div>
             </div>
 
-            <!-- 🌟 NEW: Last Request Details Box 🌟 -->
+            <!-- 🌟 Last Request Details Box 🌟 -->
             <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded shadow-sm" style="background-color: #fffbeb; border: 1px dashed #f59e0b;">
                 <div style="font-size: 11px;"><span style="color: #b45309; font-weight: 800;">🕒 Last Request:</span> <br><span id="lblLastReqDate" class="fw-bold text-dark" style="font-size: 13px;">Loading...</span></div>
                 <div style="font-size: 11px; text-align: center;"><span style="color: #b45309; font-weight: 800;">📦 Qty:</span> <br><span id="lblLastReqQty" class="fw-bold text-danger" style="font-size: 13px;">-</span></div>
@@ -269,7 +262,6 @@
                     <div class="score-item bg-white"><span class="score-title">TRAVEL</span><span class="score-val text-warning" style="color: #ea580c !important;" id="score-travel">-</span></div>
                     <div class="score-item bg-white"><span class="score-title">INSURANCE</span><span class="score-val text-success" style="color: #16a34a !important;" id="score-insurance">-</span><div style="font-size: 9px; color: #94a3b8; font-weight: bold;" id="amt-insurance">(₹ 0)</div></div>
                     
-                    <!-- New Skill and Edu columns with tooltips -->
                     <div class="score-item bg-white" data-bs-toggle="tooltip" data-bs-placement="top" id="tooltip-skill" title="Products will show here">
                         <span class="score-title text-primary" style="color: #2563eb !important;">SKILL DEV</span>
                         <span class="score-val" id="score-skill">-</span>
@@ -376,12 +368,14 @@
     let loggedInUser = localStorage.getItem("userName") || "Admin";
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
     let loggedInUserId = localStorage.getItem("userId") || "";
+    
+    // 🌟 గ్లోబల్ వేరియబుల్: అవైలబుల్ స్టాక్ చెక్ చేయడానికి 🌟
+    let currentAvailableStock = -1;
 
     let myRejectModalInstance = null;
 
     window.onload = function() { checkCacheAndLoadRequests(); };
 
-    // Enable tooltips everywhere
     document.addEventListener("DOMContentLoaded", function(){
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -445,7 +439,6 @@
              let rUpper = loggedInDesig.toUpperCase();
              let isDM = (rUpper === "DM" || rUpper.indexOf("DISTRICT MANAGER") !== -1);
              let currentStatus = req.status ? req.status.trim() : "";
-             
              let reqNoDisplay = req['Stock Holding Request No'] || req.stockHoldingRequestNo || req.StockHoldingRequestNo || req.reqNo || req.requestNo || "N/A";
              
              if (isDM && currentStatus === "Pending") {
@@ -473,18 +466,18 @@
 
     function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
        activeRowIdx = rowIdx; currentStep = stepType;
+       currentAvailableStock = -1; // రీసెట్ చేస్తున్నాం (లోడింగ్ అవుతున్నట్టు)
+       
        document.getElementById("approvalPanel").style.display = "block";
        document.getElementById("lblVleName").innerText = vleName;
        document.getElementById("lblVleId").innerText = "("+cscId+")";
        document.getElementById("lblVleDistrict").innerText = district;
        document.getElementById("lblReqQty").innerText = reqQty;
        
-       // 🌟 Reset Last Request Info 🌟
        document.getElementById("lblLastReqDate").innerText = "Loading...";
        document.getElementById("lblLastReqQty").innerText = "-";
        document.getElementById("lblLastReqStatus").innerText = "-";
 
-       // 🌟 Fetch VLE's Last Request History 🌟
        fetch(SCRIPT_URL, {
            method: "POST",
            headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -493,7 +486,6 @@
        .then(res => res.json())
        .then(res => {
            if(res.success && res.data && res.data.length > 1) {
-               // Index 0 is the current pending request. Index 1 is the previous one.
                let lastReq = res.data[1]; 
                document.getElementById("lblLastReqDate").innerText = lastReq.date.split(' ')[0] || lastReq.date;
                document.getElementById("lblLastReqQty").innerText = lastReq.qty + " Papers";
@@ -536,11 +528,24 @@
                if(distKey) {
                    let d = res.summary[distKey];
                    let avail = d.inward - d.outward;
+                   currentAvailableStock = avail; // 🌟 స్టాక్ గ్లోబల్ వేరియబుల్ లో స్టోర్ చేసాం
                    lblAvail.innerText = avail + " Papers";
                    lblAvail.className = avail > 0 ? "stock-value text-success" : "stock-value text-danger";
-               } else { lblAvail.innerText = "0 Papers (Not Assigned)"; lblAvail.className = "stock-value text-danger"; }
-           } else { lblAvail.innerText = "0 Papers"; lblAvail.className = "stock-value text-danger"; }
-       }).catch(e => { lblAvail.innerText = "Network Error"; lblAvail.className = "stock-value text-danger"; });
+               } else { 
+                   currentAvailableStock = 0; 
+                   lblAvail.innerText = "0 Papers (Not Assigned)"; 
+                   lblAvail.className = "stock-value text-danger"; 
+               }
+           } else { 
+               currentAvailableStock = 0; 
+               lblAvail.innerText = "0 Papers"; 
+               lblAvail.className = "stock-value text-danger"; 
+           }
+       }).catch(e => { 
+           currentAvailableStock = 0; 
+           lblAvail.innerText = "Network Error"; 
+           lblAvail.className = "stock-value text-danger"; 
+       });
 
        if (stepType === 3) { 
            title.innerText = "📦 Auto-Dispatch Physical Stock"; 
@@ -659,8 +664,19 @@
         reviewRequest(activeRowIdx, cscId, vName, dist, qty, currentStep);
     }
 
+    // 🌟 VALIDATION: జనరేట్ సీరియల్స్ బటన్ (స్టెప్ 3) 🌟
     function generateSerialsPreview() {
-        var qty = document.getElementById("appQty").value;
+        var qty = parseInt(document.getElementById("appQty").value, 10);
+        
+        if (currentAvailableStock === -1) {
+            customAlert("స్టాక్ వివరాలు లోడ్ అవుతున్నాయి. దయచేసి వేచి ఉండండి...", false);
+            return;
+        }
+        if (qty > currentAvailableStock) {
+            customAlert(`❌ మీ జిల్లాలో తగినంత స్టాక్ లేదు!\n\n📦 ఉన్న స్టాక్ (Available): ${currentAvailableStock}\n📝 మీరు ఇస్తున్నది (Giving): ${qty}\n\nదయచేసి ముందుగా మాస్టర్ స్టాక్ యాడ్ చేయించుకోండి.`, false);
+            return;
+        }
+
         var dist = document.getElementById("lblVleDistrict").innerText.trim();
         var btnPreview = document.getElementById("btnPreviewSerials");
         if(!qty || qty <= 0) { customAlert("దయచేసి Approved Quantity ఎంటర్ చేయండి!", false); return; }
@@ -685,17 +701,28 @@
         }).catch(err => { btnPreview.disabled = false; btnPreview.innerText = "🔍 Generate Serial Numbers"; customAlert("Network Error!", false); });
     }
 
+    // 🌟 VALIDATION: ఆమోదించు బటన్ (స్టెప్ 1, 2) 🌟
     function approveRequest(e) {
        e.preventDefault(); 
        if(!activeRowIdx) return;
+       
+       let aQtyVal = parseInt(document.getElementById("appQty").value, 10);
+       
+       if (currentAvailableStock === -1) {
+           customAlert("స్టాక్ వివరాలు లోడ్ అవుతున్నాయి. దయచేసి వేచి ఉండండి...", false);
+           return;
+       }
+       if (aQtyVal > currentAvailableStock) {
+           customAlert(`❌ మీ జిల్లాలో తగినంత స్టాక్ లేదు!\n\n📦 ఉన్న స్టాక్ (Available): ${currentAvailableStock}\n📝 మీరు ఆమోదిస్తున్నది (Giving): ${aQtyVal}\n\nదయచేసి ముందుగా మాస్టర్ స్టాక్ యాడ్ చేయించుకోండి.`, false);
+           return;
+       }
+
        let dist = document.getElementById("lblVleDistrict").innerText.trim();
        let vName = document.getElementById("lblVleName").innerText.trim();
-       
        let vIdText = document.getElementById("lblVleId").innerText.trim();
        let vId = vIdText.replace('(', '').replace(')', '');
        
-       let aQty = document.getElementById("appQty").value;
-       var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: vId, vleName: vName, district: dist, appQty: aQty, approvedBy: loggedInUser };
+       var payload = { action: "approveVleRequest", stepType: currentStep, role: loggedInDesig, rowIdx: activeRowIdx, vleId: vId, vleName: vName, district: dist, appQty: aQtyVal, approvedBy: loggedInUser };
        var btn = document.getElementById("btnApprove"); btn.disabled = true; 
        
        if (currentStep === 1) { btn.innerText = "Processing Recommendation..."; }
@@ -714,7 +741,7 @@
              if (currentStep === 3) {
                  let sStart = document.getElementById("previewStart").innerText;
                  let sEnd = document.getElementById("previewEnd").innerText;
-                 let waMsg = `🔔 *CSC AP - E-Stamping Stock Update* 🔔\n\nప్రియమైన *${vName}* గారు (CSC ID: *${vId}*),\n\nమీ E-Stamping స్టాక్ రిక్వెస్ట్ ఆమోదించబడింది. మీకు ఈరోజు ఈ కింది స్టాక్ డిస్పాచ్ చేయబడింది:\n\n📦 *మంజూరైన క్వాంటిటీ:* ${aQty} Papers\n🔢 *సీరియల్ నెంబర్లు:* ${sStart} నుండి ${sEnd} వరకు\n\n📄 *ముఖ్య గమనిక:* దయచేసి మీ పోర్టల్‌లో లాగిన్ అయి, "Track Request" సెక్షన్ నుండి *'Acknowledgement Form'* ప్రింట్ తీసుకుని, దానిపై మీ సంతకం చేసి మా ఆఫీస్‌లో సబ్మిట్ చేసి మీ స్టాక్ ని కలెక్ట్ చేసుకోగలరు.\n\nధన్యవాదాలు,\nCSC Team,\n${dist} District.`;
+                 let waMsg = `🔔 *CSC AP - E-Stamping Stock Update* 🔔\n\nప్రియమైన *${vName}* గారు (CSC ID: *${vId}*),\n\nమీ E-Stamping స్టాక్ రిక్వెస్ట్ ఆమోదించబడింది. మీకు ఈరోజు ఈ కింది స్టాక్ డిస్పాచ్ చేయబడింది:\n\n📦 *మంజూరైన క్వాంటిటీ:* ${aQtyVal} Papers\n🔢 *సీరియల్ నెంబర్లు:* ${sStart} నుండి ${sEnd} వరకు\n\n📄 *ముఖ్య గమనిక:* దయచేసి మీ పోర్టల్‌లో లాగిన్ అయి, "Track Request" సెక్షన్ నుండి *'Acknowledgement Form'* ప్రింట్ తీసుకుని, దానిపై మీ సంతకం చేసి మా ఆఫీస్‌లో సబ్మిట్ చేసి మీ స్టాక్ ని కలెక్ట్ చేసుకోగలరు.\n\nధన్యవాదాలు,\nCSC Team,\n${dist} District.`;
                  navigator.clipboard.writeText(waMsg).then(() => {
                      customAlert(res.message + "\n\n✅ వాట్సాప్ మెసేజ్ మీ క్లిప్‌బోర్డ్ లో కాపీ అయ్యింది! వాట్సాప్ లో పేస్ట్ (Ctrl + V) చేసి పంపించండి.", true);
                  }).catch(err => { customAlert(res.message, true); });
