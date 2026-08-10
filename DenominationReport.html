@@ -35,8 +35,13 @@
     .view-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
     .view-btn:last-child { border-radius: 0 8px 8px 0; }
     
-    .search-box { width: 300px; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; outline: none; font-size: 13px; font-weight: 600; color: #1e293b; background: #f8fafc; transition: 0.3s; }
+    .search-box { width: 280px; border: 2px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; outline: none; font-size: 13px; font-weight: 600; color: #1e293b; background: #f8fafc; transition: 0.3s; }
     .search-box:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+
+    /* 🌟 New Zero Sales Button Style 🌟 */
+    .btn-zero { background-color: #ef4444; color: white; border: none; font-weight: 800; padding: 8px 16px; border-radius: 8px; font-size: 13px; transition: 0.3s; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+    .btn-zero:hover { background-color: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); transform: translateY(-1px); }
+    .btn-zero.active { background-color: #1e293b; box-shadow: 0 4px 10px rgba(30, 41, 59, 0.3); }
 
     .table-container { padding: 0; width: 100%; }
     .table { margin-bottom: 0; white-space: nowrap; width: 100%; table-layout: auto; }
@@ -64,7 +69,7 @@
     .table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
     /* ========================================================================= */
-    /* 📱 MOBILE RESPONSIVENESS FOR TABLE REPORTS (Added by Chandra) 📱 */
+    /* 📱 MOBILE RESPONSIVENESS FOR TABLE REPORTS */
     /* ========================================================================= */
     @media (max-width: 768px) {
         body { padding: 10px 5px; }
@@ -84,7 +89,7 @@
         
         .form-select-custom, 
         .btn-outline-custom, 
-        .search-box {
+        .search-box, .btn-zero {
             width: 100% !important;
             max-width: 100% !important;
         }
@@ -99,6 +104,8 @@
             width: 100%;
             display: flex;
             justify-content: center;
+            flex-direction: column;
+            gap: 10px;
         }
         
         .view-btn {
@@ -108,29 +115,14 @@
             font-size: 11px;
         }
 
-        .row.g-3 {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        
-        .col {
-            flex: 1 1 30%; 
-            min-width: 100px;
-        }
-        
+        .row.g-3 { display: flex; flex-wrap: wrap; }
+        .col { flex: 1 1 30%; min-width: 100px; }
         .stat-card { padding: 10px 5px; }
         .stat-title { font-size: 9px; }
         .stat-value { font-size: 18px; }
 
-        .premium-card {
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
-
-        .table-responsive {
-            max-height: 500px !important; 
-            -webkit-overflow-scrolling: touch; 
-        }
+        .premium-card { border-radius: 12px; margin-bottom: 10px; }
+        .table-responsive { max-height: 500px !important; -webkit-overflow-scrolling: touch; }
         
         .table thead th { font-size: 9px; padding: 8px 4px; }
         .table tbody tr td { font-size: 11px; padding: 8px 4px; }
@@ -190,12 +182,17 @@
     </div>
 
     <div class="controls-bar" data-html2canvas-ignore="true">
-      <div>
-        <button id="btnDistView" class="view-btn" onclick="switchView('DIST')">🏢 District Summary</button>
-        <button id="btnVleView" class="view-btn active" onclick="switchView('VLE')">🧑‍💻 VLE Breakdown</button>
-      </div>
-      <div>
-        <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search Name, CSC ID or District..." onkeyup="searchTable()">
+      <div class="d-flex w-100 flex-column flex-md-row justify-content-between align-items-center gap-3">
+          <div class="d-flex w-100 w-md-auto">
+            <button id="btnDistView" class="view-btn flex-fill" onclick="switchView('DIST')">🏢 District Summary</button>
+            <button id="btnVleView" class="view-btn active flex-fill" onclick="switchView('VLE')">🧑‍💻 VLE Breakdown</button>
+          </div>
+          
+          <!-- 🌟 ZERO SALES BUTTON ADDED HERE 🌟 -->
+          <div class="d-flex align-items-center gap-2 w-100 w-md-auto flex-column flex-md-row">
+            <button id="btnZeroSales" class="btn-zero w-100 w-md-auto" onclick="toggleZeroSales()">🚨 Show Zero Sales</button>
+            <input type="text" id="searchBox" class="search-box w-100 w-md-auto" placeholder="🔍 Search Name, CSC ID or District..." onkeyup="searchTable()">
+          </div>
       </div>
     </div>
 
@@ -257,10 +254,7 @@
     let masterVleData = [];
     let masterDistData = [];
     
-    // 🌟 సెషన్ స్టోరేజ్ (Session Storage) కోసం కీ (Key) సెటప్ 🌟
     const CACHE_KEY = "ESTAMP_SALES_CACHE_" + loggedInUserId;
-    
-    // 🌟 పాత మెమరీ ఉంటే లోడ్ చేయడం లేదా కొత్త ఆబ్జెక్ట్ క్రియేట్ చేయడం 🌟
     let apiCache = JSON.parse(sessionStorage.getItem(CACHE_KEY)) || {};
     
     let masterOverallDataVle = {}; 
@@ -269,6 +263,9 @@
 
     let currentView = 'VLE'; 
     let currentFilter = 'ALL';
+    
+    // 🌟 న్యూ స్టేట్ వేరియబుల్: జీరో సేల్స్ ట్రాకింగ్ కోసం 🌟
+    let showingZeroSales = false;
 
     window.onload = function() { 
        let d = new Date();
@@ -283,17 +280,16 @@
        document.getElementById("totOth").innerText = "0";
     }
 
-    // 🌟 కొత్త రిఫ్రెష్ ఫంక్షన్ (యూజర్ బటన్ నొక్కినప్పుడు పాత మెమరీ క్లియర్ చేసి మళ్ళీ లోడ్ చేయడానికి) 🌟
     function refreshData() {
-       sessionStorage.removeItem(CACHE_KEY); // సెషన్ స్టోరేజ్ క్లియర్
-       apiCache = {}; // వేరియబుల్ క్లియర్
+       sessionStorage.removeItem(CACHE_KEY); 
+       apiCache = {}; 
        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">🔄 Refreshing fresh data from server...</td></tr>`;
+       
+       if(showingZeroSales) toggleZeroSales(); // రీఫ్రెష్ చేసినప్పుడు ఫిల్టర్ క్లియర్ అవ్వడానికి
        fetchReportData();
     }
 
-    // 🌟 సర్వర్ క్రాష్ అవ్వకుండా నిరోధించే సెక్యూర్ ఫెచ్ (CORS Bypass Headers తో) 🌟
     async function fetchFromApi(filterType) {
-       // పాత మెమరీ (sessionStorage) లో డేటా ఉంటే మళ్ళీ సర్వర్ కి వెళ్లకుండా ఇక్కడినుండే ఇచ్చేస్తుంది
        if (apiCache[filterType]) return apiCache[filterType];
        
        let payload = { action: "getDenominationReport", role: loggedInDesig, userId: loggedInUserId, filterType: filterType };
@@ -306,7 +302,6 @@
            let res = await response.json();
            if (res && res.success) { 
                apiCache[filterType] = res; 
-               // 🌟 బ్రౌజర్ సెషన్ స్టోరేజ్ లో శాశ్వతంగా (సెషన్ ఉన్నంతవరకు) సేవ్ చేస్తున్నాం 🌟
                sessionStorage.setItem(CACHE_KEY, JSON.stringify(apiCache)); 
                return res; 
            }
@@ -314,7 +309,6 @@
        return null;
     }
 
-    // 🌟 క్లోజింగ్ బ్యాలెన్స్ కోసం పాత నెలలు లాగే లాజిక్ 🌟
     function getCumBlocks(filter) {
         switch(filter) {
             case 'APR': return ['APR'];
@@ -382,7 +376,6 @@
                return;
            }
 
-           // క్లోజింగ్ బ్యాలెన్స్ లెక్కించడం (క్యుములేటివ్ డేటా)
            currentCumVleMap = {};
            currentCumDistMap = {};
 
@@ -462,12 +455,47 @@
     }
 
     function filterVles(filterType) {
+       // 🌟 వేరే బటన్ నొక్కినప్పుడు జీరో సేల్స్ ఫిల్టర్ తీసేయాలి 🌟
+       if (showingZeroSales) {
+           showingZeroSales = false;
+           let btn = document.getElementById("btnZeroSales");
+           btn.innerHTML = "🚨 Show Zero Sales";
+           btn.classList.remove("active");
+       }
+
        currentFilter = filterType;
        document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
        document.getElementById('card-' + filterType).classList.add('active');
 
        if(currentView !== 'VLE') switchView('VLE');
        else renderCurrentView();
+    }
+
+    // 🌟 జీరో సేల్స్ టోగుల్ చేసే ఫంక్షన్ 🌟
+    function toggleZeroSales() {
+        showingZeroSales = !showingZeroSales;
+        let btn = document.getElementById("btnZeroSales");
+        
+        if (showingZeroSales) {
+            btn.innerHTML = "✖ Clear Zero Sales Filter";
+            btn.classList.add("active");
+            
+            // ఫోర్స్ గా అన్ని VLE ల లిస్ట్ కి రీసెట్ చేయడం
+            currentFilter = 'ALL';
+            document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
+            document.getElementById('card-ALL').classList.add('active');
+            
+            // డిస్ట్రిక్ట్ వ్యూ లో ఉంటే, VLE వ్యూ కి మార్చడం
+            if (currentView !== 'VLE') {
+                switchView('VLE');
+            } else {
+                renderCurrentView();
+            }
+        } else {
+            btn.innerHTML = "🚨 Show Zero Sales";
+            btn.classList.remove("active");
+            renderCurrentView();
+        }
     }
 
     function renderCurrentView() {
@@ -558,6 +586,25 @@
           else if(currentFilter === 'D50') dataToRender = masterVleData.filter(v => v.data.d50 > 0);
           else if(currentFilter === 'D100') dataToRender = masterVleData.filter(v => v.data.d100 > 0);
           else if(currentFilter === 'OTH') dataToRender = masterVleData.filter(v => v.data.other > 0);
+
+          // 🌟 ZERO SALES ఫిల్టర్ లాజిక్ 🌟
+          if (showingZeroSales) {
+              dataToRender = dataToRender.filter(item => {
+                  let ov = masterOverallDataVle[item.id] || item;
+                  let assignedStock = ov.data.assignedStock || 0;
+                  
+                  let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + (item.data.dsdCount || 0);
+                  let cumUsed = currentCumVleMap[item.id] ? currentCumVleMap[item.id].used : curUsed;
+                  
+                  // స్టాక్ ఉండి, వాడిన పేపర్లు సున్నా ఉంటేనే లిస్టులో చూపిస్తుంది.
+                  return (assignedStock > 0 && cumUsed === 0);
+              });
+              
+              if (dataToRender.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="14" class="text-success py-5 fw-bold fs-6">🎉 ఎవరూ లేరు! స్టాక్ తీసుకున్న వాళ్ళందరూ బిజినెస్ చేశారు.</td></tr>`;
+                 return;
+              }
+          }
 
           if(dataToRender.length > 0) {
              dataToRender.forEach(item => {
