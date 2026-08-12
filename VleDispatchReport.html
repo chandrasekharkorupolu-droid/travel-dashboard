@@ -159,9 +159,12 @@
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     document.getElementById("lblScope").innerText = isDM ? "District: " + loggedInDistrict.toUpperCase() : "Full State Report";
 
-    let pendingUpdateData = null; // మోడల్ కోసం టెంపరరీ స్టోరేజ్
+    let pendingUpdateData = null; 
 
-    window.onload = function() { checkCacheAndLoadDispatch(); };
+    // 🌟 DOM లోడ్ అయిన వెంటనే (ఇతర ఫైల్స్ కోసం వెయిట్ చేయకుండా) క్యాష్ ని చెక్ చేస్తుంది 🌟
+    document.addEventListener("DOMContentLoaded", function() {
+        checkCacheAndLoadDispatch();
+    });
 
     // 🌟 కస్టమ్ సెంటర్ అలర్ట్ ఫంక్షన్ 🌟
     function showCenteredAlert(msg, isSuccess) {
@@ -187,7 +190,8 @@
        let cacheTime = localStorage.getItem("vleDispatchTime");
        let now = new Date().getTime();
 
-       if (cachedData && cacheTime && (now - cacheTime < 120000)) { 
+       // 🌟 120000 (2 mins) ని 300000 (5 mins) కి పెంచాను 🌟
+       if (cachedData && cacheTime && (now - cacheTime < 300000)) { 
           renderDispatchTable(JSON.parse(cachedData));
        } else {
           fetchDispatchReport();
@@ -220,7 +224,6 @@
        
        if(data && data.length > 0) {
           data.forEach(item => {
-             // గూగుల్ షీట్‌లో సేవ్ అయిన డేటాని బట్టి బటన్ చూపించాలా వద్దా అనేది డిసైడ్ చేస్తాం
              let shcilStatus = item.shcilStatus ? item.shcilStatus.toString().trim().toUpperCase() : "PENDING";
              let statusHtml = "";
              
@@ -275,20 +278,17 @@
        }
     }
 
-    // 🌟 కొత్తగా యాడ్ చేసిన సెంటర్ మోడల్ ట్రిగ్గర్ 🌟
     function triggerUpdatePortalModal(reqNo, cscId, btnElement) {
         pendingUpdateData = { reqNo: reqNo, cscId: cscId, btnElement: btnElement, originalText: btnElement.innerHTML };
         var myModal = new bootstrap.Modal(document.getElementById('confirmUpdateModal'));
         myModal.show();
     }
 
-    // మోడల్ లో "Yes" నొక్కినప్పుడు జరిగే ప్రాసెస్
     function proceedUpdate() {
         if(!pendingUpdateData) return;
         
         let { reqNo, cscId, btnElement, originalText } = pendingUpdateData;
         
-        // మోడల్ క్లోజ్ చేయడం
         var modalEl = document.getElementById('confirmUpdateModal');
         var modalInstance = bootstrap.Modal.getInstance(modalEl);
         if(modalInstance) modalInstance.hide();
@@ -309,11 +309,9 @@
         .then(res => res.json())
         .then(res => {
             if(res.success) {
-                // బటన్ ని గ్రీన్ బ్యాడ్జ్ లాగా మార్చేద్దాం
                 let parentTd = btnElement.parentElement;
                 parentTd.innerHTML = `<span class="badge bg-success" style="font-size:11px; padding:6px 10px;">✅ Updated</span>`;
                 
-                // క్యాచ్ ని రిఫ్రెష్ చేయడానికి పాత డేటా డిలీట్ చేస్తున్నాం (నెక్స్ట్ టైమ్ లాగిన్ అయినప్పుడు పాతది రాదు)
                 localStorage.removeItem("vleDispatchCache");
             } else {
                 showCenteredAlert("ఎర్రర్: " + res.message, false);
