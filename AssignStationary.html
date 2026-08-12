@@ -222,10 +222,10 @@
                 </div>
             </div>
 
-            <!-- 🌟 Last Request Details Box 🌟 -->
+            <!-- 🌟 Last Issue Details Box (UPDATED HERE) 🌟 -->
             <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded shadow-sm" style="background-color: #fffbeb; border: 1px dashed #f59e0b;">
-                <div style="font-size: 11px;"><span style="color: #b45309; font-weight: 800;">🕒 Last Request:</span> <br><span id="lblLastReqDate" class="fw-bold text-dark" style="font-size: 13px;">Loading...</span></div>
-                <div style="font-size: 11px; text-align: center;"><span style="color: #b45309; font-weight: 800;">📦 Qty:</span> <br><span id="lblLastReqQty" class="fw-bold text-danger" style="font-size: 13px;">-</span></div>
+                <div style="font-size: 11px;"><span style="color: #b45309; font-weight: 800;">🕒 Last Issue Date:</span> <br><span id="lblLastReqDate" class="fw-bold text-dark" style="font-size: 13px;">Loading...</span></div>
+                <div style="font-size: 11px; text-align: center;"><span style="color: #b45309; font-weight: 800;">📦 Issued Qty:</span> <br><span id="lblLastReqQty" class="fw-bold text-danger" style="font-size: 13px;">-</span></div>
                 <div style="font-size: 11px; text-align: right;"><span style="color: #b45309; font-weight: 800;">📌 Status:</span> <br><span id="lblLastReqStatus" class="fw-bold text-primary" style="font-size: 13px;">-</span></div>
             </div>
             
@@ -465,8 +465,9 @@
     }
 
     function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
-       activeRowIdx = rowIdx; currentStep = stepType;
-       currentAvailableStock = -1; // రీసెట్ చేస్తున్నాం (లోడింగ్ అవుతున్నట్టు)
+       activeRowIdx = rowIdx; 
+       currentStep = stepType;
+       currentAvailableStock = -1;
        
        document.getElementById("approvalPanel").style.display = "block";
        document.getElementById("lblVleName").innerText = vleName;
@@ -474,10 +475,11 @@
        document.getElementById("lblVleDistrict").innerText = district;
        document.getElementById("lblReqQty").innerText = reqQty;
        
-       document.getElementById("lblLastReqDate").innerText = "Loading...";
+       document.getElementById("lblLastReqDate").innerText = "Fetching...";
        document.getElementById("lblLastReqQty").innerText = "-";
        document.getElementById("lblLastReqStatus").innerText = "-";
 
+       // 🌟 LAST ISSUE DETAILS FETCHING (లేటెస్ట్ రికార్డ్ [0] ని చదివేలా ఫిక్స్ చేశాను) 🌟
        fetch(SCRIPT_URL, {
            method: "POST",
            headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -485,20 +487,28 @@
        })
        .then(res => res.json())
        .then(res => {
-           if(res.success && res.data && res.data.length > 1) {
-               let lastReq = res.data[1]; 
-               document.getElementById("lblLastReqDate").innerText = lastReq.date.split(' ')[0] || lastReq.date;
-               document.getElementById("lblLastReqQty").innerText = lastReq.qty + " Papers";
-               document.getElementById("lblLastReqStatus").innerText = lastReq.status;
-           } else if (res.success && res.data && res.data.length === 1) {
-               document.getElementById("lblLastReqDate").innerText = "First Time Request";
-               document.getElementById("lblLastReqQty").innerText = "N/A";
-               document.getElementById("lblLastReqStatus").innerText = "N/A";
+           if(res.success && res.data && res.data.length > 0) {
+               // 🎯 ఫిక్స్: అరే లోని సరిగ్గా మొదటి స్థానంలో ఉన్న లేటెస్ట్ ఇష్యూ డేటాని (data[0]) తీసుకుంటుంది
+               let lastReq = res.data[0]; 
+               
+               if(lastReq && lastReq.date) {
+                   document.getElementById("lblLastReqDate").innerText = String(lastReq.date).split(' ')[0];
+                   document.getElementById("lblLastReqQty").innerText = (lastReq.qty || "0") + " Papers";
+                   document.getElementById("lblLastReqStatus").innerText = lastReq.status || "Dispatched";
+               } else {
+                   document.getElementById("lblLastReqDate").innerText = "First Time Issue";
+                   document.getElementById("lblLastReqQty").innerText = "0 Papers";
+                   document.getElementById("lblLastReqStatus").innerText = "N/A";
+               }
            } else {
-               document.getElementById("lblLastReqDate").innerText = "No Data Found";
+               document.getElementById("lblLastReqDate").innerText = "First Time Issue";
+               document.getElementById("lblLastReqQty").innerText = "0 Papers";
+               document.getElementById("lblLastReqStatus").innerText = "N/A";
            }
        }).catch(e => {
-           document.getElementById("lblLastReqDate").innerText = "Error Loading";
+           document.getElementById("lblLastReqDate").innerText = "No Prior Data";
+           document.getElementById("lblLastReqQty").innerText = "N/A";
+           document.getElementById("lblLastReqStatus").innerText = "N/A";
        });
        
        let qtyInput = document.getElementById("appQty");
@@ -528,7 +538,7 @@
                if(distKey) {
                    let d = res.summary[distKey];
                    let avail = d.inward - d.outward;
-                   currentAvailableStock = avail; // 🌟 స్టాక్ గ్లోబల్ వేరియబుల్ లో స్టోర్ చేసాం
+                   currentAvailableStock = avail;
                    lblAvail.innerText = avail + " Papers";
                    lblAvail.className = avail > 0 ? "stock-value text-success" : "stock-value text-danger";
                } else { 
