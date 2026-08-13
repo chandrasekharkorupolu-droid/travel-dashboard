@@ -479,7 +479,7 @@
        document.getElementById("lblLastReqQty").innerText = "-";
        document.getElementById("lblLastReqStatus").innerText = "-";
 
-       // 🌟 LAST ISSUE DETAILS FETCHING (లేటెస్ట్ రికార్డ్ [0] ని చదివేలా ఫిక్స్ చేశాను) 🌟
+       // 🌟 LAST ISSUE DETAILS FETCHING 🌟
        fetch(SCRIPT_URL, {
            method: "POST",
            headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -488,12 +488,15 @@
        .then(res => res.json())
        .then(res => {
            if(res.success && res.data && res.data.length > 0) {
-               // 🎯 ఫిక్స్: అరే లోని సరిగ్గా మొదటి స్థానంలో ఉన్న లేటెస్ట్ ఇష్యూ డేటాని (data[0]) తీసుకుంటుంది
                let lastReq = res.data[0]; 
                
-               if(lastReq && lastReq.date) {
-                   document.getElementById("lblLastReqDate").innerText = String(lastReq.date).split(' ')[0];
-                   document.getElementById("lblLastReqQty").innerText = (lastReq.qty || "0") + " Papers";
+               if(lastReq) {
+                   // ఇక్కడ ఆఫీసర్ కోసం మనం పంపిన 'issueDate' ని చదువుతుంది
+                   let displayDate = lastReq.issueDate ? lastReq.issueDate : lastReq.date;
+                   let displayQty = lastReq.issuedQty ? lastReq.issuedQty : lastReq.qty;
+
+                   document.getElementById("lblLastReqDate").innerText = String(displayDate).split(' ')[0];
+                   document.getElementById("lblLastReqQty").innerText = displayQty + " Papers";
                    document.getElementById("lblLastReqStatus").innerText = lastReq.status || "Dispatched";
                } else {
                    document.getElementById("lblLastReqDate").innerText = "First Time Issue";
