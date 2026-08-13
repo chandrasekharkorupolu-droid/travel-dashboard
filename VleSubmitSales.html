@@ -54,26 +54,11 @@
     .history-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     /* 🌟 10 Items Per Row Grid 🌟 */
-    .serial-grid {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 6px;
-        width: 100%;
-    }
-    
-    .serial-chip {
-        font-size: 11.5px !important;
-        padding: 8px 0px !important;
-        width: 100%;
-        text-align: center;
-        letter-spacing: 0px !important;
-        overflow: hidden;
-    }
+    .serial-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; width: 100%; }
+    .serial-chip { font-size: 11.5px !important; padding: 8px 0px !important; width: 100%; text-align: center; letter-spacing: 0px !important; overflow: hidden; }
 
     /* 📱 MOBILE RESPONSIVE 📱 */
-    @media (max-width: 1200px) {
-        .serial-grid { grid-template-columns: repeat(8, 1fr); }
-    }
+    @media (max-width: 1200px) { .serial-grid { grid-template-columns: repeat(8, 1fr); } }
     @media (max-width: 992px) {
         body { padding: 15px 10px; }
         .premium-card { border-radius: 16px; margin-bottom: 20px; }
@@ -82,9 +67,7 @@
         .input-box-wrapper .col-md-5, .input-box-wrapper .col-md-2 { width: 100%; }
         .serial-grid { grid-template-columns: repeat(5, 1fr); }
     }
-    @media (max-width: 576px) {
-        .serial-grid { grid-template-columns: repeat(3, 1fr); }
-    }
+    @media (max-width: 576px) { .serial-grid { grid-template-columns: repeat(3, 1fr); } }
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -284,7 +267,6 @@
         makeModalDraggable();
     };
 
-    // 🌟 కొత్త స్మూత్ డ్రాగబుల్ లాజిక్ (Transform ఆధారంగా) 🌟
     function makeModalDraggable() {
         const modalHeader = document.getElementById('modalDraggableHeader');
         const modalContent = document.querySelector('#enteredSerialsModal .modal-content');
@@ -303,7 +285,6 @@
             e.preventDefault();
             currentX = e.clientX - initialX;
             currentY = e.clientY - initialY;
-            // డైరెక్ట్ గా transform వాడటం వల్ల సైజ్ మారినా డిస్టర్బ్ అవ్వదు
             modalContent.style.transform = `translate(${currentX}px, ${currentY}px)`;
         }
 
@@ -312,7 +293,6 @@
             document.onmousemove = null; 
         }
         
-        // మోడల్ క్లోజ్ అయినప్పుడు పాత పొజిషన్ కి వెనక్కి పంపుతుంది
         document.getElementById('enteredSerialsModal').addEventListener('hidden.bs.modal', function () {
             currentX = 0; currentY = 0;
             modalContent.style.transform = "translate(0px, 0px)";
@@ -347,52 +327,66 @@
         else { document.getElementById('customAmount').placeholder = "Enter Custom Amount (₹)"; }
     }
 
+    function updateDashboard(d) {
+        globalStockHistory = d.stockHistory || []; 
+
+        let otherHtml = d.other > 0 ? `<span class="text-secondary">${d.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${d.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
+        let dsdHtml = d.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${d.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
+        let pendingHtml = d.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${d.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+        
+        document.getElementById("myPerformanceRow").innerHTML = `
+            <td class="fw-bold text-secondary text-nowrap">${d.issued}</td>
+            <td class="fw-bold text-success">${d.d10}</td>
+            <td class="fw-bold text-info">${d.d20}</td>
+            <td class="fw-bold text-warning">${d.d50}</td>
+            <td class="fw-bold" style="color:#6d28d9;">${d.d100}</td>
+            <td class="fw-bold">${otherHtml}</td>
+            <td class="fw-bold">${dsdHtml}</td>
+            <td class="fw-bold text-primary text-nowrap">${d.used}</td>
+            <td class="fw-bold text-primary text-nowrap" style="font-size:14px; background:#f0f9ff;">${d.avail}</td>
+            <td class="fw-bold text-secondary text-nowrap">₹ ${d.target.toLocaleString('en-IN')}</td>
+            <td class="fw-bold text-success text-nowrap" style="font-size:14px; background:#f0fdf4;">₹ ${d.totalSales.toLocaleString('en-IN')}</td>
+            <td>${pendingHtml}</td>
+        `;
+
+        let historyTbody = document.getElementById("stockHistoryRow");
+        if (globalStockHistory.length > 0) {
+            historyTbody.innerHTML = "";
+            globalStockHistory.forEach(item => {
+                let dateOnly = item.date.split(" ")[0]; 
+                historyTbody.innerHTML += `
+                <tr>
+                    <td style="font-size:11px; font-weight:700; color:#64748b;">${dateOnly}</td>
+                    <td style="font-size:11px; font-weight:800; color:#0f172a;">${item.start} to ${item.end}</td>
+                    <td style="font-size:13px; font-weight:900; color:#10b981;">+${item.qty}</td>
+                </tr>`;
+            });
+        } else {
+            historyTbody.innerHTML = `<tr><td colspan="3" class="text-muted py-3" style="font-size:13px;">No stock history found.</td></tr>`;
+        }
+    }
+
     function loadPerformance() {
+        let cachedData = sessionStorage.getItem("vlePerfCache_" + loggedInId);
+        
+        if (cachedData) {
+            updateDashboard(JSON.parse(cachedData));
+        } else {
+            document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-muted fw-bold py-4">⏳ డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td>`;
+            document.getElementById("stockHistoryRow").innerHTML = `<tr><td colspan="3" class="text-muted py-3 fw-bold">⏳ లోడ్ అవుతోంది...</td></tr>`;
+        }
+
         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVleMySalesSummary", userId: loggedInId }) })
         .then(res => res.json()).then(res => {
             if(res.success) {
-                let d = res.data;
-                globalStockHistory = d.stockHistory || []; 
-
-                let otherHtml = d.other > 0 ? `<span class="text-secondary">${d.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${d.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
-                let dsdHtml = d.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${d.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
-                let pendingHtml = d.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${d.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
-                
-                document.getElementById("myPerformanceRow").innerHTML = `
-                    <td class="fw-bold text-secondary text-nowrap">${d.issued}</td>
-                    <td class="fw-bold text-success">${d.d10}</td>
-                    <td class="fw-bold text-info">${d.d20}</td>
-                    <td class="fw-bold text-warning">${d.d50}</td>
-                    <td class="fw-bold" style="color:#6d28d9;">${d.d100}</td>
-                    <td class="fw-bold">${otherHtml}</td>
-                    <td class="fw-bold">${dsdHtml}</td>
-                    <td class="fw-bold text-primary text-nowrap">${d.used}</td>
-                    <td class="fw-bold text-primary text-nowrap" style="font-size:14px; background:#f0f9ff;">${d.avail}</td>
-                    <td class="fw-bold text-secondary text-nowrap">₹ ${d.target.toLocaleString('en-IN')}</td>
-                    <td class="fw-bold text-success text-nowrap" style="font-size:14px; background:#f0fdf4;">₹ ${d.totalSales.toLocaleString('en-IN')}</td>
-                    <td>${pendingHtml}</td>
-                `;
-
-                let historyTbody = document.getElementById("stockHistoryRow");
-                if (globalStockHistory.length > 0) {
-                    historyTbody.innerHTML = "";
-                    globalStockHistory.forEach(item => {
-                        let dateOnly = item.date.split(" ")[0]; 
-                        historyTbody.innerHTML += `
-                        <tr>
-                            <td style="font-size:11px; font-weight:700; color:#64748b;">${dateOnly}</td>
-                            <td style="font-size:11px; font-weight:800; color:#0f172a;">${item.start} to ${item.end}</td>
-                            <td style="font-size:13px; font-weight:900; color:#10b981;">+${item.qty}</td>
-                        </tr>`;
-                    });
-                } else {
-                    historyTbody.innerHTML = `<tr><td colspan="3" class="text-muted py-3" style="font-size:13px;">No stock history found.</td></tr>`;
-                }
-
+                sessionStorage.setItem("vlePerfCache_" + loggedInId, JSON.stringify(res.data));
+                updateDashboard(res.data);
             } else {
-                document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">Error: ${res.message}</td>`;
+                if(!cachedData) document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">Error: ${res.message}</td>`;
             }
-        }).catch(err => { document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td>`; });
+        }).catch(err => { 
+            if(!cachedData) document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td>`; 
+        });
     }
 
     function generateSerialRange(startStr, endStr) {
@@ -421,6 +415,14 @@
         myEnteredSerialsModal.show();
         document.getElementById("searchEntered").value = "";
 
+        // 🌟 Popup డేటా కోసం Session Storage చెక్ చేస్తున్నాం 🌟
+        let sessionCacheSerials = sessionStorage.getItem("vleEnteredSerialsCache_" + loggedInId);
+        if (sessionCacheSerials) {
+            cachedEnteredSerials = JSON.parse(sessionCacheSerials);
+            renderSerialGrid(cachedEnteredSerials);
+            return;
+        }
+
         if (cachedEnteredSerials) {
             renderSerialGrid(cachedEnteredSerials);
             return;
@@ -437,6 +439,8 @@
         .then(res => {
             if(res.success) {
                 cachedEnteredSerials = res.data || [];
+                // డేటాని Session Storage లో సేవ్ చేస్తున్నాం 
+                sessionStorage.setItem("vleEnteredSerialsCache_" + loggedInId, JSON.stringify(cachedEnteredSerials));
                 renderSerialGrid(cachedEnteredSerials);
             } else {
                 document.getElementById("serialGridContainer").innerHTML = `<div class="text-danger text-center w-100 py-5 fw-bold">Failed to load data.</div>`;
@@ -590,6 +594,9 @@
                 customAlert(res.message, true); 
                 vleSalesCart = []; 
                 cachedEnteredSerials = null; 
+                // 🌟 కొత్త డేటా కోసం పాప్-అప్ మరియు డాష్‌బోర్డ్ పాత మెమరీని తీసేస్తున్నాం 🌟
+                sessionStorage.removeItem("vlePerfCache_" + loggedInId); 
+                sessionStorage.removeItem("vleEnteredSerialsCache_" + loggedInId);
                 renderTable(); 
                 loadPerformance(); 
             } 
