@@ -53,15 +53,48 @@
     .history-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
     .history-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
+    /* 🌟 10 Items Per Row Grid 🌟 */
+    .serial-grid {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 6px;
+        width: 100%;
+    }
+    
+    .serial-chip {
+        font-size: 11.5px !important;
+        padding: 8px 0px !important;
+        width: 100%;
+        text-align: center;
+        letter-spacing: 0px !important;
+        overflow: hidden;
+    }
+
     /* 📱 MOBILE RESPONSIVE 📱 */
+    @media (max-width: 1200px) {
+        .serial-grid { grid-template-columns: repeat(8, 1fr); }
+    }
     @media (max-width: 992px) {
         body { padding: 15px 10px; }
         .premium-card { border-radius: 16px; margin-bottom: 20px; }
         .card-header-custom { flex-direction: column; align-items: flex-start; gap: 10px; }
         .input-box-wrapper .row { flex-direction: column; gap: 15px; }
         .input-box-wrapper .col-md-5, .input-box-wrapper .col-md-2 { width: 100%; }
+        .serial-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    @media (max-width: 576px) {
+        .serial-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
 
 </head>
 <body>
@@ -78,9 +111,9 @@
     </div>
   </div>
 
-  <!-- 🌟 ALLOTTED VS ENTERED GRID MODAL (Draggable & Count Fixed) 🌟 -->
+  <!-- 🌟 ALLOTTED VS ENTERED GRID MODAL (Draggable Smooth Fix) 🌟 -->
   <div class="modal fade" id="enteredSerialsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"> 
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
       <div class="modal-content premium-card border-0" style="margin-bottom:0; position: relative;">
         <!-- Modal Header కి 'move' కర్సర్ ఇచ్చాము -->
         <div class="modal-header text-white" id="modalDraggableHeader" style="background: linear-gradient(135deg, #6d28d9, #8b5cf6); padding: 15px 20px; cursor: move;">
@@ -100,8 +133,7 @@
               </div>
           </div>
           
-          <!-- Serials Grid Container -->
-          <div id="serialGridContainer" class="d-flex flex-wrap gap-2 p-3 justify-content-center" style="min-height: 200px;">
+          <div id="serialGridContainer" class="p-3" style="min-height: 200px;">
               <div class="text-center w-100 py-5 text-primary fw-bold" style="font-size:16px;">⏳ Fetching serial records... Please wait!</div>
           </div>
         </div>
@@ -252,29 +284,38 @@
         makeModalDraggable();
     };
 
+    // 🌟 కొత్త స్మూత్ డ్రాగబుల్ లాజిక్ (Transform ఆధారంగా) 🌟
     function makeModalDraggable() {
         const modalHeader = document.getElementById('modalDraggableHeader');
         const modalContent = document.querySelector('#enteredSerialsModal .modal-content');
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        
+        let currentX = 0, currentY = 0, initialX = 0, initialY = 0;
         
         modalHeader.onmousedown = function(e) {
             e.preventDefault();
-            pos3 = e.clientX; pos4 = e.clientY;
+            initialX = e.clientX - currentX;
+            initialY = e.clientY - currentY;
             document.onmouseup = closeDragElement;
             document.onmousemove = elementDrag;
         };
 
         function elementDrag(e) {
             e.preventDefault();
-            pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
-            pos3 = e.clientX; pos4 = e.clientY;
-            modalContent.style.top = (modalContent.offsetTop - pos2) + "px";
-            modalContent.style.left = (modalContent.offsetLeft - pos1) + "px";
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            // డైరెక్ట్ గా transform వాడటం వల్ల సైజ్ మారినా డిస్టర్బ్ అవ్వదు
+            modalContent.style.transform = `translate(${currentX}px, ${currentY}px)`;
         }
-        function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
+
+        function closeDragElement() { 
+            document.onmouseup = null; 
+            document.onmousemove = null; 
+        }
         
+        // మోడల్ క్లోజ్ అయినప్పుడు పాత పొజిషన్ కి వెనక్కి పంపుతుంది
         document.getElementById('enteredSerialsModal').addEventListener('hidden.bs.modal', function () {
-            modalContent.style.top = "0px"; modalContent.style.left = "0px";
+            currentX = 0; currentY = 0;
+            modalContent.style.transform = "translate(0px, 0px)";
         });
     }
 
@@ -415,42 +456,41 @@
 
         let container = document.getElementById("serialGridContainer");
 
-        let html = "";
+        let gridHtml = `<div class="serial-grid">`;
         let validEnteredCount = 0;
         let pendingCount = 0;
         let allottedSet = new Set(allAllotted);
 
-        // 1. అఫీషియల్ గా ఇచ్చిన 500 నెంబర్లను ప్రింట్ చేయడం
         allAllotted.forEach(s => {
             if(enteredSet.has(s)) {
                 validEnteredCount++;
-                html += `<span class="badge bg-secondary border serial-chip" style="opacity: 0.5; cursor: not-allowed; font-size:13px; padding:8px 12px; letter-spacing: 0.5px;">${s}</span>`;
+                gridHtml += `<div class="badge bg-secondary border serial-chip" style="opacity: 0.5; cursor: not-allowed;">${s}</div>`;
             } else {
                 pendingCount++;
-                html += `<span class="badge bg-success serial-chip shadow-sm" style="cursor: pointer; font-size:13px; padding:8px 12px; transition: 0.2s; letter-spacing: 0.5px;" onclick="fillSerialFromGrid('${s}')" onmouseover="this.className='badge bg-primary serial-chip shadow'" onmouseout="this.className='badge bg-success serial-chip shadow-sm'">${s}</span>`;
+                gridHtml += `<div class="badge bg-success serial-chip shadow-sm" style="cursor: pointer; transition: 0.2s;" onclick="fillSerialFromGrid('${s}')" onmouseover="this.className='badge bg-primary serial-chip shadow'" onmouseout="this.className='badge bg-success serial-chip shadow-sm'">${s}</div>`;
             }
         });
+        gridHtml += `</div>`;
 
-        // 2. VLE తప్పుగా కొట్టిన టైపో (Typo) నెంబర్లను పట్టుకోవడం
         let invalidHtml = "";
         let invalidCount = 0;
         enteredSet.forEach(s => {
             if(!allottedSet.has(s)) {
                 invalidCount++;
-                invalidHtml += `<span class="badge bg-danger border serial-chip shadow-sm" style="font-size:13px; padding:8px 12px; letter-spacing: 0.5px;" title="This serial was not officially assigned to you">⚠️ ${s}</span>`;
+                invalidHtml += `<div class="badge bg-danger border serial-chip shadow-sm" title="This serial was not officially assigned to you">⚠️ ${s}</div>`;
             }
         });
 
-        // వాటిని ఎర్ర రంగులో కింద చూపించడం
+        let finalHtml = gridHtml;
+
         if(invalidCount > 0) {
-            html += `<div class="w-100 mt-4 mb-2" style="border-top: 2px dashed #ef4444;"></div>`;
-            html += `<div class="w-100 text-danger fw-bold mb-3 text-start px-2" style="font-size: 13.5px;">🚨 Attention: Found ${invalidCount} Invalid/Typo Entries (These serials were not officially assigned to you):</div>`;
-            html += invalidHtml;
+            finalHtml += `<div class="w-100 mt-4 mb-2" style="border-top: 2px dashed #ef4444;"></div>`;
+            finalHtml += `<div class="w-100 text-danger fw-bold mb-3 text-start px-2" style="font-size: 13.5px;">🚨 Attention: Found ${invalidCount} Invalid/Typo Entries (These serials were not officially assigned to you):</div>`;
+            finalHtml += `<div class="serial-grid">${invalidHtml}</div>`;
         }
 
-        container.innerHTML = html;
+        container.innerHTML = finalHtml;
 
-        // 🌟 డాష్‌బోర్డ్ కౌంట్ కి పర్ఫెక్ట్ గా మ్యాచ్ అయ్యేలా లాజిక్ 🌟
         let totalIssued = allAllotted.length; 
         let totalUsed = enteredSet.size; 
         let dashboardAvail = totalIssued - totalUsed; 
@@ -471,7 +511,7 @@
         let chips = document.querySelectorAll(".serial-chip");
         chips.forEach(chip => {
             if(chip.innerText.toUpperCase().indexOf(input) > -1) {
-                chip.style.display = "inline-block";
+                chip.style.display = "block";
             } else {
                 chip.style.display = "none";
             }
