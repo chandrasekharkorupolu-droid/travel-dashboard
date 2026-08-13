@@ -249,43 +249,32 @@
 
     window.onload = function() { 
         loadPerformance(); 
-        makeModalDraggable(); // 🌟 అప్లికేషన్ లోడ్ అవ్వగానే డ్రాగ్ ఫీచర్ ఆన్ అవుతుంది
+        makeModalDraggable();
     };
 
-    // 🌟 Draggable Modal Logic (మౌస్ తో మూవ్ చేయడానికి) 🌟
     function makeModalDraggable() {
         const modalHeader = document.getElementById('modalDraggableHeader');
         const modalContent = document.querySelector('#enteredSerialsModal .modal-content');
-        
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         
         modalHeader.onmousedown = function(e) {
             e.preventDefault();
-            pos3 = e.clientX;
-            pos4 = e.clientY;
+            pos3 = e.clientX; pos4 = e.clientY;
             document.onmouseup = closeDragElement;
             document.onmousemove = elementDrag;
         };
 
         function elementDrag(e) {
             e.preventDefault();
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
+            pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+            pos3 = e.clientX; pos4 = e.clientY;
             modalContent.style.top = (modalContent.offsetTop - pos2) + "px";
             modalContent.style.left = (modalContent.offsetLeft - pos1) + "px";
         }
-
-        function closeDragElement() {
-            document.onmouseup = null;
-            document.onmousemove = null;
-        }
-
-        // మోడల్ క్లోజ్ అయిన ప్రతిసారీ దాని పాత పొజిషన్ కి రీసెట్ చేస్తుంది
+        function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
+        
         document.getElementById('enteredSerialsModal').addEventListener('hidden.bs.modal', function () {
-            modalContent.style.top = "0px";
-            modalContent.style.left = "0px";
+            modalContent.style.top = "0px"; modalContent.style.left = "0px";
         });
     }
 
@@ -305,7 +294,6 @@
             title.innerText = "Validation Failed"; 
             btn.className = "btn-modal error"; btn.innerText = "Try Again";
         }
-        
         message.innerHTML = safeMsg.replace(/\n/g, '<br>');
         var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
         alertModal.show();
@@ -425,22 +413,17 @@
             allAllotted.push(...generateSerialRange(block.start, block.end));
         });
 
-        // 🌟 501 బదులు 500 మాత్రమే వచ్చేలా ఫిక్స్ (అఫీషియల్ లిస్ట్ మాత్రమే చూపిస్తుంది) 🌟
-        let displayList = [...allAllotted];
-
         let container = document.getElementById("serialGridContainer");
-        if(displayList.length === 0) {
-            container.innerHTML = `<div class="text-muted w-100 text-center py-4 fw-bold">No serials allotted to you yet.</div>`;
-            return;
-        }
 
         let html = "";
-        let enteredCount = 0;
+        let validEnteredCount = 0;
         let pendingCount = 0;
+        let allottedSet = new Set(allAllotted);
 
-        displayList.forEach(s => {
+        // 1. అఫీషియల్ గా ఇచ్చిన 500 నెంబర్లను ప్రింట్ చేయడం
+        allAllotted.forEach(s => {
             if(enteredSet.has(s)) {
-                enteredCount++;
+                validEnteredCount++;
                 html += `<span class="badge bg-secondary border serial-chip" style="opacity: 0.5; cursor: not-allowed; font-size:13px; padding:8px 12px; letter-spacing: 0.5px;">${s}</span>`;
             } else {
                 pendingCount++;
@@ -448,10 +431,33 @@
             }
         });
 
+        // 2. VLE తప్పుగా కొట్టిన టైపో (Typo) నెంబర్లను పట్టుకోవడం
+        let invalidHtml = "";
+        let invalidCount = 0;
+        enteredSet.forEach(s => {
+            if(!allottedSet.has(s)) {
+                invalidCount++;
+                invalidHtml += `<span class="badge bg-danger border serial-chip shadow-sm" style="font-size:13px; padding:8px 12px; letter-spacing: 0.5px;" title="This serial was not officially assigned to you">⚠️ ${s}</span>`;
+            }
+        });
+
+        // వాటిని ఎర్ర రంగులో కింద చూపించడం
+        if(invalidCount > 0) {
+            html += `<div class="w-100 mt-4 mb-2" style="border-top: 2px dashed #ef4444;"></div>`;
+            html += `<div class="w-100 text-danger fw-bold mb-3 text-start px-2" style="font-size: 13.5px;">🚨 Attention: Found ${invalidCount} Invalid/Typo Entries (These serials were not officially assigned to you):</div>`;
+            html += invalidHtml;
+        }
+
         container.innerHTML = html;
-        document.getElementById("modalTotalCount").innerText = displayList.length;
-        document.getElementById("modalEnteredCount").innerText = enteredCount;
-        document.getElementById("modalPendingCount").innerText = pendingCount;
+
+        // 🌟 డాష్‌బోర్డ్ కౌంట్ కి పర్ఫెక్ట్ గా మ్యాచ్ అయ్యేలా లాజిక్ 🌟
+        let totalIssued = allAllotted.length; 
+        let totalUsed = enteredSet.size; 
+        let dashboardAvail = totalIssued - totalUsed; 
+
+        document.getElementById("modalTotalCount").innerText = totalIssued; 
+        document.getElementById("modalEnteredCount").innerText = totalUsed; 
+        document.getElementById("modalPendingCount").innerText = dashboardAvail; 
     }
 
     function fillSerialFromGrid(serialNumber) {
@@ -517,21 +523,13 @@
         document.getElementById('cartCountBadge').innerText = cartCount + (cartCount === 1 ? " Item" : " Items");
 
         if (cartCount === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="text-muted py-4" style="border-bottom:none;">
-                <div style="font-size: 28px; margin-bottom: 5px;">📭</div>
-                <div style="font-size: 13px; font-weight: 600; color: #94a3b8;">No items added yet.</div>
-            </td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" class="text-muted py-4" style="border-bottom:none;"><div style="font-size: 28px; margin-bottom: 5px;">📭</div><div style="font-size: 13px; font-weight: 600; color: #94a3b8;">No items added yet.</div></td></tr>`;
             return;
         }
 
         vleSalesCart.forEach((item, index) => { 
             let showAmt = item.displayAmt ? item.displayAmt : "₹ " + item.amount;
-            tbody.innerHTML += `
-            <tr>
-                <td class="fw-bold" style="color:#0f172a;">${item.serial}</td>
-                <td class="fw-bold" style="color:#6d28d9;">${showAmt}</td>
-                <td><button class="btn btn-sm btn-outline-danger fw-bold" onclick="removeRow(${index})" style="font-size:11px;">✖ Remove</button></td>
-            </tr>`; 
+            tbody.innerHTML += `<tr><td class="fw-bold" style="color:#0f172a;">${item.serial}</td><td class="fw-bold" style="color:#6d28d9;">${showAmt}</td><td><button class="btn btn-sm btn-outline-danger fw-bold" onclick="removeRow(${index})" style="font-size:11px;">✖ Remove</button></td></tr>`; 
         }); 
     }
 
