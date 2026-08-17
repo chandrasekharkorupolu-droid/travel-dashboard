@@ -369,10 +369,11 @@
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
     let loggedInUserId = localStorage.getItem("userId") || "";
     
-    // 🌟 గ్లోబల్ వేరియబుల్: అవైలబుల్ స్టాక్ చెక్ చేయడానికి 🌟
     let currentAvailableStock = -1;
-
     let myRejectModalInstance = null;
+
+    let activeLastIssueDate = "";
+    let activeLastIssueQty = "";
 
     window.onload = function() { checkCacheAndLoadRequests(); };
 
@@ -442,11 +443,11 @@
              let reqNoDisplay = req['Stock Holding Request No'] || req.stockHoldingRequestNo || req.StockHoldingRequestNo || req.reqNo || req.requestNo || "N/A";
              
              if (isDM && currentStatus === "Pending") {
-                 btnHtml = `<button class="btn-action" style="background:#6d28d9; color:white;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1)">Recommend</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#6d28d9; color:white;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 1, '${req.lastIssueDate}', '${req.lastIssueQty}')">Recommend</button>`;
              } else if (!isDM && currentStatus === "Pending with SPOC") {
-                 btnHtml = `<button class="btn-action" style="background:#f59e0b; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 2)">Approve</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#f59e0b; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 2, '${req.lastIssueDate}', '${req.lastIssueQty}')">Approve</button>`;
                } else if (isDM && currentStatus === "Approved by SPOC") {
-                 btnHtml = `<button class="btn-action" style="background:#10b981; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 3)">Dispatch</button>`;
+                 btnHtml = `<button class="btn-action" style="background:#10b981; color:#fff;" onclick="reviewRequest(${req.rowIdx}, '${req.cscId}', '${req.vleName}', '${req.district}', ${req.reqQty}, 3, '${req.lastIssueDate}', '${req.lastIssueQty}')">Dispatch</button>`;
              } else {
                  btnHtml = `<span class="badge-gray">${currentStatus}</span>`;
              }
@@ -464,10 +465,13 @@
        } else { tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-success fw-bold fs-6">🎉 No pending stock requests found!</td></tr>`; }
     }
 
-    function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType) {
+    function reviewRequest(rowIdx, cscId, vleName, district, reqQty, stepType, lastIssueDate, lastIssueQty) {
        activeRowIdx = rowIdx; 
        currentStep = stepType;
        currentAvailableStock = -1;
+       
+       if (lastIssueDate !== undefined) activeLastIssueDate = lastIssueDate;
+       if (lastIssueQty !== undefined) activeLastIssueQty = lastIssueQty;
        
        document.getElementById("approvalPanel").style.display = "block";
        document.getElementById("lblVleName").innerText = vleName;
@@ -475,45 +479,18 @@
        document.getElementById("lblVleDistrict").innerText = district;
        document.getElementById("lblReqQty").innerText = reqQty;
        
-       document.getElementById("lblLastReqDate").innerText = "Fetching...";
-       document.getElementById("lblLastReqQty").innerText = "-";
-       document.getElementById("lblLastReqStatus").innerText = "-";
-
-       // 🌟 LAST ISSUE DETAILS FETCHING 🌟
-       fetch(SCRIPT_URL, {
-           method: "POST",
-           headers: { "Content-Type": "text/plain;charset=utf-8" },
-           body: JSON.stringify({ action: "checkVleStatus", vleId: cscId })
-       })
-       .then(res => res.json())
-       .then(res => {
-           if(res.success && res.data && res.data.length > 0) {
-               let lastReq = res.data[0]; 
-               
-               if(lastReq) {
-                   // ఇక్కడ ఆఫీసర్ కోసం మనం పంపిన 'issueDate' ని చదువుతుంది
-                   let displayDate = lastReq.issueDate ? lastReq.issueDate : lastReq.date;
-                   let displayQty = lastReq.issuedQty ? lastReq.issuedQty : lastReq.qty;
-
-                   document.getElementById("lblLastReqDate").innerText = String(displayDate).split(' ')[0];
-                   document.getElementById("lblLastReqQty").innerText = displayQty + " Papers";
-                   document.getElementById("lblLastReqStatus").innerText = lastReq.status || "Dispatched";
-               } else {
-                   document.getElementById("lblLastReqDate").innerText = "First Time Issue";
-                   document.getElementById("lblLastReqQty").innerText = "0 Papers";
-                   document.getElementById("lblLastReqStatus").innerText = "N/A";
-               }
-           } else {
-               document.getElementById("lblLastReqDate").innerText = "First Time Issue";
-               document.getElementById("lblLastReqQty").innerText = "0 Papers";
-               document.getElementById("lblLastReqStatus").innerText = "N/A";
-           }
-       }).catch(e => {
-           document.getElementById("lblLastReqDate").innerText = "No Prior Data";
-           document.getElementById("lblLastReqQty").innerText = "N/A";
+       if (activeLastIssueDate && activeLastIssueDate !== "Not Issued Yet" && activeLastIssueDate !== "undefined") {
+           document.getElementById("lblLastReqDate").innerText = String(activeLastIssueDate).split(' ')[0];
+           document.getElementById("lblLastReqQty").innerText = activeLastIssueQty + " Papers";
+           document.getElementById("lblLastReqStatus").innerText = "Dispatched";
+           document.getElementById("lblLastReqStatus").className = "fw-bold text-success";
+       } else {
+           document.getElementById("lblLastReqDate").innerText = "First Time Issue";
+           document.getElementById("lblLastReqQty").innerText = "0 Papers";
            document.getElementById("lblLastReqStatus").innerText = "N/A";
-       });
-       
+           document.getElementById("lblLastReqStatus").className = "fw-bold text-secondary";
+       }
+
        let qtyInput = document.getElementById("appQty");
        let btnApprove = document.getElementById("btnApprove");
        let btnPreview = document.getElementById("btnPreviewSerials");
@@ -677,7 +654,6 @@
         reviewRequest(activeRowIdx, cscId, vName, dist, qty, currentStep);
     }
 
-    // 🌟 VALIDATION: జనరేట్ సీరియల్స్ బటన్ (స్టెప్ 3) 🌟
     function generateSerialsPreview() {
         var qty = parseInt(document.getElementById("appQty").value, 10);
         
@@ -714,7 +690,6 @@
         }).catch(err => { btnPreview.disabled = false; btnPreview.innerText = "🔍 Generate Serial Numbers"; customAlert("Network Error!", false); });
     }
 
-    // 🌟 VALIDATION: ఆమోదించు బటన్ (స్టెప్ 1, 2) 🌟
     function approveRequest(e) {
        e.preventDefault(); 
        if(!activeRowIdx) return;
