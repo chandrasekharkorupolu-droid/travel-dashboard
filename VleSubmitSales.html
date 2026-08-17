@@ -20,8 +20,9 @@
     /* 🌟 Table Design 🌟 */
     .table-container { padding: 0; }
     .table { margin-bottom: 0; white-space: nowrap; }
-    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 10px; border: none; text-align: center; }
-    .table tbody tr td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 13px; text-align: center; }
+    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 8px; border: none; text-align: center; }
+    /* 🌟 Padding కుదించబడింది ఇక్కడే 🌟 */
+    .table tbody tr td { padding: 8px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 13px; text-align: center; }
     .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
     .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
     .table-hover tbody tr:hover td { background-color: #f5f3ff !important; }
@@ -48,10 +49,12 @@
     .btn-modal.error { background: #ef4444; color: white; }
 
     /* 🌟 Scrollbars 🌟 */
-    .history-scroll { max-height: 180px; overflow-y: auto; }
-    .history-scroll::-webkit-scrollbar { width: 6px; }
-    .history-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-    .history-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .history-scroll { max-height: 250px; overflow-y: auto; }
+    .summary-scroll { max-height: 280px; overflow-y: auto; } /* Dashboard table height పెంచాను */
+    
+    .history-scroll::-webkit-scrollbar, .summary-scroll::-webkit-scrollbar { width: 6px; }
+    .history-scroll::-webkit-scrollbar-track, .summary-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .history-scroll::-webkit-scrollbar-thumb, .summary-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     /* 🌟 10 Items Per Row Grid 🌟 */
     .serial-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; width: 100%; }
@@ -128,10 +131,10 @@
     <div class="row g-3 mb-4">
         
       <!-- Left Panel: Stock Received History -->
-      <div class="col-xl-4 col-lg-5">
+      <div class="col-xl-3 col-lg-4">
         <div class="premium-card h-100 mb-0">
           <div class="card-header-custom border-bottom-0 pb-2">
-            <h5 class="card-title">📦 Stock Received History</h5>
+            <h5 class="card-title">📦 Stock Received</h5>
           </div>
           <div class="table-container pt-0">
             <div class="table-responsive history-scroll" style="border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -152,18 +155,19 @@
         </div>
       </div>
 
-      <!-- Right Panel: Performance -->
-      <div class="col-xl-8 col-lg-7">
+      <!-- Right Panel: Month-wise Performance Summary -->
+      <div class="col-xl-9 col-lg-8">
         <div class="premium-card h-100 mb-0">
           <div class="card-header-custom border-bottom-0 pb-2">
-            <h5 class="card-title">📊 Present Performance Summary</h5>
+            <h5 class="card-title">📊 Month-wise Performance Summary</h5>
             <button class="btn btn-outline-violet fw-bold shadow-sm" onclick="openEnteredSerialsModal()">🔍 View All Serials Status</button>
           </div>
           <div class="table-container pt-0">
-            <div class="table-responsive" style="border-radius: 12px; border: 1px solid #e2e8f0;">
-              <table class="table table-hover table-striped align-middle text-center mb-0">
-                <thead class="sticky-top">
+            <div class="table-responsive summary-scroll" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+              <table class="table table-hover align-middle text-center mb-0">
+                <thead class="sticky-top" style="z-index: 6;">
                   <tr>
+                    <th style="background: #e2e8f0 !important; color:#6d28d9 !important; font-size:12px;">Month</th>
                     <th style="background: #e2e8f0 !important; color:#1e293b !important;">Issued</th>
                     <th style="background: #e2e8f0 !important; color:#16a34a !important;">₹ 10</th>
                     <th style="background: #e2e8f0 !important; color:#0284c7 !important;">₹ 20</th>
@@ -178,10 +182,8 @@
                     <th style="background: #e2e8f0 !important; color:#dc2626 !important;">Pending</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr id="myPerformanceRow">
-                      <td colspan="12" class="text-muted fw-bold py-4">లోడ్ అవుతోంది...</td>
-                  </tr>
+                <tbody id="performanceTableBody">
+                  <tr><td colspan="13" class="text-muted fw-bold py-4">లోడ్ అవుతోంది...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -327,28 +329,65 @@
         else { document.getElementById('customAmount').placeholder = "Enter Custom Amount (₹)"; }
     }
 
-    function updateDashboard(d) {
-        globalStockHistory = d.stockHistory || []; 
-
-        let otherHtml = d.other > 0 ? `<span class="text-secondary">${d.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${d.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
-        let dsdHtml = d.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${d.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
-        let pendingHtml = d.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${d.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+    function updateDashboard(resData) {
+        globalStockHistory = resData.stockHistory || []; 
+        let monthlyData = resData.monthly || [];
+        let grand = resData.grandTotal || {};
         
-        document.getElementById("myPerformanceRow").innerHTML = `
-            <td class="fw-bold text-secondary text-nowrap">${d.issued}</td>
-            <td class="fw-bold text-success">${d.d10}</td>
-            <td class="fw-bold text-info">${d.d20}</td>
-            <td class="fw-bold text-warning">${d.d50}</td>
-            <td class="fw-bold" style="color:#6d28d9;">${d.d100}</td>
-            <td class="fw-bold">${otherHtml}</td>
-            <td class="fw-bold">${dsdHtml}</td>
-            <td class="fw-bold text-primary text-nowrap">${d.used}</td>
-            <td class="fw-bold text-primary text-nowrap" style="font-size:14px; background:#f0f9ff;">${d.avail}</td>
-            <td class="fw-bold text-secondary text-nowrap">₹ ${d.target.toLocaleString('en-IN')}</td>
-            <td class="fw-bold text-success text-nowrap" style="font-size:14px; background:#f0fdf4;">₹ ${d.totalSales.toLocaleString('en-IN')}</td>
-            <td>${pendingHtml}</td>
-        `;
+        let tbodyHtml = "";
 
+        if(monthlyData.length > 0) {
+            monthlyData.forEach(m => {
+                let otherHtml = m.other > 0 ? `<span class="text-secondary">${m.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${m.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
+                let dsdHtml = m.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${m.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
+                let pendingHtml = m.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${m.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+                
+                tbodyHtml += `
+                <tr style="background-color: #ffffff;">
+                    <td class="fw-bold" style="color:#0f172a; background:#f8fafc;">${m.monthLabel}</td>
+                    <td class="fw-bold text-secondary text-nowrap">${m.issued}</td>
+                    <td class="fw-bold text-success">${m.d10}</td>
+                    <td class="fw-bold text-info">${m.d20}</td>
+                    <td class="fw-bold text-warning">${m.d50}</td>
+                    <td class="fw-bold" style="color:#6d28d9;">${m.d100}</td>
+                    <td class="fw-bold">${otherHtml}</td>
+                    <td class="fw-bold">${dsdHtml}</td>
+                    <td class="fw-bold text-primary text-nowrap">${m.used}</td>
+                    <td class="fw-bold text-primary text-nowrap" style="font-size:14px; background:#f0f9ff;">${m.avail}</td>
+                    <td class="fw-bold text-secondary text-nowrap">₹ ${m.target.toLocaleString('en-IN')}</td>
+                    <td class="fw-bold text-success text-nowrap" style="font-size:14px; background:#f0fdf4;">₹ ${m.totalSales.toLocaleString('en-IN')}</td>
+                    <td>${pendingHtml}</td>
+                </tr>`;
+            });
+
+            // 🌟 సూపర్ ఫీచర్: కింద అతుక్కుని ఉండే "Grand Total" రో 🌟
+            let gtOther = grand.other > 0 ? `<span class="text-secondary">${grand.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${grand.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
+            let gtDsd = grand.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${grand.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
+            let gtPending = grand.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${grand.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+            
+            tbodyHtml += `
+            <tr style="position: sticky; bottom: -1px; border-top: 3px solid #cbd5e1; background-color: #e2e8f0; z-index: 4; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);">
+                <td class="fw-bold text-uppercase" style="color:#6d28d9; letter-spacing:0.5px;">Grand Total</td>
+                <td class="fw-bold text-dark text-nowrap fs-6">${grand.issued}</td>
+                <td class="fw-bold text-success fs-6">${grand.d10}</td>
+                <td class="fw-bold text-info fs-6">${grand.d20}</td>
+                <td class="fw-bold text-warning fs-6">${grand.d50}</td>
+                <td class="fw-bold fs-6" style="color:#6d28d9;">${grand.d100}</td>
+                <td class="fw-bold">${gtOther}</td>
+                <td class="fw-bold">${gtDsd}</td>
+                <td class="fw-bold text-primary text-nowrap fs-6">${grand.used}</td>
+                <td class="fw-bold text-primary text-nowrap fs-6">${grand.avail}</td>
+                <td class="fw-bold text-secondary text-nowrap fs-6">₹ ${grand.target.toLocaleString('en-IN')}</td>
+                <td class="fw-bold text-success text-nowrap fs-6">₹ ${grand.totalSales.toLocaleString('en-IN')}</td>
+                <td class="fs-6">${gtPending}</td>
+            </tr>`;
+        } else {
+            tbodyHtml = `<tr><td colspan="13" class="text-muted fw-bold py-4">No data found.</td></tr>`;
+        }
+
+        document.getElementById("performanceTableBody").innerHTML = tbodyHtml;
+
+        // Stock History 
         let historyTbody = document.getElementById("stockHistoryRow");
         if (globalStockHistory.length > 0) {
             historyTbody.innerHTML = "";
@@ -372,7 +411,7 @@
         if (cachedData) {
             updateDashboard(JSON.parse(cachedData));
         } else {
-            document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-muted fw-bold py-4">⏳ డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td>`;
+            document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-muted fw-bold py-4">⏳ డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td></tr>`;
             document.getElementById("stockHistoryRow").innerHTML = `<tr><td colspan="3" class="text-muted py-3 fw-bold">⏳ లోడ్ అవుతోంది...</td></tr>`;
         }
 
@@ -382,10 +421,10 @@
                 sessionStorage.setItem("vlePerfCache_" + loggedInId, JSON.stringify(res.data));
                 updateDashboard(res.data);
             } else {
-                if(!cachedData) document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">Error: ${res.message}</td>`;
+                if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-danger fw-bold py-4">Error: ${res.message}</td></tr>`;
             }
         }).catch(err => { 
-            if(!cachedData) document.getElementById("myPerformanceRow").innerHTML = `<td colspan="12" class="text-danger fw-bold py-4">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td>`; 
+            if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-danger fw-bold py-4">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td></tr>`; 
         });
     }
 
@@ -415,7 +454,6 @@
         myEnteredSerialsModal.show();
         document.getElementById("searchEntered").value = "";
 
-        // 🌟 Popup డేటా కోసం Session Storage చెక్ చేస్తున్నాం 🌟
         let sessionCacheSerials = sessionStorage.getItem("vleEnteredSerialsCache_" + loggedInId);
         if (sessionCacheSerials) {
             cachedEnteredSerials = JSON.parse(sessionCacheSerials);
@@ -439,7 +477,6 @@
         .then(res => {
             if(res.success) {
                 cachedEnteredSerials = res.data || [];
-                // డేటాని Session Storage లో సేవ్ చేస్తున్నాం 
                 sessionStorage.setItem("vleEnteredSerialsCache_" + loggedInId, JSON.stringify(cachedEnteredSerials));
                 renderSerialGrid(cachedEnteredSerials);
             } else {
@@ -594,7 +631,6 @@
                 customAlert(res.message, true); 
                 vleSalesCart = []; 
                 cachedEnteredSerials = null; 
-                // 🌟 కొత్త డేటా కోసం పాప్-అప్ మరియు డాష్‌బోర్డ్ పాత మెమరీని తీసేస్తున్నాం 🌟
                 sessionStorage.removeItem("vlePerfCache_" + loggedInId); 
                 sessionStorage.removeItem("vleEnteredSerialsCache_" + loggedInId);
                 renderTable(); 
