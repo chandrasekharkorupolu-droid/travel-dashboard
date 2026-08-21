@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelCloud - FASTAG Month-Wise Activations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 15px; gap: 12px; }
+
+        .top-controls {
+            display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; 
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-shrink: 0;
+        }
+        .page-heading { font-size: 18px; color: #059669; font-weight: 900; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .filter-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #334155;}
+        
+        .btn-action { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #e2e8f0; display: flex; align-items: center; gap: 5px;}
+        .btn-action:hover { background-color: #e2e8f0; color: #1e293b;}
+
+        .report-wrapper { flex: 1; display: flex; flex-direction: column; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; overflow-y: auto; overflow-x: hidden; }
+        #reportCaptureArea { background-color: #ffffff; display: flex; flex-direction: column; width: 100%; transition: none; }
+
+        .report-title-container { text-align: center; padding: 15px 0; background-color: #ffffff; border-bottom: 1px dashed #cbd5e1; flex-shrink: 0;}
+        .report-title-container h2 { font-size: 20px; color: #1e293b; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .report-title-container p { font-size: 12px; color: #64748b; font-weight: 800; margin: 0; }
+
+        .table-container { overflow-x: auto; flex-shrink: 0; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1300px; }
+        
+        /* 🌟 టేబుల్ హెడర్ స్టైల్స్ 🌟 */
+        th { color: #ffffff; text-transform: uppercase; text-align: center; font-weight: 900; border-right: 1px solid rgba(255,255,255,0.2);}
+        
+        thead tr:nth-child(1) th { height: 45px; position: sticky; top: 0; font-size: 11px; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.3); z-index: 10; }
+        thead tr:nth-child(2) th { height: 30px; position: sticky; top: 45px; font-size: 9px; letter-spacing: 0.5px; z-index: 10; background-color: #ffffff; color: #334155; border-bottom: 2px solid #e2e8f0; border-right: 1px solid #e2e8f0;}
+
+        /* హెడర్ కలర్స్ */
+        .th-main { background-color: #0f172a; z-index: 30 !important; left: 0; border-right: 2px solid #cbd5e1 !important; cursor: pointer;} 
+        .th-act25 { background-color: #334155; }
+        .th-q { background-color: #1e293b; }
+        .th-tot27 { background-color: #2563eb; } 
+        .th-yet { background-color: #be123c; } 
+        .th-inact { background-color: #000000; } 
+
+        /* సబ్-హెడర్ కలర్స్ */
+        .sub-part { color: #475569 !important; font-weight: 900; }
+        .sub-old { color: #d97706 !important; font-weight: 900; }
+        .sub-new { color: #059669 !important; font-weight: 900; }
+        .sub-unique { color: #2563eb !important; font-weight: 900; }
+
+        td { padding: 8px 4px; font-size: 13px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f8fafc; vertical-align: middle; text-align: center; font-weight: 700;}
+
+        /* 🌟 టెక్స్ట్ కలర్స్ & ఫిక్స్‌డ్ ఫస్ట్ కాలమ్ 🌟 */
+        td:nth-child(1) { text-align: left; padding-left: 15px; font-weight: 900; color: #0f172a; background-color: #ffffff; border-right: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 5; cursor: pointer; transition: 0.2s;}
+        td:nth-child(1):hover { background-color: #f1f5f9; color: #059669; }
+        
+        td:nth-child(2) { color: #ea580c; font-weight: 900; font-size: 14px;} /* Total IDs */
+        td:nth-child(3) { color: #475569; } /* Act 25-26 */
+        
+        /* Q1, JUL, AUG Colors */
+        td:nth-child(4), td:nth-child(7), td:nth-child(10) { color: #334155; } /* Participated */
+        td:nth-child(5), td:nth-child(8), td:nth-child(11) { color: #d97706; } /* Old */
+        td:nth-child(6), td:nth-child(9), td:nth-child(12) { color: #059669; } /* New */
+        
+        td:nth-child(13) { color: #2563eb; font-weight: 900; font-size: 14px; background-color: #eff6ff;} /* Total Active Unique */
+        td:nth-child(14) { color: #d97706; background-color: #eff6ff;} /* Total Old */
+        td:nth-child(15) { color: #059669; background-color: #eff6ff;} /* Total New */
+        
+        td:nth-child(16) { color: #be123c; font-weight: 900; font-size: 14px; background-color: #fff1f2;} /* Yet to Activate */
+        td:nth-child(17) { color: #000000; font-weight: 900; background-color: #f8fafc;} /* Total Inactive */
+
+        .zero-val { color: #cbd5e1 !important; font-weight: 500 !important; }
+
+        tbody tr:nth-child(even) td:nth-child(1) { background-color: #f8fafc; }
+        tbody tr:nth-child(even) td { background-color: #f8fafc; }
+        tbody tr:hover td { background-color: #f0fdf4 !important; }
+
+        /* గ్రాండ్ టోటల్ రో */
+        tr.grand-total-row td { background-color: #f1f5f9 !important; font-weight: 900 !important; font-size: 14px !important; border-top: 2px solid #cbd5e1 !important; padding: 12px 4px; position: sticky; bottom: 0; z-index: 15; }
+        tr.grand-total-row td:nth-child(1) { color: #0f172a !important; text-align: center; padding-left: 0; left: 0; z-index: 30; cursor: default;}
+        
+        .loader-row td { text-align: center; padding: 60px !important; font-size: 16px; color: #059669; font-weight: 800; background: #ffffff !important;}
+        .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #cbd5e1; border-top-color: #059669; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; overflow-y: auto; height: auto; }
+            .top-controls { flex-direction: column; align-items: flex-start; gap: 12px; padding: 15px; }
+            .filter-group { flex-wrap: wrap; width: 100%; }
+            .filter-group select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-controls">
+        <div class="page-heading">📅 FASTAG Month-Wise Activations</div>
+        <div class="filter-group">
+            <span style="font-size: 12px; font-weight: 800; color: #64748b;">Filter:</span>
+            <select id="districtType" onchange="renderTable()">
+                <option value="old">Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="renderTable()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
+            <button class="btn-action" onclick="downloadImage()" style="color: #475569; font-weight: 800;">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div class="report-wrapper">
+        <div id="reportCaptureArea">
+            <div class="report-title-container">
+                <h2>CSC AP – FASTAG MONTH-WISE ACTIVATIONS (FY 26-27)</h2>
+                <p id="reportDate">Report Generated on: Loading...</p>
+            </div>
+            <div class="table-container" id="tableContainer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="th-main" rowspan="2" title="Double click to filter">DISTRICT ⇅</th>
+                            <th class="th-main" rowspan="2">TOTAL FASTAG IDS</th>
+                            <th class="th-act25" rowspan="2">ACTIVE<br>(FY 25-26)</th>
+                            <!-- 🌟 మార్చిన కాలమ్స్ 🌟 -->
+                            <th class="th-q" colspan="3">Q1 (APR-JUN)</th>
+                            <th class="th-q" colspan="3">JUL 26</th>
+                            <th class="th-q" colspan="3">AUG 26</th>
+                            
+                            <th class="th-tot27" colspan="3">TOTAL ACTIVE (FY 26-27)</th>
+                            <th class="th-yet" rowspan="2">YET TO ACTIVATE<br>(FROM FY 25-26)</th>
+                            <th class="th-inact" rowspan="2">TOTAL<br>INACTIVE</th>
+                        </tr>
+                        <tr>
+                            <!-- Q1 -->
+                            <th class="sub-part">PARTICIPATED</th><th class="sub-old">ACT. OLD</th><th class="sub-new">ACT. NEW</th>
+                            <!-- JUL -->
+                            <th class="sub-part">PARTICIPATED</th><th class="sub-old">ACT. OLD</th><th class="sub-new">ACT. NEW</th>
+                            <!-- AUG -->
+                            <th class="sub-part">PARTICIPATED</th><th class="sub-old">ACT. OLD</th><th class="sub-new">ACT. NEW</th>
+                            
+                            <!-- TOTAL 27 -->
+                            <th class="sub-unique">UNIQUE TOTAL</th><th class="sub-old">OLD</th><th class="sub-new">NEW</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        <tr class="loader-row"><td colspan="17"><div class="spinner"></div>Calculating Month-Wise Activations... Please Wait</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        document.getElementById("reportDate").innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', options);
+
+        let rawFastagData = [];
+        let dmAssignedOldDistrict = "";
+        let oldDistrictsSet = new Set();
+        let newDistrictsSet = new Set();
+        
+        const baseApiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        const apiURL = baseApiURL + "?sheet=FasTag";
+        const usersApiURL = baseApiURL + "?sheet=Users";
+
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            let lClean = loginName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            return (sClean === lClean || sClean.includes(lClean) || lClean.includes(sClean));
+        }
+
+        window.onload = function() { fetchSheetData(); };
+
+        async function fetchSheetData() {
+            document.getElementById("dataTable").innerHTML = "<tr class='loader-row'><td colspan='17'><div class='spinner'></div> Fetching Fastag Live Data...</td></tr>";
+            try {
+                let cachedData = localStorage.getItem("fastagGlobalData");
+                let cachedUsersData = localStorage.getItem("cscUsersData");
+                let usersData = null;
+
+                if (cachedData && cachedUsersData) {
+                    rawFastagData = JSON.parse(cachedData);
+                    usersData = JSON.parse(cachedUsersData);
+                } else {
+                    let [resData, resUsers] = await Promise.all([
+                        fetch(apiURL),
+                        fetch(usersApiURL).catch(() => null)
+                    ]);
+                    rawFastagData = await resData.json();
+                    usersData = resUsers ? await resUsers.json() : null;
+                    localStorage.setItem("fastagGlobalData", JSON.stringify(rawFastagData));
+                    if(usersData) localStorage.setItem("cscUsersData", JSON.stringify(usersData));
+                }
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                    let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district');
+                    for(let i=1; i<usersData.length; i++) {
+                        if (idxUid > -1 && idxDist > -1 && (usersData[i][idxUid] || '').toString().trim() === loggedInUserId) {
+                            dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                            break;
+                        }
+                    }
+                }
+
+                extractDistricts();
+                renderTable();
+            } catch(e) {
+                document.getElementById("dataTable").innerHTML = "<tr><td colspan='17' style='color:red; text-align:center; padding:20px;'>❌ Error loading Google Sheet data.</td></tr>";
+            }
+        }
+
+        function refreshData() {
+            localStorage.removeItem("fastagGlobalData");
+            localStorage.removeItem("cscUsersData");
+            dmAssignedOldDistrict = "";
+            fetchSheetData();
+        }
+
+        function extractDistricts() {
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
+            let cleanHeaders = rawFastagData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            let idxOldDist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+            let idxNewDist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+
+            for(let i=1; i<rawFastagData.length; i++) {
+                let row = rawFastagData[i];
+                if (idxOldDist > -1 && row[idxOldDist]) oldDistrictsSet.add(row[idxOldDist].toString().trim());
+                if (idxNewDist > -1 && row[idxNewDist]) newDistrictsSet.add(row[idxNewDist].toString().trim());
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            const userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const loggedInUser = localStorage.getItem("userName") || "";
+
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            let arr = [];
+
+            if (userDesignation === "District Manager") {
+                 if (type === 'old') {
+                     if (dmAssignedOldDistrict) arr.push(dmAssignedOldDistrict);
+                 } else {
+                     let myNewDists = new Set();
+                     let idxEmpName = rawFastagData[0].findIndex(h => h.toString().toLowerCase().includes('employeename') || h.toString().toLowerCase().includes('empname'));
+                     let idxNewDist = rawFastagData[0].findIndex(h => h.toString().toLowerCase().includes('newdistrict'));
+                     
+                     for(let i=1; i<rawFastagData.length; i++) {
+                         let empN = idxEmpName > -1 ? rawFastagData[i][idxEmpName].toString().trim() : '';
+                         let newD = idxNewDist > -1 ? rawFastagData[i][idxNewDist].toString().trim() : '';
+                         if (isNameMatch(empN, loggedInUser) && newD !== '-' && newD !== '') {
+                             myNewDists.add(newD);
+                         }
+                     }
+                     arr = Array.from(myNewDists).sort();
+                 }
+            } else {
+                 arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            }
+            
+            arr.forEach(dist => { if(dist && dist !== 'Unknown') distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+        }
+
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
+            else { distDropdown.value = distName; }
+            renderTable();
+        }
+
+        function renderTable() {
+            if(!rawFastagData || rawFastagData.length < 2) return;
+
+            const distType = document.getElementById("districtType").value;
+            const selectedDist = document.getElementById("districtName").value;
+            const userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const loggedInUser = localStorage.getItem("userName") || "";
+
+            let cleanHeaders = rawFastagData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            
+            let idxCscId = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxOldDist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+            let idxNewDist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxEmpName = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx25 = cleanHeaders.findIndex(h => h.includes('2425') || h.includes('202425')); 
+            let idx26 = cleanHeaders.findIndex(h => h.includes('2526') || h.includes('202526')); 
+            let idx27_N = cleanHeaders.findIndex(h => h === 'totalsalefy2627'); 
+            let idx27_AB = cleanHeaders.findIndex(h => h === 'totalfy2627'); 
+
+            let mIndices = [];
+            let startMonthIdx = cleanHeaders.findIndex(h => h.includes('apr26'));
+            if(startMonthIdx > -1) {
+                for(let k=0; k<12; k++) {
+                    if(startMonthIdx + k < rawFastagData[0].length) mIndices.push(startMonthIdx + k);
+                }
+            }
+
+            let distSummary = {};
+
+            for(let i=1; i<rawFastagData.length; i++) {
+                let row = rawFastagData[i];
+                let cscId = idxCscId > -1 ? (row[idxCscId] || '').toString().trim() : '';
+                if(!cscId || cscId === '-') continue;
+
+                let oldD = idxOldDist > -1 ? (row[idxOldDist] || 'Unknown').toString().trim() : 'Unknown';
+                let newD = idxNewDist > -1 ? (row[idxNewDist] || 'Unknown').toString().trim() : 'Unknown';
+                let empN = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim() : '';
+
+                if(userDesignation === "District Manager") {
+                    if(distType === "old") {
+                        if(!dmAssignedOldDistrict || oldD.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) continue;
+                    } else {
+                        if(!isNameMatch(empN, loggedInUser)) continue;
+                    }
+                }
+
+                let dKey = distType === "old" ? oldD : newD;
+                if(!dKey || dKey === '-' || dKey === 'Unknown') continue;
+                if(selectedDist !== "All" && dKey !== selectedDist) continue;
+
+                if(!distSummary[dKey]) {
+                    distSummary[dKey] = {
+                        name: dKey, totalIds: 0, act25: 0,
+                        q1: { part: 0, old: 0, new: 0 },
+                        jul: { part: 0, old: 0, new: 0 },
+                        aug: { part: 0, old: 0, new: 0 },
+                        tot27: { unique: 0, old: 0, new: 0 },
+                        yetToAct: 0, totalInact: 0
+                    };
+                }
+
+                let s26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+                let isActive25 = (s26 > 0);
+
+                let mSum = 0;
+                let qVals = [0, 0, 0]; // [Q1 sum, Jul, Aug]
+
+                for(let m=0; m<12; m++) {
+                    let val = (mIndices[m] > -1) ? (parseInt(row[mIndices[m]]) || 0) : 0;
+                    mSum += val;
+                    if(m < 3) qVals[0] += val; // Q1 (Apr, May, Jun)
+                    else if(m === 3) qVals[1] += val; // Jul
+                    else if(m === 4) qVals[2] += val; // Aug
+                }
+
+                let val_N = idx27_N > -1 ? (parseInt(row[idx27_N]) || 0) : 0;
+                let val_AB = idx27_AB > -1 ? (parseInt(row[idx27_AB]) || 0) : 0;
+                let s27 = Math.max(val_N, val_AB, mSum);
+                let isActive27 = (s27 > 0);
+
+                distSummary[dKey].totalIds++;
+                if (isActive25) distSummary[dKey].act25++;
+
+                // 🌟 Q1, JUL, AUG Logic 🌟
+                let keys = ['q1', 'jul', 'aug'];
+                for(let q=0; q<3; q++) {
+                    if (qVals[q] > 0) {
+                        distSummary[dKey][keys[q]].part++;
+                        if (isActive25) distSummary[dKey][keys[q]].old++;
+                        else distSummary[dKey][keys[q]].new++;
+                    }
+                }
+
+                if (isActive27) {
+                    distSummary[dKey].tot27.unique++;
+                    if (isActive25) distSummary[dKey].tot27.old++;
+                    else distSummary[dKey].tot27.new++;
+                }
+            }
+
+            let distArray = Object.values(distSummary).sort((a,b) => a.name.localeCompare(b.name));
+
+            let html = "";
+            let grand = {
+                totalIds: 0, act25: 0,
+                q1: { part: 0, old: 0, new: 0 },
+                jul: { part: 0, old: 0, new: 0 },
+                aug: { part: 0, old: 0, new: 0 },
+                tot27: { unique: 0, old: 0, new: 0 },
+                yetToAct: 0, totalInact: 0
+            };
+
+            function getTd(val) { return val === 0 ? `<td class="zero-val">0</td>` : `<td>${val}</td>`; }
+
+            distArray.forEach(d => {
+                d.yetToAct = d.act25 - d.tot27.old;
+                if (d.yetToAct < 0) d.yetToAct = 0;
+                d.totalInact = d.totalIds - d.tot27.unique;
+
+                grand.totalIds += d.totalIds;
+                grand.act25 += d.act25;
+                ['q1', 'jul', 'aug', 'tot27'].forEach(q => {
+                    grand[q].part = (grand[q].part || 0) + (d[q].part || d[q].unique || 0);
+                    grand[q].old += d[q].old;
+                    grand[q].new += d[q].new;
+                });
+                grand.yetToAct += d.yetToAct;
+                grand.totalInact += d.totalInact;
+
+                html += `<tr>
+                    <td ondblclick="filterByDistrict('${d.name}')" title="Double click to filter">${d.name}</td>
+                    ${getTd(d.totalIds)} ${getTd(d.act25)}
+                    ${getTd(d.q1.part)} ${getTd(d.q1.old)} ${getTd(d.q1.new)}
+                    ${getTd(d.jul.part)} ${getTd(d.jul.old)} ${getTd(d.jul.new)}
+                    ${getTd(d.aug.part)} ${getTd(d.aug.old)} ${getTd(d.aug.new)}
+                    ${getTd(d.tot27.unique)} ${getTd(d.tot27.old)} ${getTd(d.tot27.new)}
+                    ${getTd(d.yetToAct)} ${getTd(d.totalInact)}
+                </tr>`;
+            });
+
+            if(html === "") {
+                html = "<tr><td colspan='17' style='text-align:center; padding:30px; color:#dc2626; font-weight:bold;'>No Districts Found!</td></tr>";
+            } else {
+                html += `<tr class="grand-total-row">
+                    <td>GRAND TOTAL</td>
+                    ${getTd(grand.totalIds)} ${getTd(grand.act25)}
+                    ${getTd(grand.q1.part)} ${getTd(grand.q1.old)} ${getTd(grand.q1.new)}
+                    ${getTd(grand.jul.part)} ${getTd(grand.jul.old)} ${getTd(grand.jul.new)}
+                    ${getTd(grand.aug.part)} ${getTd(grand.aug.old)} ${getTd(grand.aug.new)}
+                    ${getTd(grand.tot27.part)} ${getTd(grand.tot27.old)} ${getTd(grand.tot27.new)}
+                    ${getTd(grand.yetToAct)} ${getTd(grand.totalInact)}
+                </tr>`;
+            }
+
+            document.getElementById("dataTable").innerHTML = html;
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            updateDistrictsDropdown();
+            document.getElementById("districtName").value = "All";
+            renderTable();
+        }
+
+        // 🌟 ఇమేజ్ కట్ అవ్వకుండా కాంపాక్ట్ సైజులో డౌన్‌లోడ్ అవ్వడానికి 🌟
+        function downloadImage() {
+            const captureArea = document.getElementById("reportCaptureArea");
+            const tableContainer = document.getElementById("tableContainer");
+            const btn = document.querySelector(".btn-action[onclick='downloadImage()']");
+            
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Downloading...";
+            btn.disabled = true;
+
+            let origContainerOverflow = tableContainer.style.overflow;
+            let origAreaWidth = captureArea.style.width;
+
+            tableContainer.style.overflow = 'visible';
+            captureArea.style.width = '1200px'; // 🌟 Q3, Q4 పోయాయి కాబట్టి మరీ పొడవు అవసరం లేదు. 1200px చాలు 🌟
+            captureArea.style.margin = '0 auto';
+
+            const stickyEls = captureArea.querySelectorAll('th, td:nth-child(1), tr.grand-total-row td');
+            const origPositions = [];
+            stickyEls.forEach((el, index) => {
+                origPositions[index] = el.style.position;
+                el.style.position = 'static';
+            });
+
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: 1200
+                }).then(canvas => {
+                    tableContainer.style.overflow = origContainerOverflow;
+                    captureArea.style.width = origAreaWidth;
+                    captureArea.style.margin = '0';
+                    
+                    stickyEls.forEach((el, index) => {
+                        el.style.position = origPositions[index];
+                    });
+
+                    let link = document.createElement('a');
+                    let dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                    link.download = `FASTAG_Month_Wise_Activations_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    tableContainer.style.overflow = origContainerOverflow;
+                    captureArea.style.width = origAreaWidth;
+                    captureArea.style.margin = '0';
+                    stickyEls.forEach((el, index) => { el.style.position = origPositions[index]; });
+                    alert("Download failed.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            }, 300); 
+        }
+
+        function toggleFullScreen() {
+            try {
+                let btn = document.getElementById("fullscreenBtn");
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#059669";
+                    btn.style.color = "white";
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        btn.innerHTML = "⛶ Full Screen";
+                        btn.style.backgroundColor = "#f1f5f9";
+                        btn.style.color = "#475569";
+                    }
+                }
+            } catch (e) { console.log(e); }
+        }
+    </script>
+</body>
+</html>

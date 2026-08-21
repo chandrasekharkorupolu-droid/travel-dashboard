@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelCloud - FASTAG Performance Report</title>
+    <!-- ఇమేజ్ డౌన్‌లోడ్ మరియు చార్ట్స్ కోసం -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 15px; gap: 12px; }
+
+        /* టాప్ కంట్రోల్స్ */
+        .top-controls {
+            display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; 
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-shrink: 0;
+        }
+        .page-heading { font-size: 18px; color: #059669; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .filter-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #334155;}
+        
+        .btn-action { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #e2e8f0; display: flex; align-items: center; gap: 5px;}
+        .btn-action:hover { background-color: #e2e8f0; color: #1e293b;}
+
+        /* రిపోర్ట్ ర్యాపర్ */
+        .report-wrapper { flex: 1; display: flex; flex-direction: column; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; overflow-y: auto; overflow-x: hidden; }
+        
+        #reportCaptureArea { background-color: #ffffff; display: flex; flex-direction: column; width: 100%; transition: none; }
+
+        .report-title-container { text-align: center; padding: 15px 0; background-color: #ffffff; border-bottom: 1px dashed #cbd5e1; flex-shrink: 0;}
+        .report-title-container h2 { font-size: 20px; color: #1e293b; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .report-title-container p { font-size: 12px; color: #ea580c; font-weight: 800; margin: 0; }
+
+        /* టేబుల్ లేఅవుట్ - కాంపాక్ట్ సైజ్ కోసం డిజైన్ మార్చాను */
+        .table-container { overflow-x: auto; flex-shrink: 0; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 950px; }
+        
+        /* మల్టీ-కలర్ టేబుల్ హెడర్స్ */
+        th { color: #ffffff; font-size: 10px; text-transform: uppercase; padding: 6px 4px; text-align: center; font-weight: 900; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2);}
+        
+        thead tr:nth-child(1) th { height: 35px; top: 0; position: sticky; border-bottom: 1px solid rgba(255,255,255,0.3); }
+        thead tr:nth-child(2) th { height: 25px; top: 35px; position: sticky; font-size: 9px; letter-spacing: 1px; }
+
+        .th-dist { background-color: #1e293b; border-right: 2px solid #cbd5e1; z-index: 30 !important; left: 0; cursor: pointer; } 
+        .th-total { background-color: #ea580c; }
+        .th-act24, .th-act25 { background-color: #94a3b8; }
+        .th-act26 { background-color: #06b6d4; }
+        .th-old27 { background-color: #3b82f6; }
+        .th-new27 { background-color: #a855f7; }
+        .th-tot27 { background-color: #10b981; }
+
+        /* టేబుల్ సెల్స్ (కాంపాక్ట్) */
+        td { padding: 6px 4px; font-size: 12px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f8fafc; vertical-align: middle; text-align: center; font-weight: 700;}
+
+        /* టెక్స్ట్ కలర్స్ */
+        td:nth-child(1) { text-align: left; padding-left: 15px; font-weight: 900; color: #0f172a; background-color: #ffffff; border-right: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 5; cursor: pointer; transition: 0.2s;}
+        td:nth-child(1):hover { background-color: #e2e8f0; color: #0284c7;}
+        td:nth-child(2), td:nth-child(3) { color: #ea580c; }
+        td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) { color: #64748b; }
+        td:nth-child(8), td:nth-child(9) { color: #06b6d4; }
+        td:nth-child(10), td:nth-child(11) { color: #3b82f6; }
+        td:nth-child(12), td:nth-child(13) { color: #a855f7; }
+        td:nth-child(14), td:nth-child(15) { color: #10b981; font-size: 13px; }
+
+        .zero-val { color: #cbd5e1 !important; font-weight: 500 !important; }
+
+        tbody tr:nth-child(even) td:nth-child(1) { background-color: #f8fafc; }
+        tbody tr:nth-child(even) td { background-color: #f8fafc; }
+        tbody tr:hover td { background-color: #ecfdf5 !important; }
+
+        /* గ్రాండ్ టోటల్ రో */
+        tr.grand-total-row td { background-color: #f1f5f9 !important; font-weight: 900 !important; font-size: 13px !important; border-top: 2px solid #cbd5e1 !important; padding: 8px 4px; position: sticky; bottom: 0; z-index: 15; }
+        tr.grand-total-row td:nth-child(1) { color: #0f172a !important; text-align: center; padding-left: 0; left: 0; z-index: 30; cursor: default;}
+        tr.grand-total-row td:nth-child(1):hover { background-color: #f1f5f9; color: #0f172a;}
+        
+        tr.grand-total-row td:nth-child(2), tr.grand-total-row td:nth-child(3) { color: #ea580c !important; }
+        tr.grand-total-row td:nth-child(4), tr.grand-total-row td:nth-child(5), tr.grand-total-row td:nth-child(6), tr.grand-total-row td:nth-child(7) { color: #64748b !important; }
+        tr.grand-total-row td:nth-child(8), tr.grand-total-row td:nth-child(9) { color: #06b6d4 !important; }
+        tr.grand-total-row td:nth-child(10), tr.grand-total-row td:nth-child(11) { color: #3b82f6 !important; }
+        tr.grand-total-row td:nth-child(12), tr.grand-total-row td:nth-child(13) { color: #a855f7 !important; }
+        tr.grand-total-row td:nth-child(14), tr.grand-total-row td:nth-child(15) { color: #10b981 !important; }
+
+        .loader-row td { text-align: center; padding: 60px !important; font-size: 16px; color: #059669; font-weight: 800; background: #ffffff !important;}
+        .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #cbd5e1; border-top-color: #059669; border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* చార్ట్స్ సెక్షన్ */
+        .charts-container { display: none; flex-wrap: wrap; gap: 15px; padding: 15px; background-color: #ffffff; border-top: 1px dashed #cbd5e1; flex-shrink: 0; }
+        .chart-box { flex: 1; min-width: 350px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; background: #fafaf9; }
+        .chart-box h4 { color: #0f172a; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .canvas-wrapper { position: relative; height: 220px; width: 100%; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; overflow-y: auto; height: auto; }
+            .top-controls { flex-direction: column; align-items: flex-start; gap: 12px; padding: 15px; }
+            .filter-group { flex-wrap: wrap; width: 100%; }
+            .filter-group select { width: 100%; }
+            .chart-box { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-controls">
+        <div class="page-heading">📊 FASTAG Performance</div>
+        <div class="filter-group">
+            <span style="font-size: 12px; font-weight: 800; color: #64748b;">Filter:</span>
+            <select id="districtType" onchange="renderDistrictTable()">
+                <option value="old">Old Districts</option>
+                <option value="new">New Districts</option>
+            </select>
+            <select id="districtName" onchange="renderDistrictTable()">
+                <option value="All">All Districts</option>
+            </select>
+            <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
+            <button class="btn-action" onclick="downloadImage()" style="color: #475569; font-weight: 800;">📸 Download Image</button>
+            <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        </div>
+    </div>
+
+    <div class="report-wrapper">
+        <div id="reportCaptureArea">
+            <div class="report-title-container">
+                <h2>CSC AP – FASTAG PERFORMANCE SUMMARY</h2>
+                <p id="reportDate">Report Generated on: Loading...</p>
+            </div>
+            <div class="table-container" id="tableContainer">
+                <table id="mainTable">
+                    <thead>
+                        <tr>
+                            <th class="th-dist" rowspan="2" title="Double click to filter District">DISTRICT ⇅</th>
+                            <th class="th-total" colspan="2">TOTAL FASTAG IDS</th>
+                            <th class="th-act24" colspan="2">ACTIVE (FY 23-24)</th>
+                            <th class="th-act25" colspan="2">ACTIVE (FY 24-25)</th>
+                            <th class="th-act26" colspan="2">ACTIVE (FY 25-26)</th>
+                            <th class="th-old27" colspan="2">OLD ACTIVE (FY 26-27)</th>
+                            <th class="th-new27" colspan="2">NEW ACTIVE (FY 26-27)</th>
+                            <th class="th-tot27" colspan="2" style="border-right:none;">TOTAL ACTIVE (FY 26-27)</th>
+                        </tr>
+                        <tr>
+                            <th class="th-total">VLE</th><th class="th-total">DEALER</th>
+                            <th class="th-act24">VLE</th><th class="th-act24">DEALER</th>
+                            <th class="th-act25">VLE</th><th class="th-act25">DEALER</th>
+                            <th class="th-act26">VLE</th><th class="th-act26">DEALER</th>
+                            <th class="th-old27">VLE</th><th class="th-old27">DEALER</th>
+                            <th class="th-new27">VLE</th><th class="th-new27">DEALER</th>
+                            <th class="th-tot27">VLE</th><th class="th-tot27" style="border-right:none;">DEALER</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        <tr class="loader-row"><td colspan="15"><div class="spinner"></div>Calculating Performance Summary... Please Wait</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- చార్ట్స్ సెక్షన్ -->
+            <div class="charts-container" id="chartsContainer">
+                <div class="chart-box">
+                    <h4>Year-Over-Year Active Growth</h4>
+                    <div class="canvas-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h4>FY 26-27 Active Status (Old vs New)</h4>
+                    <div class="canvas-wrapper">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        document.getElementById("reportDate").innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', options);
+
+        let rawFastagData = [];
+        let dmAssignedOldDistrict = "";
+        let oldDistrictsSet = new Set();
+        let newDistrictsSet = new Set();
+        
+        let barChartInst = null;
+        let pieChartInst = null;
+        
+        const baseApiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        const apiURL = baseApiURL + "?sheet=FasTag";
+        const usersApiURL = baseApiURL + "?sheet=Users";
+
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            let lClean = loginName.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '');
+            return (sClean === lClean || sClean.includes(lClean) || lClean.includes(sClean));
+        }
+
+        window.onload = function() {
+            fetchSheetData();
+        };
+
+        async function fetchSheetData() {
+            document.getElementById("dataTable").innerHTML = "<tr class='loader-row'><td colspan='15'><div class='spinner'></div> Fetching Fastag Live Data...</td></tr>";
+            try {
+                let cachedData = localStorage.getItem("fastagGlobalData");
+                let cachedUsersData = localStorage.getItem("cscUsersData");
+                let usersData = null;
+
+                if (cachedData && cachedUsersData) {
+                    rawFastagData = JSON.parse(cachedData);
+                    usersData = JSON.parse(cachedUsersData);
+                } else {
+                    let [resData, resUsers] = await Promise.all([
+                        fetch(apiURL),
+                        fetch(usersApiURL).catch(() => null)
+                    ]);
+                    rawFastagData = await resData.json();
+                    usersData = resUsers ? await resUsers.json() : null;
+                    localStorage.setItem("fastagGlobalData", JSON.stringify(rawFastagData));
+                    if(usersData) localStorage.setItem("cscUsersData", JSON.stringify(usersData));
+                }
+
+                let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+                let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+
+                if (userDesignation === "District Manager" && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                    let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uHeaders.findIndex(h => h === 'district');
+                    for(let i=1; i<usersData.length; i++) {
+                        if (idxUid > -1 && idxDist > -1 && (usersData[i][idxUid] || '').toString().trim() === loggedInUserId) {
+                            dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                            break;
+                        }
+                    }
+                }
+
+                extractDistricts();
+                renderDistrictTable();
+            } catch(e) {
+                console.error(e);
+                document.getElementById("dataTable").innerHTML = "<tr><td colspan='15' style='color:red; text-align:center; padding:20px;'>❌ Error loading Google Sheet data.</td></tr>";
+            }
+        }
+
+        function refreshData() {
+            localStorage.removeItem("fastagGlobalData");
+            localStorage.removeItem("cscUsersData");
+            dmAssignedOldDistrict = "";
+            fetchSheetData();
+        }
+
+        function extractDistricts() {
+            oldDistrictsSet.clear();
+            newDistrictsSet.clear();
+            let cleanHeaders = rawFastagData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            let idxOldDist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+            let idxNewDist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+
+            for(let i=1; i<rawFastagData.length; i++) {
+                let row = rawFastagData[i];
+                if (idxOldDist > -1 && row[idxOldDist]) oldDistrictsSet.add(row[idxOldDist].toString().trim());
+                if (idxNewDist > -1 && row[idxNewDist]) newDistrictsSet.add(row[idxNewDist].toString().trim());
+            }
+            updateDistrictsDropdown();
+        }
+
+        function updateDistrictsDropdown() {
+            const type = document.getElementById("districtType").value || "old"; 
+            const distDropdown = document.getElementById("districtName");
+            const userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const loggedInUser = localStorage.getItem("userName") || "";
+
+            distDropdown.innerHTML = '<option value="All">All Districts</option>';
+            let arr = [];
+
+            if (userDesignation === "District Manager") {
+                 if (type === 'old') {
+                     if (dmAssignedOldDistrict) arr.push(dmAssignedOldDistrict);
+                 } else {
+                     let myNewDists = new Set();
+                     let idxEmpName = rawFastagData[0].findIndex(h => h.toString().toLowerCase().includes('employeename') || h.toString().toLowerCase().includes('empname'));
+                     let idxNewDist = rawFastagData[0].findIndex(h => h.toString().toLowerCase().includes('newdistrict'));
+                     
+                     for(let i=1; i<rawFastagData.length; i++) {
+                         let empN = idxEmpName > -1 ? rawFastagData[i][idxEmpName].toString().trim() : '';
+                         let newD = idxNewDist > -1 ? rawFastagData[i][idxNewDist].toString().trim() : '';
+                         if (isNameMatch(empN, loggedInUser) && newD !== '-' && newD !== '') {
+                             myNewDists.add(newD);
+                         }
+                     }
+                     arr = Array.from(myNewDists).sort();
+                 }
+            } else {
+                 arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
+            }
+            
+            arr.forEach(dist => { if(dist && dist !== 'Unknown') distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
+        }
+
+        // 🌟 డబుల్ క్లిక్ ఫిల్టర్ ఫంక్షన్ 🌟
+        function filterByDistrict(distName) {
+            let distDropdown = document.getElementById("districtName");
+            if (distDropdown.value === distName) { 
+                distDropdown.value = "All"; // అప్పటికే ఆ జిల్లా ఉంటే రీసెట్ చేస్తుంది
+            } else { 
+                distDropdown.value = distName; // లేకపోతే జిల్లా సెలెక్ట్ అవుతుంది
+            }
+            renderDistrictTable();
+        }
+
+        function renderDistrictTable() {
+            if(!rawFastagData || rawFastagData.length < 2) return;
+
+            const distType = document.getElementById("districtType").value;
+            const selectedDist = document.getElementById("districtName").value;
+            const userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const loggedInUser = localStorage.getItem("userName") || "";
+
+            let cleanHeaders = rawFastagData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            
+            let idxCscId = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxType = cleanHeaders.findIndex(h => h === 'type');
+            let idxOldDist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
+            let idxNewDist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxEmpName = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            
+            let idx23 = cleanHeaders.findIndex(h => h.includes('2223') || h.includes('202223'));
+            let idx24 = cleanHeaders.findIndex(h => h.includes('2324') || h.includes('202324'));
+            let idx25 = cleanHeaders.findIndex(h => h.includes('2425') || h.includes('202425')); 
+            let idx26 = cleanHeaders.findIndex(h => h.includes('2526') || h.includes('202526')); 
+            let idx27_N = cleanHeaders.findIndex(h => h === 'totalsalefy2627'); 
+            let idx27_AB = cleanHeaders.findIndex(h => h === 'totalfy2627'); 
+
+            let mIndices = [];
+            let startMonthIdx = cleanHeaders.findIndex(h => h.includes('apr26'));
+            if(startMonthIdx > -1) {
+                for(let k=0; k<12; k++) {
+                    if(startMonthIdx + k < rawFastagData[0].length) mIndices.push(startMonthIdx + k);
+                }
+            }
+
+            let distSummary = {};
+
+            for(let i=1; i<rawFastagData.length; i++) {
+                let row = rawFastagData[i];
+                let cscId = idxCscId > -1 ? (row[idxCscId] || '').toString().trim() : '';
+                if(!cscId || cscId === '-') continue;
+
+                let oldD = idxOldDist > -1 ? (row[idxOldDist] || 'Unknown').toString().trim() : 'Unknown';
+                let newD = idxNewDist > -1 ? (row[idxNewDist] || 'Unknown').toString().trim() : 'Unknown';
+                let empN = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim() : '';
+                
+                let typeStr = idxType > -1 ? (row[idxType] || '').toString().toUpperCase() : '';
+                let isDealer = typeStr.includes('DEALER');
+                let tKey = isDealer ? 'dealer' : 'vle';
+
+                if(userDesignation === "District Manager") {
+                    if(distType === "old") {
+                        if(!dmAssignedOldDistrict || oldD.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) continue;
+                    } else {
+                        if(!isNameMatch(empN, loggedInUser)) continue;
+                    }
+                }
+
+                let dKey = distType === "old" ? oldD : newD;
+                if(!dKey || dKey === '-' || dKey === 'Unknown') continue;
+
+                if(selectedDist !== "All" && dKey !== selectedDist) continue;
+
+                if(!distSummary[dKey]) {
+                    distSummary[dKey] = {
+                        name: dKey,
+                        vle: { totalIds: 0, act24: 0, act25: 0, act26: 0, oldAct27: 0, newAct27: 0, totalAct27: 0 },
+                        dealer: { totalIds: 0, act24: 0, act25: 0, act26: 0, oldAct27: 0, newAct27: 0, totalAct27: 0 }
+                    };
+                }
+
+                let s24 = idx24 > -1 ? (parseInt(row[idx24]) || 0) : 0;
+                let s25 = idx25 > -1 ? (parseInt(row[idx25]) || 0) : 0;
+                let s26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
+
+                let mSum = 0;
+                for(let m=0; m<12; m++) {
+                    let val = (mIndices[m] > -1) ? (parseInt(row[mIndices[m]]) || 0) : 0;
+                    mSum += val;
+                }
+
+                let val_N = idx27_N > -1 ? (parseInt(row[idx27_N]) || 0) : 0;
+                let val_AB = idx27_AB > -1 ? (parseInt(row[idx27_AB]) || 0) : 0;
+                let s27 = Math.max(val_N, val_AB, mSum);
+
+                distSummary[dKey][tKey].totalIds++;
+                
+                if (s24 > 0) distSummary[dKey][tKey].act24++;
+                if (s25 > 0) distSummary[dKey][tKey].act25++;
+                if (s26 > 0) distSummary[dKey][tKey].act26++;
+                
+                if (s27 > 0) {
+                    distSummary[dKey][tKey].totalAct27++;
+                    let wasActiveBefore = (s24 > 0 || s25 > 0 || s26 > 0);
+                    if (wasActiveBefore) {
+                        distSummary[dKey][tKey].oldAct27++;
+                    } else {
+                        distSummary[dKey][tKey].newAct27++;
+                    }
+                }
+            }
+
+            let distArray = Object.values(distSummary).sort((a,b) => a.name.localeCompare(b.name));
+
+            let html = "";
+            let grand = {
+                vle: { totalIds: 0, act24: 0, act25: 0, act26: 0, oldAct27: 0, newAct27: 0, totalAct27: 0 },
+                dealer: { totalIds: 0, act24: 0, act25: 0, act26: 0, oldAct27: 0, newAct27: 0, totalAct27: 0 }
+            };
+
+            function getTd(val) { return val === 0 ? `<td class="zero-val">0</td>` : `<td>${val}</td>`; }
+
+            distArray.forEach(d => {
+                ['vle', 'dealer'].forEach(k => {
+                    grand[k].totalIds += d[k].totalIds;
+                    grand[k].act24 += d[k].act24;
+                    grand[k].act25 += d[k].act25;
+                    grand[k].act26 += d[k].act26;
+                    grand[k].oldAct27 += d[k].oldAct27;
+                    grand[k].newAct27 += d[k].newAct27;
+                    grand[k].totalAct27 += d[k].totalAct27;
+                });
+
+                // 🌟 ఇక్కడే ondblclick యాడ్ చేశాను 🌟
+                html += `<tr>
+                    <td ondblclick="filterByDistrict('${d.name}')" title="Double click to filter">${d.name}</td>
+                    ${getTd(d.vle.totalIds)} ${getTd(d.dealer.totalIds)}
+                    ${getTd(d.vle.act24)} ${getTd(d.dealer.act24)}
+                    ${getTd(d.vle.act25)} ${getTd(d.dealer.act25)}
+                    ${getTd(d.vle.act26)} ${getTd(d.dealer.act26)}
+                    ${getTd(d.vle.oldAct27)} ${getTd(d.dealer.oldAct27)}
+                    ${getTd(d.vle.newAct27)} ${getTd(d.dealer.newAct27)}
+                    ${getTd(d.vle.totalAct27)} ${getTd(d.dealer.totalAct27)}
+                </tr>`;
+            });
+
+            if(html === "") {
+                html = "<tr><td colspan='15' style='text-align:center; padding:30px; color:#dc2626; font-weight:bold;'>No Districts Found!</td></tr>";
+                document.getElementById('chartsContainer').style.display = 'none';
+            } else {
+                html += `<tr class="grand-total-row">
+                    <td>GRAND TOTAL</td>
+                    ${getTd(grand.vle.totalIds)} ${getTd(grand.dealer.totalIds)}
+                    ${getTd(grand.vle.act24)} ${getTd(grand.dealer.act24)}
+                    ${getTd(grand.vle.act25)} ${getTd(grand.dealer.act25)}
+                    ${getTd(grand.vle.act26)} ${getTd(grand.dealer.act26)}
+                    ${getTd(grand.vle.oldAct27)} ${getTd(grand.dealer.oldAct27)}
+                    ${getTd(grand.vle.newAct27)} ${getTd(grand.dealer.newAct27)}
+                    ${getTd(grand.vle.totalAct27)} ${getTd(grand.dealer.totalAct27)}
+                </tr>`;
+                
+                updateCharts(grand);
+            }
+
+            document.getElementById("dataTable").innerHTML = html;
+        }
+
+        function updateCharts(grand) {
+            document.getElementById('chartsContainer').style.display = 'flex';
+            
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+
+            if(barChartInst) barChartInst.destroy();
+            if(pieChartInst) pieChartInst.destroy();
+
+            barChartInst = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['FY 23-24', 'FY 24-25', 'FY 25-26', 'FY 26-27'],
+                    datasets: [
+                        { label: 'VLE Active', backgroundColor: '#3b82f6', data: [grand.vle.act24, grand.vle.act25, grand.vle.act26, grand.vle.totalAct27] },
+                        { label: 'Dealer Active', backgroundColor: '#06b6d4', data: [grand.dealer.act24, grand.dealer.act25, grand.dealer.act26, grand.dealer.totalAct27] }
+                    ]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            pieChartInst = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['VLE - Old', 'VLE - New', 'Dealer - Old', 'Dealer - New'],
+                    datasets: [{
+                        data: [grand.vle.oldAct27, grand.vle.newAct27, grand.dealer.oldAct27, grand.dealer.newAct27],
+                        backgroundColor: ['#3b82f6', '#a855f7', '#06b6d4', '#ea580c']
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            updateDistrictsDropdown();
+            document.getElementById("districtName").value = "All";
+            renderDistrictTable();
+        }
+
+        function downloadImage() {
+            const captureArea = document.getElementById("reportCaptureArea");
+            const tableContainer = document.getElementById("tableContainer");
+            const btn = document.querySelector(".btn-action[onclick='downloadImage()']");
+            
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Downloading...";
+            btn.disabled = true;
+
+            let origContainerOverflow = tableContainer.style.overflow;
+            let origContainerMaxHeight = tableContainer.style.maxHeight;
+            let origAreaWidth = captureArea.style.width;
+
+            tableContainer.style.overflow = 'visible';
+            tableContainer.style.maxHeight = 'none';
+
+            captureArea.style.width = '1050px'; 
+            captureArea.style.margin = '0 auto';
+
+            const stickyEls = captureArea.querySelectorAll('th, td:nth-child(1), tr.grand-total-row td');
+            const origPositions = [];
+            stickyEls.forEach((el, index) => {
+                origPositions[index] = el.style.position;
+                el.style.position = 'static';
+            });
+
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    scale: 2, 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    windowWidth: 1050
+                }).then(canvas => {
+                    
+                    tableContainer.style.overflow = origContainerOverflow;
+                    tableContainer.style.maxHeight = origContainerMaxHeight;
+                    captureArea.style.width = origAreaWidth;
+                    captureArea.style.margin = '0';
+                    
+                    stickyEls.forEach((el, index) => {
+                        el.style.position = origPositions[index];
+                    });
+
+                    if(barChartInst) barChartInst.resize();
+                    if(pieChartInst) pieChartInst.resize();
+
+                    let link = document.createElement('a');
+                    let dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                    link.download = `FASTAG_Performance_Summary_${dateStr}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    tableContainer.style.overflow = origContainerOverflow;
+                    tableContainer.style.maxHeight = origContainerMaxHeight;
+                    captureArea.style.width = origAreaWidth;
+                    captureArea.style.margin = '0';
+                    stickyEls.forEach((el, index) => { el.style.position = origPositions[index]; });
+                    
+                    if(barChartInst) barChartInst.resize();
+                    if(pieChartInst) pieChartInst.resize();
+                    
+                    alert("Download failed. Error: " + err);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            }, 500); 
+        }
+
+        function toggleFullScreen() {
+            try {
+                let btn = document.getElementById("fullscreenBtn");
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#059669";
+                    btn.style.color = "white";
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        btn.innerHTML = "⛶ Full Screen";
+                        btn.style.backgroundColor = "#f1f5f9";
+                        btn.style.color = "#475569";
+                    }
+                }
+            } catch (e) { console.log(e); }
+        }
+    </script>
+</body>
+</html>

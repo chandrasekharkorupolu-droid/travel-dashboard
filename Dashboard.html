@@ -26,103 +26,74 @@
         --theme-bg: #ffffff; 
     }
 
-    body { 
-        margin: 0; 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
-        background-color: var(--bg-color); 
-        overflow-x: hidden; 
-    }
+    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-color); overflow-x: hidden; }
 
-    /* 🌟 1. Premium Top Header (With Light Gradient Background) 🌟 */
+    /* 🌟 FIX: అన్నీ సింగిల్ లైన్ లో పట్టడానికి ప్యాడింగ్ తగ్గించి flex-wrap: nowrap వాడాను */
     .top-header { 
-        background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #e0f2fe 100%);
-        padding: 12px 25px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        border-bottom: 1px solid #bae6fd; 
-        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.08); 
-        position: sticky; 
-        top: 0; 
-        z-index: 1000; 
+        background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #e0f2fe 100%); padding: 10px 15px; 
+        display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bae6fd; 
+        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.08); position: sticky; top: 0; z-index: 1000; flex-wrap: nowrap;
     }
     
-    .brand-section { display: flex; align-items: center; gap: 15px; }
-    .csc-logo { height: 48px; width: auto; transition: transform 0.3s;}
+    /* 🌟 FIX: హెడ్డింగ్ సింగిల్ లైన్ కోసం white-space: nowrap */
+    .brand-section { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0;}
+    .csc-logo { height: 42px; width: auto; transition: transform 0.3s;}
     .csc-logo:hover { transform: scale(1.05); }
-    .brand-text { display: flex; flex-direction: column; justify-content: center; }
-    .brand-title { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 900; color: #1e3a8a; margin: 0; letter-spacing: -0.5px;}
-    .brand-subtitle { font-size: 12px; font-weight: 600; color: #0284c7; margin: 0; text-transform: uppercase; letter-spacing: 1px;}
+    .brand-text { display: flex; flex-direction: column; justify-content: center; white-space: nowrap; }
+    .brand-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: #1e3a8a; margin: 0; letter-spacing: -0.5px; white-space: nowrap;}
+    .brand-subtitle { font-size: 11px; font-weight: 600; color: #0284c7; margin: 0; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;}
 
-    /* 🌟 2. Colored Navigation Boxes 🌟 */
-    .nav-menu { display: flex; align-items: center; gap: 8px; }
-    .menu-divider { width: 1px; height: 28px; background-color: #cbd5e1; margin: 0 5px; }
+    /* 🌟 FIX: బటన్లు రెండు లైన్ల కింద విడిపోకుండా white-space: nowrap */
+    .nav-menu { display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-wrap: nowrap; overflow-x: auto; }
+    .nav-menu::-webkit-scrollbar { display: none; }
+    .menu-divider { width: 1px; height: 24px; background-color: #cbd5e1; margin: 0 3px; }
     
     .nav-btn { 
-        padding: 8px 14px; 
-        border-radius: 8px; 
-        font-size: 12.5px; 
-        font-weight: 800; 
-        cursor: pointer; 
-        display: flex; 
-        align-items: center; 
-        gap: 6px; 
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        padding: 7px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; 
+        display: flex; align-items: center; gap: 5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02); white-space: nowrap; flex-shrink: 0;
     }
-    
     .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); filter: brightness(0.95);}
 
-    /* Default Box Colors */
     .color-home { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
     .color-irctc { background-color: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
     .color-redbus { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .color-airways { background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
     .color-apsrtc { background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .color-fastag { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
     .color-estamping { background-color: #faf5ff; color: #8b5cf6; border: 1px solid #e9d5ff; }
     .color-helpdesk { background-color: #fefce8; color: #ca8a04; border: 1px solid #fef08a; }
     .color-master { background-color: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
 
-    /* 🔥 ACTIVE TAB HIGHLIGHT COLORS 🔥 */
     .nav-btn.active-nav { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); color: #ffffff !important; border-color: transparent !important;}
-    
     .color-home.active-nav { background-color: #475569; }
     .color-irctc.active-nav { background-color: #ea580c; box-shadow: 0 6px 15px rgba(234, 88, 12, 0.3); }
     .color-redbus.active-nav { background-color: #dc2626; box-shadow: 0 6px 15px rgba(220, 38, 38, 0.3); }
     .color-airways.active-nav { background-color: #2563eb; box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
     .color-apsrtc.active-nav { background-color: #16a34a; box-shadow: 0 6px 15px rgba(22, 163, 74, 0.3); }
+    .color-fastag.active-nav { background-color: #059669; box-shadow: 0 6px 15px rgba(5, 150, 105, 0.3); } 
     .color-estamping.active-nav { background-color: #8b5cf6; box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3); }
     .color-helpdesk.active-nav { background-color: #eab308; box-shadow: 0 6px 15px rgba(202, 138, 4, 0.3); }
     .color-master.active-nav { background-color: #334155; }
 
-    /* 🌟 3. Profile & Actions 🌟 */
-    .user-actions { display: flex; align-items: center; gap: 12px; }
+    .user-actions { display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0;}
     .user-profile-badge { 
-        background: #f1f5f9; padding: 6px 15px; border-radius: 30px; border: 1px solid #cbd5e1;
-        display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-dark);
+        background: #f1f5f9; padding: 6px 12px; border-radius: 30px; border: 1px solid #cbd5e1;
+        display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dark);
+        white-space: nowrap;
     }
-    .designation { color: #ef4444; font-weight: 800; font-size: 11px; background: #fee2e2; padding: 2px 6px; border-radius: 4px;}
+    .designation { color: #ef4444; font-weight: 800; font-size: 10px; background: #fee2e2; padding: 2px 6px; border-radius: 4px;}
     
-    .action-icon-btn {
-        width: 35px; height: 35px; border-radius: 50%; border: 1px solid #cbd5e1; background: #ffffff;
-        display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; color: #64748b;
-    }
+    .action-icon-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; color: #64748b; flex-shrink: 0;}
     .action-icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(2,132,199,0.2);}
     
-    .logout-btn { 
-        background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 8px 18px; border-radius: 20px; 
-        font-weight: 800; cursor: pointer; font-size: 13px; transition: 0.3s; 
-    }
+    .logout-btn { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 7px 15px; border-radius: 20px; font-weight: 800; cursor: pointer; font-size: 12px; transition: 0.3s; white-space: nowrap; flex-shrink: 0;}
     .logout-btn:hover { background: #dc2626; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); }
 
-    /* 🌟 4. Main Content Area 🌟 */
     .main-content { display: flex; padding: 20px 25px; gap: 20px; height: calc(100vh - 75px); box-sizing: border-box; }
     
-    /* 🌟 5. Premium Dynamic Sidebar (Matches Nav Box Color) 🌟 */
     .sidebar { 
-        width: 250px; min-width: 250px; 
-        background-color: var(--theme-bg);
-        border-radius: 16px; border: 1px solid #e2e8f0; 
+        width: 250px; min-width: 250px; background-color: var(--theme-bg); border-radius: 16px; border: 1px solid #e2e8f0; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.03); display: none; flex-direction: column; overflow-y: auto; 
         overflow-x: hidden; transition: all 0.4s ease; z-index: 50; 
     }
@@ -131,7 +102,6 @@
     .sidebar.collapsed-hover .sidebar-header { opacity: 0; padding: 15px 0; height: 20px; }
     .sidebar.collapsed-hover .report-list li { padding-left: 20px; justify-content: flex-start; }
     .sidebar.collapsed-hover .report-list li .menu-text, .sidebar.collapsed-hover .new-badge { opacity: 0; visibility: hidden; width: 0; transition: opacity 0.2s; }
-
     .report-list li .menu-text { opacity: 1; visibility: visible; transition: opacity 0.4s; white-space: nowrap; }
 
     .sidebar-header { 
@@ -148,104 +118,44 @@
         color: #334155; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; white-space: nowrap; 
     }
     .report-list li:hover { background: rgba(255, 255, 255, 0.7); color: var(--text-dark); transform: translateX(4px);}
-    
-    .report-list li.active-item { 
-        background: #ffffff; color: var(--theme-color); font-weight: 800; 
-        box-shadow: inset 4px 0 0 var(--theme-color), 0 4px 10px rgba(0,0,0,0.03);
-    }
+    .report-list li.active-item { background: #ffffff; color: var(--theme-color); font-weight: 800; box-shadow: inset 4px 0 0 var(--theme-color), 0 4px 10px rgba(0,0,0,0.03); }
     .report-list li .menu-icon { font-size: 15px; min-width: 20px; text-align: center; color: #64748b; transition: 0.3s;}
     .report-list li.active-item .menu-icon { color: var(--theme-color) !important; }
     
-    /* 🌟 6. Report Area 🌟 */
     .report-area { flex: 1; display: flex; flex-direction: column; position: relative; overflow-y: auto; background: transparent; transition: all 0.3s ease; padding-bottom: 40px;}
     
-    #reportIframeContainer { 
-        display: none; flex-direction: column; width: 100%; height: 100%; background: #ffffff; 
-        border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 10px 30px rgba(0,0,0,0.03); overflow: hidden;
-    }
-
+    #reportIframeContainer { display: none; flex-direction: column; width: 100%; height: 100%; background: #ffffff; border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 10px 30px rgba(0,0,0,0.03); overflow: hidden; }
     #dashboardCards { display: none; width: 100%; box-sizing: border-box; justify-content: center; align-items: center; height: 100%; background: #ffffff; border-radius: 16px; border: 1px solid #f1f5f9;}
     
-    /* 🌟 7. HOME DISPLAY (Centered Globe) 🌟 */
     #homeDisplay { 
         display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; 
         padding: 20px; box-sizing: border-box; background-color: #ffffff; border-radius: 16px; border: 1px solid #f1f5f9; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
-        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-        background-size: 25px 25px; 
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03); background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 25px 25px; position: relative; overflow: hidden;
     }
 
-    /* 🔥 MOVING TRAVEL ICONS ANIMATIONS 🔥 */
-    .floating-travel-icons {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        pointer-events: none; /* So they don't block any clicks */
-        overflow: hidden;
-        z-index: 5; /* Below the Globe */
-    }
-    
+    .floating-travel-icons { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 5; }
     .float-icon { position: absolute; opacity: 0; font-size: 35px; }
 
-    /* Plane 1 - Diagonal fly */
     .float-flight-1 { color: #0284c7; animation: flyDiag1 20s linear infinite; }
-    @keyframes flyDiag1 {
-        0% { left: -10%; top: 110%; transform: rotate(45deg); opacity: 0; }
-        10% { opacity: 0.15; }
-        90% { opacity: 0.15; }
-        100% { left: 110%; top: -10%; transform: rotate(45deg); opacity: 0; }
-    }
+    @keyframes flyDiag1 { 0% { left: -10%; top: 110%; transform: rotate(45deg); opacity: 0; } 10% { opacity: 0.15; } 90% { opacity: 0.15; } 100% { left: 110%; top: -10%; transform: rotate(45deg); opacity: 0; } }
 
-    /* Plane 2 - Reverse Diagonal fly */
     .float-flight-2 { color: #8b5cf6; font-size: 28px; animation: flyDiag2 25s linear infinite 5s; }
-    @keyframes flyDiag2 {
-        0% { right: -10%; top: 110%; transform: rotate(-45deg) scaleX(-1); opacity: 0; }
-        10% { opacity: 0.12; }
-        90% { opacity: 0.12; }
-        100% { right: 110%; top: -10%; transform: rotate(-45deg) scaleX(-1); opacity: 0; }
-    }
+    @keyframes flyDiag2 { 0% { right: -10%; top: 110%; transform: rotate(-45deg) scaleX(-1); opacity: 0; } 10% { opacity: 0.12; } 90% { opacity: 0.12; } 100% { right: 110%; top: -10%; transform: rotate(-45deg) scaleX(-1); opacity: 0; } }
 
-    /* Train - Bottom horizontal */
     .float-train { color: #ea580c; bottom: 15%; animation: moveRight 28s linear infinite 2s; }
-    @keyframes moveRight {
-        0% { left: -10%; opacity: 0; }
-        10% { opacity: 0.18; }
-        90% { opacity: 0.18; }
-        100% { left: 110%; opacity: 0; }
-    }
+    @keyframes moveRight { 0% { left: -10%; opacity: 0; } 10% { opacity: 0.18; } 90% { opacity: 0.18; } 100% { left: 110%; opacity: 0; } }
 
-    /* Bus - Top horizontal (moving left) */
     .float-bus { color: #dc2626; top: 18%; animation: moveLeft 22s linear infinite 8s; }
-    @keyframes moveLeft {
-        0% { right: -10%; transform: scaleX(-1); opacity: 0; }
-        10% { opacity: 0.15; }
-        90% { opacity: 0.15; }
-        100% { right: 110%; transform: scaleX(-1); opacity: 0; }
-    }
+    @keyframes moveLeft { 0% { right: -10%; transform: scaleX(-1); opacity: 0; } 10% { opacity: 0.15; } 90% { opacity: 0.15; } 100% { right: 110%; transform: scaleX(-1); opacity: 0; } }
 
-
-    .center-globe-panel {
-        display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
-    }
-
-    .globe-glow {
-        position: absolute;
-        width: 500px; height: 500px;
-        background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, rgba(255,255,255,0) 60%);
-        border-radius: 50%;
-        z-index: 1;
-        pointer-events: none;
-    }
-
+    .center-globe-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+    .globe-glow { position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, rgba(255,255,255,0) 60%); border-radius: 50%; z-index: 1; pointer-events: none; }
     .globe-container-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); padding: 40px; border-radius: 50%; box-shadow: 0 0 50px rgba(255,255,255,0.8); z-index: 10; backdrop-filter: blur(2px);}
     .globe-wrapper { position: relative; width: 420px; height: 420px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
     
     .earth-globe { 
-        width: 250px; height: 250px; border-radius: 50%; 
-        background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'); 
-        background-size: 200% 100%; background-position: 0 0; 
-        box-shadow: inset -20px -20px 40px rgba(0,0,0,0.5), inset 10px 10px 30px rgba(255,255,255,0.4), 0 20px 50px rgba(2, 132, 199, 0.3); 
+        width: 250px; height: 250px; border-radius: 50%; background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'); 
+        background-size: 200% 100%; background-position: 0 0; box-shadow: inset -20px -20px 40px rgba(0,0,0,0.5), inset 10px 10px 30px rgba(255,255,255,0.4), 0 20px 50px rgba(2, 132, 199, 0.3); 
         animation: spinEarth 25s linear infinite; position: absolute; z-index: 10; 
     }
     @keyframes spinEarth { from { background-position: 0 0; } to { background-position: -200% 0; } }
@@ -259,7 +169,6 @@
     .welcome-greeting { color: #0284c7; font-size: 14px; font-weight: 700; display: block; margin-bottom: 5px;}
     .date-badge { display: block; font-size: 12px; color: #64748b; font-weight: 600;}
 
-    /* 🌟 8. Premium Modals (Popups) 🌟 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
     .modal-box { background-color: #ffffff; width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
     @keyframes popIn { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
@@ -290,147 +199,43 @@
     .access-denied-title { font-family: 'Outfit', sans-serif; font-weight: 900; color: #0f172a; margin-bottom: 10px;}
     .access-denied-desc { color: #64748b; font-size: 15px;}
 
-    /* 🌟 NEW Badge Blinking 🌟 */
-    .new-badge {
-      background-color: #ef4444; color: white; font-size: 9px; font-weight: 900;
-      padding: 3px 6px; border-radius: 6px; margin-left: auto;
-      animation: pulseBadge 1.5s infinite; text-transform: uppercase;
-    }
+    .new-badge { background-color: #ef4444; color: white; font-size: 9px; font-weight: 900; padding: 3px 6px; border-radius: 6px; margin-left: auto; animation: pulseBadge 1.5s infinite; text-transform: uppercase; }
     @keyframes pulseBadge { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-    /* 🌟 Footer 🌟 */
-    .dashboard-footer {
-        position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px; 
-        font-size: 12px; font-weight: 600; color: #ffffff; background-color: var(--text-dark); 
-        z-index: 99999;
-    }
+    .dashboard-footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px; font-size: 12px; font-weight: 600; color: #ffffff; background-color: var(--text-dark); z-index: 99999; }
     .footer-highlight { color: #38bdf8; font-weight: 800; font-family: 'Outfit', sans-serif;}
 
-
-
-/* ========================================================================= */
-    /* 📱 PERFECT MOBILE RESPONSIVENESS FOR DASHBOARD (Updated Grid & Spacing) 📱 */
-    /* ========================================================================= */
     @media (max-width: 992px) {
         body { background-color: #f1f5f9; padding-bottom: 0; }
-
-        /* --- 1. Top Header --- */
-        .top-header { 
-            padding: 12px 10px; 
-            flex-direction: column; 
-            gap: 12px; 
-            height: auto;
-            border-bottom: 1px solid #cbd5e1;
-        }
-        
+        .top-header { padding: 12px 10px; flex-direction: column; gap: 12px; height: auto; border-bottom: 1px solid #cbd5e1; }
         .brand-section { width: 100%; justify-content: center; flex-direction: column; gap: 4px; }
         .csc-logo { height: 38px; }
         .brand-text { text-align: center; }
         .brand-title { font-size: 17px; }
         .brand-subtitle { font-size: 10.5px; }
 
-        /* --- 2. Nav Menu (Grid Layout - 3 per row) --- */
-        .nav-menu { 
-            width: 100%; 
-            display: flex;
-            flex-wrap: wrap !important;
-            justify-content: center;
-            gap: 6px;
-            padding-bottom: 0;
-            overflow: visible !important;
-        }
+        .nav-menu { width: 100%; display: flex; flex-wrap: wrap !important; justify-content: center; gap: 6px; padding-bottom: 0; overflow: visible !important; }
         .nav-menu::-webkit-scrollbar { display: none; }
-        .nav-btn { 
-            font-size: 10.5px; 
-            padding: 8px 4px; 
-            flex: 1 1 calc(33.333% - 6px);
-            max-width: calc(33.333% - 6px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            text-align: center;
-            white-space: normal !important;
-            border-radius: 8px;
-        }
+        .nav-btn { font-size: 10.5px; padding: 8px 4px; flex: 1 1 calc(33.333% - 6px); max-width: calc(33.333% - 6px); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; text-align: center; white-space: normal !important; border-radius: 8px; }
         .nav-btn i { font-size: 15px; margin-bottom: 2px;}
         .menu-divider { display: none; }
 
-        /* --- 3. User Actions --- */
-        .user-actions { 
-            width: 100%; 
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center; 
-            gap: 8px; 
-            margin-top: 2px;
-        }
-        .user-profile-badge {
-            order: -1; 
-            width: 100%; 
-            justify-content: center;
-            font-size: 12px;
-            padding: 6px;
-            margin-bottom: 2px;
-        }
+        .user-actions { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 2px; }
+        .user-profile-badge { order: -1; width: 100%; justify-content: center; font-size: 12px; padding: 6px; margin-bottom: 2px; }
         .action-icon-btn { width: 32px; height: 32px; font-size: 14px;}
         .logout-btn { padding: 6px 12px; flex-grow: 1; max-width: 110px; font-size: 12px; display: flex; align-items: center; justify-content: center;}
 
-        /* --- 4. Main Content Area --- */
-        .main-content { 
-            flex-direction: column; 
-            padding: 10px; 
-            height: auto; 
-            min-height: auto; /* కింద అనవసరమైన ఖాళీ ప్లేస్ రాకుండా తీసేసాను */
-            gap: 10px;
-        }
+        .main-content { flex-direction: column; padding: 10px; height: auto; min-height: auto; gap: 10px; }
         
-        /* --- 5. Options Menu (Cards) --- */
-        .sidebar { 
-            width: 100% !important; 
-            min-width: 100% !important;
-            max-height: none !important; 
-            margin-bottom: 10px; 
-            background: transparent !important; 
-            border: none !important; 
-            box-shadow: none !important;
-            display: none; 
-        }
+        .sidebar { width: 100% !important; min-width: 100% !important; max-height: none !important; margin-bottom: 10px; background: transparent !important; border: none !important; box-shadow: none !important; display: none; }
         .sidebar.collapsed-hover { display: none !important; }
         .sidebar-header { text-align: center; font-size: 13px; padding: 0 0 10px 0; background: transparent;}
         
-        .report-list { 
-            display: grid !important; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 8px; 
-            padding: 0;
-        }
-        .report-list li { 
-            margin: 0; 
-            padding: 12px 8px; 
-            font-size: 11px; 
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            display: flex;
-            flex-direction: column; 
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            gap: 6px;
-            white-space: normal !important; 
-        }
+        .report-list { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0; }
+        .report-list li { margin: 0; padding: 12px 8px; font-size: 11px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 6px; white-space: normal !important; }
         .report-list li .menu-icon { margin: 0; font-size: 20px; }
-        .report-list li.active-item {
-            background: var(--theme-bg);
-            box-shadow: inset 0 4px 0 var(--theme-color), 0 4px 10px rgba(0,0,0,0.05); 
-            transform: translateY(-2px);
-            border-color: var(--theme-color);
-        }
+        .report-list li.active-item { background: var(--theme-bg); box-shadow: inset 0 4px 0 var(--theme-color), 0 4px 10px rgba(0,0,0,0.05); transform: translateY(-2px); border-color: var(--theme-color); }
 
-        /* --- 6. Globe & Home Display --- */
         #homeDisplay { padding: 15px 10px; border-radius: 12px; background: transparent; border: none; box-shadow: none;}
         .globe-wrapper { width: 180px !important; height: 180px !important; margin: 0 auto 10px auto; }
         .earth-globe { width: 120px !important; height: 120px !important; }
@@ -442,40 +247,14 @@
         .welcome-title { font-size: 18px; line-height: 1.2; margin-bottom: 2px;}
         .welcome-greeting { font-size: 13px; margin-top: 2px;}
         
-        /* కింద ఖాళీ రాకుండా పర్ఫెక్ట్ గా రిపోర్ట్ బాక్స్ హైట్ సెట్ చేశాను */
-        #reportIframeContainer { 
-            height: calc(100vh - 270px); 
-            min-height: 350px; 
-            border-radius: 10px; 
-        }
-        
-        /* --- 7. Modals --- */
+        #reportIframeContainer { height: calc(100vh - 270px); min-height: 350px; border-radius: 10px; }
         .modal-box { width: 92% !important; padding: 20px; }
         
-        /* --- 8. Footer (FIXED THE 6 LINES ISSUE) --- */
-        .dashboard-footer {
-            position: relative; 
-            padding: 12px 10px;
-            font-size: 10.5px;
-            line-height: 1.6;
-            background-color: #0f172a;
-            text-align: center;
-        }
-        /* 6 లైన్స్ రాకుండా అడ్డుకునే అసలైన ఫిక్స్ ఇదే */
+        .dashboard-footer { position: relative; padding: 12px 10px; font-size: 10.5px; line-height: 1.6; background-color: #0f172a; text-align: center; }
         .dashboard-footer span { display: inline-block !important; margin: 0 2px; } 
         .dashboard-footer span:nth-child(2) { display: none !important; } 
     }
-   
   </style>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
@@ -490,45 +269,38 @@
 
     <div class="nav-menu">
       <button class="nav-btn color-home active-nav" id="navHome" onclick="loadHome()"><i class="fa-solid fa-house"></i> HOME</button>
-      
       <button class="nav-btn color-irctc" id="navIrctc" onclick="openModule('IRCTC')"><i class="fa-solid fa-train"></i> IRCTC</button>
       <button class="nav-btn color-redbus" id="navRedbus" onclick="openModule('REDBUS')"><i class="fa-solid fa-bus-simple"></i> REDBUS</button>
       <button class="nav-btn color-airways" id="navAirways" onclick="openModule('AIRWAYS')"><i class="fa-solid fa-plane-departure"></i> AIRWAYS</button>
       <button class="nav-btn color-apsrtc" id="navApsrtc" onclick="openModule('APSRTC')"><i class="fa-solid fa-bus"></i> APSRTC</button>
       <div class="menu-divider" id="navDivider"></div>
+      <!-- 🌟 FIX: FASTAG బటన్ E-STAMPING తర్వాతకి మార్చబడింది -->
       <button class="nav-btn color-estamping" id="navEstamp" onclick="openModule('E-STAMPING')"><i class="fa-solid fa-file-signature"></i> E-STAMPING</button>
+      <button class="nav-btn color-fastag" id="navFastag" onclick="openModule('FASTAG')"><i class="fa-solid fa-car-side"></i> FASTAG</button>
       <button class="nav-btn color-helpdesk" id="navHelpdesk" onclick="openModule('HELPDESK')"><i class="fa-solid fa-headset"></i> HELPDESK</button>
       <button class="nav-btn color-master" id="navMaster" onclick="openModule('MASTER')"><i class="fa-solid fa-chart-pie"></i> MASTER</button>
-
       <button class="nav-btn color-irctc" id="navAction" onclick="openModule('ACTION CENTER')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-bolt"></i> TASKS</button>
-
     </div>
 
     <div class="user-actions">
       <button class="action-icon-btn" onclick="enterFullScreen()" title="Full Screen"><i class="fa-solid fa-expand"></i></button>
-      
       <div class="user-profile-badge">
         <i class="fa-regular fa-circle-user text-primary" style="font-size: 16px;"></i>
         <span><span id="headerUserName">User</span> <span class="designation" id="headerDesignation"></span></span>
       </div>
-      
       <button class="action-icon-btn" data-bs-toggle="modal" data-bs-target="#changePasswordModal" title="Change Password"><i class="fa-solid fa-key"></i></button>
-      
       <button class="logout-btn" onclick="showLogoutPopup()"><i class="fa-solid fa-power-off me-1"></i> Logout</button>
     </div>
   </header>
 
   <div class="main-content" id="mainContentArea">
-    
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header" id="sidebarTitle">MODULE REPORTS</div>
       <ul class="report-list" id="reportList"></ul>
     </div>
 
     <div class="report-area" id="reportViewer">
-      
       <div id="homeDisplay">
-        
         <div class="floating-travel-icons">
             <i class="fa-solid fa-plane float-icon float-flight-1"></i>
             <i class="fa-solid fa-bus float-icon float-bus"></i>
@@ -550,12 +322,10 @@
               <span class="date-badge" id="currentDateDisplay">Loading Date...</span>
             </div>
         </div>
-
       </div>
 
       <div id="dashboardCards"></div>
       <div id="reportIframeContainer"></div>
-
     </div>
   </div>
 
@@ -594,25 +364,21 @@
               </div>
               <div class="modal-body p-4">
                   <form id="changePwdForm" onsubmit="event.preventDefault(); changeMyPassword();">
-                      
                       <label class="form-label" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:0.5px;">CURRENT PASSWORD</label>
                       <div class="input-group mb-4">
                           <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
                           <input type="password" id="oldPass" class="form-control border-start-0 ps-0" placeholder="Enter Current Password" required style="box-shadow:none; font-weight:600; padding:12px 10px;">
                       </div>
-                      
                       <label class="form-label" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:0.5px;">NEW PASSWORD</label>
                       <div class="input-group mb-4">
                           <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-key"></i></span>
                           <input type="password" id="newPass" class="form-control border-start-0 ps-0" placeholder="Enter New Password" required style="box-shadow:none; font-weight:600; padding:12px 10px;">
                       </div>
-                      
                       <label class="form-label" style="font-size:12px; font-weight:800; color:#64748b; letter-spacing:0.5px;">CONFIRM NEW PASSWORD</label>
                       <div class="input-group mb-4">
                           <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-circle-check"></i></span>
                           <input type="password" id="confirmNewPass" class="form-control border-start-0 ps-0" placeholder="Confirm New Password" required style="box-shadow:none; font-weight:600; padding:12px 10px;">
                       </div>
-                      
                       <button type="submit" class="btn w-100 text-white mt-2" id="btnChangePwd" style="background: var(--primary); font-weight: 800; padding: 14px; border-radius: 10px; transition: 0.3s; box-shadow: 0 4px 15px rgba(2,132,199,0.3);">
                           Update Password <i class="fa-solid fa-arrow-right ms-2"></i>
                       </button>
@@ -641,7 +407,8 @@
       "IRCTC": ["VLE Performance", "Performance Report", "Total Registrations", "Monthly Activations", "New Registration Targets", "TXN & REV Targets", "Daily Transactions", "Daily Achievements", "Periodic Reports", "New Registrations (FY 26-27)", "Priority Follow Up Report", "AMC Eligible Agents", "AMC Summary Report", "Top 5 Performance", "Employee Performance", "MoM Growth Matrix", "Monthly Closure Report", "VLE Details Editor", "Drop Out VLEs"],
       "REDBUS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
       "AIRWAYS": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
-      "APSRTC": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"]
+      "APSRTC": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"],
+      "FASTAG": ["VLE Performance", "Performance Report", "Targets & Revenue", "Month-Wise Activations", "Daily Transactions", "Daily Achievements", "Periodic Report", "Priority Follow Up", "MoM Growth Matrix", "Top Performance", "Monthly Closure Report"]
     };
 
     function enterFullScreen() {
@@ -653,23 +420,13 @@
 
     document.addEventListener("DOMContentLoaded", function() {
       let sidebar = document.getElementById('sidebar');
-      
-      sidebar.addEventListener('mouseenter', function() {
-        if (this.style.display === 'flex') { this.classList.remove('collapsed-hover'); }
-      });
-      
-      sidebar.addEventListener('mouseleave', function() {
-        if (window.innerWidth > 992 && this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') {
-          this.classList.add('collapsed-hover');
-        }
-      });
+      sidebar.addEventListener('mouseenter', function() { if (this.style.display === 'flex') { this.classList.remove('collapsed-hover'); } });
+      sidebar.addEventListener('mouseleave', function() { if (window.innerWidth > 992 && this.style.display === 'flex' && document.getElementById('reportIframeContainer').style.display === 'flex') { this.classList.add('collapsed-hover'); } });
     });
 
     function updateGreeting() {
-      const hour = new Date().getHours();
-      let greeting = "Good Evening 🌙";
-      if (hour < 12) greeting = "Good Morning 🌅";
-      else if (hour < 17) greeting = "Good Afternoon ☀️";
+      const hour = new Date().getHours(); let greeting = "Good Evening 🌙";
+      if (hour < 12) greeting = "Good Morning 🌅"; else if (hour < 17) greeting = "Good Afternoon ☀️";
       document.getElementById('timeGreeting').innerText = greeting;
     }
 
@@ -683,82 +440,49 @@
       document.getElementById('headerUserName').innerText = loggedInUser;
       if(loggedInDesig) document.getElementById('headerDesignation').innerText = loggedInDesig;
       document.getElementById('mainUserName').innerText = loggedInUser;
-      
-      let yearSpan = document.getElementById("currentYear");
-      if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
+      let yearSpan = document.getElementById("currentYear"); if(yearSpan) { yearSpan.innerText = new Date().getFullYear(); }
+      updateGreeting(); updateDateDisplay(); checkAndShowPopup(); 
 
-      updateGreeting();
-      updateDateDisplay(); 
-      checkAndShowPopup(); 
-
-      let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
-      let isVLE = role === "VLE";
-      let hasEstamp = localStorage.getItem("hasEstamp") === "true";
-
+      let role = loggedInDesig ? loggedInDesig.toUpperCase() : ""; let isVLE = role === "VLE"; let hasEstamp = localStorage.getItem("hasEstamp") === "true";
       if (isVLE) {
-          document.getElementById('navIrctc').style.display = 'none';
-          document.getElementById('navRedbus').style.display = 'none';
-          document.getElementById('navAirways').style.display = 'none';
-          document.getElementById('navApsrtc').style.display = 'none';
-          document.getElementById('navMaster').style.display = 'none';
-          document.getElementById('navDivider').style.display = 'none';
-          
+          document.getElementById('navIrctc').style.display = 'none'; document.getElementById('navRedbus').style.display = 'none';
+          document.getElementById('navAirways').style.display = 'none'; document.getElementById('navApsrtc').style.display = 'none';
+          document.getElementById('navMaster').style.display = 'none'; document.getElementById('navDivider').style.display = 'none';
+          document.getElementById('navFastag').style.display = 'none';
           if (!hasEstamp) { document.getElementById('navEstamp').style.display = 'none'; }
       }
     };
 
     function setActiveNav(moduleId) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
-        if(moduleId) {
-            let btn = document.getElementById(moduleId);
-            if(btn) btn.classList.add('active-nav');
-        }
+        if(moduleId) { let btn = document.getElementById(moduleId); if(btn) btn.classList.add('active-nav'); }
     }
 
     function loadHome() {
-      enterFullScreen(); 
-      setActiveNav('navHome'); 
-      
+      enterFullScreen(); setActiveNav('navHome'); 
       document.documentElement.style.setProperty('--theme-bg', '#ffffff');
-      document.getElementById('sidebar').style.display = 'none';
-      document.getElementById('sidebar').classList.remove('collapsed-hover');
-      document.getElementById('reportIframeContainer').style.display = 'none';
-      document.getElementById('dashboardCards').style.display = 'none';
-      document.getElementById('homeDisplay').style.display = 'flex';
-      updateGreeting(); 
+      document.getElementById('sidebar').style.display = 'none'; document.getElementById('sidebar').classList.remove('collapsed-hover');
+      document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'none';
+      document.getElementById('homeDisplay').style.display = 'flex'; updateGreeting(); 
     }
 
     function closeActiveReport() {
-        document.getElementById('reportIframeContainer').style.display = 'none';
-        document.getElementById('reportIframeContainer').innerHTML = ''; 
-        let activeModuleTxt = document.getElementById('sidebarTitle').innerText;
-        let activeModule = activeModuleTxt.split(' ')[0]; 
+        document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = ''; 
+        let activeModuleTxt = document.getElementById('sidebarTitle').innerText; let activeModule = activeModuleTxt.split(' ')[0]; 
         
         if(activeModule === "E-STAMPING" || document.getElementById('dashboardCards').innerHTML.trim() !== '') {
-            document.getElementById('dashboardCards').style.display = 'flex';
-            document.getElementById('sidebar').style.display = 'flex';
-            if (window.innerWidth > 992) {
-                document.getElementById('sidebar').classList.remove('collapsed-hover');
-            }
-        } else {
-            loadHome(); 
-        }
+            document.getElementById('dashboardCards').style.display = 'flex'; document.getElementById('sidebar').style.display = 'flex';
+            if (window.innerWidth > 992) { document.getElementById('sidebar').classList.remove('collapsed-hover'); }
+        } else { loadHome(); }
         document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
     }
 
     document.addEventListener('keydown', function(event) { 
-        if (event.key === "Escape") { 
-            closeSyncPopup(); 
-            closeLogoutPopup(); 
-            if(document.getElementById('reportIframeContainer').style.display === 'flex') { closeActiveReport(); }
-        } 
+        if (event.key === "Escape") { closeSyncPopup(); closeLogoutPopup(); if(document.getElementById('reportIframeContainer').style.display === 'flex') { closeActiveReport(); } } 
     });
 
     function getIconForReport(reportName) {
-        let iconClass = "fa-solid fa-file-lines";
-        let iconColor = "#64748b"; 
-
-        let name = reportName.toLowerCase();
+        let iconClass = "fa-solid fa-file-lines"; let iconColor = "#64748b"; let name = reportName.toLowerCase();
         if(name.includes('performance')) { iconClass = "fa-solid fa-chart-line"; iconColor = "#059669"; } 
         else if(name.includes('registrations')) { iconClass = "fa-solid fa-users"; iconColor = "#2563eb"; } 
         else if(name.includes('activations')) { iconClass = "fa-solid fa-calendar-check"; iconColor = "#7c3aed"; } 
@@ -774,60 +498,36 @@
         else if(name.includes('closure')) { iconClass = "fa-solid fa-folder-closed"; iconColor = "#475569"; } 
         else if(name.includes('editor')) { iconClass = "fa-solid fa-pen-to-square"; iconColor = "#3b82f6"; } 
         else if(name.includes('drop out')) { iconClass = "fa-solid fa-user-minus"; iconColor = "#f43f5e"; } 
-
         return `<i class="${iconClass}" style="color: ${iconColor};"></i>`;
     }
 
     function openModule(moduleName) {
-      if (window.innerWidth > 992) {
-          enterFullScreen(); 
-      }
-      
-      const navIdMap = { "IRCTC": "navIrctc", "REDBUS": "navRedbus", "AIRWAYS": "navAirways", "APSRTC": "navApsrtc", "E-STAMPING": "navEstamp", "HELPDESK": "navHelpdesk", "MASTER": "navMaster", "ACTION CENTER": "navAction" };
+      if (window.innerWidth > 992) { enterFullScreen(); }
+      const navIdMap = { "IRCTC": "navIrctc", "REDBUS": "navRedbus", "AIRWAYS": "navAirways", "APSRTC": "navApsrtc", "E-STAMPING": "navEstamp", "HELPDESK": "navHelpdesk", "MASTER": "navMaster", "ACTION CENTER": "navAction", "FASTAG": "navFastag" };
       setActiveNav(navIdMap[moduleName]);
       
-      let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
-      let isVLE = role === "VLE";
-      let hasEstamp = localStorage.getItem("hasEstamp") === "true";
+      let role = loggedInDesig ? loggedInDesig.toUpperCase() : ""; let isVLE = role === "VLE"; let hasEstamp = localStorage.getItem("hasEstamp") === "true";
 
       if (isVLE) {
-          if (moduleName === 'HELPDESK' || (moduleName === 'E-STAMPING' && hasEstamp)) {
-              // Allowed
-          } else {
-              document.getElementById('sidebar').style.display = 'none';
-              document.getElementById('homeDisplay').style.display = 'none';
-              document.getElementById('dashboardCards').style.display = 'none';
-              document.getElementById('reportIframeContainer').style.display = 'flex';
-              
+          if (moduleName === 'HELPDESK' || (moduleName === 'E-STAMPING' && hasEstamp)) { } 
+          else {
+              document.getElementById('sidebar').style.display = 'none'; document.getElementById('homeDisplay').style.display = 'none';
+              document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'flex';
               let errorMessage = `మీకు <b>${moduleName}</b> మాడ్యూల్ యాక్సెస్ లేదు.<br><br>దయచేసి హెల్ప్‌డెస్క్ (HELPDESK) ని మాత్రమే ఉపయోగించండి.`;
-              if (moduleName === 'E-STAMPING' && !hasEstamp) {
-                  errorMessage = `మీకు <b>E-STAMPING</b> సర్వీస్ యాక్టివ్ లేదు.<br><br>దయచేసి మీ జిల్లా మేనేజర్ (DM) ని సంప్రదించండి.`;
-              }
+              if (moduleName === 'E-STAMPING' && !hasEstamp) { errorMessage = `మీకు <b>E-STAMPING</b> సర్వీస్ యాక్టివ్ లేదు.<br><br>దయచేసి మీ జిల్లా మేనేజర్ (DM) ని సంప్రదించండి.`; }
               document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:80px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">${errorMessage}</p></div>`;
               return; 
           }
       }
 
-      const themes = { 
-          "IRCTC": {c: "#ea580c", b: "#fff7ed"}, 
-          "REDBUS": {c: "#dc2626", b: "#fef2f2"}, 
-          "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, 
-          "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, 
-          "E-STAMPING": {c: "#8b5cf6", b: "#faf5ff"}, 
-          "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, 
-          "MASTER": {c: "#475569", b: "#f8fafc"} 
-      };
+      const themes = { "IRCTC": {c: "#ea580c", b: "#fff7ed"}, "REDBUS": {c: "#dc2626", b: "#fef2f2"}, "AIRWAYS": {c: "#2563eb", b: "#eff6ff"}, "APSRTC": {c: "#16a34a", b: "#f0fdf4"}, "E-STAMPING": {c: "#8b5cf6", b: "#faf5ff"}, "HELPDESK": {c: "#ca8a04", b: "#fefce8"}, "MASTER": {c: "#475569", b: "#f8fafc"}, "FASTAG": {c: "#059669", b: "#ecfdf5"} };
       let t = themes[moduleName] || {c: "#0284c7", b: "#ffffff"};
-      document.documentElement.style.setProperty('--theme-color', t.c); 
-      document.documentElement.style.setProperty('--theme-bg', t.b);
+      document.documentElement.style.setProperty('--theme-color', t.c); document.documentElement.style.setProperty('--theme-bg', t.b);
       
       document.getElementById('sidebar').style.display = 'flex';
-      if (window.innerWidth > 992) {
-          document.getElementById('sidebar').classList.remove('collapsed-hover'); 
-      }
+      if (window.innerWidth > 992) { document.getElementById('sidebar').classList.remove('collapsed-hover'); }
       
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
-      
       const list = document.getElementById('reportList'); list.innerHTML = ''; 
       
       if(moduleName === 'E-STAMPING') {
@@ -838,128 +538,43 @@
               let options = [ { id: 'AddMasterStock', icon: '<i class="fa-solid fa-inbox" style="color:#2563eb;"></i>', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '<i class="fa-solid fa-boxes-packing" style="color:#ca8a04;"></i>', name: 'Assign Stationary' }, { id: 'StockReport', icon: '<i class="fa-solid fa-chart-column" style="color:#16a34a;"></i>', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '<i class="fa-solid fa-truck-fast" style="color:#ea580c;"></i>', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '<i class="fa-solid fa-chart-pie" style="color:#9333ea;"></i>', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '<i class="fa-solid fa-star" style="color:#059669;"></i>', name: 'VLE Performance Report' } ];
               options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>` + getBadgeHtml(opt.name); li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           }
-          document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
-          document.getElementById('dashboardCards').style.display = 'flex';
+          document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'flex';
           document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="estamp.png" alt="E-Stamping Logo" style="max-width: 600px; width: 80%; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 5px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.02) translateY(-5px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
 
-      } 
-     else if(moduleName === 'HELPDESK') {
+      } else if(moduleName === 'HELPDESK') {
           let options = [];
-          if (isVLE) {
-              options = [
-                  { id: 'RaiseTicket', icon: '<i class="fa-solid fa-pen-to-square" style="color:#2563eb;"></i>', name: 'Raise a Ticket' },
-                  { id: 'TrackStatus', icon: '<i class="fa-solid fa-magnifying-glass" style="color:#059669;"></i>', name: 'Track Status' },
-                  { id: 'UserManuals', icon: '<i class="fa-solid fa-book-open" style="color:#ea580c;"></i>', name: 'User Manuals & Forms' } 
-              ];
-          } else {
-              options = [
-                  { id: 'HelpdeskAdmin', icon: '<i class="fa-solid fa-gauge" style="color:#0284c7;"></i>', name: 'Helpdesk Dashboard' },
-                  { id: 'HelpdeskSummary', icon: '<i class="fa-solid fa-chart-simple" style="color:#16a34a;"></i>', name: 'Helpdesk Summary' },
-                  { id: 'TrackStatus', icon: '<i class="fa-solid fa-magnifying-glass" style="color:#7c3aed;"></i>', name: 'Track Ticket' },
-                  { id: 'UserManuals', icon: '<i class="fa-solid fa-book-open" style="color:#ea580c;"></i>', name: 'User Manuals & Forms' } 
-                  ];
-          }
-          options.forEach(opt => {
-              let li = document.createElement('li');
-              li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`;
-              li.onclick = function() {
-                  document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
-                  this.classList.add('active-item');
-                  loadReport('HELPDESK', opt.id, opt.name);
-              };
-              list.appendChild(li);
-          });
-          document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none';
-          document.getElementById('dashboardCards').style.display = 'flex';
+          if (isVLE) { options = [ { id: 'RaiseTicket', icon: '<i class="fa-solid fa-pen-to-square" style="color:#2563eb;"></i>', name: 'Raise a Ticket' }, { id: 'TrackStatus', icon: '<i class="fa-solid fa-magnifying-glass" style="color:#059669;"></i>', name: 'Track Status' }, { id: 'UserManuals', icon: '<i class="fa-solid fa-book-open" style="color:#ea580c;"></i>', name: 'User Manuals & Forms' } ]; } 
+          else { options = [ { id: 'HelpdeskAdmin', icon: '<i class="fa-solid fa-gauge" style="color:#0284c7;"></i>', name: 'Helpdesk Dashboard' }, { id: 'HelpdeskSummary', icon: '<i class="fa-solid fa-chart-simple" style="color:#16a34a;"></i>', name: 'Helpdesk Summary' }, { id: 'TrackStatus', icon: '<i class="fa-solid fa-magnifying-glass" style="color:#7c3aed;"></i>', name: 'Track Ticket' }, { id: 'UserManuals', icon: '<i class="fa-solid fa-book-open" style="color:#ea580c;"></i>', name: 'User Manuals & Forms' } ]; }
+          options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('HELPDESK', opt.id, opt.name); }; list.appendChild(li); });
+          document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'flex';
           document.getElementById('dashboardCards').innerHTML = `<div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 75vh;"><img src="HELPDESK.png" alt="Helpdesk Logo" style="max-width: 600px; width: 80%; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border: 5px solid #ffffff; transition: all 0.4s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.02) translateY(-5px)';" onmouseout="this.style.transform='scale(1) translateY(0)';"></div>`;
 
-      }
-
-      else if(moduleName === 'ACTION CENTER') {
-          document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
-          document.getElementById('navAction').classList.add('active-nav');
-          loadReport('ACTION CENTER', '🚀 DM Action Center - Priority Tasks'); 
-          return;
-      }
-
-      else if(moduleName === 'MASTER') {
+      } else if(moduleName === 'ACTION CENTER') {
+          document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav')); document.getElementById('navAction').classList.add('active-nav');
+          loadReport('ACTION CENTER', '🚀 DM Action Center - Priority Tasks'); return;
+      } else if(moduleName === 'MASTER') {
         let upperDesig = loggedInDesig.toUpperCase();
-        
-        let li0 = document.createElement('li'); 
-        li0.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-map-location-dot" style="color:#0284c7;"></i></span> <span class="menu-text">AP Consolidated Report</span>'; 
-        li0.onclick = function() { 
-            document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-            li0.classList.add('active-item'); 
-            loadReport('MASTER', 'AP Consolidated Report'); 
-        }; 
-        list.appendChild(li0);
-        
-        let li1 = document.createElement('li'); 
-        li1.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-cloud-arrow-up" style="color:#16a34a;"></i></span> <span class="menu-text">Daily Data Upload</span>'; 
-        li1.onclick = function() { 
-            document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-            li1.classList.add('active-item'); 
-            if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { 
-                loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); 
-            } else { 
-                loadAccessDenied(); 
-            } 
-        }; 
-        list.appendChild(li1);
-        
-        let li2 = document.createElement('li'); 
-        li2.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-envelope-circle-check" style="color:#ea580c;"></i></span> <span class="menu-text">Send Daily Emails</span>'; 
-        li2.onclick = function() { 
-            document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-            li2.classList.add('active-item'); 
-            if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { 
-                loadReport('MASTER', 'SendDailyEmails', 'Send Daily Emails'); 
-            } else { 
-                loadAccessDenied(); 
-            } 
-        }; 
-        list.appendChild(li2);
-
-let li3 = document.createElement('li'); 
-        li3.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-users-viewfinder" style="color:#8b5cf6;"></i></span> <span class="menu-text">VLE Details</span>'; 
-        li3.onclick = function() { 
-            document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-            li3.classList.add('active-item'); 
-            loadReport('MASTER', 'VLEDetails', 'VLE Details'); 
-        }; 
-        list.appendChild(li3);
-
-        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
-        document.getElementById('dashboardCards').style.display = 'flex';
+        let li0 = document.createElement('li'); li0.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-map-location-dot" style="color:#0284c7;"></i></span> <span class="menu-text">AP Consolidated Report</span>'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
+        let li1 = document.createElement('li'); li1.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-cloud-arrow-up" style="color:#16a34a;"></i></span> <span class="menu-text">Daily Data Upload</span>'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); } else { loadAccessDenied(); } }; list.appendChild(li1);
+        let li2 = document.createElement('li'); li2.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-envelope-circle-check" style="color:#ea580c;"></i></span> <span class="menu-text">Send Daily Emails</span>'; li2.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li2.classList.add('active-item'); if(upperDesig === "SPOC" || upperDesig === "STATE HEAD") { loadReport('MASTER', 'SendDailyEmails', 'Send Daily Emails'); } else { loadAccessDenied(); } }; list.appendChild(li2);
+        let li3 = document.createElement('li'); li3.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-users-viewfinder" style="color:#8b5cf6;"></i></span> <span class="menu-text">VLE Details</span>'; li3.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li3.classList.add('active-item'); loadReport('MASTER', 'VLEDetails', 'VLE Details'); }; list.appendChild(li3);
+        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'flex';
         document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h2 style="font-family:'Outfit', sans-serif; font-weight:900; color:#0f172a;"><i class="fa-solid fa-chart-pie text-primary me-2"></i> MASTER MODULE</h2><p style="color:#64748b;">Please select an option from the sidebar.</p></div>`;
       } else {
         let reports = reportMenus[moduleName] || [];
         reports.forEach(reportName => { 
-            let li = document.createElement('li'); 
-            let badgeHtml = getBadgeHtml(reportName);
-            let dynamicIcon = getIconForReport(reportName); 
+            let li = document.createElement('li'); let badgeHtml = getBadgeHtml(reportName); let dynamicIcon = getIconForReport(reportName); 
             li.innerHTML = `<span class="menu-icon">${dynamicIcon}</span> <span class="menu-text">${reportName}</span>${badgeHtml}`; 
-            li.onclick = function() { 
-                document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
-                li.classList.add('active-item'); 
-                loadReport(moduleName, reportName); 
-            }; 
-            list.appendChild(li); 
+            li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li.classList.add('active-item'); loadReport(moduleName, reportName); }; list.appendChild(li); 
         });
-        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; 
-        document.getElementById('dashboardCards').style.display = 'flex';
+        document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'flex';
         document.getElementById('dashboardCards').innerHTML = `<div style="text-align:center;"><h2 style="font-family:'Outfit', sans-serif; font-weight:900; color:#0f172a; text-transform:uppercase;">${moduleName} MODULE</h2><p style="color:#64748b;">Please select a report from the sidebar.</p></div>`;
       }
     }
 
     function loadAccessDenied() { 
-      document.getElementById('reportIframeContainer').style.display = 'flex'; 
-      document.getElementById('dashboardCards').style.display = 'none'; 
-      if(window.innerWidth > 992) {
-          document.getElementById('sidebar').classList.add('collapsed-hover'); 
-      } else {
-          document.getElementById('sidebar').style.display = 'none';
-      }
+      document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none'; 
+      if(window.innerWidth > 992) { document.getElementById('sidebar').classList.add('collapsed-hover'); } else { document.getElementById('sidebar').style.display = 'none'; }
       document.getElementById('reportIframeContainer').innerHTML = `<div class="access-denied-box" style="margin-top:80px;"><div class="access-denied-icon">🚫</div><h2 class="access-denied-title">Access Denied</h2><p class="access-denied-desc">You do not have permissions to view this page.</p></div>`; 
     }
     
@@ -1022,6 +637,19 @@ let li3 = document.createElement('li');
       else if (moduleName === "AIRWAYS" && reportId === "Top Performance") iframeSrc = "AIRWAYS_Top_Performance.html";
       else if (moduleName === "AIRWAYS" && reportId === "Monthly Closure Report") iframeSrc = "AIRWAYS_Monthly_Closure.html";
 
+      // 🌟 NEW FASTAG REPORTS
+      else if (moduleName === "FASTAG" && reportId === "VLE Performance") iframeSrc = "fastag_report.html";
+      else if (moduleName === "FASTAG" && reportId === "Performance Report") iframeSrc = "FASTAG_Performance_Report.html";
+      else if (moduleName === "FASTAG" && reportId === "Targets & Revenue") iframeSrc = "FASTAG_Targets_Revenue.html";
+      else if (moduleName === "FASTAG" && reportId === "Month-Wise Activations") iframeSrc = "FASTAG_Monthwise_Activations.html";
+      else if (moduleName === "FASTAG" && reportId === "Daily Transactions") iframeSrc = "FASTAG_Daily_Transactions.html";
+      else if (moduleName === "FASTAG" && reportId === "Daily Achievements") iframeSrc = "FASTAG_Daily_Achievements.html";
+      else if (moduleName === "FASTAG" && reportId === "Periodic Report") iframeSrc = "FASTAG_Periodic_Report.html";
+      else if (moduleName === "FASTAG" && reportId === "Priority Follow Up") iframeSrc = "FASTAG_Priority_FollowUp.html";
+      else if (moduleName === "FASTAG" && reportId === "MoM Growth Matrix") iframeSrc = "FASTAG_MoM_Growth_Matrix.html";
+      else if (moduleName === "FASTAG" && reportId === "Top Performance") iframeSrc = "FASTAG_Top_Performance.html";
+      else if (moduleName === "FASTAG" && reportId === "Monthly Closure Report") iframeSrc = "FASTAG_Monthly_Closure.html";
+
       else if (moduleName === "MASTER" && reportId === "AP Consolidated Report") iframeSrc = "Master_AP_Consolidated.html";
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
       else if (moduleName === "MASTER" && reportId === "SendDailyEmails") iframeSrc = "Master_Send_Emails.html";
@@ -1033,32 +661,18 @@ let li3 = document.createElement('li');
       else if (moduleName === "HELPDESK" && reportId === "HelpdeskSummary") iframeSrc = "Helpdesk_Summary.html";
       else if (moduleName === "HELPDESK" && reportId === "UserManuals") iframeSrc = "vle_downloads.html";
 
-     else if (moduleName === "ACTION CENTER") iframeSrc = "Action_Center.html";
+      else if (moduleName === "ACTION CENTER") iframeSrc = "Action_Center.html";
       
       else {
-          document.getElementById('reportIframeContainer').style.display = 'flex'; 
-          document.getElementById('dashboardCards').style.display = 'none';
-          
-          if (window.innerWidth <= 992) {
-              document.getElementById('sidebar').style.display = 'none';
-          } else {
-              document.getElementById('sidebar').classList.add('collapsed-hover'); 
-          }
-          
+          document.getElementById('reportIframeContainer').style.display = 'flex'; document.getElementById('dashboardCards').style.display = 'none';
+          if (window.innerWidth <= 992) { document.getElementById('sidebar').style.display = 'none'; } else { document.getElementById('sidebar').classList.add('collapsed-hover'); }
           document.getElementById('reportIframeContainer').innerHTML = `<div style="background: #ffffff; padding: 15px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0;"><h5 style="margin:0; color:#0f172a; font-weight:800;"><i class="fa-solid fa-file-lines text-primary me-2"></i> ${reportName}</h5><button onclick="closeActiveReport()" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; padding:8px 15px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:0.3s;" onmouseover="this.style.background='#fee2e2'; this.style.color='#dc2626';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';"><i class="fa-solid fa-xmark me-1"></i> Close (ESC)</button></div><div style="text-align:center; padding:80px;"><i class="fa-solid fa-hammer" style="font-size:50px; color:#cbd5e1; margin-bottom:20px;"></i><h2 style="font-family:'Outfit', sans-serif; font-weight:900; color:#1e293b;">${reportName}</h2><p style="color:#64748b; font-size:15px;">This report is currently under development.</p></div>`; 
           return;
       }
 
-      document.getElementById('homeDisplay').style.display = 'none';
-      document.getElementById('dashboardCards').style.display = 'none';
-      document.getElementById('reportIframeContainer').style.display = 'flex';
+      document.getElementById('homeDisplay').style.display = 'none'; document.getElementById('dashboardCards').style.display = 'none'; document.getElementById('reportIframeContainer').style.display = 'flex';
       
-      // 📱 Mobile responsive hide sidebar when report opens
-      if (window.innerWidth <= 992) {
-          document.getElementById('sidebar').style.display = 'none';
-      } else {
-          document.getElementById('sidebar').classList.add('collapsed-hover'); 
-      }
+      if (window.innerWidth <= 992) { document.getElementById('sidebar').style.display = 'none'; } else { document.getElementById('sidebar').classList.add('collapsed-hover'); }
       
       document.getElementById('reportIframeContainer').innerHTML = `
         <div style="background: #ffffff; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0;">
@@ -1069,17 +683,12 @@ let li3 = document.createElement('li');
       `;
     }
 
-    // Modal Functions
     function showLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'flex'; }
     function closeLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'none'; }
     function confirmLogout() { localStorage.clear(); sessionStorage.clear(); window.location.replace("index.html"); }
 
     function checkAndShowPopup() { 
-        if (!sessionStorage.getItem('syncPopupShown')) { 
-            document.getElementById('syncPopupOverlay').style.display = 'flex'; 
-            fetchPopupLogs(); 
-            sessionStorage.setItem('syncPopupShown', 'true'); 
-        } 
+        if (!sessionStorage.getItem('syncPopupShown')) { document.getElementById('syncPopupOverlay').style.display = 'flex'; fetchPopupLogs(); sessionStorage.setItem('syncPopupShown', 'true'); } 
     }
     
     function closeSyncPopup() { document.getElementById('syncPopupOverlay').style.display = 'none'; }
@@ -1101,134 +710,38 @@ let li3 = document.createElement('li');
               html += `<div class="srv-row"><span class="srv-name-label">${icons[srv]} ${srv}</span><span class="srv-date-label">${dateText}</span></div>`; 
           });
           content.innerHTML = html;
-        } else { 
-            content.innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">No successful uploads found yet.</span>'; 
-        }
+        } else { content.innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">No successful uploads found yet.</span>'; }
         delete window[callbackName];
       };
       
-      var script = document.createElement('script'); 
-      script.src = SCRIPT_URL + "?action=getLogs&callback=" + callbackName;
-      script.onerror = function() { 
-          document.getElementById('syncPopupContent').innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">Unable to fetch status. Check internet.</span>'; 
-      };
+      var script = document.createElement('script'); script.src = SCRIPT_URL + "?action=getLogs&callback=" + callbackName;
+      script.onerror = function() { document.getElementById('syncPopupContent').innerHTML = '<span style="color: #dc2626; text-align: center; font-weight: bold;">Unable to fetch status. Check internet.</span>'; };
       document.body.appendChild(script);
     }
     
-   /* 🌟 Change Password Function 🌟 */
     function changeMyPassword() {
-        let oldP = document.getElementById('oldPass').value;
-        let newP = document.getElementById('newPass').value;
-        let confP = document.getElementById('confirmNewPass').value;
-        let loggedInId = localStorage.getItem("userId"); 
-
-        if(newP !== confP) {
-            alert("❌ New Password and Confirm Password do not match!");
-            return;
-        }
-
-        if(oldP === newP) {
-            alert("⚠️ New password cannot be the same as the old password!");
-            return;
-        }
+        let oldP = document.getElementById('oldPass').value; let newP = document.getElementById('newPass').value;
+        let confP = document.getElementById('confirmNewPass').value; let loggedInId = localStorage.getItem("userId"); 
+        if(newP !== confP) { alert("❌ New Password and Confirm Password do not match!"); return; }
+        if(oldP === newP) { alert("⚠️ New password cannot be the same as the old password!"); return; }
 
         let btn = document.getElementById('btnChangePwd');
-        btn.innerHTML = "Updating... <i class='fa-solid fa-spinner fa-spin ms-2'></i>"; 
-        btn.disabled = true;
+        btn.innerHTML = "Updating... <i class='fa-solid fa-spinner fa-spin ms-2'></i>"; btn.disabled = true;
 
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "changePasswordDashboard", userId: loggedInId, oldPass: oldP, newPass: newP })
-        })
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "changePasswordDashboard", userId: loggedInId, oldPass: oldP, newPass: newP }) })
         .then(res => res.json())
         .then(res => {
-            btn.innerHTML = "Update Password <i class='fa-solid fa-arrow-right ms-2'></i>"; 
-            btn.disabled = false;
-            
-            if(res.success) {
-                alert("✅ " + res.message);
-                document.getElementById('changePwdForm').reset();
-                var myModalEl = document.getElementById('changePasswordModal');
-                var modal = bootstrap.Modal.getInstance(myModalEl);
-                modal.hide();
-            } else { alert("❌ " + res.message); }
-        })
-        .catch(err => {
-            btn.innerHTML = "Update Password <i class='fa-solid fa-arrow-right ms-2'></i>"; 
-            btn.disabled = false;
-            alert("❌ Network Error. Please check your connection.");
-        });
+            btn.innerHTML = "Update Password <i class='fa-solid fa-arrow-right ms-2'></i>"; btn.disabled = false;
+            if(res.success) { alert("✅ " + res.message); document.getElementById('changePwdForm').reset(); var myModalEl = document.getElementById('changePasswordModal'); var modal = bootstrap.Modal.getInstance(myModalEl); modal.hide(); } 
+            else { alert("❌ " + res.message); }
+        }).catch(err => { btn.innerHTML = "Update Password <i class='fa-solid fa-arrow-right ms-2'></i>"; btn.disabled = false; alert("❌ Network Error. Please check your connection."); });
     }
 
-    // Badge Logic
     function getBadgeHtml(reportName) {
-        var launchDate = new Date("2026-07-05"); 
-        var today = new Date();
-        var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
-        
-        if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) {
-            return '<span class="new-badge">NEW</span>';
-        }
+        var launchDate = new Date("2026-07-05"); var today = new Date(); var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+        if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) { return '<span class="new-badge">NEW</span>'; }
         return '';
     }
-
-    // 🌟 BACKGROUND PRE-FETCHING LOGIC (SILENT LOADER) 🌟
-    
-    const DB_NAME = "CscTravelDB"; 
-    const STORE_NAME = "ReportsData";
-    
-    function openDB() { 
-        return new Promise((res, rej) => { 
-            let req = indexedDB.open(DB_NAME, 1); 
-            req.onupgradeneeded = (e) => { 
-                let db = e.target.result; 
-                if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); 
-            }; 
-            req.onsuccess = (e) => res(e.target.result); 
-            req.onerror = (e) => rej(e.target.error); 
-        }); 
-    }
-    
-    async function saveToCache(key, dataObj) { 
-        try { 
-            let db = await openDB(); 
-            let tx = db.transaction(STORE_NAME, "readwrite"); 
-            tx.objectStore(STORE_NAME).put({ data: dataObj, timestamp: Date.now() }, key); 
-        } catch(e) { console.error(e); } 
-    }
-
-    function preloadTravelReports() {
-        let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
-        let loggedInUserId = localStorage.getItem("userId") || ""; 
-
-        if(!loggedInUserId) return; 
-
-        // 🚌 REDBUS Data
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
-        .then(res => res.json())
-        .then(res => { 
-            if(res.success && res.data) { 
-                saveToCache("TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId, res.data); 
-                console.log("✅ Redbus Data Pre-loaded Successfully!");
-            } 
-        }).catch(e => console.log("Redbus pre-load failed"));
-
-        // ✈️ AIRWAYS Data
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getPosterMakerData", service: "AIRWAYS", role: loggedInDesig, userId: loggedInUserId }) })
-        .then(res => res.json())
-        .then(res => { 
-            if(res.success && res.data) { 
-                saveToCache("TRAVEL_CACHE_V6_AIRWAYS_" + loggedInUserId, res.data); 
-                console.log("✅ Airways Data Pre-loaded Successfully!");
-            } 
-        }).catch(e => console.log("Airways pre-load failed"));
-    }
-
-    window.addEventListener('load', function() {
-        setTimeout(preloadTravelReports, 3000); 
-    });
-
   </script>
-
 </body>
 </html>
