@@ -138,7 +138,7 @@
         .btn-save:disabled { background-color: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
 
         /* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR AMC REPORT (Added by Chandra) 📱 */
+        /* 📱 MOBILE RESPONSIVENESS FOR AMC REPORT 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
             body { padding: 10px; gap: 15px; }
@@ -184,7 +184,6 @@
                 <option value="All">All Districts</option>
             </select>
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
-            <!-- 🌟 EXCEL EXPORT BUTTON ADDED 🌟 -->
             <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()">📊 Download Excel</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -557,6 +556,12 @@
                 let promoBtnHtml = `<button id="${promoBtnId}" class="btn-promo" onclick="sendPromoWhatsApp('${row.cscid}', '${promoBtnId}')">💬 Send Promo</button>`;
 
                 let amcHtml = "";
+                
+                // 🌟 Added condition for DM login visibility 🌟
+                let btnDisabledStyle = isDM ? 'background-color:#cbd5e1; color:#64748b; cursor:not-allowed;' : '';
+                let btnDisabledAttr = isDM ? 'disabled title="Only SPOC/State Head can activate"' : '';
+                let onClickActivate = isDM ? '' : `onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')"`;
+
                 if(isActivated) {
                     amcHtml = `
                     <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
@@ -567,6 +572,10 @@
                         </div>
                     </div>`;
                 } else if(isExpired) {
+                    let renewBtn = isDM ? 
+                        `<button class="btn-amc-activate" style="margin-top:4px; ${btnDisabledStyle}" ${btnDisabledAttr}>Renew AMC 🔒</button>` : 
+                        `<button class="btn-amc-activate" style="margin-top:4px;" ${onClickActivate}>Renew AMC</button>`;
+                    
                     amcHtml = `
                     <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
                         <span style="color:#f59e0b; font-weight:800; font-size:11px;">⚠️ EXPIRED</span>
@@ -574,12 +583,16 @@
                             <div style="color:#d97706; font-weight:800; font-size:10px; text-transform:uppercase;">${row.amcStatus}</div>
                             <div style="color:#64748b; font-size:9px; font-weight:600;">Expired On: ${formatDisplayDate(row.amcEnd)}</div>
                         </div>
-                        <button class="btn-amc-activate" style="margin-top:4px;" onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')">Renew AMC</button>
+                        ${renewBtn}
                     </div>`;
                 } else {
+                    let activateBtn = isDM ? 
+                        `<button class="btn-amc-activate" style="${btnDisabledStyle}" ${btnDisabledAttr}>Activate AMC 🔒</button>` : 
+                        `<button class="btn-amc-activate" ${onClickActivate}>Activate AMC</button>`;
+
                     amcHtml = `
                     <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
-                        <button class="btn-amc-activate" onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')">Activate AMC</button>
+                        ${activateBtn}
                         <div class="amc-card-pending">PENDING ❌</div>
                     </div>`;
                 }
@@ -787,6 +800,8 @@
         }
 
         function openAMCModal(cscId, vleName) {
+            if(isDM) return; // Extra check to prevent opening modal if DM
+
             document.getElementById("modalCscIdDisplay").innerText = cscId;
             document.getElementById("modalCscId").value = cscId;
             document.getElementById("modalVleName").innerText = vleName;
