@@ -79,8 +79,13 @@
     <div class="d-flex justify-content-between align-items-center mb-3 px-1 page-header">
       <h5 class="fw-bold m-0" style="color: #0f172a;">🚚 VLE Dispatch Tracking</h5>
       
-      <div class="mobile-actions d-flex gap-2 align-items-center">
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="searchTable()">
+      <!-- 🌟 Added Date and Month Filters Here 🌟 -->
+      <div class="mobile-actions d-flex gap-2 align-items-center flex-wrap">
+        
+        <input type="month" id="monthFilter" class="search-box" style="width: 140px; padding: 6px 10px;" onchange="filterByMonth()" title="Filter by Month">
+        <input type="date" id="dateFilter" class="search-box" style="width: 140px; padding: 6px 10px;" onchange="filterByDate()" title="Filter by Exact Date">
+        
+        <input type="text" id="searchInput" class="search-box flex-grow-1" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="applyFilters()">
         <div class="btn-action-group">
             <button class="btn-action btn-outline-success-custom" onclick="exportToExcel()">📥 Excel</button>
             <button class="btn-action btn-outline-custom" onclick="refreshDispatchReport()">🔄 Refresh</button>
@@ -161,12 +166,10 @@
 
     let pendingUpdateData = null; 
 
-    // 🌟 DOM లోడ్ అయిన వెంటనే (ఇతర ఫైల్స్ కోసం వెయిట్ చేయకుండా) క్యాష్ ని చెక్ చేస్తుంది 🌟
     document.addEventListener("DOMContentLoaded", function() {
         checkCacheAndLoadDispatch();
     });
 
-    // 🌟 కస్టమ్ సెంటర్ అలర్ట్ ఫంక్షన్ 🌟
     function showCenteredAlert(msg, isSuccess) {
         let iconCont = document.getElementById("alertIcon");
         let btn = document.getElementById("alertBtn");
@@ -190,7 +193,6 @@
        let cacheTime = localStorage.getItem("vleDispatchTime");
        let now = new Date().getTime();
 
-       // 🌟 120000 (2 mins) ని 300000 (5 mins) కి పెంచాను 🌟
        if (cachedData && cacheTime && (now - cacheTime < 300000)) { 
           renderDispatchTable(JSON.parse(cachedData));
        } else {
@@ -201,8 +203,13 @@
     function refreshDispatchReport() {
        localStorage.removeItem("vleDispatchCache");
        document.getElementById("reportBody").innerHTML = `<tr><td colspan="8" class="py-5 fw-bold" style="color:#6366f1;">🔄 Refreshing live data...</td></tr>`;
-       fetchDispatchReport();
+       
+       // 🌟 Clear filters on refresh 🌟
        document.getElementById("searchInput").value = "";
+       document.getElementById("monthFilter").value = "";
+       document.getElementById("dateFilter").value = "";
+       
+       fetchDispatchReport();
     }
 
     function fetchDispatchReport() {
@@ -236,7 +243,7 @@
              tbody.innerHTML += `
                <tr class="data-row">
                  <td class="text-start ps-3" style="color:#64748b; font-weight:600; font-size: 11px;">
-                    <span class="copyable-text" title="Double-click to copy Date" ondblclick="copyCellText('${item.date}')">${item.date}</span>
+                    <span class="copyable-text date-cell" title="Double-click to copy Date" ondblclick="copyCellText('${item.date}')">${item.date}</span>
                  </td>
                  
                  <td class="search-target" style="max-width: 300px;">
@@ -276,6 +283,8 @@
        } else { 
           tbody.innerHTML = `<tr><td colspan="8" class="text-success py-5 fw-bold fs-6">🎉 No dispatch records found.</td></tr>`; 
        }
+       // Apply filters in case they are set
+       applyFilters();
     }
 
     function triggerUpdatePortalModal(reqNo, cscId, btnElement) {
@@ -326,21 +335,71 @@
         });
     }
 
-    function searchTable() {
-       let input = document.getElementById("searchInput").value.toUpperCase();
+    // 🌟 New Logic: Handle Month and Date selection to reset the other 🌟
+    function filterByMonth() {
+        document.getElementById("dateFilter").value = "";
+        applyFilters();
+    }
+
+    function filterByDate() {
+        document.getElementById("monthFilter").value = "";
+        applyFilters();
+    }
+
+    // 🌟 Updated Search & Filter Logic 🌟
+    function applyFilters() {
+       let searchInput = document.getElementById("searchInput").value.toUpperCase();
+       let monthInput = document.getElementById("monthFilter").value; // e.g., "2026-08"
+       let dateInput = document.getElementById("dateFilter").value;   // e.g., "2026-08-19"
+       
+       let targetMonth = "";
+       let targetDate = "";
+       
+       // Convert from YYYY-MM to MM-YYYY for matching in "DD-MM-YYYY" string
+       if (monthInput) {
+           let parts = monthInput.split("-");
+           targetMonth = parts[1] + "-" + parts[0]; 
+       }
+       
+       // Convert from YYYY-MM-DD to DD-MM-YYYY
+       if (dateInput) {
+           let parts = dateInput.split("-");
+           targetDate = parts[2] + "-" + parts[1] + "-" + parts[0]; 
+       }
+
        let rows = document.querySelectorAll(".data-row");
        
        rows.forEach(row => {
-          let match = false;
+          let matchSearch = false;
           let targets = row.querySelectorAll(".search-target");
           
-          targets.forEach(cell => {
-             if (cell && cell.innerText.toUpperCase().indexOf(input) > -1) {
-                match = true;
-             }
-          });
+          if(searchInput === "") {
+              matchSearch = true;
+          } else {
+              targets.forEach(cell => {
+                 if (cell && cell.innerText.toUpperCase().indexOf(searchInput) > -1) {
+                    matchSearch = true;
+                 }
+              });
+          }
+
+          let dateCell = row.querySelector(".date-cell").innerText.trim(); 
           
-          row.style.display = match ? "" : "none";
+          let matchMonth = true;
+          if (targetMonth !== "") {
+              matchMonth = dateCell.includes(targetMonth);
+          }
+          
+          let matchDate = true;
+          if (targetDate !== "") {
+              matchDate = dateCell.startsWith(targetDate);
+          }
+
+          if (matchSearch && matchMonth && matchDate) {
+              row.style.display = "";
+          } else {
+              row.style.display = "none";
+          }
        });
     }
 
