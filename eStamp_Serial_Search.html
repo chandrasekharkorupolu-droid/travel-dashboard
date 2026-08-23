@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Stamping Serial Tracker - Premium</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body { background: #eef2f6; font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px 15px; min-height: 100vh; color: #334155; }
+    
+    /* 🌟 MAIN TRACKER BOARD 🌟 */
+    .tracker-main-board { background: #ffffff; border: 2px solid #cbd5e1; border-radius: 24px; padding: 40px 30px; max-width: 1150px; margin: 0 auto; box-shadow: 0 15px 40px rgba(0,0,0,0.06); }
+
+    .header-section { text-align: center; margin-bottom: 35px; }
+    .header-title { color: #0f172a; font-weight: 900; font-size: 28px; letter-spacing: -0.5px; margin-bottom: 8px;}
+    .header-title i { color: #6366f1; }
+    .header-subtitle { color: #64748b; font-size: 14px; font-weight: 600; }
+
+    /* 🌟 Search Box 🌟 */
+    .search-wrapper { max-width: 700px; margin: 0 auto 30px auto; background: #f8fafc; padding: 8px; border-radius: 50px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04); display: flex; align-items: center; border: 2px solid #e2e8f0; transition: all 0.3s ease; }
+    .search-wrapper:focus-within { border-color: #818cf8; box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15); background: #ffffff; transform: translateY(-2px); }
+    .search-icon { padding: 0 15px 0 20px; color: #94a3b8; font-size: 20px; }
+    .search-input { flex-grow: 1; border: none; padding: 15px 10px; font-size: 18px; font-weight: 800; color: #1e293b; outline: none; background: transparent; text-transform: uppercase; letter-spacing: 1px; }
+    .search-input::placeholder { color: #cbd5e1; font-weight: 600; text-transform: none; letter-spacing: 0;}
+    
+    .btn-search { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; border-radius: 50px; padding: 14px 40px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+    .btn-search:hover { background: linear-gradient(135deg, #4f46e5, #4338ca); transform: scale(1.02); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+
+    /* 🌟 Result Card 🌟 */
+    .result-container { width: 100%; border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); overflow: hidden; display: none; animation: fadeIn 0.4s ease-out; border: 1px solid #e2e8f0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-banner { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px; text-align: center; position: relative; border-bottom: 4px solid #38bdf8; }
+    
+    .sale-status-badge { position: absolute; top: 25px; left: 25px; padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 900; letter-spacing: 1px; }
+    .shcil-status-badge { position: absolute; top: 25px; right: 25px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #34d399; padding: 6px 16px; border-radius: 30px; font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+
+    .banner-label { color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+    .serial-number { color: #38bdf8; font-size: 40px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.4); margin-bottom: 10px; cursor: pointer; display: inline-block;}
+    .serial-number:hover { color: #7dd3fc; }
+    .range-badge { background: rgba(255,255,255,0.1); color: #e2e8f0; padding: 6px 15px; border-radius: 8px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid rgba(255,255,255,0.2);}
+
+    /* 🌟 Details Grid (4x2 = 8 Boxes) 🌟 */
+    .details-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 25px; background: #ffffff; }
+
+    .info-box { display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; transition: 0.2s; }
+    .info-box:hover { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transform: translateY(-2px);}
+    
+    .icon-circle { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    
+    .icon-blue { background: #eff6ff; color: #3b82f6; }
+    .icon-purple { background: #f3e8ff; color: #9333ea; }
+    .icon-green { background: #ecfdf5; color: #10b981; }
+    .icon-orange { background: #fff7ed; color: #f97316; }
+    .icon-rose { background: #fff1f2; color: #e11d48; }
+    .icon-slate { background: #f1f5f9; color: #475569; }
+
+    .info-text { flex-grow: 1; overflow: hidden; }
+    .info-label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+    
+    .info-value { font-size: 13.5px; color: #0f172a; font-weight: 800; white-space: normal; word-break: break-word; line-height: 1.4; cursor: pointer;}
+    .info-value:hover { color: #6366f1; }
+
+    .sold-box { border: 2px solid #fecdd3; background: #fff1f2; }
+    .sold-box:hover { border-color: #fda4af; }
+    .avail-box { border: 2px solid #bbf7d0; background: #f0fdf4; }
+
+    /* Loader & Errors */
+    .loader-container { text-align: center; padding: 50px; display: none; }
+    .loader-cube { width: 40px; height: 40px; background-color: #6366f1; margin: 0 auto 15px auto; animation: rotate 1.2s infinite ease-in-out; border-radius: 8px;}
+    @keyframes rotate { 0% { transform: perspective(120px) rotateX(0deg) rotateY(0deg); } 50% { transform: perspective(120px) rotateX(-180deg) rotateY(0deg); background-color: #38bdf8;} 100% { transform: perspective(120px) rotateX(-180deg) rotateY(-180deg); } }
+
+    .not-found-card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; padding: 40px 30px; text-align: center; border: 2px dashed #fecaca; display: none; animation: fadeIn 0.4s ease-out; }
+    .nf-icon { font-size: 55px; color: #ef4444; margin-bottom: 15px; }
+    .nf-title { color: #0f172a; font-weight: 900; font-size: 22px; margin-bottom: 10px; }
+    .nf-desc { color: #64748b; font-size: 14px; font-weight: 600; line-height: 1.6; }
+
+    #copyToast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #22c55e; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; display: none; z-index: 9999; box-shadow: 0 15px 30px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; }
+
+    @media (max-width: 992px) { .details-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .details-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <div id="copyToast"><i class="fa-solid fa-circle-check me-2"></i> Copied successfully!</div>
+
+  <div class="tracker-main-board">
+    
+    <div class="header-section">
+        <div class="header-title"><i class="fa-solid fa-magnifying-glass-location me-2"></i> e-Stamping Serial Tracker</div>
+        <div class="header-subtitle">Track Dispatch details & Live Sales Status from VLE Daily Sales.</div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-wrapper">
+        <i class="fa-solid fa-barcode search-icon"></i>
+        <input type="text" id="serialInput" class="search-input" placeholder="Enter Serial No (e.g., FH0007204335)" onkeypress="handleEnter(event)">
+        <button class="btn-search" onclick="searchSerial()">Search <i class="fa-solid fa-arrow-right ms-1"></i></button>
+    </div>
+
+    <div class="loader-container" id="loader">
+        <div class="loader-cube"></div>
+        <div class="fw-bold" style="color: #64748b; font-size: 14px; letter-spacing: 1px;">SCANNING DATABASE...</div>
+    </div>
+
+    <div class="not-found-card" id="notFoundCard">
+        <div class="nf-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div class="nf-title">Serial Number Not Found!</div>
+        <div class="nf-desc">The serial number you entered is either invalid or has not been dispatched to any VLE yet.</div>
+        <button class="btn btn-light mt-4 fw-bold text-danger border" onclick="clearSearch()" style="border-radius: 12px; padding: 10px 25px;"><i class="fa-solid fa-rotate-left me-2"></i>Try Another Number</button>
+    </div>
+
+    <!-- Result Card -->
+    <div class="result-container" id="resultCard">
+        
+        <div class="result-banner">
+            <div class="sale-status-badge" id="resTopSaleStatus">-</div>
+            <div class="shcil-status-badge" id="resStatusBadge">-</div>
+            
+            <div class="banner-label">Tracking Details For</div>
+            <div class="serial-number" id="resSerial" title="Click to Copy" onclick="copyText(this)">-</div>
+            <br>
+            <div class="range-badge" title="Full Batch Range"><i class="fa-solid fa-layer-group me-2"></i><span id="resRange">-</span></div>
+        </div>
+
+        <div class="details-grid">
+            
+            <!-- ROW 1 -->
+            <div class="info-box">
+                <div class="icon-circle icon-blue"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="info-text">
+                    <label class="info-label">VLE Name</label>
+                    <div class="info-value" id="resVleName" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="icon-circle icon-purple"><i class="fa-solid fa-id-card"></i></div>
+                <div class="info-text">
+                    <label class="info-label">CSC ID</label>
+                    <div class="info-value" id="resCscId" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="icon-circle icon-orange"><i class="fa-solid fa-map-location-dot"></i></div>
+                <div class="info-text">
+                    <label class="info-label">District</label>
+                    <div class="info-value" id="resDistrict" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="icon-circle icon-slate"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="info-text">
+                    <label class="info-label">Dispatched By & Date</label>
+                    <div class="info-value" id="resBy" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="info-box">
+                <div class="icon-circle icon-rose"><i class="fa-solid fa-file-invoice"></i></div>
+                <div class="info-text">
+                    <label class="info-label">Stock Request No</label>
+                    <div class="info-value" id="resReqNo" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box" id="saleStatusBox">
+                <div class="icon-circle icon-rose" id="saleStatusIcon"><i class="fa-solid fa-cart-shopping"></i></div>
+                <div class="info-text">
+                    <label class="info-label">Sale Status</label>
+                    <div class="info-value" id="resSaleStatus" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box" id="saleDateBox">
+                <div class="icon-circle icon-green"><i class="fa-regular fa-calendar-check"></i></div>
+                <div class="info-text">
+                    <label class="info-label">Sale Date & Time</label>
+                    <div class="info-value" id="resSaleDate" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+            <div class="info-box" id="saleAmtBox">
+                <div class="icon-circle icon-orange"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                <div class="info-text">
+                    <label class="info-label">Sale Amount</label>
+                    <div class="info-value text-success" id="resSaleAmount" title="Click to Copy" onclick="copyText(this)">-</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+  </div> 
+
+  <script>
+    // 🌟 మీ అసలైన యాప్స్ స్క్రిప్ట్ లింక్ ఇక్కడ వేయండి 🌟
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+    function handleEnter(event) { if (event.key === "Enter") searchSerial(); }
+
+    function clearSearch() {
+        document.getElementById("serialInput").value = "";
+        document.getElementById("notFoundCard").style.display = "none";
+        document.getElementById("serialInput").focus();
+    }
+
+    // 🌟 ఆటోమెటిక్ గా డేట్ ని DD-MM-YYYY ఫార్మాట్ కి మార్చే ఫంక్షన్ 🌟
+    function formatIndianDate(dateStr) {
+        if(!dateStr || dateStr === "-" || dateStr === "Not Sold Yet") return dateStr;
+        
+        let d = new Date(dateStr);
+        if(isNaN(d.getTime())) {
+            let parts = dateStr.split(" ");
+            let dParts = parts[0].split(/[-/]/);
+            if(dParts.length === 3) {
+                // MM/DD/YYYY అయితే మార్పు చేస్తుంది
+                if (dParts[0].length <= 2 && dParts[2].length === 4) {
+                    return dParts[1] + "-" + dParts[0] + "-" + dParts[2] + (parts[1] ? " " + parts[1] : "");
+                }
+            }
+            return dateStr;
+        }
+        
+        let day = String(d.getDate()).padStart(2, '0');
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        let hours = d.getHours();
+        let minutes = String(d.getMinutes()).padStart(2, '0');
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12; hours = hours ? hours : 12;
+        return day + "-" + month + "-" + year + " " + hours + ":" + minutes + " " + ampm;
+    }
+
+    function searchSerial() {
+        let serialNo = document.getElementById("serialInput").value.trim().toUpperCase();
+        if(serialNo === "") { alert("Please enter a Serial Number!"); return; }
+
+        document.getElementById("resultCard").style.display = "none";
+        document.getElementById("notFoundCard").style.display = "none";
+        document.getElementById("loader").style.display = "block";
+        
+        let payload = { action: "searchEStampSerial", serialNo: serialNo };
+
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload) 
+        })
+        .then(response => response.json())
+        .then(res => {
+            document.getElementById("loader").style.display = "none";
+            if(res.success && res.data) {
+                displayResult(res.data, serialNo);
+            } else {
+                document.getElementById("notFoundCard").style.display = "block";
+                let descBox = document.querySelector(".nf-desc");
+                if(res.message) {
+                    descBox.innerHTML = `<span style="color:#e11d48; font-weight:bold;">Reason: ${res.message}</span>`;
+                } else {
+                    descBox.innerText = "The serial number you entered is either invalid or has not been dispatched to any VLE yet.";
+                }
+            }
+        })
+        .catch(err => {
+            console.error("API Error: ", err);
+            document.getElementById("loader").style.display = "none";
+            alert("Network Error! Please try again.");
+        });
+    }
+
+    function displayResult(data, searchNo) {
+        document.getElementById("resSerial").innerText = searchNo;
+        
+        let vleNameEl = document.getElementById("resVleName");
+        vleNameEl.innerText = data.vleName || "-";
+        
+        document.getElementById("resCscId").innerText = data.cscId || "-";
+        document.getElementById("resDistrict").innerText = data.district || "-";
+        
+        let dispDateText = (data.date && data.date !== "-") ? `<br><span style="font-size:12px; color:#64748b;">(${data.date})</span>` : "";
+        let finalByText = (data.dispatchedBy || "-") + dispDateText;
+        
+        let byEl = document.getElementById("resBy");
+        byEl.innerHTML = finalByText;
+
+        document.getElementById("resReqNo").innerText = data.reqNo || "-";
+
+        document.getElementById("resRange").innerHTML = (data.startSerial || "-") + " &nbsp;&nbsp;<span style='color:#94a3b8;'>TO</span>&nbsp;&nbsp; " + (data.endSerial || "-");
+        
+        let shcilStatus = data.status || "PENDING";
+        let topBadge = document.getElementById("resStatusBadge");
+        if(shcilStatus.toUpperCase().includes("UPDATED") || shcilStatus.toUpperCase().includes("DONE")) {
+            topBadge.style.background = "rgba(16, 185, 129, 0.2)";
+            topBadge.style.color = "#34d399";
+            topBadge.style.borderColor = "#34d399";
+            topBadge.innerHTML = `<i class="fa-solid fa-check-double me-1"></i> SHCIL UPDATED`;
+        } else {
+            topBadge.style.background = "rgba(245, 158, 11, 0.2)";
+            topBadge.style.color = "#fbbf24";
+            topBadge.style.borderColor = "#fbbf24";
+            topBadge.innerHTML = `<i class="fa-solid fa-clock-rotate-left me-1"></i> SHCIL PENDING`;
+        }
+
+        let saleStatusBox = document.getElementById("saleStatusBox");
+        let saleIcon = document.getElementById("saleStatusIcon");
+        let topSaleBadge = document.getElementById("resTopSaleStatus");
+
+        // 🌟 ఇక్కడే ఇండియన్ డేట్ ఫార్మాట్ ఫంక్షన్ వాడాను 🌟
+        let cleanSaleDate = formatIndianDate(data.saleDate);
+        document.getElementById("resSaleDate").innerText = cleanSaleDate;
+        document.getElementById("resSaleDate").title = cleanSaleDate;
+        
+        document.getElementById("resSaleAmount").innerText = data.saleAmount !== "-" ? ("₹ " + data.saleAmount) : "-";
+
+        if(data.saleStatus === "SOLD") {
+            document.getElementById("resSaleStatus").innerHTML = `<span style="color:#e11d48;">SOLD ✅</span>`;
+            saleStatusBox.className = "info-box sold-box";
+            saleIcon.className = "icon-circle icon-rose";
+            saleIcon.innerHTML = `<i class="fa-solid fa-cart-arrow-down"></i>`;
+            
+            topSaleBadge.style.background = "#fff1f2";
+            topSaleBadge.style.color = "#e11d48";
+            topSaleBadge.style.border = "1px solid #fecdd3";
+            topSaleBadge.innerHTML = `<i class="fa-solid fa-tag me-1"></i> ALREADY SOLD`;
+        } else {
+            document.getElementById("resSaleStatus").innerHTML = `<span style="color:#16a34a;">AVAILABLE ✨</span>`;
+            saleStatusBox.className = "info-box avail-box";
+            saleIcon.className = "icon-circle icon-green";
+            saleIcon.innerHTML = `<i class="fa-solid fa-box-open"></i>`;
+            
+            topSaleBadge.style.background = "#f0fdf4";
+            topSaleBadge.style.color = "#16a34a";
+            topSaleBadge.style.border = "1px solid #bbf7d0";
+            topSaleBadge.innerHTML = `<i class="fa-solid fa-boxes-stacked me-1"></i> IN STOCK`;
+        }
+
+        document.getElementById("resultCard").style.display = "block";
+    }
+
+    function copyText(element) {
+       let textToCopy = element.innerText;
+       if(!textToCopy || textToCopy === "-") return;
+       if (window.getSelection) { window.getSelection().removeAllRanges(); }
+       navigator.clipboard.writeText(textToCopy).then(() => {
+          let toast = document.getElementById("copyToast");
+          toast.style.display = "block";
+          setTimeout(() => { toast.style.opacity = "1"; toast.style.transform = "translateX(-50%) translateY(0)"; }, 10);
+          setTimeout(() => { toast.style.opacity = "0"; toast.style.transform = "translateX(-50%) translateY(20px)"; setTimeout(() => { toast.style.display = "none"; }, 300); }, 2000); 
+       });
+    }
+  </script>
+</body>
+</html>
