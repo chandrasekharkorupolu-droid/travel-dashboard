@@ -536,12 +536,21 @@
               let options = [ { id: 'AddMasterStock', icon: '<i class="fa-solid fa-inbox" style="color:#2563eb;"></i>', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '<i class="fa-solid fa-boxes-packing" style="color:#ca8a04;"></i>', name: 'Assign Stationary' }, { id: 'StockReport', icon: '<i class="fa-solid fa-chart-column" style="color:#16a34a;"></i>', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '<i class="fa-solid fa-truck-fast" style="color:#ea580c;"></i>', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '<i class="fa-solid fa-chart-pie" style="color:#9333ea;"></i>', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '<i class="fa-solid fa-star" style="color:#059669;"></i>', name: 'VLE Performance Report' } ];
               options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>` + getBadgeHtml(opt.name); li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
               
-              // 🌟 సపరేట్ ఫైల్ ని పిలవడానికి ఇక్కడ మార్చాను 🌟
+              // 🌟 NEW MENU ADDED FOR SERIAL TRACKER WITH AUTO-EXPIRING "NEW" BADGE 🌟
+              var trackerLaunchDate = new Date("2026-08-23"); // లాంచ్ అయిన రోజు
+              var todayDate = new Date(); 
+              var daysDiff = Math.floor((todayDate - trackerLaunchDate) / (1000 * 60 * 60 * 24));
+              
+              // 7 రోజుల పాటు మాత్రమే NEW బ్యాడ్జ్ కనిపిస్తుంది
+              var badgeHtml = (daysDiff >= 0 && daysDiff <= 7) ? '<span class="new-badge" style="background-color: #ef4444; color: white; font-size: 9px; font-weight: 900; padding: 3px 6px; border-radius: 6px; margin-left: auto; animation: pulseBadge 1.5s infinite;">NEW</span>' : '';
+
               let liTracker = document.createElement('li'); 
-              liTracker.innerHTML = `<span class="menu-icon"><i class="fa-solid fa-barcode" style="color:#ec4899;"></i></span> <span class="menu-text">Serial Tracker</span>`; 
+              liTracker.innerHTML = `<span class="menu-icon"><i class="fa-solid fa-barcode" style="color:#ec4899;"></i></span> <span class="menu-text">Serial Tracker</span>` + badgeHtml; 
               liTracker.onclick = function() { 
                   document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
                   this.classList.add('active-item'); 
+                  
+                  // 🌟 FIX: ఇక్కడే ఇందాక తప్పు జరిగింది, ఇప్పుడు సపరేట్ ఫైల్ కి పక్కాగా లింక్ చేశాను! 🌟
                   loadReport('E-STAMPING', 'eStamp_Serial_Search', 'Serial Tracker'); 
               }; 
               list.appendChild(liTracker);
