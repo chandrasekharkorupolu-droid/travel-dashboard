@@ -69,8 +69,30 @@
 
     #copyToast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #22c55e; padding: 10px 20px; border-radius: 50px; font-weight: 800; font-size: 13px; z-index: 99999; opacity: 0; transition: all 0.3s; }
 
-    @media (max-width: 992px) { .t-details-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 576px) { .t-details-grid { grid-template-columns: 1fr; } }
+    /* 🌟 పక్కా మొబైల్ రెస్పాన్సివ్ డిజైన్ 🌟 */
+    @media (max-width: 992px) { 
+        .t-details-grid { grid-template-columns: repeat(2, 1fr); } 
+    }
+    @media (max-width: 576px) { 
+        body { padding: 10px; }
+        .tracker-main-board { padding: 20px 15px; border-radius: 16px; }
+        .t-header-title { font-size: 20px; }
+        .t-details-grid { grid-template-columns: 1fr; gap: 10px; padding: 15px; }
+        
+        /* మొబైల్ లో సెర్చ్ బాక్స్ మరియు బటన్స్ కరెక్ట్ గా అడ్జస్ట్ అవుతాయి */
+        .t-search-wrapper { flex-direction: column; gap: 10px; padding: 15px; border-radius: 16px; }
+        .t-search-input { width: 100%; text-align: center; font-size: 15px; }
+        .t-search-icon { display: none; } /* మొబైల్ లో స్పేస్ ఆదా చేయడానికి ఐకాన్ తీసేశాను */
+        .t-btn-search, .t-btn-reset { width: 100%; margin: 0; padding: 12px; border-radius: 8px; }
+        
+        .t-serial-number { font-size: 28px; }
+        .t-sale-status-badge { position: relative; top: 0; left: 0; display: inline-block; margin-bottom: 10px; }
+        .t-shcil-status-badge { position: relative; top: 0; right: 0; display: inline-block; margin-bottom: 10px; }
+        
+        /* మొబైల్ లో బ్రాండింగ్ సైజ్ అడ్జస్ట్మెంట్ */
+        .mobile-branding-header { flex-direction: column; gap: 10px; text-align: center !important; }
+        .mobile-branding-header > div { text-align: center !important; justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -87,7 +109,7 @@
         <i class="fa-solid fa-barcode t-search-icon"></i>
         <input type="text" id="serialInput" class="t-search-input" placeholder="Enter Serial No (e.g., FH0007204335)" onkeypress="handleEnter(event)">
         <button class="t-btn-search" onclick="searchSerial()">Search <i class="fa-solid fa-arrow-right ms-1"></i></button>
-        <button class="t-btn-reset" onclick="clearSearch()" title="Reset Tracker"><i class="fa-solid fa-rotate-right"></i></button>
+        <button class="t-btn-reset" onclick="clearSearch()" title="Reset Tracker"><i class="fa-solid fa-rotate-right me-1"></i> Reset</button>
     </div>
 
     <div class="t-loader-container" id="t-loader">
@@ -103,8 +125,7 @@
 
     <div class="t-result-container" id="t-resultCard">
         
-        <!-- 🌟 NEW: ఇమేజ్ లో కనిపించే అఫీషియల్ హెడర్ మరియు జనరేట్ చేసిన టైమ్ 🌟 -->
-        <div style="background: #ffffff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9;">
+        <div class="mobile-branding-header" style="background: #ffffff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 40px; height: 40px; background: #e0e7ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4f46e5; font-size: 20px;">
                     <i class="fa-solid fa-magnifying-glass-location"></i>
@@ -173,7 +194,30 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    window.onload = function() { document.getElementById("serialInput").focus(); };
+    // 🌟 FIX: ఇక్కడే మెయిన్ డాష్‌బోర్డ్ ని కంట్రోల్ చేసే ESC లాజిక్ ఉంది 🌟
+    window.onload = function() { 
+        let inputField = document.getElementById("serialInput");
+        inputField.focus(); 
+        
+        // సెర్చ్ బాక్స్ లో కర్సర్ ఉన్నప్పుడు ESC నొక్కినా డాష్‌బోర్డ్ కి వెళ్లిపోతుంది
+        inputField.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                if (window.parent && typeof window.parent.closeActiveReport === 'function') {
+                    window.parent.closeActiveReport();
+                }
+            }
+        });
+    };
+
+    // బయట ఎక్కడ క్లిక్ చేసి ESC నొక్కినా డాష్‌బోర్డ్ కి వెళ్లిపోతుంది
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            if (window.parent && typeof window.parent.closeActiveReport === 'function') {
+                window.parent.closeActiveReport();
+            }
+        }
+    });
+
     function handleEnter(event) { if (event.key === "Enter") searchSerial(); }
 
     function clearSearch() {
@@ -225,7 +269,6 @@
     }
 
     function displayResult(data, searchNo) {
-        // 🌟 అప్పటికప్పుడు టైం పడేలా ఆటోమేటిక్ స్టాంప్ లాజిక్ 🌟
         let now = new Date();
         let hours = now.getHours(); let ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12;
         let timeStr = String(now.getDate()).padStart(2, '0') + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + now.getFullYear() + " " + String(hours).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + " " + ampm;
