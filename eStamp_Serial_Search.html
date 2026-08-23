@@ -31,7 +31,7 @@
     .t-btn-reset { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 50px; padding: 12px 20px; font-size: 15px; cursor: pointer; transition: 0.3s; margin-left: 8px; }
     .t-btn-reset:hover { background: #dc2626; color: white; }
 
-    .t-result-container { width: 100%; border-radius: 20px; overflow: hidden; display: none; border: 1px solid #e2e8f0; background: #ffffff; margin-bottom: 20px;}
+    .t-result-container { width: 100%; border-radius: 20px; overflow: hidden; display: none; border: 1px solid #e2e8f0; background: #ffffff; margin-bottom: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);}
     .t-result-banner { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; text-align: center; position: relative; border-bottom: 4px solid #38bdf8; }
     .t-sale-status-badge { position: absolute; top: 20px; left: 20px; padding: 5px 15px; border-radius: 30px; font-size: 12px; font-weight: 900; letter-spacing: 1px; }
     .t-shcil-status-badge { position: absolute; top: 20px; right: 20px; padding: 5px 15px; border-radius: 30px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
@@ -64,8 +64,8 @@
     .t-nf-title { color: #0f172a; font-weight: 900; font-size: 20px; margin-bottom: 8px; }
     .t-nf-desc { color: #64748b; font-size: 13px; font-weight: 600; line-height: 1.5; }
     
-    .t-btn-download { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 13px; }
-    .t-btn-download:hover { background: #059669; }
+    .t-btn-download { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 13px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+    .t-btn-download:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
 
     #copyToast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #22c55e; padding: 10px 20px; border-radius: 50px; font-weight: 800; font-size: 13px; z-index: 99999; opacity: 0; transition: all 0.3s; }
 
@@ -102,6 +102,24 @@
     </div>
 
     <div class="t-result-container" id="t-resultCard">
+        
+        <!-- 🌟 NEW: ఇమేజ్ లో కనిపించే అఫీషియల్ హెడర్ మరియు జనరేట్ చేసిన టైమ్ 🌟 -->
+        <div style="background: #ffffff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; background: #e0e7ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4f46e5; font-size: 20px;">
+                    <i class="fa-solid fa-magnifying-glass-location"></i>
+                </div>
+                <div style="text-align: left;">
+                    <div style="font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;">e-Stamping Tracker</div>
+                    <div style="font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px;">CSC ANDHRA PRADESH</div>
+                </div>
+            </div>
+            <div style="text-align: right; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Generated On</div>
+                <div style="font-size: 11px; font-weight: 800; color: #0f172a;" id="downloadDateStamp">-</div>
+            </div>
+        </div>
+
         <div class="t-result-banner">
             <div class="t-sale-status-badge" id="resTopSaleStatus">-</div>
             <div class="t-shcil-status-badge" id="resStatusBadge">-</div>
@@ -207,6 +225,12 @@
     }
 
     function displayResult(data, searchNo) {
+        // 🌟 అప్పటికప్పుడు టైం పడేలా ఆటోమేటిక్ స్టాంప్ లాజిక్ 🌟
+        let now = new Date();
+        let hours = now.getHours(); let ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12;
+        let timeStr = String(now.getDate()).padStart(2, '0') + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + now.getFullYear() + " " + String(hours).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + " " + ampm;
+        document.getElementById("downloadDateStamp").innerText = timeStr;
+
         document.getElementById("resSerial").innerText = searchNo;
         document.getElementById("resVleName").innerText = data.vleName || "-";
         document.getElementById("resCscId").innerText = data.cscId || "-";
