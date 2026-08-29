@@ -104,9 +104,10 @@
     <div class="header-container">
         <h2 id="headerTitle">🎧 Helpdesk Tickets Dashboard</h2>
         <div class="header-actions">
+            <!-- 🌟 FIX: PENDING ని డిఫాల్ట్ ఆప్షన్ గా సెట్ చేశాను -->
             <select id="statusFilter" class="status-filter-select" onchange="applyStatusFilter()">
+                <option value="PENDING" selected>⏳ Pending Only</option>
                 <option value="ALL">📋 All Tickets</option>
-                <option value="PENDING">⏳ Pending Only</option>
                 <option value="RESOLVED">✅ Resolved Only</option>
             </select>
             <button class="refresh-btn" onclick="fetchDataFromServer(true)" title="Force Refresh">🔄 Refresh Data</button>
@@ -122,8 +123,8 @@
                     <th>Ticket ID</th>
                     <th>Date</th>
                     <th>CSC ID</th>
-                    <th>VLE Name</th> <!-- 🌟 క్రొత్తగా యాడ్ చేసిన కాలమ్ -->
-                    <th>Mobile No</th> <!-- 🌟 క్రొత్తగా యాడ్ చేసిన కాలమ్ -->
+                    <th>VLE Name</th>
+                    <th>Mobile No</th>
                     <th>District</th>
                     <th>Service & Issue</th>
                     <th>Agent ID</th>
@@ -148,7 +149,6 @@
                     <div class="detail-item"><strong>Issue Category</strong><span id="r_issue"></span></div>
                     <div class="detail-item"><strong>CSC ID</strong><span id="r_cscid" style="font-weight:bold; color:#1e3a8a;"></span></div>
                     <div class="detail-item"><strong>District</strong><span id="r_district"></span></div>
-                    <!-- 🌟 క్రొత్తగా మోడల్ లో యాడ్ చేసిన కాలమ్స్ -->
                     <div class="detail-item"><strong>VLE Name</strong><span id="r_vlename" style="font-weight:bold; color:#0f172a;"></span></div>
                     <div class="detail-item"><strong>Mobile No</strong><span id="r_mobile" style="font-weight:bold; color:#059669;"></span></div>
                 </div>
@@ -206,24 +206,22 @@
         const adminName = localStorage.getItem("userName") || localStorage.getItem("userDesignation") || "SPOC/DM";
 
         let allTicketsData = [];
-        let vleMapping = {}; // 🌟 కొత్తగా యాడ్ చేసిన మ్యాపింగ్ ఆబ్జెక్ట్
+        let vleMapping = {}; 
         let currentFilter = "ALL"; 
-        let currentStatusFilter = "ALL"; 
+        // 🌟 FIX: ఇక్కడ కూడా PENDING ని డిఫాల్ట్ గా సెట్ చేశాను 
+        let currentStatusFilter = "PENDING"; 
 
         window.onload = async function() {
             document.getElementById('r_adminName').innerText = adminName;
             
-            // ముందుగా VLE డేటా లోడ్ చేస్తాం
             await fetchVleMapping();
             
-            // ఆ తర్వాత టికెట్స్ లోడ్ చేస్తాం
-            fetchDataFromServer(); 
+            // 🌟 FIX: పేజీ ఓపెన్ చేయగానే పాత డేటా కాకుండా డైరెక్ట్ గా లైవ్ డేటా (true) లాగేలా మార్చాను 🌟
+            fetchDataFromServer(true); 
         }
 
-        // 🌟 మెయిన్ డేటాబేస్ లోంచి VLE Name & Mobile నెంబర్ పక్కాగా తెచ్చుకునే ఫంక్షన్ 🌟
         async function fetchVleMapping() {
             try {
-                // ఎక్కడ కాష్ ఉన్నా తెచ్చేలా సెట్ చేశాను
                 let cachedData = localStorage.getItem("cscGlobalData") || 
                                  sessionStorage.getItem("cscGlobalData") || 
                                  sessionStorage.getItem("cscTravelData");
@@ -301,7 +299,6 @@
 
                 document.getElementById("loadingMsg").innerText = "⚡ Fetching Live Tickets from Server... Please wait.";
 
-                // 🌟 FIX: Added Headers to prevent CORS/Network Errors 🌟
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
@@ -396,11 +393,9 @@
                 
                 let agentId = (t.irctcId && t.irctcId !== "-") ? t.irctcId : "-";
                 
-                // 🌟 మెయిన్ డేటాబేస్ నుండి VLE Name & Mobile నెంబర్ లాగడం 🌟
                 let cscIdStr = t.cscId ? t.cscId.toString().trim() : "";
                 let mappedData = vleMapping[cscIdStr] || { name: "-", mobile: "-" };
                 
-                // ఇక్కడే ఉన్న ట్రిక్: '-' ఉన్నప్పుడు పాత పేరు కాకుండా మ్యాపింగ్ డేటా తీసుకోవాలి
                 let vleNameDisplay = (t.vleName && t.vleName !== "-") ? t.vleName : ((t.name && t.name !== "-") ? t.name : mappedData.name);
                 let mobileDisplay = (t.vleMobile && t.vleMobile !== "-") ? t.vleMobile : ((t.mobile && t.mobile !== "-") ? t.mobile : mappedData.mobile);
 
@@ -432,7 +427,6 @@
             let t = allTicketsData.find(x => x.ticketId === ticketId);
             if(!t) return;
 
-            // 🌟 పాపప్ లో కూడా VLE Name & Mobile నెంబర్ చూపించడానికి 🌟
             let cscIdStr = t.cscId ? t.cscId.toString().trim() : "";
             let mappedData = vleMapping[cscIdStr] || { name: "-", mobile: "-" };
             
@@ -644,7 +638,6 @@ async function submitResolve() {
                     showCustomAlert("Success!", "Ticket status updated successfully.");
                     closeResolveModal();
                     
-                    // 🌟 ఇక్కడే ఉన్న మ్యాజిక్: మళ్ళీ సర్వర్ నుండి మొత్తం తేకుండా.. బ్రౌజర్ లోని డేటాని ఇన్ స్టంట్ గా అప్‌డేట్ చేయడం 🌟
                     let updatedIndex = allTicketsData.findIndex(t => t.ticketId === ticketId);
                     if(updatedIndex !== -1) {
                         allTicketsData[updatedIndex].status = statusAction.toUpperCase();
@@ -652,10 +645,8 @@ async function submitResolve() {
                         allTicketsData[updatedIndex].resolvedDate = new Date().toLocaleString('en-IN'); 
                     }
                     
-                    // బ్రౌజర్ లోకల్ స్టోరేజ్ అప్‌డేట్ చేయడం
                     localStorage.setItem("helpdeskTicketsData", JSON.stringify(allTicketsData));
                     
-                    // లోడింగ్ స్క్రీన్ లేకుండా వెంటనే టేబుల్ ని రీఫ్రెష్ చేయడం
                     renderTickets();
                     
                 } else {
