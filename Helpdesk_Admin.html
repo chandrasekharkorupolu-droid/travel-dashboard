@@ -104,7 +104,6 @@
     <div class="header-container">
         <h2 id="headerTitle">🎧 Helpdesk Tickets Dashboard</h2>
         <div class="header-actions">
-            <!-- 🌟 FIX: PENDING ని డిఫాల్ట్ ఆప్షన్ గా సెట్ చేశాను -->
             <select id="statusFilter" class="status-filter-select" onchange="applyStatusFilter()">
                 <option value="PENDING" selected>⏳ Pending Only</option>
                 <option value="ALL">📋 All Tickets</option>
@@ -208,7 +207,6 @@
         let allTicketsData = [];
         let vleMapping = {}; 
         let currentFilter = "ALL"; 
-        // 🌟 FIX: ఇక్కడ కూడా PENDING ని డిఫాల్ట్ గా సెట్ చేశాను 
         let currentStatusFilter = "PENDING"; 
 
         window.onload = async function() {
@@ -216,8 +214,40 @@
             
             await fetchVleMapping();
             
-            // 🌟 FIX: పేజీ ఓపెన్ చేయగానే పాత డేటా కాకుండా డైరెక్ట్ గా లైవ్ డేటా (true) లాగేలా మార్చాను 🌟
-            fetchDataFromServer(true); 
+            // 🌟 SMART LOADING: ముందు లోకల్ డేటాని వెంటనే చూపించేసి, బ్యాక్ గ్రౌండ్ లో సర్వర్ చెక్ చేస్తాం 🌟
+            let cachedTickets = localStorage.getItem("helpdeskTicketsData");
+            if(cachedTickets) {
+                allTicketsData = JSON.parse(cachedTickets);
+                renderTickets();
+                // బ్యాక్ గ్రౌండ్ లో సైలెంట్ గా కొత్త డేటా ఏమైనా ఉందో చెక్ చేస్తాం (forceRefresh లాగా కాకుండా silent గా)
+                fetchDataFromServerSilent(); 
+            } else {
+                // ఫస్ట్ టైమ్ ఓపెన్ చేసినప్పుడు మాత్రమే లోడింగ్ పడుతుంది
+                fetchDataFromServer(true); 
+            }
+        }
+
+        // 🌟 కొత్తగా యాడ్ చేసిన ఫంక్షన్: సైలెంట్ గా వెనకాల డేటా తెస్తుంది 🌟
+        async function fetchDataFromServerSilent() {
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "getHelpdeskTickets", role: adminRole, userId: userId })
+                });
+                
+                let res = await response.json(); 
+                if (res.success && res.tickets) {
+                    // పాత డేటాకి కొత్త డేటాకి తేడా ఉంటేనే పేజీ ని అప్డేట్ చేస్తాం (స్మూత్ గా)
+                    if(JSON.stringify(allTicketsData) !== JSON.stringify(res.tickets)) {
+                        allTicketsData = res.tickets;
+                        localStorage.setItem("helpdeskTicketsData", JSON.stringify(allTicketsData));
+                        renderTickets(); // సైలెంట్ గా రిఫ్రెష్
+                    }
+                }
+            } catch (error) {
+                console.warn("Background ticket sync failed", error);
+            }
         }
 
         async function fetchVleMapping() {
