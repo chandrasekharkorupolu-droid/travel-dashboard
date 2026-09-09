@@ -533,15 +533,22 @@
               let options = [ { id: 'VleRequestStock', icon: '<i class="fa-solid fa-box-open" style="color:#0284c7;"></i>', name: 'Request New Stock' }, { id: 'VleSubmitSales', icon: '<i class="fa-solid fa-chart-line" style="color:#059669;"></i>', name: 'Submit Daily Sales' }, { id: 'VleReportSpoil', icon: '<i class="fa-solid fa-triangle-exclamation" style="color:#e11d48;"></i>', name: 'Report Spoiled Stamp' }, { id: 'VleTrackStatus', icon: '<i class="fa-solid fa-magnifying-glass" style="color:#7c3aed;"></i>', name: 'Track Request Status' } ];
               options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>`; li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
           } else {
-              let options = [ { id: 'AddMasterStock', icon: '<i class="fa-solid fa-inbox" style="color:#2563eb;"></i>', name: 'Add Master Stock' }, { id: 'AssignStationary', icon: '<i class="fa-solid fa-boxes-packing" style="color:#ca8a04;"></i>', name: 'Assign Stationary' }, { id: 'StockReport', icon: '<i class="fa-solid fa-chart-column" style="color:#16a34a;"></i>', name: 'Stock Summary Report' }, { id: 'VleDispatchReport', icon: '<i class="fa-solid fa-truck-fast" style="color:#ea580c;"></i>', name: 'VLE Dispatch History' }, { id: 'DenominationReport', icon: '<i class="fa-solid fa-chart-pie" style="color:#9333ea;"></i>', name: 'Denomination Sales Report' }, { id: 'VLE Performance Report', icon: '<i class="fa-solid fa-star" style="color:#059669;"></i>', name: 'VLE Performance Report' } ];
+              // 🌟 "Centre Inspection Form" ఇక్కడే యాడ్ చేశాను సార్ 🌟
+              let options = [ 
+                  { id: 'AddMasterStock', icon: '<i class="fa-solid fa-inbox" style="color:#2563eb;"></i>', name: 'Add Master Stock' }, 
+                  { id: 'AssignStationary', icon: '<i class="fa-solid fa-boxes-packing" style="color:#ca8a04;"></i>', name: 'Assign Stationary' }, 
+                  { id: 'StockReport', icon: '<i class="fa-solid fa-chart-column" style="color:#16a34a;"></i>', name: 'Stock Summary Report' }, 
+                  { id: 'VleDispatchReport', icon: '<i class="fa-solid fa-truck-fast" style="color:#ea580c;"></i>', name: 'VLE Dispatch History' }, 
+                  { id: 'DenominationReport', icon: '<i class="fa-solid fa-chart-pie" style="color:#9333ea;"></i>', name: 'Denomination Sales Report' }, 
+                  { id: 'VLE Performance Report', icon: '<i class="fa-solid fa-star" style="color:#059669;"></i>', name: 'VLE Performance Report' },
+                  { id: 'CentreInspection', icon: '<i class="fa-solid fa-clipboard-check" style="color:#10b981;"></i>', name: 'Centre Inspection Form' } 
+              ];
               options.forEach(opt => { let li = document.createElement('li'); li.innerHTML = `<span class="menu-icon">${opt.icon}</span> <span class="menu-text">${opt.name}</span>` + getBadgeHtml(opt.name); li.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); this.classList.add('active-item'); loadReport('E-STAMPING', opt.id, opt.name); }; list.appendChild(li); });
               
-              // 🌟 NEW MENU ADDED FOR SERIAL TRACKER WITH AUTO-EXPIRING "NEW" BADGE 🌟
-              var trackerLaunchDate = new Date("2026-08-23"); // లాంచ్ అయిన రోజు
+              var trackerLaunchDate = new Date("2026-08-23"); 
               var todayDate = new Date(); 
               var daysDiff = Math.floor((todayDate - trackerLaunchDate) / (1000 * 60 * 60 * 24));
               
-              // 7 రోజుల పాటు మాత్రమే NEW బ్యాడ్జ్ కనిపిస్తుంది
               var badgeHtml = (daysDiff >= 0 && daysDiff <= 7) ? '<span class="new-badge" style="background-color: #ef4444; color: white; font-size: 9px; font-weight: 900; padding: 3px 6px; border-radius: 6px; margin-left: auto; animation: pulseBadge 1.5s infinite;">NEW</span>' : '';
 
               let liTracker = document.createElement('li'); 
@@ -549,8 +556,6 @@
               liTracker.onclick = function() { 
                   document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
                   this.classList.add('active-item'); 
-                  
-                  // 🌟 FIX: ఇక్కడే ఇందాక తప్పు జరిగింది, ఇప్పుడు సపరేట్ ఫైల్ కి పక్కాగా లింక్ చేశాను! 🌟
                   loadReport('E-STAMPING', 'eStamp_Serial_Search', 'Serial Tracker'); 
               }; 
               list.appendChild(liTracker);
@@ -609,8 +614,10 @@
       else if (moduleName === "E-STAMPING" && reportId === "DenominationReport") iframeSrc = "DenominationReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "Spoiled Report") iframeSrc = "VleSpoiledReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "VLE Performance Report") iframeSrc = "VLE_Performance_Report.html";
-      // 🌟 ఇక్కడ ఆ సపరేట్ ఫైల్ ని లింక్ చేశాను 🌟
       else if (moduleName === "E-STAMPING" && reportId === "eStamp_Serial_Search") iframeSrc = "eStamp_Serial_Search.html";
+      
+      // 🌟 ఇక్కడ ఆ కొత్త ఫార్మ్ HTML కి లింక్ కనెక్ట్ చేశాను 🌟
+      else if (moduleName === "E-STAMPING" && reportId === "CentreInspection") iframeSrc = "eStamping_Inspection.html";
       
       else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
       else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
@@ -756,7 +763,11 @@
         }).catch(err => { btn.innerHTML = "Update Password <i class='fa-solid fa-arrow-right ms-2'></i>"; btn.disabled = false; alert("❌ Network Error. Please check your connection."); });
     }
 
+    // 🌟 కొత్త ఫార్మ్ కి కూడా NEW బ్యాడ్జ్ వచ్చేలా సెట్ చేశాను 🌟
     function getBadgeHtml(reportName) {
+        if (reportName === "Centre Inspection Form") {
+            return '<span class="new-badge">NEW</span>';
+        }
         var launchDate = new Date("2026-07-05"); var today = new Date(); var diff = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
         if (reportName === "VLE Performance Report" && diff >= 0 && diff <= 7) { return '<span class="new-badge">NEW</span>'; }
         return '';
