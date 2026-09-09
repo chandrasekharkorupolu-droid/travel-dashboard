@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centre Inspection Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; margin: 0; padding: 0; }
+        #webFormUI { padding: 20px 10px; max-width: 900px; margin: 0 auto; background: #f1f5f9; }
+        
+        .page-header-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+        .page-header-container img { height: 55px; width: auto; max-width: 100px; object-fit: contain; }
+        .page-header-text { text-align: center; }
+        
+        .page-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; color: #1e3a8a; margin: 0 0 5px 0; }
+        .page-subtitle { font-size: 13px; color: #64748b; font-weight: 500; margin: 0; }
+        .form-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .card-title { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
+        .card-title i { color: #2563eb; }
+        .form-label { font-size: 12px; font-weight: 800; color: #475569; margin-bottom: 5px; }
+        .form-control, .form-select { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
+        .form-control[readonly] { background-color: #f1f5f9; color: #64748b; border-style: dashed; }
+        textarea.form-control { min-height: 60px; }
+        .btn-group .btn { font-weight: 700; font-size: 12px; padding: 6px 10px; }
+        .check-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; }
+        .check-label { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0;}
+        .sno-badge { background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-size: 11px; font-weight: 800; }
+        .btn-fetch { background: #2563eb; color: white; font-weight: 800; font-size: 13px; border-radius: 0 8px 8px 0; border: none; padding: 0 15px; transition: 0.2s; }
+        .btn-fetch:hover { background: #1d4ed8; color: white; }
+        .submit-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; }
+        .submit-btn:hover { background: #059669; color: white; }
+        .spinner-border { display: none; width: 1rem; height: 1rem; border-width: 0.15em; }
+
+        /* =========================================================
+           PREVIEW & OFFICIAL PRINT TEMPLATE STYLES
+           ========================================================= */
+        #previewContainer { display: none; background: #525659; min-height: 100vh; padding-bottom: 40px; }
+        #previewActionBar { display: flex; justify-content: center; gap: 15px; padding: 15px; background: #1e3a8a; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        .print-paper-wrapper { background: white; margin: 20px auto; max-width: 780px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        #officialPrintSection { 
+            padding: 20px 25px; background: white;
+            font-family: Arial, sans-serif !important; color: #000; width: 100%; box-sizing: border-box; 
+        }
+        
+        .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 8px; }
+        .print-header img { height: 45px; width: auto; max-width: 100px; object-fit: contain; }
+        .print-title { font-size: 16px; font-weight: bold; text-align: center; margin: 0; text-transform: uppercase; line-height: 1.3; }
+        
+        .print-table-basic { width: 100%; font-size: 12px; margin-bottom: 10px; line-height: 1.6; border: none; }
+        .print-table-basic td { padding: 2px 0; }
+        .print-table-basic td:nth-child(1) { width: 130px; font-weight: bold; }
+        .print-table-basic td:nth-child(2) { width: 15px; text-align: center; }
+        .print-table-basic td:nth-child(3) { border-bottom: 1px dashed #000; padding-left: 5px; }
+        
+        .print-table-grid { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+        .print-table-grid th, .print-table-grid td { border: 1px solid #000; padding: 7px; }
+        .print-table-grid th { text-align: center; font-weight: bold; background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        .print-footer { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 20px; }
+        .print-footer p { font-size: 12px; margin: 5px 0; width: 45%; font-weight: bold; }
+        .print-footer span { font-weight: normal; margin-left: 5px; border-bottom: 1px dashed #000; display: inline-block; min-width: 140px; }
+        
+        .print-signatures { display: flex; justify-content: space-between; margin-top: 30px; font-size: 12px; font-weight: bold; }
+
+        /* 🌟 MOBILE RESPONSIVE CSS 🌟 */
+        @media (max-width: 768px) {
+            .page-header-container { flex-direction: column; text-align: center; gap: 10px; }
+            .page-header-container img { height: 45px; }
+            .check-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .btn-group { width: 100%; }
+            .btn-group .btn { width: 50%; padding: 10px; font-size: 14px; }
+            .print-paper-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0; margin: 10px; }
+            #officialPrintSection { min-width: 700px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 🌟 WEB FORM 🌟 -->
+    <div id="webFormUI">
+        <div class="page-header-container">
+            <img src="Logo.PNG" alt="CSC Logo">
+            <div class="page-header-text">
+                <h2 class="page-title">Centre Inspection Form</h2>
+                <p class="page-subtitle">Auto-fetch enabled physical verification details.</p>
+            </div>
+            <img src="Digitalindia.PNG" alt="Digital India Logo"> 
+        </div>
+
+        <form id="inspectionForm">
+            <div class="form-card">
+                <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> VLE Details</div>
+                <div class="row g-2">
+                    <div class="col-md-12 mb-2">
+                        <label class="form-label text-primary">Enter CSC ID to Fetch Data <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="cscId" placeholder="12-digit CSC ID" required maxlength="12" style="border-radius: 8px 0 0 8px;">
+                            <button class="btn btn-fetch" type="button" onclick="fetchVleData()" id="fetchBtn">
+                                <i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch
+                            </button>
+                        </div>
+                        <small id="fetchStatus" class="text-success fw-bold mt-1" style="display:none; font-size:12px;"></small>
+                    </div>
+
+                    <div class="col-md-4"><label class="form-label">e-Stamping ID</label><input type="text" class="form-control" id="eStampId" placeholder="Enter ID" required></div>
+                    <div class="col-md-8"><label class="form-label">VLE Name</label><input type="text" class="form-control" id="vleName" placeholder="VLE Name" required></div>
+                    <div class="col-md-4"><label class="form-label">District</label><input type="text" class="form-control" id="district" placeholder="District" required></div>
+                    <div class="col-md-4"><label class="form-label">Mandal</label><input type="text" class="form-control" id="mandal" placeholder="Mandal"></div>
+                    <div class="col-md-4"><label class="form-label">Centre Address</label><textarea class="form-control" id="address" placeholder="Enter Address" style="min-height: 35px;"></textarea></div>
+                </div>
+            </div>
+
+            <div class="form-card" style="background: #f8fafc; border-color: #cbd5e1;">
+                <div class="card-title"><i class="fa-solid fa-boxes-stacked text-orange"></i> Stock Details (From Database)</div>
+                <div class="row g-2">
+                    <div class="col-md-4"><label class="form-label">Total e-Stamping Stock Received</label><input type="number" class="form-control fw-bold text-primary" id="stockReceived" readonly required></div>
+                    <div class="col-md-4"><label class="form-label">Total e-Stamping Papers Sold</label><input type="number" class="form-control fw-bold text-danger" id="stockSold" readonly required></div>
+                    <div class="col-md-4"><label class="form-label">Currently Available e-Stamping Paper Stock</label><input type="number" class="form-control fw-bold text-success" id="stockAvailable" readonly required></div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="card-title"><i class="fa-solid fa-list-check"></i> Parameters</div>
+                <div class="row g-2">
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">1</span> Does the VLE maintaining In-ward Register ? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param1" id="p1_yes" value="Yes" required><label class="btn btn-outline-success" for="p1_yes">Yes</label><input type="radio" class="btn-check" name="param1" id="p1_no" value="No"><label class="btn btn-outline-danger" for="p1_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">2</span> Does the VLE maintaining e-Stamping sale Register ? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param2" id="p2_yes" value="Yes" required><label class="btn btn-outline-success" for="p2_yes">Yes</label><input type="radio" class="btn-check" name="param2" id="p2_no" value="No"><label class="btn btn-outline-danger" for="p2_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">3</span> Does the IEC and banners Displayed? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param3" id="p3_yes" value="Yes" required><label class="btn btn-outline-success" for="p3_yes">Yes</label><input type="radio" class="btn-check" name="param3" id="p3_no" value="No"><label class="btn btn-outline-danger" for="p3_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">4</span> Does the VLE Overcharging from the Customers? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param4" id="p4_yes" value="Yes" required><label class="btn btn-outline-danger" for="p4_yes">Yes</label><input type="radio" class="btn-check" name="param4" id="p4_no" value="No"><label class="btn btn-outline-success" for="p4_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">5</span> Does the VLE involving in any tampering activities? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param5" id="p5_yes" value="Yes" required><label class="btn btn-outline-danger" for="p5_yes">Yes</label><input type="radio" class="btn-check" name="param5" id="p5_no" value="No"><label class="btn btn-outline-success" for="p5_no">No</label></div></div></div>
+                </div>
+            </div>
+
+            <div class="form-card mb-0">
+                <div class="row g-2">
+                    <div class="col-12"><label class="form-label">10. Any other Remarks?</label><textarea class="form-control" id="remarks" placeholder="Type observations..."></textarea></div>
+                    
+                    <div class="col-md-4"><label class="form-label">Inspection Done By</label><input type="text" class="form-control" id="officerName" placeholder="Enter Your Name" required></div>
+                    <div class="col-md-4"><label class="form-label">Designation</label><input type="text" class="form-control" id="designation" required></div>
+                    <div class="col-md-4"><label class="form-label">Date of Inspection</label><input type="text" class="form-control" id="inspectionDate" required></div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="spinner-border spinner-border-sm" id="btnLoader"></span>
+                <span id="btnText">Save & Preview Official Report</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- 🌟 PREVIEW CONTAINER 🌟 -->
+    <div id="previewContainer">
+        <!-- 🌟 DOWNLOAD ACTION BAR 🌟 -->
+        <div id="previewActionBar">
+            <button onclick="downloadPDFNow()" class="btn btn-success fw-bold px-4" id="actualDownloadBtn">
+                <i class="fa-solid fa-download me-2"></i> Download PDF
+            </button>
+            <button onclick="closePreview()" class="btn btn-danger fw-bold px-4">
+                <i class="fa-solid fa-xmark me-2"></i> Close
+            </button>
+        </div>
+
+        <div class="print-paper-wrapper">
+            <div id="officialPrintSection">
+                <div class="print-header">
+                    <img src="Logo.PNG" alt="CSC Logo">
+                    <h3 class="print-title">CSC VLE'S E-STAMPING<br>CENTRE INSPECTION FORM</h3>
+                    <img src="Digitalindia.PNG" alt="Digital India Logo"> 
+                </div>
+                <table class="print-table-basic">
+                    <tr><td>VLE Name</td><td>:</td><td id="pr_name"></td></tr>
+                    <tr><td>CSC ID</td><td>:</td><td id="pr_csc"></td></tr>
+                    <tr><td>e-Stamping ID</td><td>:</td><td id="pr_estamp"></td></tr>
+                    <tr><td>District</td><td>:</td><td id="pr_dist"></td></tr>
+                    <tr><td>Mandal</td><td>:</td><td id="pr_man"></td></tr>
+                    <tr><td style="vertical-align:top;">Centre Address</td><td style="vertical-align:top;">:</td><td id="pr_addr" style="height: 35px; vertical-align:top;"></td></tr>
+                </table>
+                <table class="print-table-grid">
+                    <thead>
+                        <tr><th style="width: 8%;">SNO</th><th style="width: 72%;">Parameter</th><th style="width: 20%;">(Yes/No)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td align="center">1</td><td>Does the VLE maintaining In-ward Register ?</td><td align="center" id="pr_p1"></td></tr>
+                        <tr><td align="center">2</td><td>Does the VLE maintaining e-Stamping sale Register ?</td><td align="center" id="pr_p2"></td></tr>
+                        <tr><td align="center">3</td><td>Does the IEC and banners Displayed?</td><td align="center" id="pr_p3"></td></tr>
+                        <tr><td align="center">4</td><td>Does the VLE Overcharging from the Customers?</td><td align="center" id="pr_p4"></td></tr>
+                        <tr><td align="center">5</td><td>Does the VLE involving in any tampering activities?</td><td align="center" id="pr_p5"></td></tr>
+                        <tr><td align="center">6</td><td style="font-weight: bold;">Stock Details:</td><td align="center"></td></tr>
+                        <tr><td align="center">7</td><td>Total e-Stamping Stock Received</td><td align="center" id="pr_recv"></td></tr>
+                        <tr><td align="center">8</td><td>Total e-Stamping Papers Sold</td><td align="center" id="pr_sold"></td></tr>
+                        <tr><td align="center">9</td><td>Currently Available e-Stamping Paper Stock</td><td align="center" id="pr_avail"></td></tr>
+                        <tr>
+                            <td align="center">10</td>
+                            <td style="height: 40px;">Any other Remarks?</td>
+                            <td align="center" id="pr_rem" style="font-weight:bold; color:#000;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="print-footer">
+                    <p>Inspection Done By:<span id="pr_off1"></span></p>
+                    <p>CSC official name:<span id="pr_off2"></span></p>
+                    <p>Designation:<span id="pr_desig"></span></p>
+                    <p>Date of Inspection:<span id="pr_date"></span></p>
+                </div>
+                <div class="print-signatures">
+                    <div>Signature: _______________________</div>
+                    <div style="text-align: center;"><br>CSC VLE Signature</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="border-radius: 16px; text-align: center; padding: 20px;">
+          <div class="modal-body">
+            <i class="fa-solid fa-file-pdf text-success" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h5 style="font-weight: 800;">Downloaded Successfully!</h5>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">మీ ఫైల్ పక్కాగా CSC ID తోనే సేవ్ అయ్యింది!</p>
+            <button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal" onclick="resetForm()">Start New Form</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 🌟 మీ లింక్ ఇక్కడే పర్మినెంట్ గా ఉంది 🌟
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        
+        let currentCscId = "Report"; 
+
+        function getFormattedDate() {
+            const today = new Date(); const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1; let dd = today.getDate();
+            if (dd < 10) dd = '0' + dd; if (mm < 10) mm = '0' + mm;
+            return dd + '/' + mm + '/' + yyyy;
+        }
+
+        window.onload = function() {
+            var storedName = localStorage.getItem("userName") || "";
+            var storedDesig = localStorage.getItem("userDesignation") || "";
+            
+            if(storedDesig.toUpperCase().indexOf("VLE") !== -1 || storedDesig === "") {
+                document.getElementById('officerName').value = storedName; 
+                document.getElementById('designation').value = "District Manager"; 
+            } else {
+                document.getElementById('officerName').value = storedName;
+                document.getElementById('designation').value = storedDesig;
+            }
+            document.getElementById('inspectionDate').value = getFormattedDate();
+        };
+
+        function fetchVleData() {
+            const cscIdInput = document.getElementById("cscId").value.trim();
+            const fetchBtn = document.getElementById("fetchBtn");
+            const statusText = document.getElementById("fetchStatus");
+
+            if(cscIdInput.length !== 12) { alert("Please enter a valid 12-digit CSC ID!"); return; }
+
+            fetchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Fetching...';
+            fetchBtn.disabled = true;
+            statusText.style.display = "none";
+
+            const callbackName = 'fetchCallback_' + new Date().getTime();
+            const url = SCRIPT_URL + "?action=fetchEstampData&cscId=" + cscIdInput + "&callback=" + callbackName;
+
+            let isTimeout = false;
+            const timeoutTimer = setTimeout(() => {
+                isTimeout = true;
+                statusText.innerText = "❌ Network Error: లింక్ పనిచేయట్లేదు.";
+                statusText.className = "text-danger fw-bold mt-1";
+                statusText.style.display = "block";
+                fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
+                fetchBtn.disabled = false;
+                delete window[callbackName];
+            }, 15000); 
+
+            window[callbackName] = function(response) {
+                if(isTimeout) return;
+                clearTimeout(timeoutTimer);
+
+                if(response.success && response.data) {
+                    const data = response.data;
+                    document.getElementById("eStampId").value = data.eStampId;
+                    document.getElementById("vleName").value = data.name;
+                    document.getElementById("district").value = data.dist;
+                    document.getElementById("mandal").value = data.mandal;
+                    document.getElementById("address").value = data.addr;
+                    document.getElementById("stockReceived").value = data.recv;
+                    document.getElementById("stockSold").value = data.sold;
+                    document.getElementById("stockAvailable").value = data.avail;
+                    
+                    statusText.innerText = "✅ Data Fetched Successfully!";
+                    statusText.className = "text-success fw-bold mt-1";
+                } else {
+                    ["eStampId", "vleName", "district", "mandal", "address", "stockReceived", "stockSold", "stockAvailable"].forEach(id => {
+                        if(id !== "stockReceived" && id !== "stockSold" && id !== "stockAvailable") document.getElementById(id).value = "";
+                        else document.getElementById(id).value = "0";
+                    });
+                    statusText.innerText = "⚠️ " + (response.message || "CSC ID Not Found in Database!");
+                    statusText.className = "text-danger fw-bold mt-1";
+                }
+                statusText.style.display = "block";
+                fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
+                fetchBtn.disabled = false;
+                delete window[callbackName];
+            };
+
+            var script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() {
+                if(isTimeout) return;
+                clearTimeout(timeoutTimer);
+                statusText.innerText = "❌ Script Error: Web App లింక్ తప్పుగా ఉంది.";
+                statusText.className = "text-danger fw-bold mt-1";
+                statusText.style.display = "block";
+                fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
+                fetchBtn.disabled = false;
+            };
+            document.body.appendChild(script);
+        }
+
+        function getRadioValue(name) {
+            var radios = document.getElementsByName(name);
+            for (var i = 0; i < radios.length; i++) { if (radios[i].checked) return radios[i].value; }
+            return "";
+        }
+
+        document.getElementById("inspectionForm").addEventListener("submit", function(event) {
+            event.preventDefault(); 
+            
+            document.getElementById("btnText").innerText = "Saving Data to Server...";
+            document.getElementById("btnLoader").style.display = "inline-block";
+            document.getElementById("submitBtn").disabled = true;
+
+            const formData = {
+                cscId: document.getElementById('cscId').value, eStampId: document.getElementById('eStampId').value,
+                vleName: document.getElementById('vleName').value, district: document.getElementById('district').value,
+                mandal: document.getElementById('mandal').value, address: document.getElementById('address').value,
+                param1: getRadioValue("param1"), param2: getRadioValue("param2"), param3: getRadioValue("param3"),
+                param4: getRadioValue("param4"), param5: getRadioValue("param5"),
+                stockReceived: document.getElementById('stockReceived').value,
+                stockSold: document.getElementById('stockSold').value,
+                stockAvailable: document.getElementById('stockAvailable').value,
+                remarks: document.getElementById('remarks').value,
+                officerName: document.getElementById('officerName').value,
+                designation: document.getElementById('designation').value,
+                inspectionDate: document.getElementById('inspectionDate').value
+            };
+            
+            currentCscId = formData.cscId; 
+
+            const callbackName = 'saveCallback_' + new Date().getTime();
+            const encodedData = encodeURIComponent(JSON.stringify(formData));
+            const url = SCRIPT_URL + "?action=saveInspection&data=" + encodedData + "&callback=" + callbackName;
+
+            let saveTimeout = false;
+            const saveTimer = setTimeout(() => {
+                saveTimeout = true;
+                alert("❌ సర్వర్ కనెక్ట్ అవ్వట్లేదు (Network Timeout). దయచేసి మళ్ళీ ట్రై చేయండి.");
+                document.getElementById("btnText").innerText = "Save & Preview Official Report";
+                document.getElementById("btnLoader").style.display = "none";
+                document.getElementById("submitBtn").disabled = false;
+                delete window[callbackName];
+            }, 15000);
+
+            window[callbackName] = function(response) {
+                if(saveTimeout) return;
+                clearTimeout(saveTimer);
+
+                if(response.success) {
+                    showPreview(formData); 
+                } else {
+                    alert("Failed to save data. " + response.message);
+                    document.getElementById("btnText").innerText = "Save & Preview Official Report";
+                    document.getElementById("btnLoader").style.display = "none";
+                    document.getElementById("submitBtn").disabled = false;
+                }
+                delete window[callbackName];
+            };
+
+            var script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() {
+                if(saveTimeout) return;
+                clearTimeout(saveTimer);
+                alert("❌ Script Error: గూగుల్ షీట్‌కి కనెక్ట్ కాలేకపోయాం. దయచేసి ఇంటర్నెట్/లింక్ చెక్ చేయండి.");
+                document.getElementById("btnText").innerText = "Save & Preview Official Report";
+                document.getElementById("btnLoader").style.display = "none";
+                document.getElementById("submitBtn").disabled = false;
+            };
+            document.body.appendChild(script);
+        });
+
+        function showPreview(formData) {
+            document.getElementById("pr_csc").innerText = formData.cscId;
+            document.getElementById("pr_estamp").innerText = formData.eStampId;
+            document.getElementById("pr_name").innerText = formData.vleName;
+            document.getElementById("pr_dist").innerText = formData.district;
+            document.getElementById("pr_man").innerText = formData.mandal;
+            document.getElementById("pr_addr").innerText = formData.address;
+            
+            document.getElementById("pr_p1").innerText = formData.param1;
+            document.getElementById("pr_p2").innerText = formData.param2;
+            document.getElementById("pr_p3").innerText = formData.param3;
+            document.getElementById("pr_p4").innerText = formData.param4;
+            document.getElementById("pr_p5").innerText = formData.param5;
+
+            document.getElementById("pr_recv").innerText = formData.stockReceived;
+            document.getElementById("pr_sold").innerText = formData.stockSold;
+            document.getElementById("pr_avail").innerText = formData.stockAvailable;
+            document.getElementById("pr_rem").innerText = formData.remarks ? formData.remarks : "-";
+
+            document.getElementById("pr_off1").innerText = " " + formData.officerName;
+            document.getElementById("pr_off2").innerText = " " + formData.officerName;
+            document.getElementById("pr_desig").innerText = " " + formData.designation;
+            document.getElementById("pr_date").innerText = " " + formData.inspectionDate;
+
+            document.getElementById("webFormUI").style.display = "none";
+            document.getElementById("previewContainer").style.display = "block";
+            window.scrollTo(0, 0);
+        }
+
+        // 🌟 NATIVE PRINT TRICK TO FORCE EXACT FILE NAME 🌟
+        function downloadPDFNow() {
+            var btn = document.getElementById("actualDownloadBtn");
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Preparing...';
+            btn.disabled = true;
+
+            // ఫైల్ పేరు కరెక్ట్ గా CSC ID తో వచ్చేలా పేరు సిద్ధం చేస్తున్నాం
+            var pdfName = currentCscId + "_Inspection_Report"; 
+            var printContent = document.getElementById("officialPrintSection").outerHTML;
+
+            // 1. కొత్త విండో ఓపెన్ చేసి, దానికి మన CSC ID పేరు పెడుతున్నాం (దీని వల్లే బ్రౌజర్ ఆ పేరుతో సేవ్ చేస్తుంది)
+            var printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert("దయచేసి మీ బ్రౌజర్‌లో 'Pop-ups' ని Allow చేయండి.");
+                btn.innerHTML = '<i class="fa-solid fa-download me-2"></i> Download PDF';
+                btn.disabled = false;
+                return;
+            }
+
+            printWindow.document.write('<!DOCTYPE html><html><head>');
+            printWindow.document.write('<title>' + pdfName + '</title>'); // 🌟 ఇదే అసలైన మేజిక్ 🌟
+            printWindow.document.write('<style>');
+            printWindow.document.write(`
+                body { font-family: Arial, sans-serif; color: #000; padding: 20px; }
+                #officialPrintSection { width: 100%; max-width: 800px; margin: 0 auto; }
+                .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                .print-header img { height: 50px; max-width: 100px; object-fit: contain; }
+                .print-title { font-size: 18px; font-weight: bold; text-align: center; margin: 0; text-transform: uppercase; line-height: 1.3; }
+                .print-table-basic { width: 100%; font-size: 13px; margin-bottom: 15px; line-height: 1.6; border: none; }
+                .print-table-basic td { padding: 3px 0; }
+                .print-table-basic td:nth-child(1) { width: 150px; font-weight: bold; }
+                .print-table-basic td:nth-child(2) { width: 15px; text-align: center; }
+                .print-table-basic td:nth-child(3) { border-bottom: 1px dashed #000; padding-left: 5px; }
+                .print-table-grid { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px; }
+                .print-table-grid th, .print-table-grid td { border: 1px solid #000; padding: 8px; }
+                .print-table-grid th { text-align: center; font-weight: bold; background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .print-footer { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 25px; }
+                .print-footer p { font-size: 13px; margin: 5px 0; width: 45%; font-weight: bold; }
+                .print-footer span { font-weight: normal; margin-left: 5px; border-bottom: 1px dashed #000; display: inline-block; min-width: 150px; }
+                .print-signatures { display: flex; justify-content: space-between; margin-top: 40px; font-size: 13px; font-weight: bold; }
+                @media print { @page { size: A4; margin: 0.5in; } body { padding: 0; margin: 0; } }
+            `);
+            printWindow.document.write('</style></head><body>');
+            printWindow.document.write(printContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+
+            // ఇమేజ్ లు లోడ్ అవ్వడానికి ఒక్క అర సెకను ఆగి అప్పుడు ప్రింట్ ఇస్తాం
+            setTimeout(function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close(); // ప్రింట్ అవ్వగానే పాత టాబ్ మూసుకుపోతుంది
+
+                btn.innerHTML = '<i class="fa-solid fa-download me-2"></i> Download PDF';
+                btn.disabled = false;
+
+                var myModal = new bootstrap.Modal(document.getElementById('successModal'));
+                myModal.show();
+            }, 500);
+        }
+
+        function closePreview() {
+            document.getElementById("previewContainer").style.display = "none";
+            document.getElementById("webFormUI").style.display = "block";
+            
+            document.getElementById("btnText").innerText = "Save & Preview Official Report";
+            document.getElementById("btnLoader").style.display = "none";
+            document.getElementById("submitBtn").disabled = false;
+            
+            document.getElementById("inspectionForm").reset();
+            document.getElementById("fetchStatus").style.display = "none";
+            window.scrollTo(0, 0); 
+        }
+    </script>
+</body>
+</html>
