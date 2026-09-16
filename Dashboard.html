@@ -260,44 +260,56 @@
         .main-content { padding: 10px; height: auto; min-height: calc(100vh - 120px); flex-direction: column; }
         .hero-panel { padding: 20px; text-align: center; min-height: auto; }
         .hero-left h1 { font-size: 20px; white-space: normal; }
-        .metrics-row { grid-template-columns: repeat(2, 1fr); } 
+        
+        /* 🌟 METRICS ROW - FORCE 2 COLUMNS ON MOBILE (LIKE BUTTONS) 🌟 */
+        .metrics-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; } 
+        .metric-card { padding: 12px; }
+        .mc-top { margin-bottom: 5px; }
+        .mc-val { font-size: 18px; }
+        .mc-title { font-size: 10px; }
+        
         .travel-network-wrapper { transform: scale(0.7); margin: -30px auto; }
         .alert-popup { width: 100%; }
         
-        /* 🌟 NEW: SIDEBAR OPTIONS AS GRID BUTTONS ON MOBILE 🌟 */
+        /* 🌟 SIDEBAR OPTIONS AS GRID BUTTONS ON MOBILE 🌟 */
         .sidebar { width: 100%; min-width: 100%; max-height: none; margin-bottom: 15px; background: transparent; border: none; box-shadow: none; overflow: visible;}
-        .sidebar-header { text-align: center; padding: 12px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; margin-bottom: 12px;}
-        .report-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0; }
+        .sidebar-header { text-align: center; padding: 12px; background: var(--theme-color); color: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; margin-bottom: 15px; font-size: 13px; font-weight: 900;}
+        
+        /* IMPORTANT: Converting vertical list to grid of buttons */
+        .report-list { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; padding: 0 !important; }
         .report-list li {
-            margin: 0;
-            padding: 15px 10px;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            box-shadow: 0 4px 0 #e2e8f0;
-            flex-direction: column;
-            text-align: center;
-            align-items: center;
-            justify-content: center;
-            white-space: normal;
-            gap: 8px;
-            font-size: 12px;
-            transition: 0.1s;
+            display: flex !important;
+            flex-direction: column !important;
+            margin: 0 !important;
+            padding: 15px 10px !important;
+            background: #ffffff !important;
+            border: 2px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 0 #cbd5e1 !important;
+            text-align: center !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: normal !important;
+            gap: 8px !important;
+            font-size: 12px !important;
+            font-weight: 800 !important;
+            transition: 0.1s !important;
         }
-        .report-list li .menu-icon { font-size: 22px; margin: 0; }
+        .report-list li .menu-icon { font-size: 24px !important; margin: 0 !important; }
         .report-list li:active { transform: translateY(4px) !important; box-shadow: 0 0 0 transparent !important; }
         .report-list li.active-item { 
-            border-color: var(--theme-color); 
-            background: #f8fafc;
-            box-shadow: 0 0 0 1px var(--theme-color), 0 4px 0 var(--theme-color); 
+            border-color: var(--theme-color) !important; 
+            background: #f8fafc !important;
+            box-shadow: 0 4px 0 var(--theme-color) !important; 
+            color: var(--theme-color) !important;
         }
     }
     @media (max-width: 480px) {
         .nav-btn { flex: 1 1 calc(45% - 10px); } 
-        .metrics-row { grid-template-columns: 1fr; } 
+        /* Ensure both metrics and sidebar lists stay 2 columns even on very small screens */
+        .metrics-row { grid-template-columns: repeat(2, 1fr) !important; } 
+        .report-list { grid-template-columns: repeat(2, 1fr) !important; } 
         .travel-network-wrapper { display: none; } 
-        /* 480px లో కూడా 2 బటన్స్ పక్కపక్కనే వచ్చేలా డిజైన్ */
-        .report-list { grid-template-columns: repeat(2, 1fr); } 
     }
     /* 🌟🌟🌟 MOBILE RESPONSIVENESS CSS END 🌟🌟🌟 */
   </style>
@@ -560,10 +572,12 @@
             let metricsRow = document.getElementById('dashboardMetricsRow');
             let bottomRow = document.getElementById('dashboardBottomRow');
             let heroAlerts = document.getElementById('heroRightAlerts'); // High Priority alerts hide
+            let alertPopup = document.getElementById('alertPopup'); // Double security hide
             
             if (metricsRow) metricsRow.style.display = 'none';
             if (bottomRow) bottomRow.style.display = 'none';
             if (heroAlerts) heroAlerts.style.display = 'none';
+            if (alertPopup) alertPopup.style.display = 'none';
         }
     }
 
@@ -907,6 +921,7 @@
       else if (moduleName === "E-STAMPING" && reportId === "Submit Daily Sales") iframeSrc = "VleSubmitSales.html";
       else if (moduleName === "E-STAMPING" && reportId === "Report Spoiled Stamp") iframeSrc = "VleSpoiledReport.html";
       else if (moduleName === "E-STAMPING" && reportId === "Track Request Status") iframeSrc = "VleTrackStatus.html";
+
 
       else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
       else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
