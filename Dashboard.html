@@ -242,28 +242,46 @@
         .hero-panel { flex-direction: column; text-align: center; gap: 30px; } 
         .hero-center { position: relative; left: 0; top: 0; transform: none; margin: 20px 0; } 
         .hero-right { width: 100%; max-width: 100%; }
-        .metrics-row { grid-template-columns: repeat(2, 1fr); } 
+        .metrics-row { grid-template-columns: repeat(3, 1fr); } 
         .bottom-row { grid-template-columns: 1fr; } 
         .tasks-card { grid-column: span 1; } 
-        .nav-menu { display: flex; flex-wrap: wrap !important; justify-content: center; } 
     }
     @media (max-width: 768px) {
-        .top-header { flex-direction: column; align-items: flex-start; gap: 12px; padding: 10px; }
-        .brand-section { width: 100%; justify-content: space-between; }
-        .nav-menu { width: 100%; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
-        .user-actions { width: 100%; justify-content: space-between; }
+        .top-header { flex-direction: column; align-items: center; gap: 15px; padding: 15px 10px; }
+        .brand-section { width: 100%; justify-content: center; }
+        
+        /* 🌟 NAVIGATION BUTTONS WRAP LOGIC (స్క్రోల్ పోవడానికి) 🌟 */
+        .nav-menu { 
+            width: 100%; 
+            flex-wrap: wrap !important; 
+            justify-content: center; 
+            overflow-x: hidden; 
+            padding: 0;
+            gap: 8px;
+        }
+        .nav-btn { 
+            flex: 1 1 calc(30% - 10px); /* 3 బటన్స్ ఒక లైన్ లో */
+            justify-content: center; 
+            font-size: 11px; 
+            padding: 10px 5px; 
+            text-align: center;
+        }
+        .menu-divider { display: none; } /* మొబైల్ లో లైన్ అవసరం లేదు */
+
+        .user-actions { width: 100%; justify-content: center; flex-wrap: wrap; gap: 15px;}
+        
         .main-content { padding: 10px; height: auto; min-height: calc(100vh - 120px); flex-direction: column; }
         .hero-panel { padding: 20px; text-align: center; min-height: auto; }
         .hero-left h1 { font-size: 20px; white-space: normal; }
-        .metrics-row { grid-template-columns: 1fr 1fr; }
-        .bottom-row { grid-template-columns: 1fr; }
-        .travel-network-wrapper { transform: scale(0.8); margin: 0 auto; }
+        .metrics-row { grid-template-columns: repeat(2, 1fr); } 
+        .travel-network-wrapper { transform: scale(0.7); margin: -30px auto; }
         .alert-popup { width: 100%; }
         .sidebar { width: 100%; min-width: 100%; max-height: 250px; margin-bottom: 15px; }
     }
     @media (max-width: 480px) {
-        .metrics-row { grid-template-columns: 1fr; }
-        .travel-network-wrapper { display: none; } /* Hide complex animation on tiny screens to save space */
+        .nav-btn { flex: 1 1 calc(45% - 10px); } /* చిన్న ఫోన్స్ లో 2 బటన్స్ ఒక లైన్ లో */
+        .metrics-row { grid-template-columns: 1fr; } 
+        .travel-network-wrapper { display: none; } 
     }
     /* 🌟🌟🌟 MOBILE RESPONSIVENESS CSS END 🌟🌟🌟 */
   </style>
@@ -526,12 +544,10 @@
             let metricsRow = document.getElementById('dashboardMetricsRow');
             let bottomRow = document.getElementById('dashboardBottomRow');
             let heroAlerts = document.getElementById('heroRightAlerts'); // High Priority alerts hide
-            let alertPopup = document.getElementById('alertPopup'); // Double security hide
             
             if (metricsRow) metricsRow.style.display = 'none';
             if (bottomRow) bottomRow.style.display = 'none';
             if (heroAlerts) heroAlerts.style.display = 'none';
-            if (alertPopup) alertPopup.style.display = 'none';
         }
     }
 
@@ -871,10 +887,10 @@
       else if (moduleName === "E-STAMPING" && reportId === "Centre Inspection Form") iframeSrc = "eStamping_Inspection.html";
       
       // 🌟 VLE E-STAMPING LINKS (ఈ పేర్లతో HTML ఫైల్స్ క్రియేట్ చేయాలి) 🌟
-     else if (moduleName === "E-STAMPING" && reportId === "Request New Stock") iframeSrc = "VleRequestStock.html";
-      else if (moduleName === "E-STAMPING" && reportId === "Submit Daily Sales") iframeSrc = "VleSubmitSales.html";
-      else if (moduleName === "E-STAMPING" && reportId === "Report Spoiled Stamp") iframeSrc = "VleSpoiledReport.html";
-      else if (moduleName === "E-STAMPING" && reportId === "Track Request Status") iframeSrc = "VleTrackStatus.html";
+      else if (moduleName === "E-STAMPING" && reportId === "Request New Stock") iframeSrc = "VLE_RequestStock.html";
+      else if (moduleName === "E-STAMPING" && reportId === "Submit Daily Sales") iframeSrc = "VLE_DailySales.html";
+      else if (moduleName === "E-STAMPING" && reportId === "Report Spoiled Stamp") iframeSrc = "VLE_SpoiledStamp.html";
+      else if (moduleName === "E-STAMPING" && reportId === "Track Request Status") iframeSrc = "VLE_TrackRequest.html";
 
       else if (moduleName === "IRCTC" && reportId === "VLE Performance") iframeSrc = "IRCTC_VLE_Performance.html";
       else if (moduleName === "IRCTC" && reportId === "Performance Report") iframeSrc = "IRCTC_Performance_Report.html";
@@ -945,8 +961,6 @@
       // 🌟 VLE HELPDESK LINKS (ఈ పేర్లతో HTML ఫైల్స్ క్రియేట్ చేయాలి) 🌟
       else if (moduleName === "HELPDESK" && reportId === "Raise a Ticket") iframeSrc = "Helpdesk_RaiseTicket.html";
       else if (moduleName === "HELPDESK" && reportId === "Track Status") iframeSrc = "Helpdesk_TrackStatus.html";
-      else if (moduleName === "HELPDESK" && reportId === "User Manuals & Forms") iframeSrc = "vle_downloads.html";
-
 
       else if (moduleName === "ACTION CENTER") iframeSrc = "Action_Center.html";
 
