@@ -102,6 +102,9 @@
         .btn-promo { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 0 #047857; transition: 0.2s;}
         .btn-promo:active { transform: translateY(2px); box-shadow: 0 0 0 #047857; }
         
+        /* Disabled Promo Button Style */
+        .btn-promo-disabled { background-color: #e2e8f0; color: #94a3b8; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: not-allowed; }
+        
         .btn-amc-activate { background-color: #0f172a; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; margin-bottom: 5px; transition: 0.2s;}
         .btn-amc-activate:hover { background-color: #334155; }
         
@@ -159,7 +162,7 @@
             th, td { font-size: 10px !important; padding: 10px 5px !important; }
             .col-district, .th-dist { position: static !important; border-right: 1px solid #e2e8f0 !important; }
 
-            .btn-promo, .btn-amc-activate { font-size: 9px; padding: 6px 10px; }
+            .btn-promo, .btn-promo-disabled, .btn-amc-activate { font-size: 9px; padding: 6px 10px; }
             .amc-card, .amc-card-expired, .amc-card-pending { max-width: 100%; font-size: 9px; }
 
             .modal-content { width: 95%; padding: 20px 15px; }
@@ -615,10 +618,16 @@
                 if(searchQuery === "" && displayedRows >= 300) return;
 
                 let promoBtnId = `promo-btn-${index}`;
-                let promoBtnHtml = `<button id="${promoBtnId}" class="btn-promo" onclick="sendPromoWhatsApp('${row.cscid}', '${promoBtnId}')">💬 Send Promo</button>`;
+                let promoBtnHtml = "";
+                
+                // 🌟 KOTTA LOGIC: Hiding Promo Button if AMC is already Activated 🌟
+                if(isActivated) {
+                    promoBtnHtml = `<span style="color:#94a3b8; font-weight:700; font-size:11px;">Already Active ✅</span>`;
+                } else {
+                    promoBtnHtml = `<button id="${promoBtnId}" class="btn-promo" onclick="sendPromoWhatsApp('${row.cscid}', '${promoBtnId}')">💬 Send Promo</button>`;
+                }
 
                 let amcHtml = "";
-                
                 let btnDisabledStyle = isDM ? 'background-color:#cbd5e1; color:#64748b; cursor:not-allowed;' : '';
                 let btnDisabledAttr = isDM ? 'disabled title="Only SPOC/State Head can activate"' : '';
                 let onClickActivate = isDM ? '' : `onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')"`;
