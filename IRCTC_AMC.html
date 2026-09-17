@@ -311,6 +311,46 @@
             fetchSheetData(); 
         };
 
+        function parseCustomDate(dateVal) {
+            if (!dateVal || dateVal === '-' || String(dateVal).trim() === '') return new Date(NaN);
+            if (dateVal instanceof Date) return dateVal;
+
+            let str = String(dateVal).trim();
+
+            if (str.includes('T')) {
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) return d;
+            }
+
+            const monthMap = {
+                jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+            };
+
+            let parts = str.split(/[-/\s.]+/);
+            if (parts.length >= 3) {
+                let p1 = parseInt(parts[0], 10);
+                let p2Str = parts[1].toLowerCase().slice(0, 3);
+                let p3 = parseInt(parts[2], 10);
+
+                if (!isNaN(p1) && monthMap[p2Str] !== undefined && !isNaN(p3) && p3 > 1000) {
+                    return new Date(p3, monthMap[p2Str], p1);
+                }
+
+                let p2 = parseInt(parts[1], 10);
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p3 > 1000) {
+                    return new Date(p3, p2 - 1, p1);
+                }
+
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p1 > 1000) {
+                    return new Date(p1, p2 - 1, p3);
+                }
+            }
+
+            let fallback = new Date(str.replace(/-/g, ' '));
+            return fallback;
+        }
+
         async function fetchSheetData() {
             try {
                 let cachedData = sessionStorage.getItem("cscTravelData");
@@ -375,25 +415,32 @@
             let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
             let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
             let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
-            let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
+            let idxmob = cleanHeaders.findIndex(h => h === 'mobile' || h === 'mobileno');
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             
-            let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
-            let idx27 = cleanHeaders.findIndex(h => (h.includes('202627') || h.includes('2627') || h.includes('txns26')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
+            let fy26Indices = [];
+            let fy27Indices = [];
 
-            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));            
+            rawData[0].forEach((rawHeader, idx) => {
+                if (!rawHeader) return;
+                let str = String(rawHeader).toLowerCase().trim();
+                let cln = str.replace(/[^a-z0-9]/g, '');
 
-            let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
-            let idxAmcStart = cleanHeaders.findIndex(h => h.includes('amcstartdate') || h.includes('amcstart'));
-            let idxAmcEnd = cleanHeaders.findIndex(h => h.includes('amcenddate') || h.includes('amcend'));
-            
-            let mIndices = [];
-            if (idx26 > -1) {
-                for (let k = 1; k <= 12; k++) {
-                    if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
+                if (cln === 'fy202526' || cln === 'fy2526') {
+                    if (!fy26Indices.includes(idx)) fy26Indices.push(idx);
                 }
-            }
+
+                let months27 = ['apr26','may26','jun26','jul26','aug26','sep26','oct26','nov26','dec26','jan27','feb27','mar27'];
+                if (months27.includes(cln)) {
+                    if (!fy27Indices.includes(idx)) fy27Indices.push(idx);
+                }
+            });
+
+            let idxstatus = cleanHeaders.findIndex(h => h === 'status' || h.includes('horemarks'));            
+            let idxAmcStatus = cleanHeaders.findIndex(h => h === 'amcstatus' || h.includes('amcstatus'));
+            let idxAmcStart = cleanHeaders.findIndex(h => h === 'amcstartdate' || h.includes('amcstart'));
+            let idxAmcEnd = cleanHeaders.findIndex(h => h === 'amcenddate' || h.includes('amcend'));
 
             globalAllData = [];
             oldDistrictsSet.clear();
@@ -406,16 +453,19 @@
                 let cscId = idxcscid > -1 ? row[idxcscid] : '';
                 if(!cscId || cscId === '-') continue;
 
-                let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
-                
+                let fy26 = 0;
+                fy26Indices.forEach(colIdx => {
+                    let val = String(row[colIdx] || '0').trim();
+                    fy26 += (Number(val.replace(/,/g, '')) || 0);
+                });
+                fy26 = Math.round(fy26); 
+
                 let fy27Total = 0;
-                if (idx27 > -1) {
-                    fy27Total = parseInt(row[idx27]) || 0;
-                } else {
-                    mIndices.forEach(colIdx => {
-                        if(colIdx > -1) fy27Total += (parseInt(row[colIdx]) || 0);
-                    });
-                }
+                fy27Indices.forEach(colIdx => {
+                    let val = String(row[colIdx] || '0').trim();
+                    fy27Total += (Number(val.replace(/,/g, '')) || 0);
+                });
+                fy27Total = Math.round(fy27Total); 
 
                 let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
                 let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
@@ -444,7 +494,7 @@
                 let amcStart = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
                 let amcEnd = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString() : '';
 
-                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid'));
+                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid') || amcStatus.toLowerCase().includes('expire') || (amcEnd && amcEnd.trim() !== '' && amcEnd.trim() !== '-'));
 
                 globalAllData.push({
                     district_old: oldDist,
@@ -531,14 +581,26 @@
                     if (!text.includes(searchQuery)) return;
                 }
 
-                let isPaid = row.amcStatus && row.amcStatus.toLowerCase().includes('paid');
+                let statusLower = (row.amcStatus || '').toLowerCase();
+                let isPaid = statusLower.includes('paid');
+                let isSheetExpired = statusLower.includes('expired');
+
                 let isExpired = false;
                 let isActivated = false;
 
-                if(isPaid) {
-                    let endDate = new Date(row.amcEnd);
-                    if(!isNaN(endDate.getTime()) && endDate < currentDate) isExpired = true;
-                    else isActivated = true;
+                let endDate = parseCustomDate(row.amcEnd);
+                let hasValidEndDate = !isNaN(endDate.getTime());
+
+                if (isPaid || hasValidEndDate) {
+                    if (hasValidEndDate && endDate < currentDate) {
+                        isExpired = true;
+                    } else if (hasValidEndDate && endDate >= currentDate) {
+                        isActivated = true;
+                    } else if (isPaid) {
+                        isActivated = true;
+                    }
+                } else if (isSheetExpired) {
+                    isExpired = true;
                 }
                 
                 counts.total++;
@@ -557,7 +619,6 @@
 
                 let amcHtml = "";
                 
-                // 🌟 Added condition for DM login visibility 🌟
                 let btnDisabledStyle = isDM ? 'background-color:#cbd5e1; color:#64748b; cursor:not-allowed;' : '';
                 let btnDisabledAttr = isDM ? 'disabled title="Only SPOC/State Head can activate"' : '';
                 let onClickActivate = isDM ? '' : `onclick="openAMCModal('${row.cscid}', '${row.vlename.replace(/'/g, "\\'")}')"`;
@@ -580,7 +641,7 @@
                     <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
                         <span style="color:#f59e0b; font-weight:800; font-size:11px;">⚠️ EXPIRED</span>
                         <div class="amc-card-expired">
-                            <div style="color:#d97706; font-weight:800; font-size:10px; text-transform:uppercase;">${row.amcStatus}</div>
+                            <div style="color:#d97706; font-weight:800; font-size:10px; text-transform:uppercase;">${row.amcStatus || 'EXPIRED'}</div>
                             <div style="color:#64748b; font-size:9px; font-weight:600;">Expired On: ${formatDisplayDate(row.amcEnd)}</div>
                         </div>
                         ${renewBtn}
@@ -630,7 +691,6 @@
             document.getElementById("val-pending").innerText = counts.pending;
         }
 
-        // 🌟 NEW EXCEL DOWNLOAD FUNCTION 🌟
         async function downloadExcel() {
             if(globalAllData.length === 0) {
                 alert("No data available to download!");
@@ -650,7 +710,6 @@
 
             let exportData = [];
 
-            // Apply all current filters to grab exact data (excluding the 300 row limit)
             globalAllData.forEach(row => {
                 if (isDM && distType === 'old' && !row.allowedForOld) return;
                 if (isDM && distType === 'new' && !row.allowedForNew) return;
@@ -667,14 +726,26 @@
                     if (!text.includes(searchQuery)) return;
                 }
 
-                let isPaid = row.amcStatus && row.amcStatus.toLowerCase().includes('paid');
+                let statusLower = (row.amcStatus || '').toLowerCase();
+                let isPaid = statusLower.includes('paid');
+                let isSheetExpired = statusLower.includes('expired');
+
                 let isExpired = false;
                 let isActivated = false;
 
-                if(isPaid) {
-                    let endDate = new Date(row.amcEnd);
-                    if(!isNaN(endDate.getTime()) && endDate < currentDate) isExpired = true;
-                    else isActivated = true;
+                let endDate = parseCustomDate(row.amcEnd);
+                let hasValidEndDate = !isNaN(endDate.getTime());
+
+                if (isPaid || hasValidEndDate) {
+                    if (hasValidEndDate && endDate < currentDate) {
+                        isExpired = true;
+                    } else if (hasValidEndDate && endDate >= currentDate) {
+                        isActivated = true;
+                    } else if (isPaid) {
+                        isActivated = true;
+                    }
+                } else if (isSheetExpired) {
+                    isExpired = true;
                 }
 
                 if(currentKpiFilter === 'active' && !isActivated) return;
@@ -688,7 +759,7 @@
                     exportStatus = `Activated (${row.amcStatus})`;
                     expiryDate = formatDisplayDate(row.amcEnd);
                 } else if(isExpired) {
-                    exportStatus = `Expired (${row.amcStatus})`;
+                    exportStatus = `Expired (${row.amcStatus || 'EXPIRED'})`;
                     expiryDate = formatDisplayDate(row.amcEnd);
                 }
 
@@ -708,7 +779,6 @@
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('AMC MaxGain Data');
 
-            // Header Row
             const headers = ["District", "CSC ID", "VLE Name", "Mobile No", "VLE Mobile No", "FY 25-26 Txns", "FY 26-27 Txns", "AMC Status", "AMC Expiry"];
             const headerRow = worksheet.addRow(headers);
             headerRow.eachCell((cell) => {
@@ -718,7 +788,6 @@
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             });
 
-            // Data Rows
             exportData.forEach(rowData => {
                 const r = worksheet.addRow(rowData);
                 r.eachCell((cell, colNumber) => {
@@ -727,7 +796,6 @@
                 });
             });
 
-            // Set Column Widths
             worksheet.getColumn(1).width = 20;
             worksheet.getColumn(2).width = 18;
             worksheet.getColumn(3).width = 35;
@@ -738,7 +806,6 @@
             worksheet.getColumn(8).width = 25;
             worksheet.getColumn(9).width = 15;
 
-            // Generate File
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const link = document.createElement("a");
@@ -789,7 +856,7 @@
 
         function formatDisplayDate(dateStr) {
             if(!dateStr || dateStr === '-') return '-';
-            let d = new Date(dateStr);
+            let d = parseCustomDate(dateStr);
             if(isNaN(d.getTime())) return dateStr; 
             
             let day = ("0" + d.getDate()).slice(-2);
@@ -800,7 +867,7 @@
         }
 
         function openAMCModal(cscId, vleName) {
-            if(isDM) return; // Extra check to prevent opening modal if DM
+            if(isDM) return; 
 
             document.getElementById("modalCscIdDisplay").innerText = cscId;
             document.getElementById("modalCscId").value = cscId;
@@ -906,6 +973,7 @@
             }
         });
 
+        // 🌟 UPDATED WHATSAPP LOGIC WITH DESKTOP APP DEEP LINK 🌟
         function sendPromoWhatsApp(cscId, btnId) {
             let rowData = globalAllData.find(r => String(r.cscid) === String(cscId));
             if(!rowData) {
@@ -919,45 +987,65 @@
             let loggedInUser = localStorage.getItem("userName") || "Chandra Sekhara Babu K";
             let loggedInRole = localStorage.getItem("userDesignation") || "CSC Travel SPOC || AP";
 
-            let isPaid = rowData.amcStatus && rowData.amcStatus.toLowerCase().includes('paid');
+            let statusLower = (rowData.amcStatus || '').toLowerCase();
+            let isPaid = statusLower.includes('paid');
+            let isSheetExpired = statusLower.includes('expired');
+
             let isExpired = false;
-            if(isPaid) {
-                let endDate = new Date(rowData.amcEnd);
-                let currentDate = new Date();
-                if(!isNaN(endDate.getTime()) && endDate < currentDate) {
+            let endDate = parseCustomDate(rowData.amcEnd);
+            let hasValidEndDate = !isNaN(endDate.getTime());
+            let currentDate = new Date();
+
+            if (isPaid || hasValidEndDate) {
+                if (hasValidEndDate && endDate < currentDate) {
                     isExpired = true;
                 }
+            } else if (isSheetExpired) {
+                isExpired = true;
             }
 
             if(cleanMobile.length >= 10) {
                 let message = "";
 
                 if (isExpired) {
-                    message = `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
-                              `మీరు గతంలో తీసుకున్న *IRCTC AMC ప్యాకేజీ (${rowData.amcStatus})* గడువు ముగిసింది.\n\n` +
-                              `దయచేసి వెంటనే మీ ప్యాకేజీని రెన్యువల్ చేసుకొని, మీ అదనపు కమిషన్ లాభాలను కొనసాగించండి:\n` +
-                              `✅ AC టికెట్‌పై ₹39 కమిషన్\n` +
-                              `✅ Non-AC టికెట్‌పై ₹19 కమిషన్\n` +
-                              `✅ 100% పేమెంట్ గేట్‌వే (PG) ఛార్జీల రిఫండ్!\n\n` +
+                    message = `📢 *IRCTC AMC Renewal Reminder*\n\n` +
+                              `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
+                              `మీరు గతంలో తీసుకున్న *IRCTC AMC Package – ${rowData.amcStatus || 'EXPIRED'}* గడువు ముగిసింది.\n\n` +
+                              `మీ IRCTC సేవలను నిరంతరంగా కొనసాగిస్తూ, అదనపు కమిషన్ ప్రయోజనాలను పొందేందుకు దయచేసి మీ AMC ప్యాకేజీని వెంటనే Renew చేసుకోండి.\n\n` +
+                              `🎫 *AMC Renewal Benefits:*\n` +
+                              `🔹 AC Ticket – ₹39 Commission\n` +
+                              `🔹 Non-AC Ticket – ₹19 Commission\n` +
+                              `🔹 100% PG Charges Refund\n\n` +
+                              `⏰ ఆలస్యం చేయకుండా మీ AMCని Renew చేసుకుని, మీ IRCTC Business & Commission Benefits కొనసాగించండి.\n\n` +
                               `ధన్యవాదాలు,\n` +
                               `*${loggedInUser}*\n` +
                               `*${loggedInRole}*`;
                 } else {
                     let ticketsDone = rowData.txns_25_26 > 0 ? rowData.txns_25_26 : rowData.txns_26_27;
-
-                    message = `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
-                              `మీరు గత సంవత్సరంలో *${ticketsDone} టికెట్లు* బుక్ చేసి అద్భుతమైన పనితీరు కనబరిచారు. అభినందనలు! 🎉\n\n` +
-                              `వెంటనే AMC ప్యాకేజీ తీసుకోండి:\n` +
-                              `✅ AC టికెట్‌పై ₹39 కమిషన్\n` +
-                              `✅ Non-AC టికెట్‌పై ₹19 కమిషన్\n` +
-                              `✅ 100% పేమెంట్ గేట్‌వే (PG) ఛార్జీల రిఫండ్!\n\n` +
+                    message = `🎉 *Congratulations on Your IRCTC Performance!*\n\n` +
+                              `ప్రియమైన *${rowData.vlename}* గారు,\n\n` +
+                              `మీరు గత సంవత్సరంలో *${ticketsDone} IRCTC టికెట్లు* బుక్ చేసి, అద్భుతమైన పనితీరు కనబరిచారు. 👏🎫\n\n` +
+                              `మీ మంచి పనితీరును కొనసాగిస్తూ, మరింత కమిషన్ ప్రయోజనాలు పొందేందుకు మీకు IRCTC AMC Package తీసుకోవాలని సూచిస్తున్నాము.\n\n` +
+                              `🎫 *AMC Benefits:*\n` +
+                              `🔹 AC Ticket పై – ₹39 Commission\n` +
+                              `🔹 Non-AC Ticket పై – ₹19 Commission\n` +
+                              `🔹 100% PG Charges Refund\n\n` +
+                              `👉 మీ IRCTC బుకింగ్‌లను మరింత పెంచుకొని, అదనపు ఆదాయాన్ని పొందేందుకు AMC Package ను వెంటనే తీసుకోండి.\n` +
+                              `మీ విజయవంతమైన ప్రయాణం ఇలాగే కొనసాగాలని కోరుకుంటున్నాము! 🌟\n\n` +
                               `ధన్యవాదాలు,\n` +
                               `*${loggedInUser}*\n` +
                               `*${loggedInRole}*`;
                 }
                 
-                let whatsappUrl = `https://wa.me/91${cleanMobile}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
+                // 🌟 Bypass api.whatsapp.com and open Desktop App directly 🌟
+                let whatsappUrl = `whatsapp://send?phone=91${cleanMobile}&text=${encodeURIComponent(message)}`;
+                
+                let a = document.createElement('a');
+                a.href = whatsappUrl;
+                a.target = '_top'; 
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
                 
                 let btn = document.getElementById(btnId);
                 if(btn) {
