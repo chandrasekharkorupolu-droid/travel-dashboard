@@ -27,7 +27,7 @@
         .filter-group select#fyFilter { background-color: #eff6ff; border-color: #3b82f6; color: #1e40af; font-weight: 700; }
         .filter-group select#monthFilter { background-color: #fdf4ff; border-color: #d946ef; color: #86198f; font-weight: 700; }
         
-        .search-box { padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 200px; background-color: #f8fafc; transition: 0.2s;}
+        .search-box { padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 250px; background-color: #f8fafc; transition: 0.2s;}
         .search-box:focus { background-color: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
         .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
@@ -56,7 +56,6 @@
         .kpi-value { font-size: 20px; font-weight: 800; line-height: 1; }
         .kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; position: absolute; right: 15px; top: 12px; }
 
-        /* Sub-stats for Activated Box */
         .kpi-sub-stats { display: flex; gap: 12px; font-size: 10px; font-weight: 700; margin-top: 4px; opacity: 0.9; }
 
         .kpi-total::before { background-color: #3b82f6; } 
@@ -201,12 +200,12 @@
         <div class="page-heading"><i class="fa-solid fa-chart-pie"></i> AMC Premium & MaxGain Tracker</div>
         <div class="filter-group">
             <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name or CSC ID..." onkeyup="renderTable()">
+            <!-- 🌟 SET DEFAULT TO 'All FYs' TO AVOID PENDING BUG 🌟 -->
             <select id="fyFilter" onchange="renderTable()">
-                <option value="All">All FYs</option>
+                <option value="All" selected>All FYs</option>
                 <option value="25-26">FY 25-26</option>
-                <option value="26-27" selected>FY 26-27</option>
+                <option value="26-27">FY 26-27</option>
             </select>
-            <!-- 🌟 ADDED MONTH FILTER HERE 🌟 -->
             <select id="monthFilter" onchange="renderTable()">
                 <option value="All" selected>All Months</option>
                 <option value="0">January</option>
@@ -577,8 +576,8 @@
         function resetFilters() {
             document.getElementById("searchInput").value = "";
             document.getElementById("districtType").value = "old";
-            document.getElementById("fyFilter").value = "26-27";
-            document.getElementById("monthFilter").value = "All"; // Reset Month Filter
+            document.getElementById("fyFilter").value = "All"; 
+            document.getElementById("monthFilter").value = "All";
             currentKpiFilter = 'all';
             document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
             document.getElementById('kpi-all').classList.add('selected-filter');
@@ -613,6 +612,7 @@
                     if (!text.includes(searchQuery)) return;
                 }
 
+                // 🌟 TRUE STATUS EVALUATION (NEVER MODIFIED BY FILTERS) 🌟
                 let statusLower = (row.amcStatus || '').toLowerCase();
                 let isPaid = statusLower.includes('paid');
                 let isSheetExpired = statusLower.includes('expired');
@@ -634,23 +634,26 @@
                     isExpired = true;
                 }
                 
+                // 🌟 FILTER LOGIC (JUST HIDES ROWS, DOES NOT CHANGE STATUS) 🌟
                 if (fyFilter !== 'All') {
-                    if (row.amcFy !== fyFilter) {
-                        isPrem = false;
-                        isMax = false;
-                        isActivated = false;
-                        isExpired = false;
+                    if (isActivated || isExpired) {
+                        if (row.amcFy !== fyFilter) return; // Hide row if FY doesn't match
+                    } else {
+                        // For pending, check if they have txns in that FY
+                        if (fyFilter === '25-26' && row.txns_25_26 < 100) return;
+                        if (fyFilter === '26-27' && row.txns_26_27 < 100) return;
                     }
                 }
 
-                // 🌟 APPLY MONTH FILTER 🌟
                 if (monthFilter !== 'All') {
+                    if (!isActivated && !isExpired) return; // Hide pending completely when month is selected
                     let amcStartDate = parseCustomDate(row.amcStart);
                     if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
-                        return; // Completely skip if not activated in selected month
+                        return; // Hide row if Month doesn't match
                     }
                 }
                 
+                // 🌟 KPI COUNTS 🌟
                 counts.total++;
                 if(isActivated) {
                     counts.active++;
@@ -773,16 +776,19 @@
                 } else if (isSheetExpired) { isExpired = true; }
 
                 if (fyFilter !== 'All') {
-                    if (row.amcFy !== fyFilter) {
-                        isActivated = false;
-                        isExpired = false;
+                    if (isActivated || isExpired) {
+                        if (row.amcFy !== fyFilter) return; 
+                    } else {
+                        if (fyFilter === '25-26' && row.txns_25_26 < 100) return;
+                        if (fyFilter === '26-27' && row.txns_26_27 < 100) return;
                     }
                 }
 
                 if (monthFilter !== 'All') {
+                    if (!isActivated && !isExpired) return; 
                     let amcStartDate = parseCustomDate(row.amcStart);
                     if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
-                        return; 
+                        return;
                     }
                 }
 
