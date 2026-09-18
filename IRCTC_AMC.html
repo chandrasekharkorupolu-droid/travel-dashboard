@@ -37,6 +37,9 @@
         #downloadExcelBtn:hover { background-color: #059669; }
         #downloadBtn { background-color: #2563eb; color: white; border-color: #1d4ed8; }
         #downloadBtn:hover { background-color: #1d4ed8; }
+        
+        #notifyDmBtn { background-color: #14b8a6; color: white; border-color: #0d9488; }
+        #notifyDmBtn:hover { background-color: #0d9488; }
 
         /* 🌟 MODERN COMPACT SINGLE-LINE KPI CARDS 🌟 */
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; flex-shrink: 0; margin-bottom: 5px; }
@@ -200,7 +203,6 @@
         <div class="page-heading"><i class="fa-solid fa-chart-pie"></i> AMC Premium & MaxGain Tracker</div>
         <div class="filter-group">
             <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name or CSC ID..." onkeyup="renderTable()">
-            <!-- 🌟 SET DEFAULT TO 'All FYs' TO AVOID PENDING BUG 🌟 -->
             <select id="fyFilter" onchange="renderTable()">
                 <option value="All" selected>All FYs</option>
                 <option value="25-26">FY 25-26</option>
@@ -231,6 +233,7 @@
             <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
             <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()"><i class="fa-solid fa-camera"></i> Snapshot</button>
+            <button class="btn-action" id="notifyDmBtn" onclick="notifyDM()"><i class="fa-brands fa-whatsapp"></i> Notify</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Expand</button>
         </div>
     </div>
@@ -358,20 +361,10 @@
         let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
         let loggedInUserName = localStorage.getItem("userName") || ""; 
         let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
-        let dmAssignedOldDistrict = "";
         
-        let dmMappedOldDistricts = new Set();
-        let dmMappedNewDistricts = new Set();
-
-        function isNameMatch(sheetName, loginName) {
-            if (!sheetName || !loginName) return false;
-            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
-            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
-            if (sClean === lClean) return true;
-            if (lClean.length > 4 && sClean.includes(lClean)) return true;
-            if (sClean.length > 4 && lClean.includes(sClean)) return true;
-            return false;
-        }
+        // 🌟 NEW STRONG DM MAPPING LOGIC 🌟
+        let dmOldDistricts = new Set();
+        let dmNewDistricts = new Set();
 
         window.onload = function() {
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
@@ -438,17 +431,27 @@
 
                 if (promises.length > 0) await Promise.all(promises);
 
+                // 🌟 STRONG USER MAPPING LOGIC 🌟
                 try {
                     if(usersData && Array.isArray(usersData) && usersData.length > 0) {
                         let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                        let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user' || h === 'mobile');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
-                        if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
+                        let idxNewDist = uHeaders.findIndex(h => h === 'newdistrict');
+                        if(idxNewDist === -1) idxNewDist = idxDist; // Fallback
+                        
+                        if (isDM && loggedInUserId !== "" && idxUid > -1) {
                             for(let i=1; i<usersData.length; i++) {
                                 let sheetUid = (usersData[i][idxUid] || '').toString().trim();
                                 if (sheetUid === loggedInUserId) {
-                                    dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
-                                    break; 
+                                    if(idxDist > -1) {
+                                        let od = (usersData[i][idxDist] || '').toString().trim();
+                                        if(od) dmOldDistricts.add(od.toLowerCase());
+                                    }
+                                    if(idxNewDist > -1) {
+                                        let nd = (usersData[i][idxNewDist] || '').toString().trim();
+                                        if(nd) dmNewDistricts.add(nd.toLowerCase());
+                                    }
                                 }
                             }
                         }
@@ -496,7 +499,6 @@
 
             globalAllData = [];
             oldDistrictsSet.clear(); newDistrictsSet.clear();
-            dmMappedOldDistricts.clear(); dmMappedNewDistricts.clear();
 
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
@@ -510,15 +512,12 @@
                 let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
                 let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
 
-                let allowedForOld = isDM ? (dmAssignedOldDistrict && oldDist.toLowerCase() === dmAssignedOldDistrict.toLowerCase()) : true;
-                let allowedForNew = isDM ? isNameMatch(dmNameStr, loggedInUserName) : true;
+                // 🌟 STRONG DM FILTERING 🌟
+                let allowedForOld = isDM ? dmOldDistricts.has(oldDist.toLowerCase()) : true;
+                let allowedForNew = isDM ? dmNewDistricts.has(newDist.toLowerCase()) : true;
 
                 if (allowedForOld && oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
                 if (allowedForNew && newDist !== 'Unknown') newDistrictsSet.add(newDist);
-                if (isDM) {
-                    if (allowedForOld && oldDist !== 'Unknown') dmMappedOldDistricts.add(oldDist);
-                    if (allowedForNew && newDist !== 'Unknown') dmMappedNewDistricts.add(newDist);
-                }
 
                 let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString() : '';
                 let amcStartStr = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
@@ -558,10 +557,6 @@
             const distDropdown = document.getElementById("districtName");
             distDropdown.innerHTML = '<option value="All">All Districts</option>';
             let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
-            if (isDM) {
-                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                 arr = arr.filter(dist => mappedSet.has(dist));
-            }
             arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
             renderTable(); 
         }
@@ -612,7 +607,6 @@
                     if (!text.includes(searchQuery)) return;
                 }
 
-                // 🌟 TRUE STATUS EVALUATION (NEVER MODIFIED BY FILTERS) 🌟
                 let statusLower = (row.amcStatus || '').toLowerCase();
                 let isPaid = statusLower.includes('paid');
                 let isSheetExpired = statusLower.includes('expired');
@@ -634,26 +628,23 @@
                     isExpired = true;
                 }
                 
-                // 🌟 FILTER LOGIC (JUST HIDES ROWS, DOES NOT CHANGE STATUS) 🌟
                 if (fyFilter !== 'All') {
                     if (isActivated || isExpired) {
-                        if (row.amcFy !== fyFilter) return; // Hide row if FY doesn't match
+                        if (row.amcFy !== fyFilter) return; 
                     } else {
-                        // For pending, check if they have txns in that FY
                         if (fyFilter === '25-26' && row.txns_25_26 < 100) return;
                         if (fyFilter === '26-27' && row.txns_26_27 < 100) return;
                     }
                 }
 
                 if (monthFilter !== 'All') {
-                    if (!isActivated && !isExpired) return; // Hide pending completely when month is selected
+                    if (!isActivated && !isExpired) return; 
                     let amcStartDate = parseCustomDate(row.amcStart);
                     if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
-                        return; // Hide row if Month doesn't match
+                        return; 
                     }
                 }
                 
-                // 🌟 KPI COUNTS 🌟
                 counts.total++;
                 if(isActivated) {
                     counts.active++;
@@ -788,7 +779,7 @@
                     if (!isActivated && !isExpired) return; 
                     let amcStartDate = parseCustomDate(row.amcStart);
                     if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
-                        return;
+                        return; 
                     }
                 }
 
@@ -949,6 +940,196 @@
             if (!document.fullscreenElement) { btn.innerHTML = "<i class='fa-solid fa-expand'></i> Expand"; }
         });
 
+        function getGreeting() {
+            let hour = new Date().getHours();
+            if (hour < 12) return "శుభోదయం 🌅";
+            if (hour < 16) return "శుభ మధ్యాహ్నం ☀️";
+            return "శుభ సాయంత్రం 🌇";
+        }
+
+        // 🌟 ROBUST DM NOTIFICATION WITH FALLBACK PROMPT 🌟
+        function notifyDM() {
+            let distType = document.getElementById("districtType").value;
+            let selectedDist = document.getElementById("districtName").value;
+
+            if (selectedDist === "All") {
+                alert("దయచేసి ముందుగా పైన ఫిల్టర్ లో ఒక జిల్లాను (District) సెలెక్ట్ చేసుకోండి.");
+                return;
+            }
+
+            let total = document.getElementById("val-total").innerText;
+            let active = document.getElementById("val-active").innerText;
+            let prem = document.getElementById("val-prem").innerText;
+            let max = document.getElementById("val-max").innerText;
+            let expired = document.getElementById("val-expired").innerText;
+            let pending = document.getElementById("val-pending").innerText;
+            let actionReq = parseInt(expired) + parseInt(pending);
+
+            if (actionReq === 0) {
+                alert("ఈ జిల్లాలో పెండింగ్ VLE లు ఎవరూ లేరు. అద్భుతం!");
+                return;
+            }
+
+            let dmName = "District Manager";
+            let dmNumber = "";
+            
+            try {
+                let usersDataStr = sessionStorage.getItem("cscUsersData");
+                if (usersDataStr) {
+                    let usersData = JSON.parse(usersDataStr);
+                    if (usersData && usersData.length > 0) {
+                        let isObjectArr = !Array.isArray(usersData[0]);
+                        
+                        if (isObjectArr) {
+                             for(let row of usersData) {
+                                 let cleanRow = {};
+                                 for(let key in row) cleanRow[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = row[key];
+                                 
+                                 let distVal = distType === 'old' ? (cleanRow.district || '') : (cleanRow.newdistrict || cleanRow.district || '');
+                                 if (distVal.toString().toLowerCase().replace(/\s+/g,'') === selectedDist.toLowerCase().replace(/\s+/g,'')) {
+                                     dmNumber = cleanRow.userid || cleanRow.user || cleanRow.mobile || "";
+                                     dmName = cleanRow.name || "District Manager";
+                                     break;
+                                 }
+                             }
+                        } else {
+                            let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                            let idxUid = uHeaders.findIndex(h => h.includes('userid') || h.includes('user') || h.includes('mobile'));
+                            let idxName = uHeaders.findIndex(h => h.includes('name'));
+                            let idxDistCol = distType === 'old' ? uHeaders.findIndex(h => h === 'district') : uHeaders.findIndex(h => h.includes('newdistrict'));
+                            if (idxDistCol === -1) idxDistCol = uHeaders.findIndex(h => h.includes('district'));
+                            
+                            for (let i = 1; i < usersData.length; i++) {
+                                if (idxDistCol > -1) {
+                                    let rowDist = (usersData[i][idxDistCol] || '').toString().toLowerCase().replace(/\s+/g, '');
+                                    let selDistClean = selectedDist.toLowerCase().replace(/\s+/g, '');
+                                    if (rowDist === selDistClean) {
+                                        if (idxUid > -1) dmNumber = (usersData[i][idxUid] || '').toString().trim();
+                                        if (idxName > -1) dmName = (usersData[i][idxName] || '').toString().trim();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { console.error("Error finding DM", e); }
+
+            let greeting = getGreeting();
+            let vleListText = "\n\n*📋 Pending & Expired VLEs List:*\n";
+            let expiredVles = [];
+            let pendingVles = [];
+            
+            let fyFilter = document.getElementById('fyFilter').value;
+            let monthFilter = document.getElementById("monthFilter").value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let currentDate = new Date();
+
+            globalAllData.forEach((row) => {
+                if (isDM && distType === 'old' && !row.allowedForOld) return;
+                if (isDM && distType === 'new' && !row.allowedForNew) return;
+
+                let dist = row[distKey];
+                let statusText = row.status || 'ACTIVE';
+                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) return; 
+                
+                if (dist !== selectedDist) return;
+                if (!row.isEligible) return;
+
+                let statusLower = (row.amcStatus || '').toLowerCase();
+                let isPaid = statusLower.includes('paid');
+                let isSheetExpired = statusLower.includes('expired');
+
+                let isExpired = false;
+                let isActivated = false;
+
+                let endDate = parseCustomDate(row.amcEnd);
+                let hasValidEndDate = !isNaN(endDate.getTime());
+
+                if (isPaid || hasValidEndDate) {
+                    if (hasValidEndDate && endDate < currentDate) isExpired = true;
+                    else if (hasValidEndDate && endDate >= currentDate) isActivated = true;
+                    else if (isPaid) isActivated = true;
+                } else if (isSheetExpired) {
+                    isExpired = true;
+                }
+                
+                if (fyFilter !== 'All') {
+                    if (isActivated || isExpired) {
+                        if (row.amcFy !== fyFilter) return; 
+                    } else {
+                        if (fyFilter === '25-26' && row.txns_25_26 < 100) return;
+                        if (fyFilter === '26-27' && row.txns_26_27 < 100) return;
+                    }
+                }
+
+                if (monthFilter !== 'All') {
+                    if (!isActivated && !isExpired) return; 
+                    let amcStartDate = parseCustomDate(row.amcStart);
+                    if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
+                        return; 
+                    }
+                }
+                
+                if (!isActivated) {
+                    let mobile = row.vlemob !== '-' ? row.vlemob : row.mobile;
+                    let textLine = `${row.cscid} - ${row.vlename} - ${mobile}`;
+                    
+                    if (isExpired) {
+                        expiredVles.push(`${textLine} (Expired 🟠)`);
+                    } else {
+                        pendingVles.push(`${textLine} (Pending 🔴)`);
+                    }
+                }
+            });
+
+            let allInactiveVles = expiredVles.concat(pendingVles);
+
+            let counter = 1;
+            for (let i = 0; i < allInactiveVles.length; i++) {
+                if (counter > 75) { 
+                    vleListText += `\n... (ఇంకా చాలా VLEs ఉన్నాయి. దయచేసి పూర్తి లిస్ట్ కొరకు పోర్టల్ చూడండి) ...\n`;
+                    break;
+                }
+                vleListText += `${counter}. ${allInactiveVles[i]}\n`;
+                counter++;
+            }
+
+            let message = `గౌరవనీయులైన *${dmName}* గారికి,\n${greeting}\n\n🏢 *IRCTC AMC Business Update*\n📌 *District:* ${selectedDist}\n\n📊 *Total Eligible VLEs:* *${total}*\n🟢 *Activated:* *${active}* (Premium: ${prem} | MaxGain: ${max})\n🟠 *Expired:* *${expired}*\n🔴 *Pending:* *${pending}*\n\n⚡ *Action Required:*\nదయచేసి మీ జిల్లాలో ఉన్న పెండింగ్ మరియు గడువు ముగిసిన *${actionReq} VLE లతో* వెంటనే మాట్లాడి, వారందరిచేతా *IRCTC MaxGain Package (₹2000)* మాత్రమే తీసుకునేలా ఫాలో-అప్ చేయగలరు.${vleListText}\n\nThanks & Regards,\n*Chandra Sekhara Babu K*\nSPOC - AP CSC Travel 🚄`;
+
+            // 🌟 STRONG FALLBACK IF NUMBER NOT FOUND 🌟
+            if (!dmNumber || dmNumber.length < 10) {
+                let manualNum = prompt(`డేటాబేస్ లో మొబైల్ నంబర్ దొరకలేదు.\nదయచేసి ${dmName} గారి వాట్సాప్ నంబర్ (10 అంకెలు) ఇక్కడ ఎంటర్ చేయండి:`, "");
+                if (manualNum !== null && manualNum.trim().length >= 10) {
+                    dmNumber = manualNum.trim().replace(/\D/g, '');
+                } else if (manualNum !== null) {
+                    alert("దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ ఎంటర్ చేయండి.");
+                    return; 
+                } else {
+                    return; 
+                }
+            }
+
+            if (dmNumber && dmNumber.length >= 10) {
+                let cleanNumber = dmNumber.replace(/\D/g, '');
+                let url = `whatsapp://send?phone=91${cleanNumber}&text=${encodeURIComponent(message)}`;
+                let a = document.createElement('a');
+                a.href = url;
+                a.target = '_top'; 
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+            } else {
+                let url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+                let a = document.createElement('a');
+                a.href = url;
+                a.target = '_top'; 
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+            }
+        }
+
         function sendPromoWhatsApp(cscId, btnId) {
             let rowData = globalAllData.find(r => String(r.cscid) === String(cscId));
             if(!rowData) return;
@@ -957,7 +1138,7 @@
             let cleanMobile = mobileNumber ? mobileNumber.toString().replace(/\D/g, '') : '';
 
             let loggedInUser = localStorage.getItem("userName") || "Chandra Sekhara Babu K";
-            let loggedInRole = localStorage.getItem("userDesignation") || "CSC Travel SPOC || AP";
+            let loggedInRole = "SPOC - AP CSC Travel 🚄";
 
             let statusLower = (rowData.amcStatus || '').toLowerCase();
             let isPaid = statusLower.includes('paid');
@@ -984,13 +1165,13 @@
                 }
 
                 if (isExpired) {
-                    message = `📢 *IRCTC AMC Renewal Reminder*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు గతంలో తీసుకున్న *IRCTC AMC Package – ${rowData.amcStatus || 'EXPIRED'}* గడువు ముగిసింది.\n\nమీ IRCTC సేవలను నిరంతరంగా కొనసాగిస్తూ, అదనపు కమిషన్ ప్రయోజనాలను పొందేందుకు దయచేసి మీ AMC ప్యాకేజీని వెంటనే Renew చేసుకోండి.\n\n🎫 *AMC Renewal Benefits:*\n🔹 AC Ticket – ₹39 Commission\n🔹 Non-AC Ticket – ₹19 Commission\n🔹 100% PG Charges Refund\n\n⏰ ఆలస్యం చేయకుండా మీ AMCని Renew చేసుకుని, మీ IRCTC Business & Commission Benefits కొనసాగించండి.\n\nధన్యవాదాలు,\n*${loggedInUser}*\n*${loggedInRole}*`;
+                    message = `📢 *IRCTC AMC Renewal Reminder*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు గతంలో తీసుకున్న *IRCTC AMC Package – ${rowData.amcStatus || 'EXPIRED'}* గడువు ముగిసింది.\n\nమీ IRCTC సేవలను నిరంతరంగా కొనసాగిస్తూ, అదనపు కమిషన్ ప్రయోజనాలను పొందేందుకు దయచేసి మీ AMC ప్యాకేజీని వెంటనే Renew చేసుకోండి.\n\n🎫 *AMC Renewal Benefits:*\n🔹 AC Ticket – ₹39 Commission\n🔹 Non-AC Ticket – ₹19 Commission\n🔹 100% PG Charges Refund\n\n⏰ ఆలస్యం చేయకుండా మీ AMCని Renew చేసుకుని, మీ IRCTC Business & Commission Benefits కొనసాగించండి.\n\nధన్యవాదాలు,\n*${loggedInUser}*\n${loggedInRole}`;
                 } else {
                     let totalTickets = fy25_26 + fy26_27;
                     let estLoss = totalTickets * 11.50;
                     let lossText = estLoss > 0 ? `\n\nకానీ, AMC ప్యాకేజీ లేకపోవడం వల్ల మీరు సుమారు *₹${Math.round(estLoss)} పైగా* అదనపు కమిషన్ మరియు రిఫండ్ కోల్పోయారు!` : '';
 
-                    message = `🎉 *Congratulations on Your IRCTC Performance!*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు ${performanceText} బుక్ చేసి, అద్భుతమైన పనితీరు కనబరిచారు. 👏🎫${lossText}\n\nమీ మంచి పనితీరును కొనసాగిస్తూ, మరింత కమిషన్ ప్రయోజనాలు పొందేందుకు మీకు IRCTC AMC Package తీసుకోవాలని సూచిస్తున్నాము.\n\n🎫 *IRCTC MaxGain Package - కేవలం ₹2000 (1 Year Validity)*\n🔹 AC Ticket పై – ₹39 Commission\n🔹 Non-AC Ticket పై – ₹19 Commission\n🔹 100% PG Charges Refund\n\n👉 మీ IRCTC బుకింగ్‌లను మరింత పెంచుకొని, అదనపు ఆదాయాన్ని పొందేందుకు AMC Package ను వెంటనే తీసుకోండి.\nమీ విజయవంతమైన ప్రయాణం ఇలాగే కొనసాగాలని కోరుకుంటున్నాము! 🌟\n\nధన్యవాదాలు,\n*${loggedInUser}*\n*${loggedInRole}*`;
+                    message = `🎉 *Congratulations on Your IRCTC Performance!*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు ${performanceText} బుక్ చేసి, అద్భుతమైన పనితీరు కనబరిచారు. 👏🎫${lossText}\n\nమీ మంచి పనితీరును కొనసాగిస్తూ, మరింత కమిషన్ ప్రయోజనాలు పొందేందుకు మీకు IRCTC AMC Package తీసుకోవాలని సూచిస్తున్నాము.\n\n🎫 *IRCTC MaxGain Package - కేవలం ₹2000 (1 Year Validity)*\n🔹 AC Ticket పై – ₹39 Commission\n🔹 Non-AC Ticket పై – ₹19 Commission\n🔹 100% PG Charges Refund\n\n👉 మీ IRCTC బుకింగ్‌లను మరింత పెంచుకొని, అదనపు ఆదాయాన్ని పొందేందుకు AMC Package ను వెంటనే తీసుకోండి.\nమీ విజయవంతమైన ప్రయాణం ఇలాగే కొనసాగాలని కోరుకుంటున్నాము! 🌟\n\nధన్యవాదాలు,\n*${loggedInUser}*\n${loggedInRole}`;
                 }
                 
                 let a = document.createElement('a');
