@@ -24,8 +24,10 @@
         .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
         .filter-group select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #ffffff; font-weight: 500; cursor: pointer; color: #1e293b; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
         .filter-group select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .filter-group select#fyFilter { background-color: #eff6ff; border-color: #3b82f6; color: #1e40af; font-weight: 700; }
+        .filter-group select#monthFilter { background-color: #fdf4ff; border-color: #d946ef; color: #86198f; font-weight: 700; }
         
-        .search-box { padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 250px; background-color: #f8fafc; transition: 0.2s;}
+        .search-box { padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 200px; background-color: #f8fafc; transition: 0.2s;}
         .search-box:focus { background-color: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
         .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
@@ -48,10 +50,14 @@
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px -3px rgba(0,0,0,0.1); }
         .kpi-card.selected-filter { border: 2px solid #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
-        .kpi-info { display: flex; align-items: baseline; gap: 8px; }
+        .kpi-info { display: flex; flex-direction: column; width: 100%; }
+        .kpi-title-row { display: flex; align-items: baseline; justify-content: space-between; padding-right: 40px; }
         .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .kpi-value { font-size: 20px; font-weight: 800; line-height: 1; }
-        .kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;}
+        .kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; position: absolute; right: 15px; top: 12px; }
+
+        /* Sub-stats for Activated Box */
+        .kpi-sub-stats { display: flex; gap: 12px; font-size: 10px; font-weight: 700; margin-top: 4px; opacity: 0.9; }
 
         .kpi-total::before { background-color: #3b82f6; } 
         .kpi-total .kpi-icon { background-color: #eff6ff; color: #3b82f6; }
@@ -59,7 +65,7 @@
         
         .kpi-active::before { background-color: #10b981; } 
         .kpi-active .kpi-icon { background-color: #ecfdf5; color: #10b981; }
-        .kpi-active .kpi-title, .kpi-active .kpi-value { color: #047857; }
+        .kpi-active .kpi-title, .kpi-active .kpi-value, .kpi-active .kpi-sub-stats { color: #047857; }
         
         .kpi-expired::before { background-color: #f59e0b; } 
         .kpi-expired .kpi-icon { background-color: #fffbeb; color: #f59e0b; }
@@ -71,7 +77,7 @@
 
         /* Report Capture Area */
         #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f1f5f9; padding: 10px 0; border-radius: 8px;}
-        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; display: block; } 
+        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; display: none; } 
         .report-header h1 { font-size: 22px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
         .report-header p { font-size: 13px; color: #64748b; font-weight: 500; margin-top: 0; }
 
@@ -80,6 +86,7 @@
             background-color: #ffffff !important; padding: 40px !important; 
             display: inline-block !important; height: auto !important; overflow: visible !important; 
         }
+        .capture-compact .report-header { display: block; }
         .capture-compact .table-container { 
             height: auto !important; overflow: visible !important; display: block !important; 
             flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; border-radius: 8px;
@@ -177,7 +184,8 @@
             
             .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .kpi-card { padding: 12px 15px; }
-            .kpi-info { gap: 4px; align-items: center;}
+            .kpi-info { width: 100%; }
+            .kpi-title-row { padding-right: 0; }
             .kpi-title { font-size: 10px; }
             .kpi-value { font-size: 16px; }
             .kpi-icon { display: none; } 
@@ -193,6 +201,27 @@
         <div class="page-heading"><i class="fa-solid fa-chart-pie"></i> AMC Premium & MaxGain Tracker</div>
         <div class="filter-group">
             <input type="text" id="searchInput" class="search-box" placeholder="Search VLE Name or CSC ID..." onkeyup="renderTable()">
+            <select id="fyFilter" onchange="renderTable()">
+                <option value="All">All FYs</option>
+                <option value="25-26">FY 25-26</option>
+                <option value="26-27" selected>FY 26-27</option>
+            </select>
+            <!-- 🌟 ADDED MONTH FILTER HERE 🌟 -->
+            <select id="monthFilter" onchange="renderTable()">
+                <option value="All" selected>All Months</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
             <select id="districtType" onchange="updateDistrictsDropdown()">
                 <option value="old" selected>Old Districts</option>
                 <option value="new">New Districts</option>
@@ -216,29 +245,44 @@
         <div class="kpi-grid">
             <div class="kpi-card kpi-total selected-filter" onclick="setKpiFilter('all')" id="kpi-all">
                 <div class="kpi-info">
-                    <span class="kpi-title">Total VLEs:</span>
-                    <span class="kpi-value" id="val-total">0</span>
+                    <div class="kpi-title-row">
+                        <span class="kpi-title">Total VLEs</span>
+                        <span class="kpi-value" id="val-total">0</span>
+                    </div>
                 </div>
                 <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
             </div>
+            
             <div class="kpi-card kpi-active" onclick="setKpiFilter('active')" id="kpi-active">
                 <div class="kpi-info">
-                    <span class="kpi-title">Activated:</span>
-                    <span class="kpi-value" id="val-active">0</span>
+                    <div class="kpi-title-row">
+                        <span class="kpi-title">Activated</span>
+                        <span class="kpi-value" id="val-active">0</span>
+                    </div>
+                    <div class="kpi-sub-stats">
+                        <span>Premium: <b id="val-prem">0</b></span>
+                        <span>MaxGain: <b id="val-max">0</b></span>
+                    </div>
                 </div>
                 <div class="kpi-icon"><i class="fa-solid fa-check-circle"></i></div>
             </div>
+
             <div class="kpi-card kpi-expired" onclick="setKpiFilter('expired')" id="kpi-expired">
                 <div class="kpi-info">
-                    <span class="kpi-title">Expired:</span>
-                    <span class="kpi-value" id="val-expired">0</span>
+                    <div class="kpi-title-row">
+                        <span class="kpi-title">Expired</span>
+                        <span class="kpi-value" id="val-expired">0</span>
+                    </div>
                 </div>
                 <div class="kpi-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
             </div>
+            
             <div class="kpi-card kpi-inactive" onclick="setKpiFilter('pending')" id="kpi-pending">
                 <div class="kpi-info">
-                    <span class="kpi-title">Pending:</span>
-                    <span class="kpi-value" id="val-pending">0</span>
+                    <div class="kpi-title-row">
+                        <span class="kpi-title">Pending</span>
+                        <span class="kpi-value" id="val-pending">0</span>
+                    </div>
                 </div>
                 <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
             </div>
@@ -364,30 +408,40 @@
 
         async function fetchSheetData() {
             try {
-                let cachedData = sessionStorage.getItem("cscTravelData");
+                let cachedData = sessionStorage.getItem("cscTravelData_IRCTC");
                 let cachedUsers = sessionStorage.getItem("cscUsersData");
-                let rawData = cachedData ? JSON.parse(cachedData) : null;
-                let usersData = cachedUsers ? JSON.parse(cachedUsers) : null;
+                
+                let rawData = null;
+                let usersData = null;
+
+                try { if(cachedData) rawData = JSON.parse(cachedData); } catch(e) {}
+                try { if(cachedUsers) usersData = JSON.parse(cachedUsers); } catch(e) {}
 
                 let promises = [];
-                if (!rawData) {
+                
+                if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
                     promises.push(fetch(apiURL).then(r => r.json()).then(d => {
-                        rawData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
-                    }).catch(() => null));
+                        if(Array.isArray(d) && d.length > 0) {
+                            rawData = d;
+                            sessionStorage.setItem("cscTravelData_IRCTC", JSON.stringify(d));
+                        }
+                    }).catch(e => console.error("Fetch API Error:", e)));
                 }
-                if (!usersData) {
+                
+                if (!usersData || !Array.isArray(usersData) || usersData.length === 0) {
                     promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
-                        usersData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData", JSON.stringify(d));
-                    }).catch(() => null));
+                        if(Array.isArray(d) && d.length > 0) {
+                            usersData = d;
+                            sessionStorage.setItem("cscUsersData", JSON.stringify(d));
+                        }
+                    }).catch(e => console.error("Fetch Users Error:", e)));
                 }
 
                 if (promises.length > 0) await Promise.all(promises);
 
                 try {
-                    if(usersData && usersData.length > 0) {
-                        let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    if(usersData && Array.isArray(usersData) && usersData.length > 0) {
+                        let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
                         if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
@@ -402,16 +456,21 @@
                     }
                 } catch(e) { console.warn("Could not parse Users sheet", e); }
 
-                if(rawData) processData(rawData);
-                else throw new Error("No data found");
+                if(rawData && Array.isArray(rawData) && rawData.length > 0) {
+                    processData(rawData);
+                } else {
+                    throw new Error("Invalid or empty data received from server.");
+                }
+
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Data.</td></tr>";
+                sessionStorage.removeItem("cscTravelData_IRCTC");
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:#dc2626; text-align:center; padding: 30px; font-weight: 600;'><i class='fa-solid fa-triangle-exclamation' style='font-size: 24px; margin-bottom: 10px; display:block;'></i> Error connecting to Data. Retrying may fix this.</td></tr>";
             }
         }
 
         function processData(rawData) {
-            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let cleanHeaders = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
             let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
             let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
             let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
@@ -463,16 +522,25 @@
                 }
 
                 let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString() : '';
-                let amcStart = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
-                let amcEnd = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString() : '';
-                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid') || amcStatus.toLowerCase().includes('expire') || (amcEnd && amcEnd.trim() !== '' && amcEnd.trim() !== '-'));
+                let amcStartStr = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
+                let amcEndStr = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString() : '';
+                
+                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid') || amcStatus.toLowerCase().includes('expire') || (amcEndStr && amcEndStr.trim() !== '' && amcEndStr.trim() !== '-'));
+
+                let amcFy = '';
+                let d = parseCustomDate(amcStartStr);
+                if (!isNaN(d.getTime())) {
+                    let fyStartYear = (d.getMonth() + 1 >= 4) ? d.getFullYear() : d.getFullYear() - 1;
+                    if (fyStartYear === 2025) amcFy = '25-26';
+                    else if (fyStartYear === 2026) amcFy = '26-27';
+                }
 
                 globalAllData.push({
                     district_old: oldDist, district_new: newDist, dmname: dmNameStr,
                     vlename: idxvlename > -1 ? row[idxvlename] : '-', cscid: cscId,
                     mobile: idxmob > -1 ? row[idxmob] : '-', vlemob: idxvlemob > -1 ? row[idxvlemob] : '-',
-                    txns_25_26: fy26, txns_26_27: fy27Total, amcStatus: amcStatus, amcStart: amcStart, amcEnd: amcEnd,
-                    isEligible: isEligible, status: idxstatus > -1 ? (row[idxstatus] || 'Active').toString().toUpperCase().trim() : 'ACTIVE',
+                    txns_25_26: fy26, txns_26_27: fy27Total, amcStatus: amcStatus, amcStart: amcStartStr, amcEnd: amcEndStr,
+                    amcFy: amcFy, isEligible: isEligible, status: idxstatus > -1 ? (row[idxstatus] || 'Active').toString().toUpperCase().trim() : 'ACTIVE',
                     allowedForOld: allowedForOld, allowedForNew: allowedForNew
                 });
             }
@@ -509,6 +577,8 @@
         function resetFilters() {
             document.getElementById("searchInput").value = "";
             document.getElementById("districtType").value = "old";
+            document.getElementById("fyFilter").value = "26-27";
+            document.getElementById("monthFilter").value = "All"; // Reset Month Filter
             currentKpiFilter = 'all';
             document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
             document.getElementById('kpi-all').classList.add('selected-filter');
@@ -518,11 +588,13 @@
         function renderTable() {
             let distType = document.getElementById('districtType').value;
             let selectedDist = document.getElementById('districtName').value;
+            let fyFilter = document.getElementById('fyFilter').value;
+            let monthFilter = document.getElementById("monthFilter").value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
             let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
             
             let tbodyHtml = "";
-            let counts = { total: 0, active: 0, expired: 0, pending: 0 };
+            let counts = { total: 0, active: 0, expired: 0, pending: 0, prem: 0, max: 0 };
             let displayedRows = 0;
             let currentDate = new Date();
 
@@ -547,6 +619,9 @@
 
                 let isExpired = false;
                 let isActivated = false;
+                
+                let isPrem = statusLower.includes('premium');
+                let isMax = statusLower.includes('max gain') || statusLower.includes('maxgain');
 
                 let endDate = parseCustomDate(row.amcEnd);
                 let hasValidEndDate = !isNaN(endDate.getTime());
@@ -559,8 +634,29 @@
                     isExpired = true;
                 }
                 
+                if (fyFilter !== 'All') {
+                    if (row.amcFy !== fyFilter) {
+                        isPrem = false;
+                        isMax = false;
+                        isActivated = false;
+                        isExpired = false;
+                    }
+                }
+
+                // 🌟 APPLY MONTH FILTER 🌟
+                if (monthFilter !== 'All') {
+                    let amcStartDate = parseCustomDate(row.amcStart);
+                    if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
+                        return; // Completely skip if not activated in selected month
+                    }
+                }
+                
                 counts.total++;
-                if(isActivated) counts.active++;
+                if(isActivated) {
+                    counts.active++;
+                    if(isPrem) counts.prem++;
+                    if(isMax) counts.max++;
+                }
                 else if (isExpired) counts.expired++;
                 else counts.pending++;
 
@@ -626,6 +722,8 @@
             
             document.getElementById("val-total").innerText = counts.total;
             document.getElementById("val-active").innerText = counts.active;
+            document.getElementById("val-prem").innerText = counts.prem;
+            document.getElementById("val-max").innerText = counts.max;
             document.getElementById("val-expired").innerText = counts.expired;
             document.getElementById("val-pending").innerText = counts.pending;
         }
@@ -640,6 +738,8 @@
 
             let distType = document.getElementById('districtType').value;
             let selectedDist = document.getElementById('districtName').value;
+            let fyFilter = document.getElementById('fyFilter').value;
+            let monthFilter = document.getElementById("monthFilter").value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
             let searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
             let currentDate = new Date();
@@ -671,6 +771,20 @@
                     else if (hasValidEndDate && endDate >= currentDate) isActivated = true;
                     else if (isPaid) isActivated = true;
                 } else if (isSheetExpired) { isExpired = true; }
+
+                if (fyFilter !== 'All') {
+                    if (row.amcFy !== fyFilter) {
+                        isActivated = false;
+                        isExpired = false;
+                    }
+                }
+
+                if (monthFilter !== 'All') {
+                    let amcStartDate = parseCustomDate(row.amcStart);
+                    if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
+                        return; 
+                    }
+                }
 
                 if(currentKpiFilter === 'active' && !isActivated) return;
                 if(currentKpiFilter === 'expired' && !isExpired) return;
@@ -714,7 +828,11 @@
             const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
             let d = new Date();
             let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-            link.download = selectedDist !== "All" ? `AMC_MaxGain_${selectedDist}_${dateStr}.xlsx` : `AMC_MaxGain_Report_${dateStr}.xlsx`;
+            
+            let fyText = document.getElementById("fyFilter").value;
+            let monthText = document.getElementById("monthFilter").options[document.getElementById("monthFilter").selectedIndex].text;
+            
+            link.download = selectedDist !== "All" ? `AMC_MaxGain_${fyText}_${monthText}_${selectedDist}_${dateStr}.xlsx` : `AMC_MaxGain_Report_${fyText}_${monthText}_${dateStr}.xlsx`;
             link.click();
 
             btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded";
@@ -786,9 +904,21 @@
             .then(result => {
                 btn.innerHTML = "Save Details"; btn.disabled = false;
                 if(result.success) {
-                    sessionStorage.removeItem("cscTravelData"); 
+                    sessionStorage.removeItem("cscTravelData_IRCTC"); 
                     let row = globalAllData.find(r => String(r.cscid) === String(cscId));
-                    if(row) { row.amcStatus = statusText; row.amcStart = formattedStart; row.amcEnd = end; row.isEligible = true; }
+                    if(row) { 
+                        row.amcStatus = statusText; 
+                        row.amcStart = formattedStart; 
+                        row.amcEnd = end; 
+                        row.isEligible = true; 
+                        
+                        let d = new Date(start);
+                        if (!isNaN(d.getTime())) {
+                            let fyStartYear = (d.getMonth() + 1 >= 4) ? d.getFullYear() : d.getFullYear() - 1;
+                            if (fyStartYear === 2025) row.amcFy = '25-26';
+                            else if (fyStartYear === 2026) row.amcFy = '26-27';
+                        }
+                    }
                     renderTable(); closeAMCModal(); showToast("<i class='fa-solid fa-circle-check'></i> Action Successful!");
                 } else { alert("❌ " + (result.message || "Failed to update")); }
             })
@@ -850,7 +980,11 @@
                 if (isExpired) {
                     message = `📢 *IRCTC AMC Renewal Reminder*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు గతంలో తీసుకున్న *IRCTC AMC Package – ${rowData.amcStatus || 'EXPIRED'}* గడువు ముగిసింది.\n\nమీ IRCTC సేవలను నిరంతరంగా కొనసాగిస్తూ, అదనపు కమిషన్ ప్రయోజనాలను పొందేందుకు దయచేసి మీ AMC ప్యాకేజీని వెంటనే Renew చేసుకోండి.\n\n🎫 *AMC Renewal Benefits:*\n🔹 AC Ticket – ₹39 Commission\n🔹 Non-AC Ticket – ₹19 Commission\n🔹 100% PG Charges Refund\n\n⏰ ఆలస్యం చేయకుండా మీ AMCని Renew చేసుకుని, మీ IRCTC Business & Commission Benefits కొనసాగించండి.\n\nధన్యవాదాలు,\n*${loggedInUser}*\n*${loggedInRole}*`;
                 } else {
-                    message = `🎉 *Congratulations on Your IRCTC Performance!*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు ${performanceText} బుక్ చేసి, అద్భుతమైన పనితీరు కనబరిచారు. 👏🎫\n\nమీ మంచి పనితీరును కొనసాగిస్తూ, మరింత కమిషన్ ప్రయోజనాలు పొందేందుకు మీకు IRCTC AMC Package తీసుకోవాలని సూచిస్తున్నాము.\n\n🎫 *IRCTC MaxGain Package - కేవలం ₹2000 (1 Year Validity)*\n🔹 AC Ticket పై – ₹39 Commission\n🔹 Non-AC Ticket పై – ₹19 Commission\n🔹 100% PG Charges Refund\n\n👉 మీ IRCTC బుకింగ్‌లను మరింత పెంచుకొని, అదనపు ఆదాయాన్ని పొందేందుకు AMC Package ను వెంటనే తీసుకోండి.\nమీ విజయవంతమైన ప్రయాణం ఇలాగే కొనసాగాలని కోరుకుంటున్నాము! 🌟\n\nధన్యవాదాలు,\n*${loggedInUser}*\n*${loggedInRole}*`;
+                    let totalTickets = fy25_26 + fy26_27;
+                    let estLoss = totalTickets * 11.50;
+                    let lossText = estLoss > 0 ? `\n\nకానీ, AMC ప్యాకేజీ లేకపోవడం వల్ల మీరు సుమారు *₹${Math.round(estLoss)} పైగా* అదనపు కమిషన్ మరియు రిఫండ్ కోల్పోయారు!` : '';
+
+                    message = `🎉 *Congratulations on Your IRCTC Performance!*\n\nప్రియమైన *${rowData.vlename}* గారు,\n\nమీరు ${performanceText} బుక్ చేసి, అద్భుతమైన పనితీరు కనబరిచారు. 👏🎫${lossText}\n\nమీ మంచి పనితీరును కొనసాగిస్తూ, మరింత కమిషన్ ప్రయోజనాలు పొందేందుకు మీకు IRCTC AMC Package తీసుకోవాలని సూచిస్తున్నాము.\n\n🎫 *IRCTC MaxGain Package - కేవలం ₹2000 (1 Year Validity)*\n🔹 AC Ticket పై – ₹39 Commission\n🔹 Non-AC Ticket పై – ₹19 Commission\n🔹 100% PG Charges Refund\n\n👉 మీ IRCTC బుకింగ్‌లను మరింత పెంచుకొని, అదనపు ఆదాయాన్ని పొందేందుకు AMC Package ను వెంటనే తీసుకోండి.\nమీ విజయవంతమైన ప్రయాణం ఇలాగే కొనసాగాలని కోరుకుంటున్నాము! 🌟\n\nధన్యవాదాలు,\n*${loggedInUser}*\n*${loggedInRole}*`;
                 }
                 
                 let a = document.createElement('a');
@@ -887,8 +1021,10 @@
                     let link = document.createElement('a');
                     let d = new Date();
                     let typeSelect = document.getElementById("districtType");
+                    let fyText = document.getElementById("fyFilter").value;
+                    let monthText = document.getElementById("monthFilter").options[document.getElementById("monthFilter").selectedIndex].text;
                     let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-                    link.download = `IRCTC_AMC_Eligible_List_${dateStr}.png`;
+                    link.download = `IRCTC_AMC_Eligible_List_${fyText}_${monthText}_${dateStr}.png`;
                     link.href = canvas.toDataURL("image/png"); link.click();
                     restoreStyles(); btn.innerHTML = "Snapshot";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
