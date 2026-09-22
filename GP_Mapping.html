@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One GP One CSC Mapping Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Inter, sans-serif; }
+        body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 20px; gap: 15px; color: #334155; }
+
+        /* 🌟 COMPACT & RESPONSIVE CONTROL PANEL 🌟 */
+        .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
+        .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .page-heading i { color: #2563eb; font-size: 18px; }
+        
+        .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        
+        .filter-group select, .search-box { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; outline: none; background-color: #ffffff; cursor: pointer; transition: 0.2s; max-width: 140px; }
+        .filter-group select:focus, .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .search-box { width: 140px; cursor: text; }
+        .search-box:focus { width: 180px; }
+
+        .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .btn-action:hover { background-color: #f8fafc; color: #0f172a; }
+        
+        #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
+        #downloadExcelBtn:hover { background-color: #059669; }
+        
+        #summaryBtn { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
+        #summaryBtn:hover { background-color: #7c3aed; }
+
+        #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
+        #perfBtn:hover { background-color: #c2410c; }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
+        .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .kpi-card.active-kpi { border: 2px solid #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,0.1); }
+        
+        .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; border-radius: 8px 0 0 8px; }
+        .kpi-info { display: flex; flex-direction: column; width: 100%; }
+        .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+        .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
+        
+        .kpi-total::before { background-color: #3b82f6; } 
+        .kpi-mapped::before { background-color: #10b981; } 
+        .kpi-pending::before { background-color: #ef4444; } 
+
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        
+        thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
+        
+        td { white-space: nowrap; padding: 12px 15px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; font-weight: 500; }
+        tbody tr:hover { background-color: #f8fafc; }
+        
+        .bold-num { font-weight: 700; color: #0f172a; }
+        .text-blue { color: #2563eb; font-weight: 600; }
+
+        .badge-success { background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-block; }
+        .badge-danger { background-color: #fef2f2; color: #b91c1c; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #fecaca; display: inline-block; }
+        
+        .btn-update { background-color: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-update:hover { background-color: #2563eb; color: white; }
+
+        .txn-link { background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s; border: 1px solid #bfdbfe; display: inline-block; }
+        .txn-link:hover { background: #2563eb; color: white; transform: scale(1.05); }
+
+        .loader { text-align: center; padding: 40px; font-size: 14px; color: #475569; font-weight: 600; }
+
+        /* 🌟 MODAL SETTINGS 🌟 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: slideDown 0.3s ease; border: 1px solid #e2e8f0; transition: all 0.3s ease;}
+        
+        .modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
+        
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; }
+        .modal-header-actions { display: flex; align-items: center; gap: 12px; }
+        
+        .expand-btn { cursor: pointer; color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px;}
+        .expand-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+        .btn-modal-dl { background-color: #2563eb; color: white; border: none; padding: 7px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+        .btn-modal-dl:hover { background-color: #1d4ed8; }
+        
+        .modal-close { cursor: pointer; color: #ef4444; background: none; border: none; font-size: 26px; transition: 0.2s; display: flex; align-items: center; }
+        .modal-close:hover { color: #b91c1c; transform: scale(1.1); }
+        
+        .overall-stats-banner { display: flex; justify-content: space-around; background-color: #f8fafc; padding: 15px 20px; border-bottom: 2px solid #cbd5e1; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+        
+        .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
+        .stat-value { font-size: 26px; font-weight: 900; }
+        
+        .modal-body { padding: 0; overflow-y: auto; flex: 1; background: #ffffff; }
+        
+        .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
+        .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
+        .summary-table td { padding: 12px 10px; font-size: 15px; color: #334155; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+        
+        .sum-mandal { text-align: left; font-weight: 800; color: #0f172a; font-size: 16px; }
+        
+        .badge-zero { color: #15803d; font-weight: 800; font-size: 15px; }
+        .badge-alert { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 4px rgba(239,68,68,0.3); display: inline-block; min-width: 30px; text-align: center; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; }
+        .form-readonly { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; font-weight: 600; }
+        .btn-submit { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        
+        .mw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;}
+        .mw-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .mw-mon { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .mw-val { font-size: 22px; font-weight: 900; color: #0f172a; }
+        .mw-val.active { color: #16a34a; }
+        
+        .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
+    </style>
+</head>
+<body>
+
+    <div class="control-panel">
+        <div class="page-heading">
+            <i class="fa-solid fa-map-location-dot"></i> Mapping Tracker 
+        </div>
+        <div class="filter-group">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search ID/Name..." onkeyup="renderTable()">
+            
+            <select id="districtFilter" onchange="populateMandals()">
+                <option value="All">All Districts</option>
+            </select>
+            
+            <select id="mandalFilter" onchange="renderTable()">
+                <option value="All">All Mandals</option>
+            </select>
+
+            <select id="statusFilter" onchange="updateKpiHighlight()">
+                <option value="All">All Status</option>
+                <option value="Mapped">Mapped GPs</option>
+                <option value="Pending">Pending GPs</option>
+                <option value="MappedActive">Mapped - Active (FY 26-27)</option>
+                <option value="MappedZero">Mapped - Zero TXN (FY 26-27)</option>
+            </select>
+
+            <button class="btn-action" onclick="fetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+            <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
+            <button class="btn-action" id="summaryBtn" onclick="openSummaryModal('All')"><i class="fa-solid fa-chart-column"></i> Summary</button>
+            <button class="btn-action" id="perfBtn" onclick="openDropoutsModal('All')"><i class="fa-solid fa-users-slash"></i> Dropouts</button>
+            <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
+            
+            <button class="btn-action" id="mainFsBtn" onclick="toggleMainFullscreen()" style="color: #0f172a; border-color: #cbd5e1; background: #f8fafc;" title="Toggle Fullscreen Dashboard">
+                <i class="fa-solid fa-expand"></i> Fullscreen
+            </button>
+        </div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-total active-kpi" id="box-All" onclick="filterFromBox('All')">
+            <div class="kpi-info"><span class="kpi-title">Total Grama Panchayaths</span><span class="kpi-value" id="kpi-total-gps">0</span></div>
+            <i class="fa-solid fa-building-flag" style="font-size: 28px; color: #3b82f6; opacity: 0.2; position: absolute; right: 20px;"></i>
+        </div>
+        <div class="kpi-card kpi-mapped" id="box-Mapped" onclick="filterFromBox('Mapped')">
+            <div class="kpi-info"><span class="kpi-title">Mapped GPs</span><span class="kpi-value" id="kpi-mapped-gps">0</span></div>
+            <i class="fa-solid fa-circle-check" style="font-size: 28px; color: #10b981; opacity: 0.2; position: absolute; right: 20px;"></i>
+        </div>
+        <div class="kpi-card kpi-pending" id="box-Pending" onclick="filterFromBox('Pending')">
+            <div class="kpi-info"><span class="kpi-title">Pending / Vacant GPs</span><span class="kpi-value" id="kpi-pending-gps">0</span></div>
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; color: #ef4444; opacity: 0.2; position: absolute; right: 20px;"></i>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>District</th>
+                    <th>Mandal / Subdistrict</th>
+                    <th>Grama Panchayath (GP)</th>
+                    <th>Mapping Status</th>
+                    <th>CSC ID</th>
+                    <th>VLE Name</th>
+                    <th>Mobile No</th>
+                    <th>TXN 24-25</th>
+                    <th>TXN 25-26</th>
+                    <th>TXN 26-27 (Click)</th>
+                    <th style="text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="11" class="loader"><i class="fa-solid fa-spinner fa-spin"></i> Loading Data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal-content" id="captureModalContent1" style="width: 700px; max-height: 85vh;">
+            <div class="modal-header">
+                <div style="display: flex; flex-direction: column;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 22px; font-weight: 900; color: #1e3a8a;"><i class="fa-solid fa-map-location-dot" style="color:#2563eb; margin-right:8px;"></i> One GP - One CSC | Master Mapping Summary</span>
+                        <button id="sumBackBtn" onclick="openSummaryModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back to Districts</button>
+                    </div>
+                    <span id="summaryDistName" style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;"></span>
+                </div>
+                <div class="modal-header-actions" id="modalActionButtons1">
+                    <button class="expand-btn" onclick="toggleExpand('captureModalContent1', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" onclick="downloadSummaryImage('captureModalContent1', 'Master_Summary_Report', 'modalActionButtons1')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="closeModal('summaryModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+            </div>
+            <div class="overall-stats-banner" style="background:#f8fafc;">
+                <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="modTotalGPs" style="color:#0f172a;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Mapped GPs</span><span class="stat-value" id="modMappedGPs" style="color:#2563eb;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Pending</span><span class="stat-value" id="modPendingGPs" style="color:#dc2626;">0</span></div>
+                <div class="stat-item"><span class="stat-label" style="color:#059669;">Active (FY)</span><span class="stat-value" id="modActiveGPs" style="color:#059669;">0</span></div>
+                <div class="stat-item"><span class="stat-label" style="color:#64748b;">Zero TXN</span><span class="stat-value" id="modInactiveGPs" style="color:#64748b;">0</span></div>
+                <div class="stat-item"><span class="stat-label" style="color:#8b5cf6;">Mapped %</span><span class="stat-value" id="modPercentGPs" style="color:#8b5cf6;">0%</span></div>
+            </div>
+            <div class="modal-body"><table class="summary-table">
+                <thead><tr>
+                    <th style="text-align: left;" id="summaryTableFirstHeader">Name</th>
+                    <th style="background:#0f172a;">Total GPs</th>
+                    <th style="background:#1e3a8a;">Mapped GPs</th>
+                    <th style="background:#991b1b;">Pending GPs</th>
+                    <th style="background:#065f46;">Active (FY)</th>
+                    <th style="background:#475569;">Zero TXN</th>
+                </tr></thead>
+                <tbody id="summaryTableBody"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- 🌟 2. DYNAMIC DROPOUTS & PERFORMANCE MODAL 🌟 -->
+    <div class="modal-overlay" id="dropoutsModal">
+        <div class="modal-content" id="captureModalContent2" style="width: 800px; max-height: 85vh;">
+            <div class="modal-header">
+                <div style="display: flex; flex-direction: column;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> One GP - One CSC | Active & Dropouts Report</span>
+                        
+                        <button id="doBackBtn" onclick="openDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back to Districts</button>
+                        
+                        <div id="dropoutSelectors" style="display: flex; gap: 5px; align-items: center; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                            <span style="font-size:12px; font-weight:700; color:#475569;">Base:</span>
+                            <select id="doMonth1" class="do-select" onchange="calcDropouts()">
+                                <option value="apr">Apr-26</option><option value="may">May-26</option><option value="jun">Jun-26</option>
+                                <option value="jul">Jul-26</option><option value="aug" selected>Aug-26</option><option value="sep">Sep-26</option>
+                                <option value="oct">Oct-26</option><option value="nov">Nov-26</option><option value="dec">Dec-26</option>
+                                <option value="jan">Jan-27</option><option value="feb">Feb-27</option><option value="mar">Mar-27</option>
+                            </select>
+                            <span style="font-size:12px; font-weight:700; color:#475569; margin-left: 5px;">vs Compare:</span>
+                            <select id="doMonth2" class="do-select" onchange="calcDropouts()">
+                                <option value="apr">Apr-26</option><option value="may">May-26</option><option value="jun">Jun-26</option>
+                                <option value="jul">Jul-26</option><option value="aug">Aug-26</option><option value="sep" selected>Sep-26</option>
+                                <option value="oct">Oct-26</option><option value="nov">Nov-26</option><option value="dec">Dec-26</option>
+                                <option value="jan">Jan-27</option><option value="feb">Feb-27</option><option value="mar">Mar-27</option>
+                            </select>
+                        </div>
+                    </div>
+                    <span id="doDistName" style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;"></span>
+                </div>
+                <div class="modal-header-actions" id="modalActionButtons2">
+                    <button class="expand-btn" onclick="toggleExpand('captureModalContent2', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" style="background:#ea580c;" onclick="downloadSummaryImage('captureModalContent2', 'Dropouts_Report', 'modalActionButtons2')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="closeModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+            </div>
+            <div class="overall-stats-banner" style="background:#fff7ed;">
+                <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="doModTotal" style="color:#0f172a;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Mapped VLEs</span><span class="stat-value" id="doModMapped" style="color:#2563eb;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Active (FY)</span><span class="stat-value" id="doModActFY" style="color:#16a34a;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Inactive (FY)</span><span class="stat-value" id="doModInactFY" style="color:#64748b;">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="lblM1Top">M1 Active</span><span class="stat-value" id="doModM1" style="color:#8b5cf6;">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="lblM2Top">M2 Active</span><span class="stat-value" id="doModM2" style="color:#d946ef;">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="lblDropTop" style="color:#dc2626;">Dropouts</span><span class="stat-value" id="doModDropouts" style="color:#dc2626;">0</span></div>
+            </div>
+            <div class="modal-body"><table class="summary-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;" id="doTableFirstHeader">Name</th>
+                        <th style="background:#0f172a;">Total GPs</th>
+                        <th style="background:#1e3a8a;">Mapped VLEs</th>
+                        <th style="background:#065f46;">Active (FY)</th>
+                        <th style="background:#475569;">Inactive (FY)</th>
+                        <th style="background:#6d28d9;" id="tblHeadM1">M1 ACT</th>
+                        <th style="background:#a21caf;" id="tblHeadM2">M2 ACT</th>
+                        <th style="background:#991b1b;">Dropouts</th>
+                    </tr>
+                </thead>
+                <tbody id="dropoutsTableBody"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- 🌟 3. MONTH-WISE TXN MODAL 🌟 -->
+    <div class="modal-overlay" id="monthWiseModal">
+        <div class="modal-content" style="width: 480px;">
+            <div class="modal-header" style="background-color: #eff6ff; padding: 15px 20px;">
+                <span style="font-size: 16px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:8px;"></i> VLE Transactions Tracker</span>
+                <button class="modal-close" onclick="closeModal('monthWiseModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+            </div>
+            <div style="padding: 15px 20px 5px 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
+                <h4 id="mwVleName" style="color:#0f172a; margin:0; font-weight:800; font-size:16px;">VLE Name</h4>
+                <p id="mwCscId" style="color:#64748b; font-size:12px; margin:5px 0 10px 0; font-weight:600;"></p>
+                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                    <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 24-25 Total</div><div id="vTxn2425" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 25-26 Total</div><div id="vTxn2526" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="padding: 10px 20px 0 20px; text-align:center;"><span style="font-size:12px; font-weight:800; color:#94a3b8; text-transform:uppercase;">FY 26-27 Month-wise Breakup</span></div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;">
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">APR-26</div><div id="vApr" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">MAY-26</div><div id="vMay" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">JUN-26</div><div id="vJun" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">JUL-26</div><div id="vJul" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">AUG-26</div><div id="vAug" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">SEP-26</div><div id="vSep" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">OCT-26</div><div id="vOct" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">NOV-26</div><div id="vNov" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">DEC-26</div><div id="vDec" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">JAN-27</div><div id="vJan" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">FEB-27</div><div id="vFeb" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">MAR-27</div><div id="vMar" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 4. MAP VLE FORM MODAL 🌟 -->
+    <div class="modal-overlay" id="mapVleModal">
+        <div class="modal-content" style="width: 450px; max-height: 90vh;">
+            <div class="modal-header" style="background-color: #f8fafc; padding: 15px 20px;">
+                <span style="font-size: 16px; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-user-plus" style="color:#10b981; margin-right:8px;"></i> Update VLE Mapping</span>
+                <button class="modal-close" onclick="closeModal('mapVleModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="form-group"><label>District</label><input type="text" id="frmDist" class="form-readonly" readonly></div>
+                <div class="form-group"><label>Mandal</label><input type="text" id="frmMandal" class="form-readonly" readonly></div>
+                <div class="form-group"><label>Grama Panchayath</label><input type="text" id="frmGp" class="form-readonly" readonly></div>
+                <div class="form-group"><label>CSC ID (12 Digits)</label><input type="text" id="frmCscId" placeholder="Enter CSC ID..." maxlength="12"></div>
+                <div class="form-group"><label>ID Creation Date</label><input type="date" id="frmIdDate"></div>
+                <div class="form-group"><label>VLE Name</label><input type="text" id="frmVleName" placeholder="Enter VLE Name..."></div>
+                <div class="form-group"><label>Mobile Number</label><input type="text" id="frmMobile" placeholder="Enter Mobile Number..." maxlength="10"></div>
+                <button class="btn-submit" id="btnSubmitMapping" onclick="submitMappingData()">Save Mapping Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+        let globalData = [];
+        let districtsSet = new Set();
+        let mandalsMap = {}; 
+        
+        let loggedInUser = (localStorage.getItem("userName") || "").trim();
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
+        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1 || loggedInDesig.toUpperCase() === "DM";
+
+        const cacheKey = "gpMappingDataCache_v1";
+
+        window.onload = function() { fetchData(); };
+
+        async function fetchData(forceRefresh = false) {
+            if (!forceRefresh) {
+                let cachedData = sessionStorage.getItem(cacheKey);
+                if (cachedData) {
+                    try { processData(JSON.parse(cachedData)); return; } catch(e) {}
+                }
+            }
+            try {
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' class='loader'><i class='fa-solid fa-spinner fa-spin'></i> Fetching Fresh Data...</td></tr>";
+                let gpRes = await fetch(apiURL + "?sheet=GPMAPPING");
+                let rawData = await gpRes.json();
+                sessionStorage.setItem(cacheKey, JSON.stringify(rawData)); 
+                processData(rawData);
+            } catch (error) {
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding:20px;'>Error fetching data! Please check your internet connection.</td></tr>";
+            }
+        }
+
+        function processData(rawData) {
+            let headers = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let idxDist = headers.findIndex(h => h.includes('districtname'));
+            let idxMandal = headers.findIndex(h => h.includes('subdistrictname'));
+            let idxGp = headers.findIndex(h => h.includes('localbodyname'));
+            let idxCscId = headers.findIndex(h => h.includes('cscid'));
+            let idxIdDate = headers.findIndex(h => h.includes('idcreationdate') || h.includes('creationdate'));
+            let idxVleName = headers.findIndex(h => h.includes('vlename'));
+            let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
+            let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
+            let idxTxn2526 = headers.findIndex(h => h === 'txn2526');
+            let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
+            
+            let idxApr = headers.findIndex(h => h.includes('apr-26') || h.includes('apr26') || h === 'apr');
+            let idxMay = headers.findIndex(h => h.includes('may-26') || h.includes('may26') || h === 'may');
+            let idxJun = headers.findIndex(h => h.includes('jun-26') || h.includes('jun26') || h === 'jun');
+            let idxJul = headers.findIndex(h => h.includes('jul-26') || h.includes('jul26') || h === 'jul');
+            let idxAug = headers.findIndex(h => h.includes('aug-26') || h.includes('aug26') || h === 'aug');
+            let idxSep = headers.findIndex(h => h.includes('sep-26') || h.includes('sep26') || h === 'sep');
+            let idxOct = headers.findIndex(h => h.includes('oct-26') || h.includes('oct26') || h === 'oct');
+            let idxNov = headers.findIndex(h => h.includes('nov-26') || h.includes('nov26') || h === 'nov');
+            let idxDec = headers.findIndex(h => h.includes('dec-26') || h.includes('dec26') || h === 'dec');
+            let idxJan = headers.findIndex(h => h.includes('jan-27') || h.includes('jan27') || h === 'jan');
+            let idxFeb = headers.findIndex(h => h.includes('feb-27') || h.includes('feb27') || h === 'feb');
+            let idxMar = headers.findIndex(h => h.includes('mar-27') || h.includes('mar27') || h === 'mar');
+            let idxEmpName = headers.findIndex(h => h.includes('employee') || h.includes('dmname'));
+
+            globalData = []; districtsSet.clear(); mandalsMap = {};
+
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                let dist = idxDist > -1 ? (row[idxDist] || 'Unknown').toString().trim() : 'Unknown';
+                
+                if (isDM && loggedInUser !== "") {
+                    let sheetEmpName = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim().toLowerCase() : '';
+                    if (sheetEmpName !== loggedInUser.toLowerCase()) continue; 
+                }
+
+                let mandal = idxMandal > -1 ? (row[idxMandal] || 'Unknown').toString().trim() : 'Unknown';
+                let gp = idxGp > -1 ? (row[idxGp] || 'Unknown').toString().trim() : 'Unknown';
+                let cscId = idxCscId > -1 ? (row[idxCscId] || '').toString().trim() : '';
+                
+                if (dist !== 'Unknown') {
+                    districtsSet.add(dist);
+                    if (!mandalsMap[dist]) mandalsMap[dist] = new Set();
+                    mandalsMap[dist].add(mandal);
+                }
+                let isMapped = (cscId !== '' && cscId !== '-');
+
+                globalData.push({
+                    district: dist, mandal: mandal, gpName: gp, cscId: isMapped ? cscId : '',
+                    idDate: isMapped && idxIdDate > -1 ? (row[idxIdDate] || '').toString().trim() : '',
+                    vleName: isMapped && idxVleName > -1 ? row[idxVleName] : '',
+                    mobile: isMapped && idxMobile > -1 ? row[idxMobile] : '',
+                    txn2425: idxTxn2425 > -1 ? (Number(row[idxTxn2425]) || 0) : 0,
+                    txn2526: idxTxn2526 > -1 ? (Number(row[idxTxn2526]) || 0) : 0,
+                    txn2627: idxTxn2627 > -1 ? (Number(row[idxTxn2627]) || 0) : 0,
+                    apr: idxApr > -1 ? (Number(row[idxApr]) || 0) : 0, may: idxMay > -1 ? (Number(row[idxMay]) || 0) : 0,
+                    jun: idxJun > -1 ? (Number(row[idxJun]) || 0) : 0, jul: idxJul > -1 ? (Number(row[idxJul]) || 0) : 0,
+                    aug: idxAug > -1 ? (Number(row[idxAug]) || 0) : 0, sep: idxSep > -1 ? (Number(row[idxSep]) || 0) : 0,
+                    oct: idxOct > -1 ? (Number(row[idxOct]) || 0) : 0, nov: idxNov > -1 ? (Number(row[idxNov]) || 0) : 0,
+                    dec: idxDec > -1 ? (Number(row[idxDec]) || 0) : 0, jan: idxJan > -1 ? (Number(row[idxJan]) || 0) : 0,
+                    feb: idxFeb > -1 ? (Number(row[idxFeb]) || 0) : 0, mar: idxMar > -1 ? (Number(row[idxMar]) || 0) : 0,
+                    isMapped: isMapped
+                });
+            }
+            populateDistricts(); renderTable();
+        }
+
+        function populateDistricts() {
+            const distFilter = document.getElementById("districtFilter");
+            distFilter.innerHTML = '<option value="All">All Districts</option>';
+            Array.from(districtsSet).sort().forEach(dist => { distFilter.innerHTML += `<option value="${dist}">${dist}</option>`; });
+            populateMandals();
+        }
+
+        function populateMandals() {
+            const dist = document.getElementById("districtFilter").value;
+            const mandalFilter = document.getElementById("mandalFilter");
+            mandalFilter.innerHTML = '<option value="All">All Mandals</option>';
+            if (dist !== "All" && mandalsMap[dist]) { Array.from(mandalsMap[dist]).sort().forEach(m => { mandalFilter.innerHTML += `<option value="${m}">${m}</option>`; }); }
+            renderTable();
+        }
+
+        function filterFromBox(status) { document.getElementById("statusFilter").value = status; updateKpiHighlight(); }
+
+        function updateKpiHighlight() {
+            let status = document.getElementById("statusFilter").value;
+            document.querySelectorAll('.kpi-card').forEach(el => el.classList.remove("active-kpi"));
+            let box = document.getElementById("box-" + status);
+            if(box) box.classList.add("active-kpi"); else if(status.includes("Mapped")) document.getElementById("box-Mapped").classList.add("active-kpi");
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("districtFilter").value = "All";
+            document.getElementById("statusFilter").value = "All";
+            updateKpiHighlight(); populateMandals(); 
+        }
+
+        function renderTable() {
+            let distFilter = document.getElementById("districtFilter").value;
+            let mandalFilter = document.getElementById("mandalFilter").value;
+            let statusFilter = document.getElementById("statusFilter").value;
+            let searchQ = document.getElementById("searchInput").value.toLowerCase().trim();
+
+            let tbodyHtml = ""; let counts = { total: 0, mapped: 0, pending: 0 }; let displayCount = 0; 
+
+            globalData.forEach((row, index) => {
+                if (distFilter !== "All" && row.district !== distFilter) return;
+                if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
+                if (searchQ !== "") {
+                    let text = `${row.gpName} ${row.cscId} ${row.vleName}`.toLowerCase();
+                    if (!text.includes(searchQ)) return;
+                }
+
+                counts.total++;
+                if (row.isMapped) counts.mapped++; else counts.pending++;
+
+                if (statusFilter === "Mapped" && !row.isMapped) return;
+                if (statusFilter === "Pending" && row.isMapped) return;
+                if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
+                if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
+
+                displayCount++;
+                if (displayCount <= 300 || searchQ !== "") {
+                    let statusBadge = row.isMapped ? `<span class="badge-success"><i class="fa-solid fa-check"></i> MAPPED</span>` : `<span class="badge-danger"><i class="fa-solid fa-xmark"></i> PENDING</span>`;
+                    let rowStyle = row.isMapped ? "" : "background-color: #fef2f2;";
+                    let actBtn = `<button class="btn-update" onclick="openUpdateForm(${index})"><i class="fa-solid fa-pen"></i> Update</button>`;
+                    
+                    let txnStyle = (row.isMapped && row.txn2627 === 0) ? "background:#fee2e2; color:#dc2626; border-color:#fca5a5;" : "";
+                    let txnValHtml = row.isMapped ? `<span class="txn-link" style="${txnStyle}" onclick="showMonthWiseTxn(${index})" title="Click to view details">${row.txn2627}</span>` : "-";
+
+                    tbodyHtml += `<tr style="${rowStyle}">
+                        <td>${row.district}</td><td>${row.mandal}</td><td class="bold-num text-blue">${row.gpName}</td>
+                        <td>${statusBadge}</td><td class="bold-num">${row.cscId || '-'}</td><td>${row.vleName || '-'}</td>
+                        <td>${row.mobile || '-'}</td><td>${row.txn2425}</td><td>${row.txn2526}</td>
+                        <td style="text-align:center;">${txnValHtml}</td><td style="text-align:center;">${actBtn}</td>
+                    </tr>`;
+                }
+            });
+
+            if (displayCount > 300 && searchQ === "") { tbodyHtml += `<tr><td colspan="11" style="text-align:center; padding:15px; color:#64748b;">Showing top 300 records. Use filters to see specific data.</td></tr>`; } 
+            else if (displayCount === 0) { tbodyHtml = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">No Grama Panchayaths found matching your criteria.</td></tr>`; }
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml;
+            document.getElementById("kpi-total-gps").innerText = counts.total.toLocaleString();
+            document.getElementById("kpi-mapped-gps").innerText = counts.mapped.toLocaleString();
+            document.getElementById("kpi-pending-gps").innerText = counts.pending.toLocaleString();
+        }
+
+        function toggleMainFullscreen() {
+            let elem = document.documentElement;
+            let fsBtnIcon = document.querySelector('#mainFsBtn i');
+            
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            }
+        }
+        
+        document.addEventListener('fullscreenchange', (event) => {
+            const fsBtn = document.getElementById('mainFsBtn');
+            if (document.fullscreenElement) {
+                fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
+            } else {
+                fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
+            }
+        });
+
+        function toggleExpand(contentId, btnEl) {
+            let el = document.getElementById(contentId);
+            el.classList.toggle('modal-expanded');
+            let icon = btnEl.querySelector('i');
+            if (el.classList.contains('modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
+            else { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
+        }
+
+        function showMonthWiseTxn(index) {
+            let row = globalData[index];
+            document.getElementById("mwVleName").innerText = row.vleName || "Unknown VLE";
+            document.getElementById("mwCscId").innerText = `CSC ID: ${row.cscId} | GP: ${row.gpName}`;
+            let el2425 = document.getElementById('vTxn2425'); let el2526 = document.getElementById('vTxn2526');
+            el2425.innerText = row.txn2425; el2526.innerText = row.txn2526;
+            if(row.txn2425 > 0) el2425.style.color = '#16a34a'; else el2425.style.color = '#0f172a';
+            if(row.txn2526 > 0) el2526.style.color = '#16a34a'; else el2526.style.color = '#0f172a';
+
+            const mlist = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+            mlist.forEach(m => {
+                let val = row[m.toLowerCase()]; let el = document.getElementById('v' + m); el.innerText = val;
+                if(val > 0) el.style.color = '#16a34a'; else el.style.color = '#0f172a';
+            });
+            document.getElementById("monthWiseModal").style.display = "flex";
+        }
+
+        window.currentSummaryDist = null;
+        function openSummaryModal(distOverride) {
+            if (distOverride !== undefined) window.currentSummaryDist = distOverride;
+            let globalFilter = document.getElementById("districtFilter").value;
+            let distToUse = (window.currentSummaryDist && window.currentSummaryDist !== "All") ? window.currentSummaryDist : globalFilter;
+            let isStateWide = (distToUse === "All");
+
+            let backBtn = document.getElementById("sumBackBtn");
+            if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
+            
+            document.getElementById("summaryDistName").innerText = isStateWide ? "- Overall State Report (District-wise)" : `- District: ${distToUse}`;
+            document.getElementById("summaryTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
+
+            let summaryData = {};
+            let overallTotal = 0, overallMapped = 0, overallPending = 0, overallActive = 0, overallInactive = 0;
+
+            globalData.forEach(row => {
+                if (!isStateWide && row.district !== distToUse) return;
+                let keyName = isStateWide ? row.district : row.mandal;
+                if (!summaryData[keyName]) summaryData[keyName] = { total: 0, mapped: 0, pending: 0, active: 0, inactive: 0 };
+                summaryData[keyName].total++; overallTotal++;
+
+                if (row.isMapped) { 
+                    summaryData[keyName].mapped++; overallMapped++; 
+                    if (row.txn2627 > 0) { summaryData[keyName].active++; overallActive++; } else { summaryData[keyName].inactive++; overallInactive++; }
+                } else { summaryData[keyName].pending++; overallPending++; }
+            });
+            
+            let calcPercent = overallTotal === 0 ? 0 : ((overallMapped / overallTotal) * 100).toFixed(1);
+            document.getElementById("modTotalGPs").innerText = overallTotal.toLocaleString();
+            document.getElementById("modMappedGPs").innerText = overallMapped.toLocaleString();
+            document.getElementById("modPendingGPs").innerText = overallPending.toLocaleString();
+            document.getElementById("modActiveGPs").innerText = overallActive.toLocaleString();
+            document.getElementById("modInactiveGPs").innerText = overallInactive.toLocaleString();
+            document.getElementById("modPercentGPs").innerText = calcPercent + "%";
+
+            let tbodyHtml = "";
+            Object.keys(summaryData).sort().forEach(k => {
+                let d = summaryData[k];
+                let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
+                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
+                tbodyHtml += `<tr>
+                    ${nameHtml}
+                    <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
+                    <td>${pendingHtml}</td><td style="color:#16a34a; font-weight:800;">${d.active}</td><td style="color:#64748b; font-weight:800;">${d.inactive}</td>
+                </tr>`;
+            });
+            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='6'>No data available</td></tr>";
+            document.getElementById("summaryModal").style.display = "flex";
+        }
+
+        window.currentDropoutsDist = null;
+        function openDropoutsModal(distOverride) {
+            if (distOverride !== undefined) window.currentDropoutsDist = distOverride;
+            document.getElementById("dropoutsModal").style.display = "flex";
+            calcDropouts();
+        }
+
+        function calcDropouts() {
+            let globalFilter = document.getElementById("districtFilter").value;
+            let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : globalFilter;
+            let isStateWide = (distToUse === "All");
+
+            let backBtn = document.getElementById("doBackBtn");
+            if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
+            
+            document.getElementById("doDistName").innerText = isStateWide ? "- Overall State Report" : `- District: ${distToUse}`;
+            document.getElementById("doTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
+
+            let selM1 = document.getElementById("doMonth1"); let selM2 = document.getElementById("doMonth2");
+            let m1Key = selM1.value; let m2Key = selM2.value;
+            let m1Text = selM1.options[selM1.selectedIndex].text; let m2Text = selM2.options[selM2.selectedIndex].text;
+
+            document.getElementById("lblM1Top").innerText = m1Text + " Active"; document.getElementById("lblM2Top").innerText = m2Text + " Active";
+            document.getElementById("lblDropTop").innerText = "Dropouts (" + m1Text.split('-')[0] + "-" + m2Text.split('-')[0] + ")";
+            document.getElementById("tblHeadM1").innerText = m1Text.split('-')[0].toUpperCase() + " ACT";
+            document.getElementById("tblHeadM2").innerText = m2Text.split('-')[0].toUpperCase() + " ACT";
+
+            let doData = {}; let ovTotal = 0, ovMapped = 0, ovActFY = 0, ovInactFY = 0, ovM1 = 0, ovM2 = 0, ovDropouts = 0;
+
+            globalData.forEach(row => {
+                if (!isStateWide && row.district !== distToUse) return;
+                let keyName = isStateWide ? row.district : row.mandal;
+                if (!doData[keyName]) doData[keyName] = { total: 0, mapped: 0, actFY: 0, inactFY: 0, m1: 0, m2: 0, drop: 0 };
+                
+                doData[keyName].total++; ovTotal++;
+                if (!row.isMapped) return; 
+
+                doData[keyName].mapped++; ovMapped++;
+                if (row.txn2627 > 0) { doData[keyName].actFY++; ovActFY++; } else { doData[keyName].inactFY++; ovInactFY++; }
+                if (row[m1Key] > 0) { doData[keyName].m1++; ovM1++; }
+                if (row[m2Key] > 0) { doData[keyName].m2++; ovM2++; }
+                if (row[m1Key] > 0 && row[m2Key] === 0) { doData[keyName].drop++; ovDropouts++; }
+            });
+            
+            document.getElementById("doModTotal").innerText = ovTotal.toLocaleString();
+            document.getElementById("doModMapped").innerText = ovMapped.toLocaleString();
+            document.getElementById("doModActFY").innerText = ovActFY.toLocaleString();
+            document.getElementById("doModInactFY").innerText = ovInactFY.toLocaleString();
+            document.getElementById("doModM1").innerText = ovM1.toLocaleString();
+            document.getElementById("doModM2").innerText = ovM2.toLocaleString();
+            document.getElementById("doModDropouts").innerText = ovDropouts.toLocaleString();
+
+            let tbodyHtml = "";
+            Object.keys(doData).sort().forEach(k => {
+                let d = doData[k];
+                let dropHtml = d.drop > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.drop}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
+                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="openDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
+                tbodyHtml += `<tr>
+                    ${nameHtml}
+                    <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
+                    <td style="color:#16a34a;">${d.actFY}</td><td style="color:#64748b;">${d.inactFY}</td>
+                    <td style="color:#8b5cf6;">${d.m1}</td><td style="color:#d946ef;">${d.m2}</td><td>${dropHtml}</td>
+                </tr>`;
+            });
+            document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
+        }
+
+        let currentUpdateIndex = -1;
+        function openUpdateForm(index) {
+            currentUpdateIndex = index; let row = globalData[index];
+            document.getElementById("frmDist").value = row.district; document.getElementById("frmMandal").value = row.mandal;
+            document.getElementById("frmGp").value = row.gpName; document.getElementById("frmCscId").value = row.cscId === '-' ? '' : row.cscId;
+            document.getElementById("frmVleName").value = row.vleName === '-' ? '' : row.vleName;
+            document.getElementById("frmMobile").value = row.mobile === '-' ? '' : row.mobile;
+            document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
+        }
+
+        async function submitMappingData() {
+            let cscId = document.getElementById("frmCscId").value.trim();
+            let vleName = document.getElementById("frmVleName").value.trim();
+            let mobile = document.getElementById("frmMobile").value.trim();
+            let idDate = document.getElementById("frmIdDate").value.trim(); 
+            let row = globalData[currentUpdateIndex];
+
+            if (cscId === "") { alert("Please enter CSC ID!"); return; }
+
+            const btn = document.getElementById("btnSubmitMapping"); btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving Data..."; btn.disabled = true;
+
+            try {
+                let saveUrl = apiURL + `?action=updateMapping&district=${encodeURIComponent(row.district)}&mandal=${encodeURIComponent(row.mandal)}&gpName=${encodeURIComponent(row.gpName)}&cscId=${encodeURIComponent(cscId)}&idCreationDate=${encodeURIComponent(idDate)}&vleName=${encodeURIComponent(vleName)}&mobileNo=${encodeURIComponent(mobile)}`;
+                let res = await fetch(saveUrl); let result = await res.json();
+                if (result.status === "success") {
+                    globalData[currentUpdateIndex].cscId = cscId; globalData[currentUpdateIndex].vleName = vleName;
+                    globalData[currentUpdateIndex].mobile = mobile; globalData[currentUpdateIndex].idDate = idDate;
+                    globalData[currentUpdateIndex].isMapped = true;
+                    sessionStorage.removeItem(cacheKey); 
+                    alert("Data Saved Successfully!"); closeModal('mapVleModal'); renderTable(); 
+                } else { alert("Failed to save data. Try again."); }
+            } catch (err) { alert("Error connecting to server. Please try again."); } finally { btn.innerHTML = "Save Mapping Data"; btn.disabled = false; }
+        }
+
+        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+        async function downloadSummaryImage(contentId, prefix, actionBtnId) {
+            const actionBtns = document.getElementById(actionBtnId);
+            const originalContent = document.getElementById(contentId);
+            
+            let origDisplay = actionBtns.style.display; 
+            actionBtns.style.display = "none";
+            
+            let selectors = document.getElementById("dropoutSelectors"); 
+            let origSelectorsDisplay = "flex";
+            if (selectors && contentId === 'captureModalContent2') { 
+                origSelectorsDisplay = selectors.style.display; 
+                selectors.style.display = "none"; 
+            }
+            
+            let backBtns = originalContent.querySelectorAll('.back-btn-capture');
+            backBtns.forEach(btn => btn.style.visibility = 'hidden');
+
+            const clone = originalContent.cloneNode(true);
+            
+            actionBtns.style.display = origDisplay;
+            if (selectors && contentId === 'captureModalContent2') selectors.style.display = origSelectorsDisplay;
+            backBtns.forEach(btn => btn.style.visibility = 'visible');
+
+            let cloneHeaders = clone.querySelectorAll('th');
+            cloneHeaders.forEach(th => { th.style.position = 'static'; });
+
+            clone.style.position = 'absolute';
+            clone.style.top = '-9999px';
+            clone.style.left = '0';
+            clone.style.width = originalContent.offsetWidth + 'px';
+            clone.style.height = 'auto';
+            clone.style.maxHeight = 'none';
+            clone.style.overflow = 'visible';
+            clone.style.transform = 'none';
+            clone.style.borderRadius = '0';
+            
+            let cloneBody = clone.querySelector('.modal-body');
+            if(cloneBody) {
+                cloneBody.style.overflow = 'visible';
+                cloneBody.style.maxHeight = 'none';
+                cloneBody.style.height = 'auto';
+            }
+
+            document.body.appendChild(clone);
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800)); 
+                const canvas = await html2canvas(clone, { 
+                    scale: 2, 
+                    backgroundColor: "#ffffff", 
+                    useCORS: true, 
+                    logging: false, 
+                    windowHeight: clone.scrollHeight + 100 
+                });
+                
+                const link = document.createElement("a");
+                let distFilter = document.getElementById("districtFilter").value;
+                let distName = distFilter === "All" ? "State" : distFilter.replace(/\s+/g, "_");
+                let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+                
+                link.download = `${prefix}_${distName}_${dateStr}.png`; 
+                link.href = canvas.toDataURL("image/png"); 
+                link.click();
+            } catch (err) { alert("Sorry, image capture failed!"); } 
+            finally {
+                document.body.removeChild(clone);
+            }
+        }
+
+        window.onclick = function(event) { if (event.target.classList.contains('modal-overlay')) event.target.style.display = "none"; }
+        
+        async function downloadExcel() {
+            if (globalData.length === 0) { alert("No data to export!"); return; }
+            const btn = document.getElementById("downloadExcelBtn"); let origText = btn.innerHTML; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting..."; btn.disabled = true;
+
+            const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('GP Mapping Report');
+            sheet.addRow(["District", "Mandal", "Grama Panchayath", "Status", "CSC ID", "ID Creation Date", "VLE Name", "Mobile", "TXN 24-25", "TXN 25-26", "TXN 26-27"]);
+            
+            sheet.getRow(1).eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } }; cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; cell.alignment = { horizontal: 'center' }; });
+
+            let distFilter = document.getElementById("districtFilter").value; let mandalFilter = document.getElementById("mandalFilter").value; let statusFilter = document.getElementById("statusFilter").value;
+
+            globalData.forEach(row => {
+                if (distFilter !== "All" && row.district !== distFilter) return;
+                if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
+                if (statusFilter === "Mapped" && !row.isMapped) return;
+                if (statusFilter === "Pending" && row.isMapped) return;
+                if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
+                if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
+
+                sheet.addRow([row.district, row.mandal, row.gpName, row.isMapped ? "Mapped" : "Pending", row.cscId, row.idDate, row.vleName, row.mobile, row.txn2425, row.txn2526, row.txn2627]);
+            });
+            sheet.columns.forEach(col => col.width = 20);
+
+            const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+            let d = new Date(); let dateStr = `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`; link.download = `GP_Mapping_Report_${dateStr}.xlsx`; link.click();
+            btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded"; setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+        }
+    </script>
+</body>
+</html>

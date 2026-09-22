@@ -250,6 +250,7 @@
         .top-header { flex-direction: column; align-items: center; gap: 15px; padding: 15px 10px; }
         .brand-section { width: 100%; justify-content: center; }
         
+        /* 🌟 NAVIGATION BUTTONS WRAP LOGIC 🌟 */
         .nav-menu { width: 100%; flex-wrap: wrap !important; justify-content: center; overflow-x: hidden; padding: 0; gap: 8px; }
         .nav-btn { flex: 1 1 calc(33% - 10px); justify-content: center; font-size: 11px; padding: 10px 5px; text-align: center; }
         .menu-divider { display: none; } 
@@ -260,7 +261,7 @@
         .hero-panel { padding: 20px; text-align: center; min-height: auto; }
         .hero-left h1 { font-size: 20px; white-space: normal; }
         
-        /* 🌟 METRICS ROW - FORCE 2 COLUMNS ON MOBILE 🌟 */
+        /* 🌟 METRICS ROW - FORCE 2 COLUMNS ON MOBILE (LIKE BUTTONS) 🌟 */
         .metrics-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; } 
         .metric-card { padding: 12px; }
         .mc-top { margin-bottom: 5px; }
@@ -270,13 +271,11 @@
         .travel-network-wrapper { transform: scale(0.7); margin: -30px auto; }
         .alert-popup { width: 100%; }
         
-        /* 🌟 NEW: FIXING IFRAME HEIGHT FOR MOBILE 🌟 */
-        #reportIframeContainer { min-height: 75vh; }
-        
         /* 🌟 SIDEBAR OPTIONS AS GRID BUTTONS ON MOBILE 🌟 */
         .sidebar { width: 100%; min-width: 100%; max-height: none; margin-bottom: 15px; background: transparent; border: none; box-shadow: none; overflow: visible;}
         .sidebar-header { text-align: center; padding: 12px; background: var(--theme-color); color: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; margin-bottom: 15px; font-size: 13px; font-weight: 900;}
         
+        /* IMPORTANT: Converting vertical list to grid of buttons */
         .report-list { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; padding: 0 !important; }
         .report-list li {
             display: flex !important;
@@ -307,6 +306,7 @@
     }
     @media (max-width: 480px) {
         .nav-btn { flex: 1 1 calc(45% - 10px); } 
+        /* Ensure both metrics and sidebar lists stay 2 columns even on very small screens */
         .metrics-row { grid-template-columns: repeat(2, 1fr) !important; } 
         .report-list { grid-template-columns: repeat(2, 1fr) !important; } 
         .travel-network-wrapper { display: none; } 
@@ -504,9 +504,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // 🌟 KOTTA LOGIC: TRACK ACTIVE MODULE TO GO BACK ON CLOSE 🌟
-    window.currentActiveModule = 'HOME';
-
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     let loggedInUser = localStorage.getItem("userName") || "User";
@@ -554,6 +551,7 @@
         }
     }
 
+    // 🌟 KOTTA LOGIC: ROLE BASED HIDING (NAV BUTTONS & DASHBOARD VALUES & ALERTS) 🌟
     function applyRoleBasedAccess() {
         let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
         let isVLE = role === "VLE";
@@ -581,6 +579,7 @@
         }
     }
 
+    // 🌟 SMART CACHE WITH V13 CACHE KEY 🌟
     function fetchLiveDashboardStats() {
         let role = loggedInDesig ? loggedInDesig.toUpperCase() : "";
         let isVLE = role === "VLE";
@@ -639,43 +638,76 @@
             document.getElementById('tbl-irctc-yday').innerText = table.irctcYday || 0; 
             document.getElementById('tbl-irctc-month').innerText = table.irctcMonth || 0; 
             document.getElementById('tbl-irctc-q2').innerText = table.irctcQ2 || 0;
+
             document.getElementById('tbl-bus-yday').innerText = table.busYday || 0; 
             document.getElementById('tbl-bus-month').innerText = table.busMonth || 0; 
             document.getElementById('tbl-bus-q2').innerText = table.busQ2 || 0;
+
             document.getElementById('tbl-apsrtc-yday').innerText = table.apsrtcYday || 0; 
             document.getElementById('tbl-apsrtc-month').innerText = table.apsrtcMonth || 0; 
             document.getElementById('tbl-apsrtc-q2').innerText = table.apsrtcQ2 || 0;
+
             document.getElementById('tbl-air-yday').innerText = table.airYday || 0; 
             document.getElementById('tbl-air-month').innerText = table.airMonth || 0; 
             document.getElementById('tbl-air-q2').innerText = table.airQ2 || 0;
+
             document.getElementById('tbl-stamp-yday').innerText = table.stampYday || 0; 
             document.getElementById('tbl-stamp-month').innerText = table.stampMonth || 0; 
             document.getElementById('tbl-stamp-q2').innerText = table.stampQ2 || 0;
+
             document.getElementById('tbl-fastag-yday').innerText = table.fastagYday || 0; 
             document.getElementById('tbl-fastag-month').innerText = table.fastagMonth || 0; 
             document.getElementById('tbl-fastag-q2').innerText = table.fastagQ2 || 0;
         }
 
         var alertHeaderEl = document.querySelector('.alert-header');
-        if(alertHeaderEl) { alertHeaderEl.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation"></i> HIGH PRIORITY ALERTS</strong>`; }
+        if(alertHeaderEl) {
+            alertHeaderEl.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation"></i> HIGH PRIORITY ALERTS</strong>`;
+        }
 
         var alertHtml = "";
         if(data.alerts && data.alerts.length > 0) {
-            data.alerts.forEach(function(al) { alertHtml += `<div class="alert-item-box"><span class="alert-item-title">${al.title}</span><p class="alert-item-msg">${al.message}</p></div>`; });
+            data.alerts.forEach(function(al) {
+                alertHtml += `<div class="alert-item-box">
+                                <span class="alert-item-title">${al.title}</span>
+                                <p class="alert-item-msg">${al.message}</p>
+                              </div>`;
+            });
         } else {
-            alertHtml += `<div class="alert-item-box" style="border-left-color: #10b981;"><span class="alert-item-title" style="color: #059669;"><i class="fa-solid fa-check-circle me-1"></i> System Normal</span><p class="alert-item-msg">All systems functioning normally.</p></div>`;
+            alertHtml += `<div class="alert-item-box" style="border-left-color: #10b981;">
+                            <span class="alert-item-title" style="color: #059669;"><i class="fa-solid fa-check-circle me-1"></i> System Normal</span>
+                            <p class="alert-item-msg">All systems functioning normally.</p>
+                          </div>`;
         }
+        
         var alertBodyEl = document.querySelector('.alert-body');
-        if(alertBodyEl) { alertBodyEl.innerHTML = alertHtml; }
+        if(alertBodyEl) {
+            alertBodyEl.innerHTML = alertHtml;
+        }
 
         var annHtml = "";
         if(data.announcements && data.announcements.length > 0) {
             data.announcements.forEach(function(ann) {
                 var iconHtml = ann.type === 'Alert' ? '<i class="fa-solid fa-bell"></i>' : '<i class="fa-solid fa-bullhorn"></i>';
-                annHtml += `<div class="ann-item"><div class="ann-icon">${iconHtml}</div><div class="ann-content"><h6>${ann.title}</h6><p>${ann.message}</p></div><div class="ann-time-badge">${ann.date}</div></div>`;
+                
+                annHtml += `<div class="ann-item">
+                                <div class="ann-icon">${iconHtml}</div>
+                                <div class="ann-content">
+                                    <h6>${ann.title}</h6>
+                                    <p>${ann.message}</p>
+                                </div>
+                                <div class="ann-time-badge">${ann.date}</div>
+                            </div>`;
             });
         } else {
-            annHtml = `<div class="ann-item"><div class="ann-icon"><i class="fa-solid fa-info"></i></div><div class="ann-content"><h6>System Active</h6><p>All travel API integrations are running smoothly.</p></div><div class="ann-time-badge">Today</div></div>`;
+            annHtml = `<div class="ann-item">
+                            <div class="ann-icon"><i class="fa-solid fa-info"></i></div>
+                            <div class="ann-content">
+                                <h6>System Active</h6>
+                                <p>All travel API integrations are running smoothly.</p>
+                            </div>
+                            <div class="ann-time-badge">Today</div>
+                        </div>`;
         }
         document.getElementById('announcementsContainer').innerHTML = annHtml;
 
@@ -705,6 +737,7 @@
         document.getElementById('tbl-air-yday').innerText = 0; document.getElementById('tbl-air-month').innerText = 0; document.getElementById('tbl-air-q2').innerText = 0;
         document.getElementById('tbl-stamp-yday').innerText = 0; document.getElementById('tbl-stamp-month').innerText = 0; document.getElementById('tbl-stamp-q2').innerText = 0;
         document.getElementById('tbl-fastag-yday').innerText = 0; document.getElementById('tbl-fastag-month').innerText = 0; document.getElementById('tbl-fastag-q2').innerText = 0;
+
         document.getElementById('announcementsContainer').innerHTML = `<div class="ann-item"><div class="ann-icon"><i class="fa-solid fa-info"></i></div><div class="ann-content"><h6>System Active</h6><p>No new announcements.</p></div><div class='ann-time-badge'>Today</div></div>`;
 
         var tasksHtml = "";
@@ -784,6 +817,7 @@
       updateGreeting(); updateDateDisplay(); updateLiveClock(); setInterval(updateLiveClock, 1000);
 
       applyRoleBasedAccess();
+      
       checkAndShowPopup();
       fetchLiveDashboardStats(); 
     };
@@ -796,7 +830,6 @@
     }
 
     function loadHome() { 
-        window.currentActiveModule = 'HOME';
         setActiveNav('navHome'); 
         document.documentElement.style.setProperty('--theme-bg', '#ffffff');
         document.getElementById('sidebar').style.display = 'none'; 
@@ -805,16 +838,10 @@
         document.getElementById('homeDisplay').style.display = 'flex'; 
     }
 
-    // 🌟 KOTTA LOGIC: CLOSE REPORT & GO TO PREVIOUS MENU 🌟
     function closeActiveReport() {
+        document.getElementById('reportIframeContainer').style.display = 'none'; document.getElementById('reportIframeContainer').innerHTML = ''; 
+        loadHome();
         document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item'));
-        
-        // పాతలాగా loadHome() కాకుండా, ఏ మాడ్యూల్ లో ఉంటే ఆ మాడ్యూల్ కి వెళ్తుంది.
-        if (window.currentActiveModule && window.currentActiveModule !== 'HOME') {
-            openModule(window.currentActiveModule); 
-        } else {
-            loadHome();
-        }
     }
 
     document.addEventListener('keydown', function(event) { 
@@ -944,10 +971,12 @@
       else if (moduleName === "FASTAG" && reportId === "Top Performance") iframeSrc = "FASTAG_Top_Performance.html";
       else if (moduleName === "FASTAG" && reportId === "Monthly Closure Report") iframeSrc = "FASTAG_Monthly_Closure.html";
 
+      // 🌟 GP MAPPING LINK ADD CHESANU 🌟
       else if (moduleName === "MASTER" && reportId === "AP Consolidated Report") iframeSrc = "Master_AP_Consolidated.html";
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
       else if (moduleName === "MASTER" && reportId === "SendDailyEmails") iframeSrc = "Master_Send_Emails.html";
       else if (moduleName === "MASTER" && reportId === "VLEDetails") iframeSrc = "Master_VLE_Details.html";
+      else if (moduleName === "MASTER" && reportId === "GPMapping") iframeSrc = "GP_Mapping.html";
 
       else if (moduleName === "HELPDESK" && reportId === "Helpdesk Dashboard") iframeSrc = "Helpdesk_Admin.html";
       else if (moduleName === "HELPDESK" && reportId === "Helpdesk Summary") iframeSrc = "Helpdesk_Summary.html";
@@ -956,7 +985,6 @@
       
       else if (moduleName === "HELPDESK" && reportId === "Raise a Ticket") iframeSrc = "Helpdesk_RaiseTicket.html";
       else if (moduleName === "HELPDESK" && reportId === "Track Status") iframeSrc = "Helpdesk_TrackStatus.html";
-      else if (moduleName === "HELPDESK" && reportId === "User Manuals & Forms") iframeSrc = "vle_downloads.html";
 
       else if (moduleName === "ACTION CENTER") iframeSrc = "Action_Center.html";
 
@@ -972,19 +1000,16 @@
 
       if (window.innerWidth <= 992) { document.getElementById('sidebar').style.display = 'none'; } else { document.getElementById('sidebar').classList.add('collapsed-hover'); }
 
-      // 🌟 IFRAME HEIGHT FIX FOR MOBILE 🌟
       document.getElementById('reportIframeContainer').innerHTML = `
         <div style="background: #ffffff; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0;">
             <h6 style="margin:0; color:#0f172a; font-weight:800; font-size:14px;"><i class="fa-solid fa-chart-line text-primary me-2"></i> ${reportName}</h6>
             <button onclick="closeActiveReport()" style="background:transparent; color:#64748b; border:none; font-size:16px; cursor:pointer; transition:0.3s;" onmouseover="this.style.color='#dc2626';" onmouseout="this.style.color='#64748b';" title="Close Report"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; background:white; border-radius: 0 0 16px 16px; min-height: 75vh;" onerror="this.outerHTML='<div style=\\'text-align:center; padding:80px;\\'><i class=\\'fa-solid fa-hammer\\' style=\\'font-size:50px; color:#cbd5e1; margin-bottom:20px;\\'></i><h2 style=\\'font-family:Outfit, sans-serif; font-weight:900; color:#1e293b;\\'>${reportName}</h2><p style=\\'color:#64748b; font-size:15px;\\'>This report is currently under development.</p></div>'"></iframe>
+        <iframe src="${iframeSrc}" style="width:100%; flex:1; border:none; background:white; border-radius: 0 0 16px 16px;" onerror="this.outerHTML='<div style=\\'text-align:center; padding:80px;\\'><i class=\\'fa-solid fa-hammer\\' style=\\'font-size:50px; color:#cbd5e1; margin-bottom:20px;\\'></i><h2 style=\\'font-family:Outfit, sans-serif; font-weight:900; color:#1e293b;\\'>${reportName}</h2><p style=\\'color:#64748b; font-size:15px;\\'>This report is currently under development.</p></div>'"></iframe>
       `;
     }
 
     function openModule(moduleName) {
-      window.currentActiveModule = moduleName; // Track module to return here when closing a report
-      
       if (window.innerWidth > 992) { enterFullScreen(); }
       const navIdMap = { "IRCTC": "navIrctc", "REDBUS": "navRedbus", "AIRWAYS": "navAirways", "APSRTC": "navApsrtc", "E-STAMPING": "navEstamp", "HELPDESK": "navHelpdesk", "MASTER": "navMaster", "ACTION CENTER": "navAction", "FASTAG": "navFastag" };
       setActiveNav(navIdMap[moduleName]);
@@ -1029,6 +1054,16 @@
           }
 
           let li3 = document.createElement('li'); li3.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-users-viewfinder" style="color:#8b5cf6;"></i></span> <span class="menu-text">VLE Details</span>'; li3.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li3.classList.add('active-item'); loadReport('MASTER', 'VLEDetails', 'VLE Details'); }; list.appendChild(li3);
+          
+          // 🌟 KOTTA GA ADD CHESINA GP MAPPING BUTTON 🌟
+          let li4 = document.createElement('li'); 
+          li4.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-map-location-dot" style="color:#ea580c;"></i></span> <span class="menu-text">GP-VLE Mapping</span>'; 
+          li4.onclick = function() { 
+              document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
+              li4.classList.add('active-item'); 
+              loadReport('MASTER', 'GPMapping', 'GP - VLE Mapping Tracker'); 
+          }; 
+          list.appendChild(li4);
           
       } else {
           let reports = [];
@@ -1087,7 +1122,7 @@
 
     function showLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'flex'; }
     function closeLogoutPopup() { document.getElementById('logoutPopupOverlay').style.display = 'none'; }
-    function confirmLogout() { localStorage.clear(); sessionStorage.clear(); window.location.replace("index.html"); }
+    function confirmLogout() { sessionStorage.clear(); window.location.replace("index.html"); }
   </script>
 </body>
 </html>
