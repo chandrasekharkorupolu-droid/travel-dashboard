@@ -12,7 +12,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Inter, sans-serif; }
         body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 20px; gap: 15px; color: #334155; }
 
-        /* 🌟 COMPACT & RESPONSIVE CONTROL PANEL 🌟 */
         .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
         .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
         .page-heading i { color: #2563eb; font-size: 18px; }
@@ -240,13 +239,13 @@
 
     <!-- 🌟 2. DYNAMIC DROPOUTS & PERFORMANCE MODAL 🌟 -->
     <div class="modal-overlay" id="dropoutsModal">
-        <div class="modal-content" id="captureModalContent2" style="width: 800px; max-height: 85vh;">
+        <div class="modal-content" id="captureModalContent2" style="width: 850px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> One GP - One CSC | Active & Dropouts Report</span>
+                        <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> One GP - One CSC : Active & Dropouts Report</span>
                         
-                        <button id="doBackBtn" onclick="openDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back to Districts</button>
+                        <button id="doBackBtn" onclick="openDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         
                         <div id="dropoutSelectors" style="display: flex; gap: 5px; align-items: center; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
                             <span style="font-size:12px; font-weight:700; color:#475569;">Base:</span>
@@ -273,15 +272,18 @@
                     <button class="modal-close" onclick="closeModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
             </div>
-            <div class="overall-stats-banner" style="background:#fff7ed;">
+            
+            <div class="overall-stats-banner" style="background:#fff7ed; padding: 12px 10px;">
                 <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="doModTotal" style="color:#0f172a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Mapped VLEs</span><span class="stat-value" id="doModMapped" style="color:#2563eb;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Active (FY)</span><span class="stat-value" id="doModActFY" style="color:#16a34a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Inactive (FY)</span><span class="stat-value" id="doModInactFY" style="color:#64748b;">0</span></div>
+                
                 <div class="stat-item"><span class="stat-label" id="lblM1Top">M1 Active</span><span class="stat-value" id="doModM1" style="color:#8b5cf6;">0</span></div>
-                <div class="stat-item"><span class="stat-label" id="lblM2Top">M2 Active</span><span class="stat-value" id="doModM2" style="color:#d946ef;">0</span></div>
+                <div class="stat-item"><span class="stat-label" id="lblM2Top">M2 Active</span><span class="stat-value" id="doModM2" style="color:#d946ef; white-space:nowrap;">0</span></div>
                 <div class="stat-item"><span class="stat-label" id="lblDropTop" style="color:#dc2626;">Dropouts</span><span class="stat-value" id="doModDropouts" style="color:#dc2626;">0</span></div>
             </div>
+            
             <div class="modal-body"><table class="summary-table">
                 <thead>
                     <tr>
@@ -291,7 +293,7 @@
                         <th style="background:#065f46;">Active (FY)</th>
                         <th style="background:#475569;">Inactive (FY)</th>
                         <th style="background:#6d28d9;" id="tblHeadM1">M1 ACT</th>
-                        <th style="background:#a21caf;" id="tblHeadM2">M2 ACT</th>
+                        <th style="background:#a21caf; line-height:1.2;" id="tblHeadM2">M2 ACT <br><span style="font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;">(Retained + New)</span></th>
                         <th style="background:#991b1b;">Dropouts</th>
                     </tr>
                 </thead>
@@ -661,46 +663,58 @@
             let m1Key = selM1.value; let m2Key = selM2.value;
             let m1Text = selM1.options[selM1.selectedIndex].text; let m2Text = selM2.options[selM2.selectedIndex].text;
 
-            document.getElementById("lblM1Top").innerText = m1Text + " Active"; document.getElementById("lblM2Top").innerText = m2Text + " Active";
-            document.getElementById("lblDropTop").innerText = "Dropouts (" + m1Text.split('-')[0] + "-" + m2Text.split('-')[0] + ")";
+            document.getElementById("lblM1Top").innerText = m1Text + " Active"; 
+            document.getElementById("lblM2Top").innerText = m2Text + " Active";
+            document.getElementById("lblDropTop").innerText = "Dropouts";
+            
             document.getElementById("tblHeadM1").innerText = m1Text.split('-')[0].toUpperCase() + " ACT";
-            document.getElementById("tblHeadM2").innerText = m2Text.split('-')[0].toUpperCase() + " ACT";
+            document.getElementById("tblHeadM2").innerHTML = m2Text.split('-')[0].toUpperCase() + " ACT <br><span style='font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;'>(Retained + New)</span>";
 
-            let doData = {}; let ovTotal = 0, ovMapped = 0, ovActFY = 0, ovInactFY = 0, ovM1 = 0, ovM2 = 0, ovDropouts = 0;
+            let doData = {}; 
+            let ovTotal = 0, ovMapped = 0, ovActFY = 0, ovInactFY = 0, ovM1 = 0, ovM2 = 0, ovDropouts = 0, ovNewAct = 0;
 
             globalData.forEach(row => {
                 if (!isStateWide && row.district !== distToUse) return;
                 let keyName = isStateWide ? row.district : row.mandal;
-                if (!doData[keyName]) doData[keyName] = { total: 0, mapped: 0, actFY: 0, inactFY: 0, m1: 0, m2: 0, drop: 0 };
+                if (!doData[keyName]) doData[keyName] = { total: 0, mapped: 0, actFY: 0, inactFY: 0, m1: 0, m2: 0, drop: 0, newAct: 0 };
                 
                 doData[keyName].total++; ovTotal++;
                 if (!row.isMapped) return; 
 
                 doData[keyName].mapped++; ovMapped++;
                 if (row.txn2627 > 0) { doData[keyName].actFY++; ovActFY++; } else { doData[keyName].inactFY++; ovInactFY++; }
+                
                 if (row[m1Key] > 0) { doData[keyName].m1++; ovM1++; }
                 if (row[m2Key] > 0) { doData[keyName].m2++; ovM2++; }
+                
                 if (row[m1Key] > 0 && row[m2Key] === 0) { doData[keyName].drop++; ovDropouts++; }
+                if (row[m1Key] === 0 && row[m2Key] > 0) { doData[keyName].newAct++; ovNewAct++; }
             });
             
+            let ovRetained = ovM2 - ovNewAct;
             document.getElementById("doModTotal").innerText = ovTotal.toLocaleString();
             document.getElementById("doModMapped").innerText = ovMapped.toLocaleString();
             document.getElementById("doModActFY").innerText = ovActFY.toLocaleString();
             document.getElementById("doModInactFY").innerText = ovInactFY.toLocaleString();
             document.getElementById("doModM1").innerText = ovM1.toLocaleString();
-            document.getElementById("doModM2").innerText = ovM2.toLocaleString();
+            document.getElementById("doModM2").innerHTML = `<span style="font-size:16px; color:#64748b;">${ovRetained.toLocaleString()} <span style="color:#10b981;">+${ovNewAct.toLocaleString()}</span> = </span>${ovM2.toLocaleString()}`;
             document.getElementById("doModDropouts").innerText = ovDropouts.toLocaleString();
 
             let tbodyHtml = "";
             Object.keys(doData).sort().forEach(k => {
                 let d = doData[k];
                 let dropHtml = d.drop > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.drop}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
+                
+                let retained = d.m2 - d.newAct;
+                let m2Html = `<span style="color:#475569; font-size:13px;" title="Retained VLEs">${retained}</span> <span style="color:#10b981; font-size:13px; font-weight:800;" title="New VLEs">+${d.newAct}</span> <span style="color:#a21caf; font-weight:900; font-size:16px;" title="Total VLEs">= ${d.m2}</span>`;
+                
                 let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="openDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
+                
                 tbodyHtml += `<tr>
                     ${nameHtml}
                     <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
                     <td style="color:#16a34a;">${d.actFY}</td><td style="color:#64748b;">${d.inactFY}</td>
-                    <td style="color:#8b5cf6;">${d.m1}</td><td style="color:#d946ef;">${d.m2}</td><td>${dropHtml}</td>
+                    <td style="color:#8b5cf6;">${d.m1}</td><td>${m2Html}</td><td>${dropHtml}</td>
                 </tr>`;
             });
             document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
