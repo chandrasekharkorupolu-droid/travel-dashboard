@@ -9,166 +9,164 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        /* 🌟 FIXED: Wrapper height is strictly 100vh to ensure Sticky Headers work perfectly 🌟 */
-        .gp-app-wrapper { font-family: 'Segoe UI', Inter, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 15px; gap: 15px; color: #334155; background-color: #f1f5f9; box-sizing: border-box; }
-        .gp-app-wrapper * { box-sizing: border-box; }
+        /* 🌟 CSS ISOLATION: STRICTLY APPLIED TO THIS WRAPPER ONLY (NO CSS BLEEDING) 🌟 */
+        #gpm-unique-wrapper { font-family: 'Segoe UI', Inter, sans-serif; display: flex; flex-direction: column; height: 100%; min-height: 85vh; padding: 15px; gap: 15px; color: #334155; background-color: #f1f5f9; box-sizing: border-box; }
+        #gpm-unique-wrapper * { box-sizing: border-box; }
+        
+        #gpm-unique-wrapper .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
+        #gpm-unique-wrapper .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        #gpm-unique-wrapper .page-heading i { color: #2563eb; font-size: 18px; }
+        
+        #gpm-unique-wrapper .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        #gpm-unique-wrapper .filter-group select, #gpm-unique-wrapper .search-box { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; outline: none; background-color: #ffffff; cursor: pointer; transition: 0.2s; max-width: 140px; margin: 0; }
+        #gpm-unique-wrapper .filter-group select:focus, #gpm-unique-wrapper .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        #gpm-unique-wrapper .search-box { width: 140px; cursor: text; }
+        #gpm-unique-wrapper .search-box:focus { width: 180px; }
 
-        .gp-app-wrapper .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
-        .gp-app-wrapper .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .gp-app-wrapper .page-heading i { color: #2563eb; font-size: 18px; }
+        #gpm-unique-wrapper .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0; }
+        #gpm-unique-wrapper .btn-action:hover { background-color: #f8fafc; color: #0f172a; }
         
-        .gp-app-wrapper .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        #gpm-unique-wrapper #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
+        #gpm-unique-wrapper #downloadExcelBtn:hover { background-color: #059669; }
         
-        .gp-app-wrapper .filter-group select, .gp-app-wrapper .search-box { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; outline: none; background-color: #ffffff; cursor: pointer; transition: 0.2s; max-width: 140px; margin: 0; }
-        .gp-app-wrapper .filter-group select:focus, .gp-app-wrapper .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .gp-app-wrapper .search-box { width: 140px; cursor: text; }
-        .gp-app-wrapper .search-box:focus { width: 180px; }
+        #gpm-unique-wrapper #summaryBtn { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
+        #gpm-unique-wrapper #summaryBtn:hover { background-color: #7c3aed; }
 
-        .gp-app-wrapper .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0; }
-        .gp-app-wrapper .btn-action:hover { background-color: #f8fafc; color: #0f172a; }
-        
-        .gp-app-wrapper #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
-        .gp-app-wrapper #downloadExcelBtn:hover { background-color: #059669; }
-        
-        .gp-app-wrapper #summaryBtn { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
-        .gp-app-wrapper #summaryBtn:hover { background-color: #7c3aed; }
+        #gpm-unique-wrapper #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
+        #gpm-unique-wrapper #perfBtn:hover { background-color: #c2410c; }
 
-        .gp-app-wrapper #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
-        .gp-app-wrapper #perfBtn:hover { background-color: #c2410c; }
+        #gpm-unique-wrapper #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
+        #gpm-unique-wrapper #dailyReportBtn:hover { background-color: #0369a1; }
 
-        .gp-app-wrapper #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
-        .gp-app-wrapper #dailyReportBtn:hover { background-color: #0369a1; }
+        #gpm-unique-wrapper .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
+        #gpm-unique-wrapper .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        #gpm-unique-wrapper .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        #gpm-unique-wrapper .kpi-card.active-kpi { border: 2px solid #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,0.1); }
+        
+        #gpm-unique-wrapper .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; border-radius: 8px 0 0 8px; }
+        #gpm-unique-wrapper .kpi-info { display: flex; flex-direction: column; width: 100%; }
+        #gpm-unique-wrapper .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+        #gpm-unique-wrapper .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
+        
+        #gpm-unique-wrapper .kpi-total::before { background-color: #3b82f6; } 
+        #gpm-unique-wrapper .kpi-mapped::before { background-color: #10b981; } 
+        #gpm-unique-wrapper .kpi-pending::before { background-color: #ef4444; } 
 
-        .gp-app-wrapper .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
-        .gp-app-wrapper .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .gp-app-wrapper .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
-        .gp-app-wrapper .kpi-card.active-kpi { border: 2px solid #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,0.1); }
+        #gpm-unique-wrapper .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; border: 1px solid #e2e8f0; }
+        #gpm-unique-wrapper table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
         
-        .gp-app-wrapper .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; border-radius: 8px 0 0 8px; }
-        .gp-app-wrapper .kpi-info { display: flex; flex-direction: column; width: 100%; }
-        .gp-app-wrapper .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
-        .gp-app-wrapper .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
+        #gpm-unique-wrapper thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
         
-        .gp-app-wrapper .kpi-total::before { background-color: #3b82f6; } 
-        .gp-app-wrapper .kpi-mapped::before { background-color: #10b981; } 
-        .gp-app-wrapper .kpi-pending::before { background-color: #ef4444; } 
+        #gpm-unique-wrapper td { white-space: nowrap; padding: 12px 15px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; font-weight: 500; }
+        #gpm-unique-wrapper tbody tr:hover { background-color: #f8fafc; }
+        
+        #gpm-unique-wrapper .badge-success { background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-block; }
+        #gpm-unique-wrapper .badge-danger { background-color: #fef2f2; color: #b91c1c; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #fecaca; display: inline-block; }
+        
+        #gpm-unique-wrapper .btn-update { background-color: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        #gpm-unique-wrapper .btn-update:hover { background-color: #2563eb; color: white; }
 
-        /* 🌟 INTERNAL SCROLL ENABLED 🌟 */
-        .gp-app-wrapper .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; border: 1px solid #e2e8f0; }
-        .gp-app-wrapper table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
-        
-        /* 🌟 STICKY HEADER FIX 🌟 */
-        .gp-app-wrapper thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
-        
-        .gp-app-wrapper td { white-space: nowrap; padding: 12px 15px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; font-weight: 500; }
-        .gp-app-wrapper tbody tr:hover { background-color: #f8fafc; }
-        
-        .gp-app-wrapper .bold-num { font-weight: 700; color: #0f172a; }
-        .gp-app-wrapper .text-blue { color: #2563eb; font-weight: 600; }
+        #gpm-unique-wrapper .txn-link { background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s; border: 1px solid #bfdbfe; display: inline-block; }
+        #gpm-unique-wrapper .txn-link:hover { background: #2563eb; color: white; transform: scale(1.05); }
 
-        .gp-app-wrapper .badge-success { background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-block; }
-        .gp-app-wrapper .badge-danger { background-color: #fef2f2; color: #b91c1c; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #fecaca; display: inline-block; }
-        
-        .gp-app-wrapper .btn-update { background-color: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .gp-app-wrapper .btn-update:hover { background-color: #2563eb; color: white; }
+        #gpm-unique-wrapper .loader { text-align: center; padding: 40px; font-size: 14px; color: #475569; font-weight: 600; }
 
-        .gp-app-wrapper .txn-link { background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s; border: 1px solid #bfdbfe; display: inline-block; }
-        .gp-app-wrapper .txn-link:hover { background: #2563eb; color: white; transform: scale(1.05); }
+        #gpm-unique-wrapper .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+        #gpm-unique-wrapper .modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: gpmPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #e2e8f0; transition: all 0.3s ease; font-family: 'Segoe UI', Inter, sans-serif;}
+        
+        #gpm-unique-wrapper .modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
+        
+        @keyframes gpmPopIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        #gpm-unique-wrapper .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; margin: 0; }
+        #gpm-unique-wrapper .modal-header-actions { display: flex; align-items: center; gap: 12px; }
+        
+        #gpm-unique-wrapper .expand-btn { cursor: pointer; color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px;}
+        #gpm-unique-wrapper .expand-btn:hover { background: #e2e8f0; color: #0f172a; }
 
-        .gp-app-wrapper .loader { text-align: center; padding: 40px; font-size: 14px; color: #475569; font-weight: 600; }
+        #gpm-unique-wrapper .btn-modal-dl { background-color: #2563eb; color: white; border: none; padding: 7px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+        #gpm-unique-wrapper .btn-modal-dl:hover { background-color: #1d4ed8; }
+        
+        #gpm-unique-wrapper .modal-close { cursor: pointer; color: #ef4444; background: none; border: none; font-size: 26px; transition: 0.2s; display: flex; align-items: center; padding: 0;}
+        #gpm-unique-wrapper .modal-close:hover { color: #b91c1c; transform: scale(1.1); }
+        
+        #gpm-unique-wrapper .overall-stats-banner { display: flex; justify-content: space-around; background-color: #f8fafc; padding: 15px 20px; border-bottom: 2px solid #cbd5e1; }
+        #gpm-unique-wrapper .stat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+        
+        #gpm-unique-wrapper .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
+        #gpm-unique-wrapper .stat-value { font-size: 26px; font-weight: 900; }
+        
+        #gpm-unique-wrapper .modal-body { padding: 0; overflow-y: auto; overflow-x: auto; flex: 1; background: #ffffff; }
+        
+        #gpm-unique-wrapper .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
+        #gpm-unique-wrapper .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
+        #gpm-unique-wrapper .summary-table td { padding: 12px 10px; font-size: 15px; color: #334155; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+        
+        #gpm-unique-wrapper .sum-mandal { text-align: left; font-weight: 800; color: #0f172a; font-size: 16px; }
+        
+        #gpm-unique-wrapper .form-group { margin-bottom: 15px; text-align: left;}
+        #gpm-unique-wrapper .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        #gpm-unique-wrapper .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; box-sizing: border-box;}
+        #gpm-unique-wrapper .form-readonly { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; font-weight: 600; }
+        #gpm-unique-wrapper .btn-submit { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        
+        #gpm-unique-wrapper .mw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;}
+        #gpm-unique-wrapper .mw-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        #gpm-unique-wrapper .mw-mon { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        #gpm-unique-wrapper .mw-val { font-size: 22px; font-weight: 900; color: #0f172a; }
+        #gpm-unique-wrapper .mw-val.active { color: #16a34a; }
+        
+        #gpm-unique-wrapper .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
 
-        /* 🌟 MODALS 🌟 */
-        .gp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
-        .gp-modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #e2e8f0; transition: all 0.3s ease; font-family: 'Segoe UI', Inter, sans-serif;}
-        
-        .gp-modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
-        
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .gp-modal-content .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; margin: 0; }
-        .gp-modal-content .modal-header-actions { display: flex; align-items: center; gap: 12px; }
-        
-        .gp-modal-content .expand-btn { cursor: pointer; color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px;}
-        .gp-modal-content .expand-btn:hover { background: #e2e8f0; color: #0f172a; }
-
-        .gp-modal-content .btn-modal-dl { background-color: #2563eb; color: white; border: none; padding: 7px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
-        .gp-modal-content .btn-modal-dl:hover { background-color: #1d4ed8; }
-        
-        .gp-modal-content .modal-close { cursor: pointer; color: #ef4444; background: none; border: none; font-size: 26px; transition: 0.2s; display: flex; align-items: center; padding: 0;}
-        .gp-modal-content .modal-close:hover { color: #b91c1c; transform: scale(1.1); }
-        
-        .gp-modal-content .overall-stats-banner { display: flex; justify-content: space-around; background-color: #f8fafc; padding: 15px 20px; border-bottom: 2px solid #cbd5e1; }
-        .gp-modal-content .stat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
-        
-        .gp-modal-content .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
-        .gp-modal-content .stat-value { font-size: 26px; font-weight: 900; }
-        
-        .gp-modal-content .modal-body { padding: 0; overflow-y: auto; overflow-x: auto; flex: 1; background: #ffffff; }
-        
-        .gp-modal-content .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
-        .gp-modal-content .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
-        .gp-modal-content .summary-table td { padding: 12px 10px; font-size: 15px; color: #334155; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-        
-        .gp-modal-content .sum-mandal { text-align: left; font-weight: 800; color: #0f172a; font-size: 16px; }
-        
-        .gp-modal-content .form-group { margin-bottom: 15px; text-align: left;}
-        .gp-modal-content .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
-        .gp-modal-content .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; box-sizing: border-box;}
-        .gp-modal-content .form-readonly { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; font-weight: 600; }
-        .gp-modal-content .btn-submit { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        
-        .gp-modal-content .mw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;}
-        .gp-modal-content .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
-
-        /* 📱 🌟 SAFE MOBILE RESPONSIVE STYLES 🌟 📱 */
         @media (max-width: 768px) {
-            .gp-app-wrapper { padding: 10px; }
-            .gp-app-wrapper .control-panel { flex-direction: column; align-items: stretch; padding: 15px; }
-            .gp-app-wrapper .page-heading { justify-content: center; margin-bottom: 12px; }
+            #gpm-unique-wrapper { padding: 10px; height: auto; min-height: 100vh;}
+            #gpm-unique-wrapper .control-panel { flex-direction: column; align-items: stretch; padding: 15px; }
+            #gpm-unique-wrapper .page-heading { justify-content: center; margin-bottom: 12px; }
             
-            .gp-app-wrapper .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; justify-content: center; }
-            .gp-app-wrapper .filter-group .search-box, .gp-app-wrapper .filter-group select { grid-column: span 2; width: 100%; max-width: 100%; }
-            .gp-app-wrapper .btn-action { width: 100%; justify-content: center; }
+            #gpm-unique-wrapper .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; justify-content: center; }
+            #gpm-unique-wrapper .filter-group .search-box, #gpm-unique-wrapper .filter-group select { grid-column: span 2; width: 100%; max-width: 100%; }
+            #gpm-unique-wrapper .btn-action { width: 100%; justify-content: center; }
             
-            .gp-app-wrapper .kpi-grid { grid-template-columns: 1fr; }
+            #gpm-unique-wrapper .kpi-grid { grid-template-columns: 1fr; }
             
-            .gp-app-wrapper #dataTable { min-width: 900px; } 
-            .gp-modal-content .summary-table { min-width: 600px; }
+            #gpm-unique-wrapper .table-container { max-height: 60vh; }
+            #gpm-unique-wrapper table { min-width: 900px; } 
+            #gpm-unique-wrapper .modal-content .summary-table { min-width: 600px; }
             
-            .gp-modal-content .modal-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
-            .gp-modal-content .modal-header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            #gpm-unique-wrapper .modal-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            #gpm-unique-wrapper .modal-header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
             
-            .gp-modal-content .overall-stats-banner { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px 10px; }
-            .gp-modal-content .stat-item { flex: 1 1 40%; min-width: 100px; }
+            #gpm-unique-wrapper .overall-stats-banner { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px 10px; }
+            #gpm-unique-wrapper .stat-item { flex: 1 1 40%; min-width: 100px; }
             
-            .gp-modal-content #dropoutSelectors { flex-direction: column; align-items: stretch; width: 100%; }
-            .gp-modal-content .do-select { width: 100%; }
-            .gp-modal-content .mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            #gpm-unique-wrapper #dropoutSelectors { flex-direction: column; align-items: stretch; width: 100%; }
+            #gpm-unique-wrapper .do-select { width: 100%; }
+            #gpm-unique-wrapper .mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
             
-            .gp-modal-content { max-height: 95vh !important; }
+            #gpm-unique-wrapper .modal-content { max-height: 95vh !important; width: 95% !important;}
         }
     </style>
 </head>
 <body>
 
-<div class="gp-app-wrapper">
+<div id="gpm-unique-wrapper">
 
     <div class="control-panel">
         <div class="page-heading">
             <i class="fa-solid fa-map-location-dot"></i> Mapping Tracker 
         </div>
         <div class="filter-group">
-            <input type="text" id="searchInput" class="search-box" placeholder="Search ID/Name..." onkeyup="renderTable()">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search ID/Name..." onkeyup="gpmRenderTable()">
             
-            <select id="districtFilter" onchange="populateMandals()">
+            <select id="districtFilter" onchange="gpmPopulateMandals()">
                 <option value="All">All Districts</option>
             </select>
             
-            <select id="mandalFilter" onchange="renderTable()">
+            <select id="mandalFilter" onchange="gpmRenderTable()">
                 <option value="All">All Mandals</option>
             </select>
 
-            <select id="statusFilter" onchange="updateKpiHighlight()">
+            <select id="statusFilter" onchange="gpmUpdateKpiHighlight()">
                 <option value="All">All Status</option>
                 <option value="Mapped">Mapped GPs</option>
                 <option value="Pending">Pending GPs</option>
@@ -176,30 +174,30 @@
                 <option value="MappedZero">Mapped - Zero TXN (FY 26-27)</option>
             </select>
 
-            <button class="btn-action" onclick="fetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
-            <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
+            <button class="btn-action" onclick="gpmFetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+            <button class="btn-action" onclick="gpmResetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
             
-            <button class="btn-action" id="dailyReportBtn" onclick="openDailyReportModal()"><i class="fa-solid fa-chart-line"></i> Daily Report</button>
-            <button class="btn-action" id="summaryBtn" onclick="openSummaryModal('All')"><i class="fa-solid fa-chart-column"></i> Summary</button>
-            <button class="btn-action" id="perfBtn" onclick="openDropoutsModal('All')"><i class="fa-solid fa-users-slash"></i> Dropouts</button>
-            <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
+            <button class="btn-action" id="dailyReportBtn" onclick="gpmOpenDailyReportModal()"><i class="fa-solid fa-chart-line"></i> Daily Report</button>
+            <button class="btn-action" id="summaryBtn" onclick="gpmOpenSummaryModal('All')"><i class="fa-solid fa-chart-column"></i> Summary</button>
+            <button class="btn-action" id="perfBtn" onclick="gpmOpenDropoutsModal('All')"><i class="fa-solid fa-users-slash"></i> Dropouts</button>
+            <button class="btn-action" id="downloadExcelBtn" onclick="gpmDownloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
             
-            <button class="btn-action" id="mainFsBtn" onclick="toggleMainFullscreen()" style="color: #0f172a; border-color: #cbd5e1; background: #f8fafc;" title="Toggle Fullscreen Dashboard">
+            <button class="btn-action" id="mainFsBtn" onclick="gpmToggleMainFullscreen()" style="color: #0f172a; border-color: #cbd5e1; background: #f8fafc;" title="Toggle Fullscreen Dashboard">
                 <i class="fa-solid fa-expand"></i> Fullscreen
             </button>
         </div>
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card kpi-total active-kpi" id="box-All" onclick="filterFromBox('All')">
+        <div class="kpi-card kpi-total active-kpi" id="box-All" onclick="gpmFilterFromBox('All')">
             <div class="kpi-info"><span class="kpi-title">Total Grama Panchayaths</span><span class="kpi-value" id="kpi-total-gps">0</span></div>
             <i class="fa-solid fa-building-flag" style="font-size: 28px; color: #3b82f6; opacity: 0.2; position: absolute; right: 20px;"></i>
         </div>
-        <div class="kpi-card kpi-mapped" id="box-Mapped" onclick="filterFromBox('Mapped')">
+        <div class="kpi-card kpi-mapped" id="box-Mapped" onclick="gpmFilterFromBox('Mapped')">
             <div class="kpi-info"><span class="kpi-title">Mapped GPs</span><span class="kpi-value" id="kpi-mapped-gps">0</span></div>
             <i class="fa-solid fa-circle-check" style="font-size: 28px; color: #10b981; opacity: 0.2; position: absolute; right: 20px;"></i>
         </div>
-        <div class="kpi-card kpi-pending" id="box-Pending" onclick="filterFromBox('Pending')">
+        <div class="kpi-card kpi-pending" id="box-Pending" onclick="gpmFilterFromBox('Pending')">
             <div class="kpi-info"><span class="kpi-title">Pending / Vacant GPs</span><span class="kpi-value" id="kpi-pending-gps">0</span></div>
             <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; color: #ef4444; opacity: 0.2; position: absolute; right: 20px;"></i>
         </div>
@@ -229,20 +227,20 @@
     </div>
 
     <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="summaryModal">
-        <div class="gp-modal-content" id="captureModalContent1" style="width: 95%; max-width: 700px; max-height: 85vh;">
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal-content" id="captureModalContent1" style="width: 95%; max-width: 700px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <span style="font-size: 22px; font-weight: 900; color: #1e3a8a;"><i class="fa-solid fa-map-location-dot" style="color:#2563eb; margin-right:8px;"></i> One GP - One CSC | Master Mapping Summary</span>
-                        <button id="sumBackBtn" onclick="openSummaryModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back to Districts</button>
+                        <button id="sumBackBtn" onclick="gpmOpenSummaryModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back to Districts</button>
                     </div>
                     <span id="summaryDistName" style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;"></span>
                 </div>
                 <div class="modal-header-actions" id="modalActionButtons1">
-                    <button class="expand-btn" onclick="toggleExpand('captureModalContent1', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
-                    <button class="btn-modal-dl" onclick="downloadSummaryImage('captureModalContent1', 'Master_Summary_Report', 'modalActionButtons1')"><i class="fa-solid fa-camera"></i> Download Image</button>
-                    <button class="modal-close" onclick="closeModal('summaryModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                    <button class="expand-btn" onclick="gpmToggleExpand('captureModalContent1', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" onclick="gpmDownloadSummaryImage('captureModalContent1', 'Master_Summary_Report', 'modalActionButtons1')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="gpmCloseModal('summaryModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
             </div>
             <div class="overall-stats-banner">
@@ -268,25 +266,23 @@
     </div>
 
     <!-- 🌟 2. DYNAMIC DROPOUTS & PERFORMANCE MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="dropoutsModal">
-        <div class="gp-modal-content" id="captureModalContent2" style="width: 95%; max-width: 850px; max-height: 85vh;">
+    <div class="modal-overlay" id="dropoutsModal">
+        <div class="modal-content" id="captureModalContent2" style="width: 95%; max-width: 850px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> Active & Dropouts Report</span>
-                        
-                        <button id="doBackBtn" onclick="openDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                        
+                        <button id="doBackBtn" onclick="gpmOpenDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         <div id="dropoutSelectors" style="display: flex; gap: 5px; align-items: center; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
                             <span style="font-size:12px; font-weight:700; color:#475569;">Base:</span>
-                            <select id="doMonth1" class="do-select" onchange="calcDropouts()">
+                            <select id="doMonth1" class="do-select" onchange="gpmCalcDropouts()">
                                 <option value="apr">Apr-26</option><option value="may">May-26</option><option value="jun">Jun-26</option>
                                 <option value="jul">Jul-26</option><option value="aug" selected>Aug-26</option><option value="sep">Sep-26</option>
                                 <option value="oct">Oct-26</option><option value="nov">Nov-26</option><option value="dec">Dec-26</option>
                                 <option value="jan">Jan-27</option><option value="feb">Feb-27</option><option value="mar">Mar-27</option>
                             </select>
                             <span style="font-size:12px; font-weight:700; color:#475569; margin-left: 5px;">vs Compare:</span>
-                            <select id="doMonth2" class="do-select" onchange="calcDropouts()">
+                            <select id="doMonth2" class="do-select" onchange="gpmCalcDropouts()">
                                 <option value="apr">Apr-26</option><option value="may">May-26</option><option value="jun">Jun-26</option>
                                 <option value="jul">Jul-26</option><option value="aug">Aug-26</option><option value="sep" selected>Sep-26</option>
                                 <option value="oct">Oct-26</option><option value="nov">Nov-26</option><option value="dec">Dec-26</option>
@@ -297,10 +293,10 @@
                     <span id="doDistName" style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;"></span>
                 </div>
                 <div class="modal-header-actions" id="modalActionButtons2">
-                    <button class="expand-btn" onclick="toggleExpand('captureModalContent2', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
-                    <button class="btn-modal-dl" style="background:#10b981;" onclick="downloadDropoutsExcel()"><i class="fa-solid fa-file-excel"></i> Export Dropouts</button>
-                    <button class="btn-modal-dl" style="background:#ea580c;" onclick="downloadSummaryImage('captureModalContent2', 'Dropouts_Report', 'modalActionButtons2')"><i class="fa-solid fa-camera"></i> Download Image</button>
-                    <button class="modal-close" onclick="closeModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                    <button class="expand-btn" onclick="gpmToggleExpand('captureModalContent2', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" style="background:#10b981;" onclick="gpmDownloadDropoutsExcel()"><i class="fa-solid fa-file-excel"></i> Export Dropouts</button>
+                    <button class="btn-modal-dl" style="background:#ea580c;" onclick="gpmDownloadSummaryImage('captureModalContent2', 'Dropouts_Report', 'modalActionButtons2')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="gpmCloseModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
             </div>
             
@@ -309,7 +305,6 @@
                 <div class="stat-item"><span class="stat-label">Mapped VLEs</span><span class="stat-value" id="doModMapped" style="color:#2563eb;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Active (FY)</span><span class="stat-value" id="doModActFY" style="color:#16a34a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Inactive (FY)</span><span class="stat-value" id="doModInactFY" style="color:#64748b;">0</span></div>
-                
                 <div class="stat-item"><span class="stat-label" id="lblM1Top">M1 Active</span><span class="stat-value" id="doModM1" style="color:#8b5cf6;">0</span></div>
                 <div class="stat-item"><span class="stat-label" id="lblM2Top">M2 Active</span><span class="stat-value" id="doModM2" style="color:#d946ef; white-space:nowrap;">0</span></div>
                 <div class="stat-item"><span class="stat-label" id="lblDropTop" style="color:#dc2626;">Dropouts</span><span class="stat-value" id="doModDropouts" style="color:#dc2626;">0</span></div>
@@ -334,11 +329,11 @@
     </div>
 
     <!-- 🌟 3. MONTH-WISE TXN MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="monthWiseModal">
-        <div class="gp-modal-content" style="width: 95%; max-width: 480px;">
+    <div class="modal-overlay" id="monthWiseModal">
+        <div class="modal-content" style="width: 95%; max-width: 480px;">
             <div class="modal-header" style="background-color: #eff6ff;">
                 <span style="font-size: 16px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:8px;"></i> VLE Transactions Tracker</span>
-                <button class="modal-close" onclick="closeModal('monthWiseModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button class="modal-close" onclick="gpmCloseModal('monthWiseModal')"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
             <div style="padding: 15px 20px 5px 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
                 <h4 id="mwVleName" style="color:#0f172a; margin:0; font-weight:800; font-size:16px;">VLE Name</h4>
@@ -369,11 +364,11 @@
     </div>
 
     <!-- 🌟 4. MAP VLE FORM MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="mapVleModal">
-        <div class="gp-modal-content" style="width: 95%; max-width: 450px; max-height: 90vh;">
+    <div class="modal-overlay" id="mapVleModal">
+        <div class="modal-content" style="width: 95%; max-width: 450px; max-height: 90vh;">
             <div class="modal-header" style="background-color: #f8fafc;">
                 <span style="font-size: 16px; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-user-plus" style="color:#10b981; margin-right:8px;"></i> Update VLE Mapping</span>
-                <button class="modal-close" onclick="closeModal('mapVleModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button class="modal-close" onclick="gpmCloseModal('mapVleModal')"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
             <div class="modal-body" style="padding: 20px;">
                 <div class="form-group"><label>District</label><input type="text" id="frmDist" class="form-readonly" readonly></div>
@@ -383,14 +378,14 @@
                 <div class="form-group"><label>ID Creation Date</label><input type="date" id="frmIdDate"></div>
                 <div class="form-group"><label>VLE Name</label><input type="text" id="frmVleName" placeholder="Enter VLE Name..."></div>
                 <div class="form-group"><label>Mobile Number</label><input type="text" id="frmMobile" placeholder="Enter Mobile Number..." maxlength="10"></div>
-                <button class="btn-submit" id="btnSubmitMapping" onclick="submitMappingData()">Save Mapping Data</button>
+                <button class="btn-submit" id="btnSubmitMapping" onclick="gpmSubmitMappingData()">Save Mapping Data</button>
             </div>
         </div>
     </div>
 
     <!-- 🌟 5. DAILY PROGRESS REPORT MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="dailyReportModal">
-        <div class="gp-modal-content" id="captureModalContent3" style="width: 95%; max-width: 750px; max-height: 85vh;">
+    <div class="modal-overlay" id="dailyReportModal">
+        <div class="modal-content" id="captureModalContent3" style="width: 95%; max-width: 750px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -399,9 +394,9 @@
                     <span style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;">Data accurate as of Today</span>
                 </div>
                 <div class="modal-header-actions" id="modalActionButtons3">
-                    <button class="expand-btn" onclick="toggleExpand('captureModalContent3', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
-                    <button class="btn-modal-dl" style="background:#0284c7;" onclick="downloadSummaryImage('captureModalContent3', 'Daily_Progress_Report', 'modalActionButtons3')"><i class="fa-solid fa-camera"></i> Download Image</button>
-                    <button class="modal-close" onclick="closeModal('dailyReportModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                    <button class="expand-btn" onclick="gpmToggleExpand('captureModalContent3', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" style="background:#0284c7;" onclick="gpmDownloadSummaryImage('captureModalContent3', 'Daily_Progress_Report', 'modalActionButtons3')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="gpmCloseModal('dailyReportModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
             </div>
             
@@ -430,17 +425,17 @@
     </div>
 
     <!-- 🌟 CUSTOM ALERT MODAL 🌟 -->
-    <div class="gp-modal-overlay" id="customAlertModal" style="z-index: 3000;">
-        <div class="gp-modal-content" style="width: 95%; max-width: 400px; max-height: none;">
+    <div class="modal-overlay" id="customAlertModal" style="z-index: 3000;">
+        <div class="modal-content" style="width: 95%; max-width: 400px; max-height: none;">
             <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;"></div>
             <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;"></div>
             <div style="padding: 15px 20px; background: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
-                <button onclick="closeModal('customAlertModal')" style="background: #2563eb; color: white; border: none; padding: 8px 30px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;">OK</button>
+                <button onclick="gpmCloseModal('customAlertModal')" style="background: #2563eb; color: white; border: none; padding: 8px 30px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;">OK</button>
             </div>
         </div>
     </div>
 
-</div>
+</div> <!-- END OF GPM UNIQUE WRAPPER -->
 
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
@@ -454,13 +449,13 @@
 
         const cacheKey = "gpMappingDataCache_v1";
 
-        window.onload = function() { fetchData(); };
+        window.onload = function() { gpmFetchData(); };
 
-        async function fetchData(forceRefresh = false) {
+        async function gpmFetchData(forceRefresh = false) {
             if (!forceRefresh) {
                 let cachedData = sessionStorage.getItem(cacheKey);
                 if (cachedData) {
-                    try { processData(JSON.parse(cachedData)); return; } catch(e) {}
+                    try { gpmProcessData(JSON.parse(cachedData)); return; } catch(e) {}
                 }
             }
             try {
@@ -468,13 +463,13 @@
                 let gpRes = await fetch(apiURL + "?sheet=GPMAPPING");
                 let rawData = await gpRes.json();
                 sessionStorage.setItem(cacheKey, JSON.stringify(rawData)); 
-                processData(rawData);
+                gpmProcessData(rawData);
             } catch (error) {
                 document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding:20px;'>Error fetching data! Please check your internet connection.</td></tr>";
             }
         }
 
-        function processData(rawData) {
+        function gpmProcessData(rawData) {
             let headers = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
             let idxDist = headers.findIndex(h => h.includes('districtname'));
             let idxMandal = headers.findIndex(h => h.includes('subdistrictname'));
@@ -483,9 +478,7 @@
             let idxIdDate = headers.findIndex(h => h.includes('idcreationdate') || h.includes('creationdate'));
             let idxVleName = headers.findIndex(h => h.includes('vlename'));
             let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
-            
             let idxMappedDate = headers.findIndex(h => h.includes('mappeddate'));
-            
             let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
             let idxTxn2526 = headers.findIndex(h => h === 'txn2526');
             let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
@@ -545,42 +538,42 @@
                     isMapped: isMapped
                 });
             }
-            populateDistricts(); renderTable();
+            gpmPopulateDistricts(); gpmRenderTable();
         }
 
-        function populateDistricts() {
+        function gpmPopulateDistricts() {
             const distFilter = document.getElementById("districtFilter");
             distFilter.innerHTML = '<option value="All">All Districts</option>';
             Array.from(districtsSet).sort().forEach(dist => { distFilter.innerHTML += `<option value="${dist}">${dist}</option>`; });
-            populateMandals();
+            gpmPopulateMandals();
         }
 
-        function populateMandals() {
+        function gpmPopulateMandals() {
             const dist = document.getElementById("districtFilter").value;
             const mandalFilter = document.getElementById("mandalFilter");
             mandalFilter.innerHTML = '<option value="All">All Mandals</option>';
             if (dist !== "All" && mandalsMap[dist]) { Array.from(mandalsMap[dist]).sort().forEach(m => { mandalFilter.innerHTML += `<option value="${m}">${m}</option>`; }); }
-            renderTable();
+            gpmRenderTable();
         }
 
-        function filterFromBox(status) { document.getElementById("statusFilter").value = status; updateKpiHighlight(); }
+        function gpmFilterFromBox(status) { document.getElementById("statusFilter").value = status; gpmUpdateKpiHighlight(); }
 
-        function updateKpiHighlight() {
+        function gpmUpdateKpiHighlight() {
             let status = document.getElementById("statusFilter").value;
-            document.querySelectorAll('.kpi-card').forEach(el => el.classList.remove("active-kpi"));
+            document.querySelectorAll('#gpm-unique-wrapper .kpi-card').forEach(el => el.classList.remove("active-kpi"));
             let box = document.getElementById("box-" + status);
             if(box) box.classList.add("active-kpi"); else if(status.includes("Mapped")) document.getElementById("box-Mapped").classList.add("active-kpi");
-            renderTable();
+            gpmRenderTable();
         }
 
-        function resetFilters() {
+        function gpmResetFilters() {
             document.getElementById("searchInput").value = "";
             document.getElementById("districtFilter").value = "All";
             document.getElementById("statusFilter").value = "All";
-            updateKpiHighlight(); populateMandals(); 
+            gpmUpdateKpiHighlight(); gpmPopulateMandals(); 
         }
 
-        function renderTable() {
+        function gpmRenderTable() {
             let distFilter = document.getElementById("districtFilter").value;
             let mandalFilter = document.getElementById("mandalFilter").value;
             let statusFilter = document.getElementById("statusFilter").value;
@@ -608,10 +601,10 @@
                 if (displayCount <= 300 || searchQ !== "") {
                     let statusBadge = row.isMapped ? `<span class="badge-success"><i class="fa-solid fa-check"></i> MAPPED</span>` : `<span class="badge-danger"><i class="fa-solid fa-xmark"></i> PENDING</span>`;
                     let rowStyle = row.isMapped ? "" : "background-color: #fef2f2;";
-                    let actBtn = `<button class="btn-update" onclick="openUpdateForm(${index})"><i class="fa-solid fa-pen"></i> Update</button>`;
+                    let actBtn = `<button class="btn-update" onclick="gpmOpenUpdateForm(${index})"><i class="fa-solid fa-pen"></i> Update</button>`;
                     
                     let txnStyle = (row.isMapped && row.txn2627 === 0) ? "background:#fee2e2; color:#dc2626; border-color:#fca5a5;" : "";
-                    let txnValHtml = row.isMapped ? `<span class="txn-link" style="${txnStyle}" onclick="showMonthWiseTxn(${index})" title="Click to view details">${row.txn2627}</span>` : "-";
+                    let txnValHtml = row.isMapped ? `<span class="txn-link" style="${txnStyle}" onclick="gpmShowMonthWiseTxn(${index})" title="Click to view details">${row.txn2627}</span>` : "-";
 
                     tbodyHtml += `<tr style="${rowStyle}">
                         <td>${row.district}</td><td>${row.mandal}</td><td class="bold-num text-blue">${row.gpName}</td>
@@ -631,7 +624,7 @@
             document.getElementById("kpi-pending-gps").innerText = counts.pending.toLocaleString();
         }
 
-        function toggleMainFullscreen() {
+        function gpmToggleMainFullscreen() {
             let elem = document.documentElement;
             let fsBtnIcon = document.querySelector('#mainFsBtn i');
             
@@ -648,22 +641,21 @@
         
         document.addEventListener('fullscreenchange', (event) => {
             const fsBtn = document.getElementById('mainFsBtn');
-            if (document.fullscreenElement) {
-                fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
-            } else {
-                fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
+            if(fsBtn) {
+                if (document.fullscreenElement) fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
+                else fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
             }
         });
 
-        function toggleExpand(contentId, btnEl) {
+        function gpmToggleExpand(contentId, btnEl) {
             let el = document.getElementById(contentId);
-            el.classList.toggle('gp-modal-expanded');
+            el.classList.toggle('modal-expanded');
             let icon = btnEl.querySelector('i');
-            if (el.classList.contains('gp-modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
+            if (el.classList.contains('modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
             else { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
         }
 
-        function showMonthWiseTxn(index) {
+        function gpmShowMonthWiseTxn(index) {
             let row = globalData[index];
             document.getElementById("mwVleName").innerText = row.vleName || "Unknown VLE";
             document.getElementById("mwCscId").innerText = `CSC ID: ${row.cscId} | GP: ${row.gpName}`;
@@ -681,7 +673,7 @@
         }
 
         window.currentSummaryDist = null;
-        function openSummaryModal(distOverride) {
+        function gpmOpenSummaryModal(distOverride) {
             if (distOverride !== undefined) window.currentSummaryDist = distOverride;
             let globalFilter = document.getElementById("districtFilter").value;
             let distToUse = (window.currentSummaryDist && window.currentSummaryDist !== "All") ? window.currentSummaryDist : globalFilter;
@@ -720,7 +712,7 @@
             Object.keys(summaryData).sort().forEach(k => {
                 let d = summaryData[k];
                 let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
-                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
+                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="gpmOpenSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
                 tbodyHtml += `<tr>
                     ${nameHtml}
                     <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
@@ -731,7 +723,7 @@
             document.getElementById("summaryModal").style.display = "flex";
         }
 
-        function openDailyReportModal() {
+        function gpmOpenDailyReportModal() {
             let drData = {};
             let ovTotal = 0, ovMapped = 0, ovYesterday = 0, ovBalance = 0;
 
@@ -789,13 +781,13 @@
         }
 
         window.currentDropoutsDist = null;
-        function openDropoutsModal(distOverride) {
+        function gpmOpenDropoutsModal(distOverride) {
             if (distOverride !== undefined) window.currentDropoutsDist = distOverride;
             document.getElementById("dropoutsModal").style.display = "flex";
-            calcDropouts();
+            gpmCalcDropouts();
         }
 
-        function calcDropouts() {
+        function gpmCalcDropouts() {
             let globalFilter = document.getElementById("districtFilter").value;
             let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : globalFilter;
             let isStateWide = (distToUse === "All");
@@ -854,7 +846,7 @@
                 let retained = d.m2 - d.newAct;
                 let m2Html = `<span style="color:#475569; font-size:13px;" title="Retained VLEs">${retained}</span> <span style="color:#10b981; font-size:13px; font-weight:800;" title="New VLEs">+${d.newAct}</span> <span style="color:#a21caf; font-weight:900; font-size:16px;" title="Total VLEs">= ${d.m2}</span>`;
                 
-                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="openDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
+                let nameHtml = isStateWide ? `<td class="sum-mandal" ondblclick="gpmOpenDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="sum-mandal">${k}</td>`;
                 
                 tbodyHtml += `<tr>
                     ${nameHtml}
@@ -867,7 +859,7 @@
         }
 
         let currentUpdateIndex = -1;
-        function openUpdateForm(index) {
+        function gpmOpenUpdateForm(index) {
             currentUpdateIndex = index; let row = globalData[index];
             document.getElementById("frmDist").value = row.district; document.getElementById("frmMandal").value = row.mandal;
             document.getElementById("frmGp").value = row.gpName; document.getElementById("frmCscId").value = row.cscId === '-' ? '' : row.cscId;
@@ -876,14 +868,14 @@
             document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
         }
 
-        function showCustomAlert(title, message, type) {
+        function gpmShowCustomAlert(title, message, type) {
             let titleColor = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f172a');
             document.getElementById('customAlertHeader').innerHTML = `<h3 style="color: ${titleColor}; margin: 0; font-size: 17px; font-weight: 800;">${title}</h3>`;
             document.getElementById('customAlertBody').innerHTML = message;
             document.getElementById('customAlertModal').style.display = 'flex';
         }
 
-        async function submitMappingData() {
+        async function gpmSubmitMappingData() {
             let cscId = document.getElementById("frmCscId").value.trim();
             let vleName = document.getElementById("frmVleName").value.trim();
             let mobile = document.getElementById("frmMobile").value.trim();
@@ -898,7 +890,7 @@
             let row = globalData[currentUpdateIndex];
 
             if (cscId === "") { 
-                showCustomAlert('⚠️ Please Check!', 'Please enter a valid CSC ID before saving.', 'error'); 
+                gpmShowCustomAlert('⚠️ Please Check!', 'Please enter a valid CSC ID before saving.', 'error'); 
                 return; 
             }
 
@@ -911,7 +903,7 @@
                                    📍 <b>Mandal:</b> ${dup.mandal}<br>
                                    📍 <b>GP:</b> ${dup.gpName}
                                </div><br><br>Please check and enter a valid CSC ID.`;
-                showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
+                gpmShowCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
                 return;
             }
 
@@ -930,22 +922,22 @@
                     
                     sessionStorage.removeItem(cacheKey); 
                     
-                    closeModal('mapVleModal'); 
-                    renderTable(); 
-                    showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
+                    gpmCloseModal('mapVleModal'); 
+                    gpmRenderTable(); 
+                    gpmShowCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
                 } else { 
-                    showCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
+                    gpmShowCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
                 }
             } catch (err) { 
-                showCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
+                gpmShowCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
             } finally { 
                 btn.innerHTML = "Save Mapping Data"; btn.disabled = false; 
             }
         }
 
-        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+        function gpmCloseModal(modalId) { document.getElementById(modalId).style.display = "none"; }
 
-        async function downloadDropoutsExcel() {
+        async function gpmDownloadDropoutsExcel() {
             let m1Key = document.getElementById("doMonth1").value;
             let m2Key = document.getElementById("doMonth2").value;
             let selM1 = document.getElementById("doMonth1");
@@ -963,11 +955,11 @@
             });
 
             if (exportData.length === 0) { 
-                showCustomAlert('ℹ️ No Data', `No dropouts found between ${m1Text} and ${m2Text}!`, 'normal'); 
+                gpmShowCustomAlert('ℹ️ No Data', `No dropouts found between ${m1Text} and ${m2Text}!`, 'normal'); 
                 return; 
             }
 
-            const btn = document.querySelector("#dropoutsModal .fa-file-excel").parentNode;
+            const btn = document.querySelector("#gpm-unique-wrapper #dropoutsModal .fa-file-excel").parentNode;
             let origText = btn.innerHTML;
             btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting...";
             btn.disabled = true;
@@ -1006,7 +998,7 @@
             setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
         }
 
-        async function downloadSummaryImage(contentId, prefix, actionBtnId) {
+        async function gpmDownloadSummaryImage(contentId, prefix, actionBtnId) {
             const actionBtns = document.getElementById(actionBtnId);
             const originalContent = document.getElementById(contentId);
             
@@ -1032,10 +1024,15 @@
             let cloneHeaders = clone.querySelectorAll('th');
             cloneHeaders.forEach(th => { th.style.position = 'static'; });
 
-            clone.style.position = 'absolute';
-            clone.style.top = '-9999px';
-            clone.style.left = '0';
-            clone.style.width = Math.max(originalContent.scrollWidth, originalContent.offsetWidth) + 'px';
+            // 🌟 CSS అప్లై అవ్వడానికి క్లోన్ ని కూడా గ్లోబల్ ర్యాపర్ లోపలే పెడుతున్నాం 🌟
+            const tempWrapper = document.createElement('div');
+            tempWrapper.id = "gpm-unique-wrapper";
+            tempWrapper.style.position = 'absolute';
+            tempWrapper.style.top = '-9999px';
+            tempWrapper.style.left = '0';
+            tempWrapper.style.width = Math.max(originalContent.scrollWidth, originalContent.offsetWidth) + 'px';
+            
+            clone.style.width = '100%';
             clone.style.height = 'auto';
             clone.style.maxHeight = 'none';
             clone.style.overflow = 'visible';
@@ -1049,7 +1046,8 @@
                 cloneBody.style.height = 'auto';
             }
 
-            document.body.appendChild(clone);
+            tempWrapper.appendChild(clone);
+            document.body.appendChild(tempWrapper);
 
             try {
                 await new Promise(resolve => setTimeout(resolve, 800)); 
@@ -1069,22 +1067,23 @@
                 link.download = `${prefix}_${distName}_${dateStr}.png`; 
                 link.href = canvas.toDataURL("image/png"); 
                 link.click();
-            } catch (err) { showCustomAlert('❌ Error', 'Sorry, image capture failed!', 'error'); } 
+            } catch (err) { gpmShowCustomAlert('❌ Error', 'Sorry, image capture failed!', 'error'); } 
             finally {
-                document.body.removeChild(clone);
+                document.body.removeChild(tempWrapper);
             }
         }
 
-        window.onclick = function(event) { 
-            if (event.target.classList.contains('gp-modal-overlay')) {
+        // 🌟 SPA SAFTEY FIX: Global onclick బదులు, Event Listener వాడాము 🌟
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-overlay') && event.target.closest('#gpm-unique-wrapper')) {
                 if (event.target.id !== 'customAlertModal') {
                     event.target.style.display = "none";
                 }
-            } 
-        }
+            }
+        });
         
-        async function downloadExcel() {
-            if (globalData.length === 0) { showCustomAlert('ℹ️ Warning', 'No data to export!', 'error'); return; }
+        async function gpmDownloadExcel() {
+            if (globalData.length === 0) { gpmShowCustomAlert('ℹ️ Warning', 'No data to export!', 'error'); return; }
             const btn = document.getElementById("downloadExcelBtn"); let origText = btn.innerHTML; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting..."; btn.disabled = true;
 
             const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('GP Mapping Report');
