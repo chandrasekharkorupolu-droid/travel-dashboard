@@ -35,6 +35,10 @@
         #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
         #perfBtn:hover { background-color: #c2410c; }
 
+        /* 🌟 NEW DAILY REPORT BUTTON STYLE 🌟 */
+        #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
+        #dailyReportBtn:hover { background-color: #0369a1; }
+
         .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
         .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
@@ -151,6 +155,10 @@
 
             <button class="btn-action" onclick="fetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
             <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
+            
+            <!-- 🌟 DAILY REPORT BUTTON ADDED HERE 🌟 -->
+            <button class="btn-action" id="dailyReportBtn" onclick="openDailyReportModal()"><i class="fa-solid fa-chart-line"></i> Daily Report</button>
+            
             <button class="btn-action" id="summaryBtn" onclick="openSummaryModal('All')"><i class="fa-solid fa-chart-column"></i> Summary</button>
             <button class="btn-action" id="perfBtn" onclick="openDropoutsModal('All')"><i class="fa-solid fa-users-slash"></i> Dropouts</button>
             <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
@@ -269,7 +277,6 @@
                 </div>
                 <div class="modal-header-actions" id="modalActionButtons2">
                     <button class="expand-btn" onclick="toggleExpand('captureModalContent2', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
-                    <!-- 🌟 EXPORT DROPOUTS BUTTON 🌟 -->
                     <button class="btn-modal-dl" style="background:#10b981;" onclick="downloadDropoutsExcel()"><i class="fa-solid fa-file-excel"></i> Export Dropouts</button>
                     <button class="btn-modal-dl" style="background:#ea580c;" onclick="downloadSummaryImage('captureModalContent2', 'Dropouts_Report', 'modalActionButtons2')"><i class="fa-solid fa-camera"></i> Download Image</button>
                     <button class="modal-close" onclick="closeModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
@@ -360,15 +367,52 @@
         </div>
     </div>
 
-    <!-- 🌟 KOTHA: CUSTOM ALERT MODAL 🌟 -->
+    <!-- 🌟 5. NEW: DAILY PROGRESS REPORT MODAL 🌟 -->
+    <div class="modal-overlay" id="dailyReportModal">
+        <div class="modal-content" id="captureModalContent3" style="width: 750px; max-height: 85vh;">
+            <div class="modal-header">
+                <div style="display: flex; flex-direction: column;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 22px; font-weight: 900; color: #0284c7;"><i class="fa-solid fa-calendar-check" style="color:#0ea5e9; margin-right:8px;"></i> GP Mapping Daily Progress Report</span>
+                    </div>
+                    <span style="color:#64748b; font-size:13px; font-weight:600; margin-top: 5px; margin-left: 36px;">Data accurate as of Today</span>
+                </div>
+                <div class="modal-header-actions" id="modalActionButtons3">
+                    <button class="expand-btn" onclick="toggleExpand('captureModalContent3', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <button class="btn-modal-dl" style="background:#0284c7;" onclick="downloadSummaryImage('captureModalContent3', 'Daily_Progress_Report', 'modalActionButtons3')"><i class="fa-solid fa-camera"></i> Download Image</button>
+                    <button class="modal-close" onclick="closeModal('dailyReportModal')"><i class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+            </div>
+            
+            <div class="overall-stats-banner" style="background:#f0f9ff; padding: 15px 20px; border-bottom: 2px solid #bae6fd;">
+                <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="drTotalGPs" style="color:#0f172a;">0</span></div>
+                <div class="stat-item"><span class="stat-label">Mapped GPs</span><span class="stat-value" id="drMappedGPs" style="color:#0284c7;">0</span></div>
+                <div class="stat-item"><span class="stat-label" style="color:#10b981;">Mapped Yesterday</span><span class="stat-value" id="drYesterdayGPs" style="color:#10b981;">0</span></div>
+                <div class="stat-item"><span class="stat-label" style="color:#ef4444;">Balance Mapping</span><span class="stat-value" id="drBalanceGPs" style="color:#ef4444;">0</span></div>
+            </div>
+            
+            <div class="modal-body">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; background:#0f172a;">District Name</th>
+                            <th style="background:#1e3a8a;">Total GPs</th>
+                            <th style="background:#047857;">Mapped GPs</th>
+                            <th style="background:#059669;">Yesterday Mapped</th>
+                            <th style="background:#991b1b;">Balance GPs</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dailyReportTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 CUSTOM ALERT MODAL 🌟 -->
     <div class="modal-overlay" id="customAlertModal" style="z-index: 3000;">
         <div class="modal-content" style="width: 400px; max-height: none;">
-            <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;">
-                <!-- Header content generated dynamically -->
-            </div>
-            <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;">
-                <!-- Body content generated dynamically -->
-            </div>
+            <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;"></div>
+            <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;"></div>
             <div style="padding: 15px 20px; background: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
                 <button onclick="closeModal('customAlertModal')" style="background: #2563eb; color: white; border: none; padding: 8px 30px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;">OK</button>
             </div>
@@ -416,6 +460,10 @@
             let idxIdDate = headers.findIndex(h => h.includes('idcreationdate') || h.includes('creationdate'));
             let idxVleName = headers.findIndex(h => h.includes('vlename'));
             let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
+            
+            // 🌟 Mapped Date Column Index (for Daily Report) 🌟
+            let idxMappedDate = headers.findIndex(h => h.includes('mappeddate'));
+            
             let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
             let idxTxn2526 = headers.findIndex(h => h === 'txn2526');
             let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
@@ -461,6 +509,10 @@
                     idDate: isMapped && idxIdDate > -1 ? (row[idxIdDate] || '').toString().trim() : '',
                     vleName: isMapped && idxVleName > -1 ? row[idxVleName] : '',
                     mobile: isMapped && idxMobile > -1 ? row[idxMobile] : '',
+                    
+                    // Capturing Mapped Date for the daily report comparison
+                    mappedDate: isMapped && idxMappedDate > -1 ? (row[idxMappedDate] || '').toString().trim() : '',
+                    
                     txn2425: idxTxn2425 > -1 ? (Number(row[idxTxn2425]) || 0) : 0,
                     txn2526: idxTxn2526 > -1 ? (Number(row[idxTxn2526]) || 0) : 0,
                     txn2627: idxTxn2627 > -1 ? (Number(row[idxTxn2627]) || 0) : 0,
@@ -659,6 +711,66 @@
             document.getElementById("summaryModal").style.display = "flex";
         }
 
+        // 🌟 NEW FUNCTION: OPEN DAILY PROGRESS REPORT MODAL 🌟
+        function openDailyReportModal() {
+            let drData = {};
+            let ovTotal = 0, ovMapped = 0, ovYesterday = 0, ovBalance = 0;
+
+            // Generate yesterday's date strings (Checking both DD-MM-YYYY and DD/MM/YYYY formats just in case)
+            let d = new Date();
+            d.setDate(d.getDate() - 1);
+            let yStr1 = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            let yStr2 = `${("0"+d.getDate()).slice(-2)}/${("0"+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`;
+
+            globalData.forEach(row => {
+                let dist = row.district;
+                if (dist === "Unknown") return;
+                
+                if (!drData[dist]) drData[dist] = { total: 0, mapped: 0, yesterday: 0, balance: 0 };
+                
+                drData[dist].total++; 
+                ovTotal++;
+                
+                if (row.isMapped) {
+                    drData[dist].mapped++; 
+                    ovMapped++;
+                    
+                    // Count if the mappedDate column includes yesterday's date string
+                    if (row.mappedDate && (row.mappedDate.includes(yStr1) || row.mappedDate.includes(yStr2))) {
+                        drData[dist].yesterday++;
+                        ovYesterday++;
+                    }
+                }
+            });
+            
+            ovBalance = ovTotal - ovMapped;
+            
+            document.getElementById("drTotalGPs").innerText = ovTotal.toLocaleString();
+            document.getElementById("drMappedGPs").innerText = ovMapped.toLocaleString();
+            document.getElementById("drYesterdayGPs").innerText = ovYesterday.toLocaleString();
+            document.getElementById("drBalanceGPs").innerText = ovBalance.toLocaleString();
+            
+            let tbodyHtml = "";
+            Object.keys(drData).sort().forEach(dist => {
+                let d = drData[dist];
+                let balance = d.total - d.mapped;
+                
+                let yHtml = d.yesterday > 0 ? `<span style="color:#10b981; font-weight:900; font-size:16px;">+${d.yesterday}</span>` : `<span style="color:#94a3b8; font-weight:600;">0</span>`;
+                let bHtml = balance > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${balance}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
+                
+                tbodyHtml += `<tr>
+                    <td class="sum-mandal">${dist}</td>
+                    <td style="color:#475569;">${d.total}</td>
+                    <td style="color:#0284c7; font-weight:800;">${d.mapped}</td>
+                    <td>${yHtml}</td>
+                    <td>${bHtml}</td>
+                </tr>`;
+            });
+            
+            document.getElementById("dailyReportTableBody").innerHTML = tbodyHtml || "<tr><td colspan='5'>No data available</td></tr>";
+            document.getElementById("dailyReportModal").style.display = "flex";
+        }
+
         window.currentDropoutsDist = null;
         function openDropoutsModal(distOverride) {
             if (distOverride !== undefined) window.currentDropoutsDist = distOverride;
@@ -747,7 +859,6 @@
             document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
         }
 
-        // 🌟 KOTHA: CUSTOM ALERT FUNCTION 🌟
         function showCustomAlert(title, message, type) {
             let titleColor = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f172a');
             document.getElementById('customAlertHeader').innerHTML = `<h3 style="color: ${titleColor}; margin: 0; font-size: 17px; font-weight: 800;">${title}</h3>`;
@@ -759,7 +870,17 @@
             let cscId = document.getElementById("frmCscId").value.trim();
             let vleName = document.getElementById("frmVleName").value.trim();
             let mobile = document.getElementById("frmMobile").value.trim();
-            let idDate = document.getElementById("frmIdDate").value.trim(); 
+            let rawIdDate = document.getElementById("frmIdDate").value.trim(); 
+            
+            // 🌟 తేదీ ఫార్మాట్ మార్పు: YYYY-MM-DD ని DD-MM-YYYY గా మార్చడం 🌟
+            let idDate = rawIdDate;
+            if (rawIdDate) {
+                let dParts = rawIdDate.split('-');
+                if (dParts.length === 3) {
+                    idDate = dParts[2] + "-" + dParts[1] + "-" + dParts[0];
+                }
+            }
+
             let row = globalData[currentUpdateIndex];
 
             if (cscId === "") { 
@@ -767,7 +888,6 @@
                 return; 
             }
 
-            // 🌟 DUPLICATE CSC ID CHECK WITH CUSTOM POPUP 🌟
             let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
             if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
                 let dup = globalData[dupIndex];
@@ -788,8 +908,12 @@
                 let res = await fetch(saveUrl); let result = await res.json();
                 if (result.status === "success") {
                     globalData[currentUpdateIndex].cscId = cscId; globalData[currentUpdateIndex].vleName = vleName;
-                    globalData[currentUpdateIndex].mobile = mobile; globalData[currentUpdateIndex].idDate = idDate;
+                    globalData[currentUpdateIndex].mobile = mobile; globalData[currentUpdateIndex].idDate = idDate; 
                     globalData[currentUpdateIndex].isMapped = true;
+                    
+                    let d = new Date();
+                    globalData[currentUpdateIndex].mappedDate = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+                    
                     sessionStorage.removeItem(cacheKey); 
                     
                     closeModal('mapVleModal'); 
@@ -939,7 +1063,6 @@
 
         window.onclick = function(event) { 
             if (event.target.classList.contains('modal-overlay')) {
-                // Do not close the custom alert on outside click to force user to read it
                 if (event.target.id !== 'customAlertModal') {
                     event.target.style.display = "none";
                 }
