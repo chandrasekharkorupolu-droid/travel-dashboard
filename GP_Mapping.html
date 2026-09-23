@@ -243,7 +243,7 @@
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> One GP - One CSC : Active & Dropouts Report</span>
+                        <span style="font-size: 22px; font-weight: 900; color: #b91c1c;"><i class="fa-solid fa-users-slash" style="color:#ea580c; margin-right:8px;"></i> Active & Dropouts Report</span>
                         
                         <button id="doBackBtn" onclick="openDropoutsModal('All')" style="display:none; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer;" class="back-btn-capture"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         
@@ -268,6 +268,8 @@
                 </div>
                 <div class="modal-header-actions" id="modalActionButtons2">
                     <button class="expand-btn" onclick="toggleExpand('captureModalContent2', this)" title="Expand Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                    <!-- 🌟 KOTHA BUTTON: EXPORT DROPOUTS LIST 🌟 -->
+                    <button class="btn-modal-dl" style="background:#10b981;" onclick="downloadDropoutsExcel()"><i class="fa-solid fa-file-excel"></i> Export Dropouts</button>
                     <button class="btn-modal-dl" style="background:#ea580c;" onclick="downloadSummaryImage('captureModalContent2', 'Dropouts_Report', 'modalActionButtons2')"><i class="fa-solid fa-camera"></i> Download Image</button>
                     <button class="modal-close" onclick="closeModal('dropoutsModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
@@ -648,6 +650,7 @@
             calcDropouts();
         }
 
+        // 🌟 DROPOUTS LOGIC: REMOVED "NEW ACTIVES" AND MOVED "DROPOUTS" TO LAST 🌟
         function calcDropouts() {
             let globalFilter = document.getElementById("districtFilter").value;
             let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : globalFilter;
@@ -755,6 +758,66 @@
         }
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+        // 🌟 KOTHA: EXPORT DROPOUTS TO EXCEL 🌟
+        async function downloadDropoutsExcel() {
+            let m1Key = document.getElementById("doMonth1").value;
+            let m2Key = document.getElementById("doMonth2").value;
+            let selM1 = document.getElementById("doMonth1");
+            let m1Text = selM1.options[selM1.selectedIndex].text.split('-')[0].toUpperCase();
+            let selM2 = document.getElementById("doMonth2");
+            let m2Text = selM2.options[selM2.selectedIndex].text.split('-')[0].toUpperCase();
+
+            let distFilter = document.getElementById("districtFilter").value;
+            let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : distFilter;
+            let isStateWide = (distToUse === "All");
+
+            let exportData = globalData.filter(row => {
+                if (!isStateWide && row.district !== distToUse) return false;
+                // Get ONLY dropouts (had txn in Base month, ZERO in Compare month)
+                return row.isMapped && row[m1Key] > 0 && row[m2Key] === 0;
+            });
+
+            if (exportData.length === 0) { alert(`No dropouts found between ${m1Text} and ${m2Text}!`); return; }
+
+            const btn = document.querySelector("#dropoutsModal .fa-file-excel").parentNode;
+            let origText = btn.innerHTML;
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting...";
+            btn.disabled = true;
+
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('Dropouts List');
+            
+            sheet.addRow(["District", "Mandal", "Grama Panchayath", "CSC ID", "VLE Name", "Mobile", `${m1Text} TXN (Base)`, `${m2Text} TXN (Compare)`]);
+            
+            sheet.getRow(1).eachCell(cell => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF991B1B' } }; // Dark red header
+                cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                cell.alignment = { horizontal: 'center' };
+            });
+
+            exportData.forEach(row => {
+                sheet.addRow([
+                    row.district, row.mandal, row.gpName, 
+                    row.cscId, row.vleName, row.mobile, 
+                    row[m1Key], row[m2Key]
+                ]);
+            });
+            sheet.columns.forEach(col => col.width = 20);
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            
+            let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            let fNameDist = isStateWide ? "State" : distToUse.replace(/\s+/g, "_");
+            link.download = `Dropouts_List_${fNameDist}_${m1Text}_vs_${m2Text}_${dateStr}.xlsx`;
+            link.click();
+
+            btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded";
+            setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+        }
 
         async function downloadSummaryImage(contentId, prefix, actionBtnId) {
             const actionBtns = document.getElementById(actionBtnId);
