@@ -35,6 +35,10 @@
     .btn-outline-danger-custom { color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; }
     .btn-outline-danger-custom:hover { background: #fee2e2; color: #dc2626; }
 
+    /* 🌟 New Full Screen Button Style 🌟 */
+    .btn-outline-dark-custom { color: #475569; background: #f8fafc; border: 1px solid #cbd5e1; }
+    .btn-outline-dark-custom:hover { background: #e2e8f0; color: #0f172a; }
+
     .search-box { border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; outline: none; font-size: 13px; font-weight: 600; color: #1e293b; background: #f8fafc; transition: 0.3s; }
     .search-box:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
@@ -113,6 +117,9 @@
             <button class="btn-action btn-outline-danger-custom" onclick="resetAllFilters()" title="Clear all filters">✖ Reset All</button>
             <button class="btn-action btn-outline-success-custom" onclick="exportToExcel()">📥 Excel</button>
             <button class="btn-action btn-outline-custom" onclick="refreshDispatchReport()">🔄 Refresh</button>
+            
+            <!-- 🌟 FULL SCREEN BUTTON ADDED HERE 🌟 -->
+            <button class="btn-action btn-outline-dark-custom" id="fsBtn" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Full Screen</button>
         </div>
       </div>
     </div>
@@ -484,6 +491,37 @@
           console.error("Could not copy text: ", err);
        });
     }
+
+    // 🌟 FULL SCREEN LOGIC ADDED HERE 🌟
+    function toggleFullScreen() {
+        let elem = document.documentElement;
+        let fsBtn = document.getElementById('fsBtn');
+        
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+        } else {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+        }
+    }
+
+    // ఫుల్ స్క్రీన్ మోడ్ మ్యాన్యువల్ గా (Escape నొక్కి) ఎగ్జిట్ అయితే బటన్ అప్డేట్ అవ్వడానికి
+    document.addEventListener('fullscreenchange', (event) => {
+        let fsBtn = document.getElementById('fsBtn');
+        if(fsBtn) {
+            if (document.fullscreenElement) {
+                fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+            } else {
+                fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+            }
+        }
+    });
+
   </script>
 </body>
 </html>
