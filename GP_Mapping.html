@@ -35,7 +35,6 @@
         #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
         #perfBtn:hover { background-color: #c2410c; }
 
-        /* 🌟 NEW DAILY REPORT BUTTON STYLE 🌟 */
         #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
         #dailyReportBtn:hover { background-color: #0369a1; }
 
@@ -53,7 +52,7 @@
         .kpi-mapped::before { background-color: #10b981; } 
         .kpi-pending::before { background-color: #ef4444; } 
 
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; border: 1px solid #e2e8f0; }
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; overflow-x: auto; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
         
         thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
@@ -102,7 +101,7 @@
         .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
         .stat-value { font-size: 26px; font-weight: 900; }
         
-        .modal-body { padding: 0; overflow-y: auto; flex: 1; background: #ffffff; }
+        .modal-body { padding: 0; overflow-y: auto; overflow-x: auto; flex: 1; background: #ffffff; }
         
         .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
         .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
@@ -126,6 +125,38 @@
         .mw-val.active { color: #16a34a; }
         
         .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
+
+        /* 📱 🌟 MOBILE RESPONSIVE STYLES 🌟 📱 */
+        @media (max-width: 768px) {
+            body { padding: 10px; overflow-y: auto; height: auto; }
+            
+            .control-panel { flex-direction: column; align-items: stretch; padding: 15px; }
+            .page-heading { justify-content: center; margin-bottom: 12px; }
+            
+            .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; justify-content: center; }
+            .filter-group .search-box, .filter-group select { grid-column: span 2; width: 100%; max-width: 100%; }
+            .btn-action { width: 100%; justify-content: center; }
+            
+            .kpi-grid { grid-template-columns: 1fr; }
+            
+            /* టేబుల్స్ ఇరుకుగా అవ్వకుండా కనీస సైజు పెట్టి స్క్రోల్ అయ్యేలా సెట్టింగ్ */
+            #dataTable { min-width: 900px; } 
+            .summary-table { min-width: 600px; }
+            
+            .modal-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            .modal-header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            
+            .overall-stats-banner { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px 10px; }
+            .stat-item { flex: 1 1 40%; min-width: 100px; }
+            
+            #dropoutSelectors { flex-direction: column; align-items: stretch; width: 100%; }
+            .do-select { width: 100%; }
+            
+            .mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .mw-top-boxes { flex-wrap: wrap; }
+            
+            .modal-content { max-height: 95vh !important; }
+        }
     </style>
 </head>
 <body>
@@ -156,9 +187,7 @@
             <button class="btn-action" onclick="fetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
             <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
             
-            <!-- 🌟 DAILY REPORT BUTTON ADDED HERE 🌟 -->
             <button class="btn-action" id="dailyReportBtn" onclick="openDailyReportModal()"><i class="fa-solid fa-chart-line"></i> Daily Report</button>
-            
             <button class="btn-action" id="summaryBtn" onclick="openSummaryModal('All')"><i class="fa-solid fa-chart-column"></i> Summary</button>
             <button class="btn-action" id="perfBtn" onclick="openDropoutsModal('All')"><i class="fa-solid fa-users-slash"></i> Dropouts</button>
             <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
@@ -209,7 +238,8 @@
 
     <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
     <div class="modal-overlay" id="summaryModal">
-        <div class="modal-content" id="captureModalContent1" style="width: 700px; max-height: 85vh;">
+        <!-- Width ని మొబైల్ కి తగ్గట్టు పర్సంటేజ్ (95%) లోకి మార్చాను -->
+        <div class="modal-content" id="captureModalContent1" style="width: 95%; max-width: 700px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -224,7 +254,7 @@
                     <button class="modal-close" onclick="closeModal('summaryModal')"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
             </div>
-            <div class="overall-stats-banner" style="background:#f8fafc;">
+            <div class="overall-stats-banner">
                 <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="modTotalGPs" style="color:#0f172a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Mapped GPs</span><span class="stat-value" id="modMappedGPs" style="color:#2563eb;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Pending</span><span class="stat-value" id="modPendingGPs" style="color:#dc2626;">0</span></div>
@@ -248,7 +278,7 @@
 
     <!-- 🌟 2. DYNAMIC DROPOUTS & PERFORMANCE MODAL 🌟 -->
     <div class="modal-overlay" id="dropoutsModal">
-        <div class="modal-content" id="captureModalContent2" style="width: 850px; max-height: 85vh;">
+        <div class="modal-content" id="captureModalContent2" style="width: 95%; max-width: 850px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -283,7 +313,7 @@
                 </div>
             </div>
             
-            <div class="overall-stats-banner" style="background:#fff7ed; padding: 12px 10px;">
+            <div class="overall-stats-banner" style="background:#fff7ed;">
                 <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="doModTotal" style="color:#0f172a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Mapped VLEs</span><span class="stat-value" id="doModMapped" style="color:#2563eb;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Active (FY)</span><span class="stat-value" id="doModActFY" style="color:#16a34a;">0</span></div>
@@ -314,7 +344,7 @@
 
     <!-- 🌟 3. MONTH-WISE TXN MODAL 🌟 -->
     <div class="modal-overlay" id="monthWiseModal">
-        <div class="modal-content" style="width: 480px;">
+        <div class="modal-content" style="width: 95%; max-width: 480px;">
             <div class="modal-header" style="background-color: #eff6ff; padding: 15px 20px;">
                 <span style="font-size: 16px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:8px;"></i> VLE Transactions Tracker</span>
                 <button class="modal-close" onclick="closeModal('monthWiseModal')"><i class="fa-solid fa-circle-xmark"></i></button>
@@ -322,14 +352,14 @@
             <div style="padding: 15px 20px 5px 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
                 <h4 id="mwVleName" style="color:#0f172a; margin:0; font-weight:800; font-size:16px;">VLE Name</h4>
                 <p id="mwCscId" style="color:#64748b; font-size:12px; margin:5px 0 10px 0; font-weight:600;"></p>
-                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <div class="mw-top-boxes" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px;">
                     <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 24-25 Total</div><div id="vTxn2425" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
                     <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 25-26 Total</div><div id="vTxn2526" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
                 </div>
             </div>
             <div class="modal-body">
                 <div style="padding: 10px 20px 0 20px; text-align:center;"><span style="font-size:12px; font-weight:800; color:#94a3b8; text-transform:uppercase;">FY 26-27 Month-wise Breakup</span></div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;">
+                <div class="mw-grid">
                     <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">APR-26</div><div id="vApr" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
                     <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">MAY-26</div><div id="vMay" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
                     <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center;"><div style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 5px;">JUN-26</div><div id="vJun" style="font-size: 22px; font-weight: 900; color: #0f172a;">0</div></div>
@@ -349,7 +379,7 @@
 
     <!-- 🌟 4. MAP VLE FORM MODAL 🌟 -->
     <div class="modal-overlay" id="mapVleModal">
-        <div class="modal-content" style="width: 450px; max-height: 90vh;">
+        <div class="modal-content" style="width: 95%; max-width: 450px; max-height: 90vh;">
             <div class="modal-header" style="background-color: #f8fafc; padding: 15px 20px;">
                 <span style="font-size: 16px; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-user-plus" style="color:#10b981; margin-right:8px;"></i> Update VLE Mapping</span>
                 <button class="modal-close" onclick="closeModal('mapVleModal')"><i class="fa-solid fa-circle-xmark"></i></button>
@@ -367,9 +397,9 @@
         </div>
     </div>
 
-    <!-- 🌟 5. NEW: DAILY PROGRESS REPORT MODAL 🌟 -->
+    <!-- 🌟 5. DAILY PROGRESS REPORT MODAL 🌟 -->
     <div class="modal-overlay" id="dailyReportModal">
-        <div class="modal-content" id="captureModalContent3" style="width: 750px; max-height: 85vh;">
+        <div class="modal-content" id="captureModalContent3" style="width: 95%; max-width: 750px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -384,7 +414,7 @@
                 </div>
             </div>
             
-            <div class="overall-stats-banner" style="background:#f0f9ff; padding: 15px 20px; border-bottom: 2px solid #bae6fd;">
+            <div class="overall-stats-banner" style="background:#f0f9ff;">
                 <div class="stat-item"><span class="stat-label">Total GPs</span><span class="stat-value" id="drTotalGPs" style="color:#0f172a;">0</span></div>
                 <div class="stat-item"><span class="stat-label">Mapped GPs</span><span class="stat-value" id="drMappedGPs" style="color:#0284c7;">0</span></div>
                 <div class="stat-item"><span class="stat-label" style="color:#10b981;">Mapped Yesterday</span><span class="stat-value" id="drYesterdayGPs" style="color:#10b981;">0</span></div>
@@ -410,7 +440,7 @@
 
     <!-- 🌟 CUSTOM ALERT MODAL 🌟 -->
     <div class="modal-overlay" id="customAlertModal" style="z-index: 3000;">
-        <div class="modal-content" style="width: 400px; max-height: none;">
+        <div class="modal-content" style="width: 95%; max-width: 400px; max-height: none;">
             <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;"></div>
             <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;"></div>
             <div style="padding: 15px 20px; background: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
@@ -461,7 +491,6 @@
             let idxVleName = headers.findIndex(h => h.includes('vlename'));
             let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
             
-            // 🌟 Mapped Date Column Index (for Daily Report) 🌟
             let idxMappedDate = headers.findIndex(h => h.includes('mappeddate'));
             
             let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
@@ -509,8 +538,6 @@
                     idDate: isMapped && idxIdDate > -1 ? (row[idxIdDate] || '').toString().trim() : '',
                     vleName: isMapped && idxVleName > -1 ? row[idxVleName] : '',
                     mobile: isMapped && idxMobile > -1 ? row[idxMobile] : '',
-                    
-                    // Capturing Mapped Date for the daily report comparison
                     mappedDate: isMapped && idxMappedDate > -1 ? (row[idxMappedDate] || '').toString().trim() : '',
                     
                     txn2425: idxTxn2425 > -1 ? (Number(row[idxTxn2425]) || 0) : 0,
@@ -711,12 +738,10 @@
             document.getElementById("summaryModal").style.display = "flex";
         }
 
-        // 🌟 NEW FUNCTION: OPEN DAILY PROGRESS REPORT MODAL 🌟
         function openDailyReportModal() {
             let drData = {};
             let ovTotal = 0, ovMapped = 0, ovYesterday = 0, ovBalance = 0;
 
-            // Generate yesterday's date strings (Checking both DD-MM-YYYY and DD/MM/YYYY formats just in case)
             let d = new Date();
             d.setDate(d.getDate() - 1);
             let yStr1 = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
@@ -735,7 +760,6 @@
                     drData[dist].mapped++; 
                     ovMapped++;
                     
-                    // Count if the mappedDate column includes yesterday's date string
                     if (row.mappedDate && (row.mappedDate.includes(yStr1) || row.mappedDate.includes(yStr2))) {
                         drData[dist].yesterday++;
                         ovYesterday++;
@@ -872,13 +896,10 @@
             let mobile = document.getElementById("frmMobile").value.trim();
             let rawIdDate = document.getElementById("frmIdDate").value.trim(); 
             
-            // 🌟 తేదీ ఫార్మాట్ మార్పు: YYYY-MM-DD ని DD-MM-YYYY గా మార్చడం 🌟
             let idDate = rawIdDate;
             if (rawIdDate) {
                 let dParts = rawIdDate.split('-');
-                if (dParts.length === 3) {
-                    idDate = dParts[2] + "-" + dParts[1] + "-" + dParts[0];
-                }
+                if (dParts.length === 3) { idDate = dParts[2] + "-" + dParts[1] + "-" + dParts[0]; }
             }
 
             let row = globalData[currentUpdateIndex];
@@ -1021,7 +1042,8 @@
             clone.style.position = 'absolute';
             clone.style.top = '-9999px';
             clone.style.left = '0';
-            clone.style.width = originalContent.offsetWidth + 'px';
+            // 🌟 ఇమేజ్ కట్ అవ్వకుండా టేబుల్ ఫుల్ సైజు తీసుకునేలా మార్చాను 🌟
+            clone.style.width = Math.max(originalContent.scrollWidth, originalContent.offsetWidth) + 'px';
             clone.style.height = 'auto';
             clone.style.maxHeight = 'none';
             clone.style.overflow = 'visible';
