@@ -56,6 +56,10 @@
 
     .btn-outline-custom { color: #6366f1; background: #eff6ff; font-weight: 800; padding: 6px 14px; border-radius: 8px; border: 1px solid #c7d2fe; transition: 0.3s;}
     .btn-outline-custom:hover { background: #e0e7ff; color: #4f46e5; }
+
+    /* 🌟 New Full Screen Button Style 🌟 */
+    .btn-outline-dark-custom { color: #475569; background: #f8fafc; font-weight: 800; padding: 6px 14px; border-radius: 8px; border: 1px solid #cbd5e1; transition: 0.3s;}
+    .btn-outline-dark-custom:hover { background: #e2e8f0; color: #0f172a; }
     
     .form-select-custom { background-color: #ffffff; border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; font-weight: 800; color: #1e293b; font-size: 13px; cursor: pointer; transition: 0.3s; }
     .form-select-custom:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
@@ -89,6 +93,7 @@
         
         .form-select-custom, 
         .btn-outline-custom, 
+        .btn-outline-dark-custom,
         .search-box, .btn-zero {
             width: 100% !important;
             max-width: 100% !important;
@@ -168,6 +173,9 @@
         
         <button class="btn-outline-custom" onclick="refreshData()">🔄 Refresh</button>
         <button class="btn-outline-custom" onclick="downloadImage()">📸 Download Image</button>
+        
+        <!-- 🌟 FULL SCREEN BUTTON ADDED HERE 🌟 -->
+        <button class="btn-outline-dark-custom" id="fsBtn" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Full Screen</button>
       </div>
     </div>
 
@@ -188,7 +196,6 @@
             <button id="btnVleView" class="view-btn active flex-fill" onclick="switchView('VLE')">🧑‍💻 VLE Breakdown</button>
           </div>
           
-          <!-- 🌟 ZERO SALES BUTTON ADDED HERE 🌟 -->
           <div class="d-flex align-items-center gap-2 w-100 w-md-auto flex-column flex-md-row">
             <button id="btnZeroSales" class="btn-zero w-100 w-md-auto" onclick="toggleZeroSales()">🚨 Show Zero Sales</button>
             <input type="text" id="searchBox" class="search-box w-100 w-md-auto" placeholder="🔍 Search Name, CSC ID or District..." onkeyup="searchTable()">
@@ -285,7 +292,7 @@
        apiCache = {}; 
        document.getElementById("reportTbody").innerHTML = `<tr><td colspan="14" class="py-5 fw-bold" style="color:#6366f1; font-size: 14px;">🔄 Refreshing fresh data from server...</td></tr>`;
        
-       if(showingZeroSales) toggleZeroSales(); // రీఫ్రెష్ చేసినప్పుడు ఫిల్టర్ క్లియర్ అవ్వడానికి
+       if(showingZeroSales) toggleZeroSales(); 
        fetchReportData();
     }
 
@@ -455,7 +462,6 @@
     }
 
     function filterVles(filterType) {
-       // 🌟 వేరే బటన్ నొక్కినప్పుడు జీరో సేల్స్ ఫిల్టర్ తీసేయాలి 🌟
        if (showingZeroSales) {
            showingZeroSales = false;
            let btn = document.getElementById("btnZeroSales");
@@ -471,7 +477,6 @@
        else renderCurrentView();
     }
 
-    // 🌟 జీరో సేల్స్ టోగుల్ చేసే ఫంక్షన్ 🌟
     function toggleZeroSales() {
         showingZeroSales = !showingZeroSales;
         let btn = document.getElementById("btnZeroSales");
@@ -480,12 +485,10 @@
             btn.innerHTML = "✖ Clear Zero Sales Filter";
             btn.classList.add("active");
             
-            // ఫోర్స్ గా అన్ని VLE ల లిస్ట్ కి రీసెట్ చేయడం
             currentFilter = 'ALL';
             document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
             document.getElementById('card-ALL').classList.add('active');
             
-            // డిస్ట్రిక్ట్ వ్యూ లో ఉంటే, VLE వ్యూ కి మార్చడం
             if (currentView !== 'VLE') {
                 switchView('VLE');
             } else {
@@ -587,7 +590,6 @@
           else if(currentFilter === 'D100') dataToRender = masterVleData.filter(v => v.data.d100 > 0);
           else if(currentFilter === 'OTH') dataToRender = masterVleData.filter(v => v.data.other > 0);
 
-          // 🌟 ZERO SALES ఫిల్టర్ లాజిక్ 🌟
           if (showingZeroSales) {
               dataToRender = dataToRender.filter(item => {
                   let ov = masterOverallDataVle[item.id] || item;
@@ -596,7 +598,6 @@
                   let curUsed = item.data.d10 + item.data.d20 + item.data.d50 + item.data.d100 + item.data.other + (item.data.dsdCount || 0);
                   let cumUsed = currentCumVleMap[item.id] ? currentCumVleMap[item.id].used : curUsed;
                   
-                  // స్టాక్ ఉండి, వాడిన పేపర్లు సున్నా ఉంటేనే లిస్టులో చూపిస్తుంది.
                   return (assignedStock > 0 && cumUsed === 0);
               });
               
@@ -695,6 +696,37 @@
           let link = document.createElement('a'); link.download = 'Sales_Report.png'; link.href = canvas.toDataURL("image/png"); link.click();
        });
     }
+
+    // 🌟 FULL SCREEN LOGIC ADDED HERE 🌟
+    function toggleFullScreen() {
+        let elem = document.documentElement;
+        let fsBtn = document.getElementById('fsBtn');
+        
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+        } else {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+        }
+    }
+
+    // ఫుల్ స్క్రీన్ మోడ్ మ్యాన్యువల్ గా (Escape నొక్కి) ఎగ్జిట్ అయితే బటన్ అప్డేట్ అవ్వడానికి
+    document.addEventListener('fullscreenchange', (event) => {
+        let fsBtn = document.getElementById('fsBtn');
+        if(fsBtn) {
+            if (document.fullscreenElement) {
+                fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+            } else {
+                fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+            }
+        }
+    });
+
   </script>
 </body>
 </html>
