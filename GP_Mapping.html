@@ -9,157 +9,147 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Inter, sans-serif; }
-        body { background-color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 20px; gap: 15px; color: #334155; }
+        /* 🌟 FIXED: Scoped all CSS to .gp-app-wrapper to prevent CSS bleeding into other 80 reports 🌟 */
+        .gp-app-wrapper { font-family: 'Segoe UI', Inter, sans-serif; display: flex; flex-direction: column; height: 100%; min-height: 80vh; padding: 15px; gap: 15px; color: #334155; background-color: #f1f5f9; box-sizing: border-box; }
+        .gp-app-wrapper * { box-sizing: border-box; }
 
-        .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
-        .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .page-heading i { color: #2563eb; font-size: 18px; }
+        .gp-app-wrapper .control-panel { background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
+        .gp-app-wrapper .page-heading { font-size: 16px; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .gp-app-wrapper .page-heading i { color: #2563eb; font-size: 18px; }
         
-        .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .gp-app-wrapper .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
         
-        .filter-group select, .search-box { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; outline: none; background-color: #ffffff; cursor: pointer; transition: 0.2s; max-width: 140px; }
-        .filter-group select:focus, .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-        .search-box { width: 140px; cursor: text; }
-        .search-box:focus { width: 180px; }
+        .gp-app-wrapper .filter-group select, .gp-app-wrapper .search-box { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; outline: none; background-color: #ffffff; cursor: pointer; transition: 0.2s; max-width: 140px; margin: 0; }
+        .gp-app-wrapper .filter-group select:focus, .gp-app-wrapper .search-box:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .gp-app-wrapper .search-box { width: 140px; cursor: text; }
+        .gp-app-wrapper .search-box:focus { width: 180px; }
 
-        .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-        .btn-action:hover { background-color: #f8fafc; color: #0f172a; }
+        .gp-app-wrapper .btn-action { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; margin: 0; }
+        .gp-app-wrapper .btn-action:hover { background-color: #f8fafc; color: #0f172a; }
         
-        #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
-        #downloadExcelBtn:hover { background-color: #059669; }
+        .gp-app-wrapper #downloadExcelBtn { background-color: #10b981; color: white; border-color: #059669; }
+        .gp-app-wrapper #downloadExcelBtn:hover { background-color: #059669; }
         
-        #summaryBtn { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
-        #summaryBtn:hover { background-color: #7c3aed; }
+        .gp-app-wrapper #summaryBtn { background-color: #8b5cf6; color: white; border-color: #7c3aed; }
+        .gp-app-wrapper #summaryBtn:hover { background-color: #7c3aed; }
 
-        #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
-        #perfBtn:hover { background-color: #c2410c; }
+        .gp-app-wrapper #perfBtn { background-color: #ea580c; color: white; border-color: #c2410c; }
+        .gp-app-wrapper #perfBtn:hover { background-color: #c2410c; }
 
-        #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
-        #dailyReportBtn:hover { background-color: #0369a1; }
+        .gp-app-wrapper #dailyReportBtn { background-color: #0284c7; color: white; border-color: #0369a1; }
+        .gp-app-wrapper #dailyReportBtn:hover { background-color: #0369a1; }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
-        .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
-        .kpi-card.active-kpi { border: 2px solid #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,0.1); }
+        .gp-app-wrapper .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex-shrink: 0; }
+        .gp-app-wrapper .kpi-card { background-color: #ffffff; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .gp-app-wrapper .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .gp-app-wrapper .kpi-card.active-kpi { border: 2px solid #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,0.1); }
         
-        .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; border-radius: 8px 0 0 8px; }
-        .kpi-info { display: flex; flex-direction: column; width: 100%; }
-        .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
-        .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .gp-app-wrapper .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; border-radius: 8px 0 0 8px; }
+        .gp-app-wrapper .kpi-info { display: flex; flex-direction: column; width: 100%; }
+        .gp-app-wrapper .kpi-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+        .gp-app-wrapper .kpi-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1; }
         
-        .kpi-total::before { background-color: #3b82f6; } 
-        .kpi-mapped::before { background-color: #10b981; } 
-        .kpi-pending::before { background-color: #ef4444; } 
+        .gp-app-wrapper .kpi-total::before { background-color: #3b82f6; } 
+        .gp-app-wrapper .kpi-mapped::before { background-color: #10b981; } 
+        .gp-app-wrapper .kpi-pending::before { background-color: #ef4444; } 
 
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; overflow-x: auto; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        .gp-app-wrapper .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; overflow-x: auto; border: 1px solid #e2e8f0; max-height: 60vh; }
+        .gp-app-wrapper table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
         
-        thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
+        .gp-app-wrapper thead th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 600; padding: 12px 15px; border-bottom: 2px solid #0f172a; }
         
-        td { white-space: nowrap; padding: 12px 15px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; font-weight: 500; }
-        tbody tr:hover { background-color: #f8fafc; }
+        .gp-app-wrapper td { white-space: nowrap; padding: 12px 15px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; font-weight: 500; }
+        .gp-app-wrapper tbody tr:hover { background-color: #f8fafc; }
         
-        .bold-num { font-weight: 700; color: #0f172a; }
-        .text-blue { color: #2563eb; font-weight: 600; }
+        .gp-app-wrapper .bold-num { font-weight: 700; color: #0f172a; }
+        .gp-app-wrapper .text-blue { color: #2563eb; font-weight: 600; }
 
-        .badge-success { background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-block; }
-        .badge-danger { background-color: #fef2f2; color: #b91c1c; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #fecaca; display: inline-block; }
+        .gp-app-wrapper .badge-success { background-color: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-block; }
+        .gp-app-wrapper .badge-danger { background-color: #fef2f2; color: #b91c1c; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #fecaca; display: inline-block; }
         
-        .btn-update { background-color: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-update:hover { background-color: #2563eb; color: white; }
+        .gp-app-wrapper .btn-update { background-color: #f8fafc; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .gp-app-wrapper .btn-update:hover { background-color: #2563eb; color: white; }
 
-        .txn-link { background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s; border: 1px solid #bfdbfe; display: inline-block; }
-        .txn-link:hover { background: #2563eb; color: white; transform: scale(1.05); }
+        .gp-app-wrapper .txn-link { background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: 0.3s; border: 1px solid #bfdbfe; display: inline-block; }
+        .gp-app-wrapper .txn-link:hover { background: #2563eb; color: white; transform: scale(1.05); }
 
-        .loader { text-align: center; padding: 40px; font-size: 14px; color: #475569; font-weight: 600; }
+        .gp-app-wrapper .loader { text-align: center; padding: 40px; font-size: 14px; color: #475569; font-weight: 600; }
 
-        /* 🌟 MODAL SETTINGS 🌟 */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
-        .modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #e2e8f0; transition: all 0.3s ease;}
+        /* 🌟 FIXED MODAL OVERLAYS (gp-modal-overlay instead of modal-overlay) 🌟 */
+        .gp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+        .gp-modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #e2e8f0; transition: all 0.3s ease; font-family: 'Segoe UI', Inter, sans-serif;}
         
-        .modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
+        .gp-modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
         
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; }
-        .modal-header-actions { display: flex; align-items: center; gap: 12px; }
+        .gp-modal-content .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; margin: 0; }
+        .gp-modal-content .modal-header-actions { display: flex; align-items: center; gap: 12px; }
         
-        .expand-btn { cursor: pointer; color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px;}
-        .expand-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .gp-modal-content .expand-btn { cursor: pointer; color: #64748b; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px;}
+        .gp-modal-content .expand-btn:hover { background: #e2e8f0; color: #0f172a; }
 
-        .btn-modal-dl { background-color: #2563eb; color: white; border: none; padding: 7px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
-        .btn-modal-dl:hover { background-color: #1d4ed8; }
+        .gp-modal-content .btn-modal-dl { background-color: #2563eb; color: white; border: none; padding: 7px 15px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+        .gp-modal-content .btn-modal-dl:hover { background-color: #1d4ed8; }
         
-        .modal-close { cursor: pointer; color: #ef4444; background: none; border: none; font-size: 26px; transition: 0.2s; display: flex; align-items: center; }
-        .modal-close:hover { color: #b91c1c; transform: scale(1.1); }
+        .gp-modal-content .modal-close { cursor: pointer; color: #ef4444; background: none; border: none; font-size: 26px; transition: 0.2s; display: flex; align-items: center; padding: 0;}
+        .gp-modal-content .modal-close:hover { color: #b91c1c; transform: scale(1.1); }
         
-        .overall-stats-banner { display: flex; justify-content: space-around; background-color: #f8fafc; padding: 15px 20px; border-bottom: 2px solid #cbd5e1; }
-        .stat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+        .gp-modal-content .overall-stats-banner { display: flex; justify-content: space-around; background-color: #f8fafc; padding: 15px 20px; border-bottom: 2px solid #cbd5e1; }
+        .gp-modal-content .stat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
         
-        .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
-        .stat-value { font-size: 26px; font-weight: 900; }
+        .gp-modal-content .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; }
+        .gp-modal-content .stat-value { font-size: 26px; font-weight: 900; }
         
-        .modal-body { padding: 0; overflow-y: auto; overflow-x: auto; flex: 1; background: #ffffff; }
+        .gp-modal-content .modal-body { padding: 0; overflow-y: auto; overflow-x: auto; flex: 1; background: #ffffff; }
         
-        .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
-        .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
-        .summary-table td { padding: 12px 10px; font-size: 15px; color: #334155; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+        .gp-modal-content .summary-table { width: 100%; border-collapse: collapse; text-align: center; }
+        .gp-modal-content .summary-table th { position: sticky; top: 0; background-color: #1e40af; color: #ffffff; padding: 12px 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; z-index: 10; border-bottom: 3px solid #1e3a8a; letter-spacing: 0.5px; }
+        .gp-modal-content .summary-table td { padding: 12px 10px; font-size: 15px; color: #334155; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
         
-        .sum-mandal { text-align: left; font-weight: 800; color: #0f172a; font-size: 16px; }
+        .gp-modal-content .sum-mandal { text-align: left; font-weight: 800; color: #0f172a; font-size: 16px; }
         
-        .badge-zero { color: #15803d; font-weight: 800; font-size: 15px; }
-        .badge-alert { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 12px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 4px rgba(239,68,68,0.3); display: inline-block; min-width: 30px; text-align: center; }
+        .gp-modal-content .form-group { margin-bottom: 15px; text-align: left;}
+        .gp-modal-content .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .gp-modal-content .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; box-sizing: border-box;}
+        .gp-modal-content .form-readonly { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; font-weight: 600; }
+        .gp-modal-content .btn-submit { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        
+        .gp-modal-content .mw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;}
+        .gp-modal-content .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; }
-        .form-readonly { background-color: #f1f5f9; cursor: not-allowed; color: #64748b; font-weight: 600; }
-        .btn-submit { width: 100%; background-color: #10b981; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        
-        .mw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; background: #f8fafc;}
-        .mw-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .mw-mon { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-        .mw-val { font-size: 22px; font-weight: 900; color: #0f172a; }
-        .mw-val.active { color: #16a34a; }
-        
-        .do-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 700; outline: none; cursor: pointer; color: #1e293b; background: white;}
-
-        /* 📱 🌟 MOBILE RESPONSIVE STYLES 🌟 📱 */
+        /* 📱 🌟 SAFE MOBILE RESPONSIVE STYLES 🌟 📱 */
         @media (max-width: 768px) {
-            body { padding: 10px; overflow-y: auto; height: auto; }
+            .gp-app-wrapper { padding: 10px; }
+            .gp-app-wrapper .control-panel { flex-direction: column; align-items: stretch; padding: 15px; }
+            .gp-app-wrapper .page-heading { justify-content: center; margin-bottom: 12px; }
             
-            .control-panel { flex-direction: column; align-items: stretch; padding: 15px; }
-            .page-heading { justify-content: center; margin-bottom: 12px; }
+            .gp-app-wrapper .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; justify-content: center; }
+            .gp-app-wrapper .filter-group .search-box, .gp-app-wrapper .filter-group select { grid-column: span 2; width: 100%; max-width: 100%; }
+            .gp-app-wrapper .btn-action { width: 100%; justify-content: center; }
             
-            .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; justify-content: center; }
-            .filter-group .search-box, .filter-group select { grid-column: span 2; width: 100%; max-width: 100%; }
-            .btn-action { width: 100%; justify-content: center; }
+            .gp-app-wrapper .kpi-grid { grid-template-columns: 1fr; }
             
-            .kpi-grid { grid-template-columns: 1fr; }
+            .gp-app-wrapper #dataTable { min-width: 900px; } 
+            .gp-modal-content .summary-table { min-width: 600px; }
             
-            /* టేబుల్స్ ఇరుకుగా అవ్వకుండా కనీస సైజు పెట్టి స్క్రోల్ అయ్యేలా సెట్టింగ్ */
-            #dataTable { min-width: 900px; } 
-            .summary-table { min-width: 600px; }
+            .gp-modal-content .modal-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            .gp-modal-content .modal-header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
             
-            .modal-header { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
-            .modal-header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .gp-modal-content .overall-stats-banner { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px 10px; }
+            .gp-modal-content .stat-item { flex: 1 1 40%; min-width: 100px; }
             
-            .overall-stats-banner { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 15px 10px; }
-            .stat-item { flex: 1 1 40%; min-width: 100px; }
+            .gp-modal-content #dropoutSelectors { flex-direction: column; align-items: stretch; width: 100%; }
+            .gp-modal-content .do-select { width: 100%; }
+            .gp-modal-content .mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
             
-            #dropoutSelectors { flex-direction: column; align-items: stretch; width: 100%; }
-            .do-select { width: 100%; }
-            
-            .mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .mw-top-boxes { flex-wrap: wrap; }
-            
-            .modal-content { max-height: 95vh !important; }
+            .gp-modal-content { max-height: 95vh !important; }
         }
     </style>
 </head>
 <body>
+
+<div class="gp-app-wrapper">
 
     <div class="control-panel">
         <div class="page-heading">
@@ -237,9 +227,8 @@
     </div>
 
     <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
-    <div class="modal-overlay" id="summaryModal">
-        <!-- Width ని మొబైల్ కి తగ్గట్టు పర్సంటేజ్ (95%) లోకి మార్చాను -->
-        <div class="modal-content" id="captureModalContent1" style="width: 95%; max-width: 700px; max-height: 85vh;">
+    <div class="gp-modal-overlay" id="summaryModal">
+        <div class="gp-modal-content" id="captureModalContent1" style="width: 95%; max-width: 700px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -277,8 +266,8 @@
     </div>
 
     <!-- 🌟 2. DYNAMIC DROPOUTS & PERFORMANCE MODAL 🌟 -->
-    <div class="modal-overlay" id="dropoutsModal">
-        <div class="modal-content" id="captureModalContent2" style="width: 95%; max-width: 850px; max-height: 85vh;">
+    <div class="gp-modal-overlay" id="dropoutsModal">
+        <div class="gp-modal-content" id="captureModalContent2" style="width: 95%; max-width: 850px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -343,16 +332,16 @@
     </div>
 
     <!-- 🌟 3. MONTH-WISE TXN MODAL 🌟 -->
-    <div class="modal-overlay" id="monthWiseModal">
-        <div class="modal-content" style="width: 95%; max-width: 480px;">
-            <div class="modal-header" style="background-color: #eff6ff; padding: 15px 20px;">
+    <div class="gp-modal-overlay" id="monthWiseModal">
+        <div class="gp-modal-content" style="width: 95%; max-width: 480px;">
+            <div class="modal-header" style="background-color: #eff6ff;">
                 <span style="font-size: 16px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-calendar-days" style="color:#2563eb; margin-right:8px;"></i> VLE Transactions Tracker</span>
                 <button class="modal-close" onclick="closeModal('monthWiseModal')"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
             <div style="padding: 15px 20px 5px 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
                 <h4 id="mwVleName" style="color:#0f172a; margin:0; font-weight:800; font-size:16px;">VLE Name</h4>
                 <p id="mwCscId" style="color:#64748b; font-size:12px; margin:5px 0 10px 0; font-weight:600;"></p>
-                <div class="mw-top-boxes" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap;">
                     <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 24-25 Total</div><div id="vTxn2425" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
                     <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px; width: 130px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"><div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">FY 25-26 Total</div><div id="vTxn2526" style="font-size: 20px; font-weight: 900; color: #0f172a;">0</div></div>
                 </div>
@@ -378,9 +367,9 @@
     </div>
 
     <!-- 🌟 4. MAP VLE FORM MODAL 🌟 -->
-    <div class="modal-overlay" id="mapVleModal">
-        <div class="modal-content" style="width: 95%; max-width: 450px; max-height: 90vh;">
-            <div class="modal-header" style="background-color: #f8fafc; padding: 15px 20px;">
+    <div class="gp-modal-overlay" id="mapVleModal">
+        <div class="gp-modal-content" style="width: 95%; max-width: 450px; max-height: 90vh;">
+            <div class="modal-header" style="background-color: #f8fafc;">
                 <span style="font-size: 16px; font-weight: 700; color: #0f172a;"><i class="fa-solid fa-user-plus" style="color:#10b981; margin-right:8px;"></i> Update VLE Mapping</span>
                 <button class="modal-close" onclick="closeModal('mapVleModal')"><i class="fa-solid fa-circle-xmark"></i></button>
             </div>
@@ -398,8 +387,8 @@
     </div>
 
     <!-- 🌟 5. DAILY PROGRESS REPORT MODAL 🌟 -->
-    <div class="modal-overlay" id="dailyReportModal">
-        <div class="modal-content" id="captureModalContent3" style="width: 95%; max-width: 750px; max-height: 85vh;">
+    <div class="gp-modal-overlay" id="dailyReportModal">
+        <div class="gp-modal-content" id="captureModalContent3" style="width: 95%; max-width: 750px; max-height: 85vh;">
             <div class="modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -439,8 +428,8 @@
     </div>
 
     <!-- 🌟 CUSTOM ALERT MODAL 🌟 -->
-    <div class="modal-overlay" id="customAlertModal" style="z-index: 3000;">
-        <div class="modal-content" style="width: 95%; max-width: 400px; max-height: none;">
+    <div class="gp-modal-overlay" id="customAlertModal" style="z-index: 3000;">
+        <div class="gp-modal-content" style="width: 95%; max-width: 400px; max-height: none;">
             <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;"></div>
             <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;"></div>
             <div style="padding: 15px 20px; background: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
@@ -448,6 +437,8 @@
             </div>
         </div>
     </div>
+
+</div>
 
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
@@ -664,9 +655,9 @@
 
         function toggleExpand(contentId, btnEl) {
             let el = document.getElementById(contentId);
-            el.classList.toggle('modal-expanded');
+            el.classList.toggle('gp-modal-expanded');
             let icon = btnEl.querySelector('i');
-            if (el.classList.contains('modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
+            if (el.classList.contains('gp-modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
             else { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
         }
 
@@ -1042,7 +1033,6 @@
             clone.style.position = 'absolute';
             clone.style.top = '-9999px';
             clone.style.left = '0';
-            // 🌟 ఇమేజ్ కట్ అవ్వకుండా టేబుల్ ఫుల్ సైజు తీసుకునేలా మార్చాను 🌟
             clone.style.width = Math.max(originalContent.scrollWidth, originalContent.offsetWidth) + 'px';
             clone.style.height = 'auto';
             clone.style.maxHeight = 'none';
@@ -1084,7 +1074,7 @@
         }
 
         window.onclick = function(event) { 
-            if (event.target.classList.contains('modal-overlay')) {
+            if (event.target.classList.contains('gp-modal-overlay')) {
                 if (event.target.id !== 'customAlertModal') {
                     event.target.style.display = "none";
                 }
