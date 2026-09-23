@@ -73,11 +73,12 @@
 
         /* 🌟 MODAL SETTINGS 🌟 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
-        .modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: slideDown 0.3s ease; border: 1px solid #e2e8f0; transition: all 0.3s ease;}
+        .modal-content { background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #e2e8f0; transition: all 0.3s ease;}
         
         .modal-expanded { width: 98vw !important; height: 96vh !important; max-height: none !important; max-width: none !important; border-radius: 8px;}
         
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
         .modal-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; background-color: #ffffff; }
         .modal-header-actions { display: flex; align-items: center; gap: 12px; }
@@ -355,6 +356,21 @@
                 <div class="form-group"><label>VLE Name</label><input type="text" id="frmVleName" placeholder="Enter VLE Name..."></div>
                 <div class="form-group"><label>Mobile Number</label><input type="text" id="frmMobile" placeholder="Enter Mobile Number..." maxlength="10"></div>
                 <button class="btn-submit" id="btnSubmitMapping" onclick="submitMappingData()">Save Mapping Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 KOTHA: CUSTOM ALERT MODAL 🌟 -->
+    <div class="modal-overlay" id="customAlertModal" style="z-index: 3000;">
+        <div class="modal-content" style="width: 400px; max-height: none;">
+            <div class="modal-header" id="customAlertHeader" style="padding: 15px 20px; border-bottom: none; justify-content: center;">
+                <!-- Header content generated dynamically -->
+            </div>
+            <div class="modal-body" id="customAlertBody" style="padding: 0 20px 20px; text-align: center; font-size: 14px; color: #475569;">
+                <!-- Body content generated dynamically -->
+            </div>
+            <div style="padding: 15px 20px; background: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
+                <button onclick="closeModal('customAlertModal')" style="background: #2563eb; color: white; border: none; padding: 8px 30px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;">OK</button>
             </div>
         </div>
     </div>
@@ -731,6 +747,14 @@
             document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
         }
 
+        // 🌟 KOTHA: CUSTOM ALERT FUNCTION 🌟
+        function showCustomAlert(title, message, type) {
+            let titleColor = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f172a');
+            document.getElementById('customAlertHeader').innerHTML = `<h3 style="color: ${titleColor}; margin: 0; font-size: 17px; font-weight: 800;">${title}</h3>`;
+            document.getElementById('customAlertBody').innerHTML = message;
+            document.getElementById('customAlertModal').style.display = 'flex';
+        }
+
         async function submitMappingData() {
             let cscId = document.getElementById("frmCscId").value.trim();
             let vleName = document.getElementById("frmVleName").value.trim();
@@ -738,13 +762,22 @@
             let idDate = document.getElementById("frmIdDate").value.trim(); 
             let row = globalData[currentUpdateIndex];
 
-            if (cscId === "") { alert("Please enter CSC ID!"); return; }
+            if (cscId === "") { 
+                showCustomAlert('⚠️ Please Check!', 'Please enter a valid CSC ID before saving.', 'error'); 
+                return; 
+            }
 
-            // 🌟 DUPLICATE CSC ID CHECK 🌟
+            // 🌟 DUPLICATE CSC ID CHECK WITH CUSTOM POPUP 🌟
             let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
             if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
                 let dup = globalData[dupIndex];
-                alert(`⚠️ CSC ID ALREADY ADDED!\n\nThis CSC ID (${cscId}) is already mapped to:\n📍 District: ${dup.district}\n📍 Mandal: ${dup.mandal}\n📍 GP: ${dup.gpName}\n\nPlease check and enter a valid CSC ID.`);
+                let errorMsg = `This CSC ID (<b>${cscId}</b>) is already mapped to:<br><br>
+                               <div style="text-align: left; background: #fee2e2; padding: 12px; border-radius: 6px; display: inline-block; width: 100%; border: 1px solid #fca5a5; color: #991b1b; font-weight: 600; font-size: 13px;">
+                                   📍 <b>District:</b> ${dup.district}<br>
+                                   📍 <b>Mandal:</b> ${dup.mandal}<br>
+                                   📍 <b>GP:</b> ${dup.gpName}
+                               </div><br><br>Please check and enter a valid CSC ID.`;
+                showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
                 return;
             }
 
@@ -758,9 +791,18 @@
                     globalData[currentUpdateIndex].mobile = mobile; globalData[currentUpdateIndex].idDate = idDate;
                     globalData[currentUpdateIndex].isMapped = true;
                     sessionStorage.removeItem(cacheKey); 
-                    alert("Data Saved Successfully!"); closeModal('mapVleModal'); renderTable(); 
-                } else { alert("Failed to save data. Try again."); }
-            } catch (err) { alert("Error connecting to server. Please try again."); } finally { btn.innerHTML = "Save Mapping Data"; btn.disabled = false; }
+                    
+                    closeModal('mapVleModal'); 
+                    renderTable(); 
+                    showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
+                } else { 
+                    showCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
+                }
+            } catch (err) { 
+                showCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
+            } finally { 
+                btn.innerHTML = "Save Mapping Data"; btn.disabled = false; 
+            }
         }
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
@@ -782,7 +824,10 @@
                 return row.isMapped && row[m1Key] > 0 && row[m2Key] === 0;
             });
 
-            if (exportData.length === 0) { alert(`No dropouts found between ${m1Text} and ${m2Text}!`); return; }
+            if (exportData.length === 0) { 
+                showCustomAlert('ℹ️ No Data', `No dropouts found between ${m1Text} and ${m2Text}!`, 'normal'); 
+                return; 
+            }
 
             const btn = document.querySelector("#dropoutsModal .fa-file-excel").parentNode;
             let origText = btn.innerHTML;
@@ -886,16 +931,23 @@
                 link.download = `${prefix}_${distName}_${dateStr}.png`; 
                 link.href = canvas.toDataURL("image/png"); 
                 link.click();
-            } catch (err) { alert("Sorry, image capture failed!"); } 
+            } catch (err) { showCustomAlert('❌ Error', 'Sorry, image capture failed!', 'error'); } 
             finally {
                 document.body.removeChild(clone);
             }
         }
 
-        window.onclick = function(event) { if (event.target.classList.contains('modal-overlay')) event.target.style.display = "none"; }
+        window.onclick = function(event) { 
+            if (event.target.classList.contains('modal-overlay')) {
+                // Do not close the custom alert on outside click to force user to read it
+                if (event.target.id !== 'customAlertModal') {
+                    event.target.style.display = "none";
+                }
+            } 
+        }
         
         async function downloadExcel() {
-            if (globalData.length === 0) { alert("No data to export!"); return; }
+            if (globalData.length === 0) { showCustomAlert('ℹ️ Warning', 'No data to export!', 'error'); return; }
             const btn = document.getElementById("downloadExcelBtn"); let origText = btn.innerHTML; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting..."; btn.disabled = true;
 
             const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('GP Mapping Report');
