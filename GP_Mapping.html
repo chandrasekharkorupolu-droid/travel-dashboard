@@ -857,7 +857,7 @@
             document.getElementById('customAlertModal').style.display = 'flex';
         }
 
-        async function submitMappingData() {
+async function submitMappingData() {
             let cscId = document.getElementById("frmCscId").value.trim();
             let vleName = document.getElementById("frmVleName").value.trim();
             let mobile = document.getElementById("frmMobile").value.trim();
@@ -870,50 +870,68 @@
             }
 
             let row = globalData[currentUpdateIndex];
+            
+            // 🌟 KOTHA LOGIC: cscId empty ga unte Unmapping ani artham 🌟
+            let isUnmapping = (cscId === "");
 
-            if (cscId === "") { 
-                showCustomAlert('⚠️ Please Check!', 'Please enter a valid CSC ID before saving.', 'error'); 
-                return; 
+            // Duplicate check ni cscId unte matrame cheyali
+            if (!isUnmapping) {
+                let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
+                if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
+                    let dup = globalData[dupIndex];
+                    let errorMsg = `This CSC ID (<b>${cscId}</b>) is already mapped to:<br><br>
+                                   <div style="text-align: left; background: #fee2e2; padding: 12px; border-radius: 6px; display: inline-block; width: 100%; border: 1px solid #fca5a5; color: #991b1b; font-weight: 600; font-size: 13px;">
+                                       📍 <b>District:</b> ${dup.district}<br>
+                                       📍 <b>Mandal:</b> ${dup.mandal}<br>
+                                       📍 <b>GP:</b> ${dup.gpName}
+                                   </div><br><br>Please check and enter a valid CSC ID.`;
+                    showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
+                    return;
+                }
             }
 
-            let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
-            if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
-                let dup = globalData[dupIndex];
-                let errorMsg = `This CSC ID (<b>${cscId}</b>) is already mapped to:<br><br>
-                               <div style="text-align: left; background: #fee2e2; padding: 12px; border-radius: 6px; display: inline-block; width: 100%; border: 1px solid #fca5a5; color: #991b1b; font-weight: 600; font-size: 13px;">
-                                   📍 <b>District:</b> ${dup.district}<br>
-                                   📍 <b>Mandal:</b> ${dup.mandal}<br>
-                                   📍 <b>GP:</b> ${dup.gpName}
-                               </div><br><br>Please check and enter a valid CSC ID.`;
-                showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
-                return;
-            }
-
-            const btn = document.getElementById("btnSubmitMapping"); btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving Data..."; btn.disabled = true;
+            const btn = document.getElementById("btnSubmitMapping"); 
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving Data..."; 
+            btn.disabled = true;
 
             try {
                 let saveUrl = apiURL + `?action=updateMapping&district=${encodeURIComponent(row.district)}&mandal=${encodeURIComponent(row.mandal)}&gpName=${encodeURIComponent(row.gpName)}&cscId=${encodeURIComponent(cscId)}&idCreationDate=${encodeURIComponent(idDate)}&vleName=${encodeURIComponent(vleName)}&mobileNo=${encodeURIComponent(mobile)}`;
                 let res = await fetch(saveUrl); let result = await res.json();
+                
                 if (result.status === "success") {
-                    globalData[currentUpdateIndex].cscId = cscId; globalData[currentUpdateIndex].vleName = vleName;
-                    globalData[currentUpdateIndex].mobile = mobile; globalData[currentUpdateIndex].idDate = idDate; 
-                    globalData[currentUpdateIndex].isMapped = true;
+                    globalData[currentUpdateIndex].cscId = cscId; 
+                    globalData[currentUpdateIndex].vleName = vleName;
+                    globalData[currentUpdateIndex].mobile = mobile; 
+                    globalData[currentUpdateIndex].idDate = idDate; 
                     
-                    let d = new Date();
-                    globalData[currentUpdateIndex].mappedDate = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+                    // 🌟 Unmap chesthe isMapped ni false cheyali, lekapothe true 🌟
+                    globalData[currentUpdateIndex].isMapped = !isUnmapping;
+                    
+                    if (!isUnmapping) {
+                        let d = new Date();
+                        globalData[currentUpdateIndex].mappedDate = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+                    } else {
+                        globalData[currentUpdateIndex].mappedDate = "";
+                    }
                     
                     sessionStorage.removeItem(cacheKey); 
                     
                     closeModal('mapVleModal'); 
                     renderTable(); 
-                    showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
+                    
+                    if (isUnmapping) {
+                        showCustomAlert('✅ Unmapped Successfully!', `<b>${row.gpName}</b> nundi VLE ni remove cheyadam jarigindi. Idhi ippudu 'Pending' list lo untundi.`, 'success');
+                    } else {
+                        showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
+                    }
                 } else { 
                     showCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
                 }
             } catch (err) { 
                 showCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
             } finally { 
-                btn.innerHTML = "Save Mapping Data"; btn.disabled = false; 
+                btn.innerHTML = "Save Mapping Data"; 
+                btn.disabled = false; 
             }
         }
 
