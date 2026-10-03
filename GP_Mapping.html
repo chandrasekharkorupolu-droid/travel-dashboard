@@ -1045,8 +1045,8 @@
 
             const clone = originalContent.cloneNode(true);
             
-            // 🌟 BUGS FIXED: ఫుల్ స్క్రీన్ లో ఉన్నా కూడా ఇమేజ్ దగ్గరగా, అందంగా రావడానికి 🌟
-            clone.classList.remove('gpm-modal-expanded'); // ఇది ఫుల్ స్క్రీన్ వెడల్పును తీసేస్తుంది
+            // ఫుల్ స్క్రీన్ లో ఉన్నా సరే ఇమేజ్ కాంపాక్ట్ గా రావడానికి:
+            clone.classList.remove('gpm-modal-expanded'); 
             
             actionBtns.style.display = origDisplay;
             if (selectors && contentId === 'captureModalContent2') selectors.style.display = origSelectorsDisplay;
@@ -1061,9 +1061,9 @@
             tempWrapper.style.top = '-9999px';
             tempWrapper.style.left = '0';
             
-            // 🌟 BUGS FIXED: స్క్రీన్ సైజు కాకుండా మోడల్ ఒరిజినల్ సైజు (800px/850px) నే తీసుకునేలా చేశాను 🌟
-            let modalOriginalWidth = originalContent.style.width || '850px';
-            tempWrapper.style.width = modalOriginalWidth; 
+            // 🌟 FIX: టేబుల్ ఎంత వెడల్పు ఉంటే (scrollWidth) ఆటోమేటిక్ గా అంతే వెడల్పు తీసుకుంటుంది, కట్ అవ్వదు 🌟
+            let contentActualWidth = Math.max(originalContent.scrollWidth, 1050); 
+            tempWrapper.style.width = contentActualWidth + 'px'; 
             
             clone.style.width = '100%';
             clone.style.height = 'auto';
@@ -1089,6 +1089,7 @@
                     backgroundColor: "#ffffff", 
                     useCORS: true, 
                     logging: false, 
+                    windowWidth: contentActualWidth, // ఇక్కడ కరెక్ట్ విడ్త్ సెట్ చేశాను
                     windowHeight: clone.scrollHeight + 100 
                 });
                 
