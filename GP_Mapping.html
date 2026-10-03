@@ -128,7 +128,7 @@
             #gp-mapping-root .gpm-do-select { width: 100%; }
             #gp-mapping-root .gpm-mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
             #gp-mapping-root .gpm-modal-content { max-height: 95vh !important; width: 95% !important;}
-            #gp-mapping-root .gpm-summary-table { min-width: 700px; } /* Percentage varaku scroll easy ga undadaniki */
+            #gp-mapping-root .gpm-summary-table { min-width: 800px; } /* Update for scrolling */
         }
     </style>
 </head>
@@ -208,7 +208,7 @@
 
     <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
     <div class="gpm-modal-overlay" id="summaryModal">
-        <div class="gpm-modal-content" id="captureModalContent1" style="width: 700px; max-height: 85vh;">
+        <div class="gpm-modal-content" id="captureModalContent1" style="width: 800px; max-height: 85vh;"> <!-- 🌟 Width పెంచాను -->
             <div class="gpm-modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -230,6 +230,7 @@
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#059669;">Active (FY)</span><span class="gpm-stat-value" id="modActiveGPs" style="color:#059669;">0</span></div>
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#64748b;">Zero TXN</span><span class="gpm-stat-value" id="modInactiveGPs" style="color:#64748b;">0</span></div>
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#8b5cf6;">Mapped %</span><span class="gpm-stat-value" id="modPercentGPs" style="color:#8b5cf6;">0%</span></div>
+                <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#059669;">Active %</span><span class="gpm-stat-value" id="modActivePercentGPs" style="color:#059669;">0%</span></div> <!-- 🌟 NEW TOP ACTIVE % -->
             </div>
             <div class="gpm-modal-body"><table class="gpm-summary-table">
                 <thead><tr>
@@ -239,7 +240,8 @@
                     <th style="background:#991b1b;">Pending GPs</th>
                     <th style="background:#065f46;">Active (FY)</th>
                     <th style="background:#475569;">Zero TXN</th>
-                    <th style="background:#6d28d9;">MAPPED %</th> <!-- 🌟 NEW COLUMN -->
+                    <th style="background:#6d28d9;">MAPPED %</th>
+                    <th style="background:#059669;">ACTIVE %</th> <!-- 🌟 NEW ACTIVE COLUMN -->
                 </tr></thead>
                 <tbody id="summaryTableBody"></tbody>
             </table></div>
@@ -302,7 +304,7 @@
                         <th style="background:#6d28d9;" id="tblHeadM1">M1 ACT</th>
                         <th style="background:#a21caf; line-height:1.2;" id="tblHeadM2">M2 ACT <br><span style="font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;">(Retained + New)</span></th>
                         <th style="background:#991b1b;">Dropouts</th>
-                        <th style="background:#4c1d95;">RETENTION %</th> <!-- 🌟 NEW COLUMN -->
+                        <th style="background:#4c1d95;">RETENTION %</th>
                     </tr>
                 </thead>
                 <tbody id="dropoutsTableBody"></tbody>
@@ -398,7 +400,7 @@
                             <th style="background:#047857;">Mapped GPs</th>
                             <th style="background:#059669;">Yesterday Mapped</th>
                             <th style="background:#991b1b;">Balance GPs</th>
-                            <th style="background:#0284c7;">ACHIEVED %</th> <!-- 🌟 NEW COLUMN -->
+                            <th style="background:#0284c7;">ACHIEVED %</th>
                         </tr>
                     </thead>
                     <tbody id="dailyReportTableBody"></tbody>
@@ -686,12 +688,15 @@
             });
             
             let calcPercent = overallTotal === 0 ? 0 : ((overallMapped / overallTotal) * 100).toFixed(1);
+            let calcActPercent = overallMapped === 0 ? 0 : ((overallActive / overallMapped) * 100).toFixed(1); // 🌟 OVERALL ACTIVE %
+            
             document.getElementById("modTotalGPs").innerText = overallTotal.toLocaleString();
             document.getElementById("modMappedGPs").innerText = overallMapped.toLocaleString();
             document.getElementById("modPendingGPs").innerText = overallPending.toLocaleString();
             document.getElementById("modActiveGPs").innerText = overallActive.toLocaleString();
             document.getElementById("modInactiveGPs").innerText = overallInactive.toLocaleString();
             document.getElementById("modPercentGPs").innerText = calcPercent + "%";
+            document.getElementById("modActivePercentGPs").innerText = calcActPercent + "%"; // 🌟 TOP BANNER ACTIVE %
 
             let tbodyHtml = "";
             Object.keys(summaryData).sort().forEach(k => {
@@ -700,16 +705,21 @@
                 let mappedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
                 let pctColor = mappedPct >= 80 ? '#10b981' : (mappedPct >= 50 ? '#f59e0b' : '#dc2626');
                 
+                // 🌟 ACTIVE % ఫార్ములా 🌟
+                let activePct = d.mapped === 0 ? 0 : ((d.active / d.mapped) * 100).toFixed(1);
+                let actColor = activePct >= 80 ? '#10b981' : (activePct >= 50 ? '#f59e0b' : '#dc2626');
+                
                 let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
                 let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
                 tbodyHtml += `<tr>
                     ${nameHtml}
                     <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
                     <td>${pendingHtml}</td><td style="color:#16a34a; font-weight:800;">${d.active}</td><td style="color:#64748b; font-weight:800;">${d.inactive}</td>
-                    <td style="color:${pctColor}; font-weight:900;">${mappedPct}%</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
+                    <td style="color:${pctColor}; font-weight:900;">${mappedPct}%</td>
+                    <td style="color:${actColor}; font-weight:900;">${activePct}%</td> <!-- 🌟 NEW ACTIVE % -->
                 </tr>`;
             });
-            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='7'>No data available</td></tr>";
+            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
             document.getElementById("summaryModal").style.display = "flex";
         }
 
