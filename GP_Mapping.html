@@ -128,7 +128,7 @@
             #gp-mapping-root .gpm-do-select { width: 100%; }
             #gp-mapping-root .gpm-mw-grid { grid-template-columns: repeat(2, 1fr) !important; }
             #gp-mapping-root .gpm-modal-content { max-height: 95vh !important; width: 95% !important;}
-            #gp-mapping-root .gpm-summary-table { min-width: 600px; }
+            #gp-mapping-root .gpm-summary-table { min-width: 700px; } /* Percentage varaku scroll easy ga undadaniki */
         }
     </style>
 </head>
@@ -239,6 +239,7 @@
                     <th style="background:#991b1b;">Pending GPs</th>
                     <th style="background:#065f46;">Active (FY)</th>
                     <th style="background:#475569;">Zero TXN</th>
+                    <th style="background:#6d28d9;">MAPPED %</th> <!-- 🌟 NEW COLUMN -->
                 </tr></thead>
                 <tbody id="summaryTableBody"></tbody>
             </table></div>
@@ -301,6 +302,7 @@
                         <th style="background:#6d28d9;" id="tblHeadM1">M1 ACT</th>
                         <th style="background:#a21caf; line-height:1.2;" id="tblHeadM2">M2 ACT <br><span style="font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;">(Retained + New)</span></th>
                         <th style="background:#991b1b;">Dropouts</th>
+                        <th style="background:#4c1d95;">RETENTION %</th> <!-- 🌟 NEW COLUMN -->
                     </tr>
                 </thead>
                 <tbody id="dropoutsTableBody"></tbody>
@@ -396,6 +398,7 @@
                             <th style="background:#047857;">Mapped GPs</th>
                             <th style="background:#059669;">Yesterday Mapped</th>
                             <th style="background:#991b1b;">Balance GPs</th>
+                            <th style="background:#0284c7;">ACHIEVED %</th> <!-- 🌟 NEW COLUMN -->
                         </tr>
                     </thead>
                     <tbody id="dailyReportTableBody"></tbody>
@@ -693,15 +696,20 @@
             let tbodyHtml = "";
             Object.keys(summaryData).sort().forEach(k => {
                 let d = summaryData[k];
+                // 🌟 MAPPED % ఫార్ములా 🌟
+                let mappedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
+                let pctColor = mappedPct >= 80 ? '#10b981' : (mappedPct >= 50 ? '#f59e0b' : '#dc2626');
+                
                 let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
                 let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
                 tbodyHtml += `<tr>
                     ${nameHtml}
                     <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
                     <td>${pendingHtml}</td><td style="color:#16a34a; font-weight:800;">${d.active}</td><td style="color:#64748b; font-weight:800;">${d.inactive}</td>
+                    <td style="color:${pctColor}; font-weight:900;">${mappedPct}%</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
                 </tr>`;
             });
-            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='6'>No data available</td></tr>";
+            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='7'>No data available</td></tr>";
             document.getElementById("summaryModal").style.display = "flex";
         }
 
@@ -745,6 +753,9 @@
             Object.keys(drData).sort().forEach(dist => {
                 let d = drData[dist];
                 let balance = d.total - d.mapped;
+                // 🌟 ACHIEVED % ఫార్ములా 🌟
+                let achievedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
+                let pctColor = achievedPct >= 80 ? '#10b981' : (achievedPct >= 50 ? '#f59e0b' : '#dc2626');
                 
                 let yHtml = d.yesterday > 0 ? `<span style="color:#10b981; font-weight:900; font-size:16px;">+${d.yesterday}</span>` : `<span style="color:#94a3b8; font-weight:600;">0</span>`;
                 let bHtml = balance > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${balance}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
@@ -755,10 +766,11 @@
                     <td style="color:#0284c7; font-weight:800;">${d.mapped}</td>
                     <td>${yHtml}</td>
                     <td>${bHtml}</td>
+                    <td style="color:${pctColor}; font-weight:900;">${achievedPct}%</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
                 </tr>`;
             });
             
-            document.getElementById("dailyReportTableBody").innerHTML = tbodyHtml || "<tr><td colspan='5'>No data available</td></tr>";
+            document.getElementById("dailyReportTableBody").innerHTML = tbodyHtml || "<tr><td colspan='6'>No data available</td></tr>";
             document.getElementById("dailyReportModal").style.display = "flex";
         }
 
@@ -823,6 +835,11 @@
             let tbodyHtml = "";
             Object.keys(doData).sort().forEach(k => {
                 let d = doData[k];
+                // 🌟 RETENTION % ఫార్ములా (M1 లో ఉన్న వాళ్ళు M2 కి ఎంత మంది మిగిలారు) 🌟
+                let retentionPct = d.m1 === 0 ? 0 : (((d.m1 - d.drop) / d.m1) * 100).toFixed(1);
+                let pctColor = retentionPct >= 80 ? '#10b981' : (retentionPct >= 50 ? '#f59e0b' : '#dc2626');
+                if (d.m1 === 0) pctColor = '#64748b'; // పాత నెలలో సున్నా ఉంటే గ్రే కలర్
+                
                 let dropHtml = d.drop > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.drop}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
                 
                 let retained = d.m2 - d.newAct;
@@ -835,9 +852,10 @@
                     <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
                     <td style="color:#16a34a;">${d.actFY}</td><td style="color:#64748b;">${d.inactFY}</td>
                     <td style="color:#8b5cf6;">${d.m1}</td><td>${m2Html}</td><td>${dropHtml}</td>
+                    <td style="color:${pctColor}; font-weight:900;">${d.m1 === 0 ? '-' : retentionPct + '%'}</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
                 </tr>`;
             });
-            document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
+            document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='9'>No data available</td></tr>";
         }
 
         let currentUpdateIndex = -1;
@@ -857,7 +875,7 @@
             document.getElementById('customAlertModal').style.display = 'flex';
         }
 
-async function submitMappingData() {
+        async function submitMappingData() {
             let cscId = document.getElementById("frmCscId").value.trim();
             let vleName = document.getElementById("frmVleName").value.trim();
             let mobile = document.getElementById("frmMobile").value.trim();
