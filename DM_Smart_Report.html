@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DM Smart Report & Calling Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PapaParse for Downloading Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #334155; margin: 0; padding: 20px; }
+        .container { max-width: 1450px; margin: 0 auto; }
+        .header { background: #0f172a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative;}
+        .header h1 { margin: 0; font-size: 24px; color: #fbbf24; }
+        
+        .update-pill { background: #16a34a; color: white; padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-top: 10px; border: 1px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        
+        .loader { text-align: center; padding: 50px; font-size: 20px; font-weight: bold; color: #2563eb; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
+        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+        .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
+        
+        .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
+        .btn-download:hover { background: #1d4ed8; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-call { background: #16a34a; color: white; border: none; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; }
+        .btn-call:hover { background: #15803d; }
+        .btn-disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .cards-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+        .card { flex: 1; min-width: 150px; background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 6px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card h4 { margin: 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; }
+        .card h2 { margin: 8px 0 0 0; font-size: 22px; color: #0f172a; font-weight: 900; }
+        .card p { margin: 2px 0 0 0; font-weight: bold; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th { color: white; padding: 12px 10px; font-size: 11px; text-transform: uppercase; border: 1px solid #cbd5e1; text-align: center; }
+        td { padding: 12px 10px; font-size: 13px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
+        .text-left { text-align: left; font-weight: 800; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-red { background: #fee2e2; color: #dc2626; }
+        .badge-green { background: #dcfce7; color: #16a34a; }
+        .badge-amber { background: #fef3c7; color: #d97706; }
+        .badge-gsw { background: #f59e0b; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 5px;}
+
+        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
+        .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
+
+        .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+
+        /* 🌟🌟🌟 MOBILE RESPONSIVENESS 🌟🌟🌟 */
+        @media (max-width: 992px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 18px; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
+            .report-header-flex h2 { font-size: 15px; }
+            .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .filter-bar select { width: 100%; }
+            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
+            td, th { font-size: 11px; padding: 8px; }
+            .badge { font-size: 10px; padding: 3px 6px; }
+        }
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .card h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fa-solid fa-chess-king"></i> STATE HEAD CONSOLIDATED REPORT</h1>
+        <p style="margin: 5px 0 0 0; color: #cbd5e1; font-size: 14px;">Smart Browser Aggregation & VLE Calling Portal</p>
+        <div class="update-pill" id="lastUpdatedText"><i class="fa-solid fa-clock"></i> Checking for updates...</div>
+    </div>
+
+    <div class="loader" id="loadingDiv">
+        <i class="fa-solid fa-spinner fa-spin"></i> Fetching Live Dashboard Data...
+    </div>
+
+    <!-- 0. DASHBOARD SUMMARY -->
+    <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;">
+        <!-- Injected via Script -->
+    </div>
+
+    <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
+    <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
+        <div class="report-header-flex">
+            <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> V. DROPOUTS TRACKING & CALLING PORTAL</h2>
+            <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+        </div>
+        
+        <div class="filter-bar">
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
+                <select id="filterCategory" onchange="renderCallingList()">
+                    <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
+                    <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
+                    <option value="FTD">⏰ FTD DROPOUTS (Active This Month but ZERO Yesterday)</option>
+                    <option value="MOM" id="momOptionText">📅 MoM DROPOUTS</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select District:</label>
+                <select id="filterDistrict" onchange="renderCallingList()">
+                    <option value="ALL">Loading Districts...</option>
+                </select>
+            </div>
+            <div style="margin-left: auto; font-weight:bold; color:#0f172a;">
+                Total Dropouts Found: <span id="dropoutCount" style="color:#dc2626; font-size:18px;">0</span>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table id="callingTable">
+                <thead style="position: sticky; top: 0;">
+                    <tr>
+                        <th style="background:#0f172a;">S.NO</th>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#0f172a;">CSC ID</th>
+                        <th style="background:#0f172a;">MOBILE NUMBER</th>
+                        <th style="background:#dc2626;">ACTION (CALL)</th>
+                    </tr>
+                </thead>
+                <tbody id="callingBody">
+                    <tr><td colspan="5" style="color:#64748b;">Loading Data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 1. OVERALL SERVICE WISE REPORT -->
+    <div class="report-section" id="serviceReportArea">
+        <div class="report-header-flex">
+            <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
+            <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="serviceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#1d4ed8;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#3b82f6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS <br><span style="font-size:9px;">(YTD+MTD)</span></th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. YESTERDAY (FTD) SERVICE WISE REPORT -->
+    <div class="report-section" id="yesterdayServiceReportArea">
+        <div class="report-header-flex">
+            <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
+            <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="yesterdayServiceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
+                <tbody id="yesterdayServiceBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. OVERALL DISTRICT WISE REPORT -->
+    <div class="report-section" id="districtReportArea">
+        <div class="report-header-flex">
+            <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
+            <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="districtTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#059669;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#8b5cf6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#dc2626;">ZERO TXN <br><span style="font-size:9px;">(YTD Dropouts)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS</th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="districtBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. YESTERDAY (FTD) DISTRICT WISE REPORT -->
+    <div class="report-section" id="yesterdayDistrictReportArea">
+        <div class="report-header-flex">
+            <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
+            <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="yesterdayDistrictTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
+                <tbody id="yesterdayDistrictBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. MONTH ON MONTH (MoM) REPORT -->
+    <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
+        <div class="report-header-flex">
+            <h2><i class="fa-solid fa-code-compare"></i> V. MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
+            <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="momTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#475569;">BASE MONTH ACTIVE</th>
+                        <th style="background:#0d9488;">RETAINED (ACTIVE)</th>
+                        <th style="background:#e11d48;">DROPOUTS (INACTIVE)</th>
+                        <th style="background:#d97706;">NEW ADDITIONS</th>
+                        <th style="background:#2563eb;">TARGET MONTH TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="momBody"></tbody>
+            </table>
+        </div>
+        <div class="report-footer">Report Generated by K Chandra Sekhara Babu</div>
+    </div>
+</div>
+
+<script>
+    // 🌟 మీ ఒరిజినల్ GOOGLE SCRIPT URL ఇక్కడే ఉంది 🌟
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+
+    // Global variables for Calling Portal
+    let vleDb = {}; 
+    let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
+    let momBaseCscs = new Set(), momTargetCscs = new Set();
+    let currentCallingListData = [];
+
+    window.onload = function() {
+        fetch(SCRIPT_URL + "?action=fetchDMReport")
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'error') {
+                document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.message} <br><br><span style="font-size:14px; color:#64748b;">(దయచేసి మీ State Head అడ్మిన్ ప్యానెల్ నుండి "Publish" చేసేంతవరకు వేచి ఉండండి)</span>`;
+                return;
+            }
+
+            document.getElementById('loadingDiv').style.display = 'none';
+
+            // 1. Inject HTML into the dashboard
+            document.getElementById('summaryArea').innerHTML = data.html_summary || "";
+            document.getElementById('serviceBody').innerHTML = data.html_service || "";
+            document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
+            document.getElementById('districtBody').innerHTML = data.html_district || "";
+            document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
+            
+            if (data.html_mom && data.html_mom.trim() !== "") {
+                document.getElementById('momBody').innerHTML = data.html_mom;
+                document.getElementById('momReportArea').style.display = 'block';
+            }
+
+            // 2. Load Calling Portal Arrays into Sets
+            vleDb = data.vleDb || {};
+            stateLyCscs = new Set(data.stateLyCscs || []);
+            stateYtdCscs = new Set(data.stateYtdCscs || []);
+            stateMtdCscs = new Set(data.stateMtdCscs || []);
+            stateFtdCscs = new Set(data.stateFtdCscs || []);
+            momBaseCscs = new Set(data.momBaseCscs || []);
+            momTargetCscs = new Set(data.momTargetCscs || []);
+            
+            let bnStr = data.bnStr || "Base Month";
+            let tnStr = data.tnStr || "Target Month";
+
+            document.getElementById('momOptionText').innerText = `📅 MoM DROPOUTS (${bnStr} vs ${tnStr})`;
+            document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
+
+            // 3. Show all sections
+            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea'];
+            sections.forEach(id => document.getElementById(id).style.display = 'block');
+
+            // 4. Initialize Dropdowns & Table
+            populateDistrictDropdown();
+            renderCallingList();
+        })
+        .catch(error => {
+            document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
+            console.error(error);
+        });
+    }
+
+    function populateDistrictDropdown() {
+        let distSelect = document.getElementById('filterDistrict');
+        distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
+        
+        let dists = new Set();
+        Object.values(vleDb).forEach(v => {
+            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
+        });
+        
+        Array.from(dists).sort().forEach(d => {
+            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+    }
+
+    function renderCallingList() {
+        let category = document.getElementById('filterCategory').value;
+        let distFilter = document.getElementById('filterDistrict').value;
+        
+        let baseSet, activeSet;
+        if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
+        else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
+        else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
+        else if(category === 'MOM') { baseSet = momBaseCscs; activeSet = momTargetCscs; }
+
+        currentCallingListData = [];
+        
+        if(baseSet && activeSet) {
+            baseSet.forEach(cscid => {
+                if(!activeSet.has(cscid)) {
+                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '' };
+                    if(distFilter === "ALL" || distFilter === details.dist) {
+                        currentCallingListData.push({
+                            "District": details.dist,
+                            "CSC_ID": cscid,
+                            "Mobile": details.mobile || "Not Available"
+                        });
+                    }
+                }
+            });
+        }
+
+        document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+
+        let tbody = "";
+        if(currentCallingListData.length === 0) {
+            tbody = `<tr><td colspan="5" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
+        } else {
+            currentCallingListData.sort((a, b) => a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID));
+            let displayList = currentCallingListData.slice(0, 500);
+            
+            displayList.forEach((vle, idx) => {
+                let callBtn = vle.Mobile !== "Not Available" ? 
+                    `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : 
+                    `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                
+                let cscDisplay = vle.CSC_ID;
+                if(vle.CSC_ID.startsWith('9')) cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
+                    
+                tbody += `<tr>
+                    <td>${idx + 1}</td>
+                    <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
+                    <td style="color:#0f172a;">${cscDisplay}</td>
+                    <td style="color:#475569;">${vle.Mobile}</td>
+                    <td>${callBtn}</td>
+                </tr>`;
+            });
+            if(currentCallingListData.length > 500) {
+                tbody += `<tr><td colspan="5" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
+            }
+        }
+        document.getElementById('callingBody').innerHTML = tbody;
+    }
+
+    function downloadCallingList() {
+        if(currentCallingListData.length === 0) {
+            alert("No data available to download for this selection.");
+            return;
+        }
+        let category = document.getElementById('filterCategory').value;
+        let dist = document.getElementById('filterDistrict').value;
+        
+        let exportData = currentCallingListData.map(v => ({
+            "District Name": v.District,
+            "CSC ID": v.CSC_ID,
+            "Mobile Number": v.Mobile,
+            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE"
+        }));
+
+        let csv = Papa.unparse(exportData);
+        let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        let link = document.createElement("a");
+        let url = URL.createObjectURL(blob);
+        let d = new Date(); 
+        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Dropouts_List_${category}_${dist}_${dateStr}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    async function downloadImage(elementId, prefix) {
+        const reportDiv = document.getElementById(elementId);
+        const dlBtns = reportDiv.querySelectorAll('.btn-download');
+        dlBtns.forEach(btn => btn.style.display = 'none');
+
+        const table = reportDiv.querySelector('table');
+        let originalStyles = {};
+        if (table) {
+            originalStyles = {
+                tableWidth: table.style.width, tableMinWidth: table.style.minWidth,
+                divWidth: reportDiv.style.width, divPadding: reportDiv.style.padding
+            };
+            reportDiv.style.width = 'max-content'; reportDiv.style.padding = '15px'; 
+            table.style.width = 'max-content'; table.style.minWidth = 'auto'; 
+        }
+        
+        try {
+            const canvas = await html2canvas(reportDiv, { scale: 2, backgroundColor: "#ffffff" });
+            const link = document.createElement('a');
+            let d = new Date(); 
+            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            link.download = `${prefix}_${dateStr}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch(err) {
+            alert("Image capture failed. Please try again.");
+        } finally {
+            if (table) {
+                reportDiv.style.width = originalStyles.divWidth; reportDiv.style.padding = originalStyles.divPadding;
+                table.style.width = originalStyles.tableWidth; table.style.minWidth = originalStyles.tableMinWidth;
+            }
+            dlBtns.forEach(btn => btn.style.display = 'inline-block');
+        }
+    }
+</script>
+
+</body>
+</html>
