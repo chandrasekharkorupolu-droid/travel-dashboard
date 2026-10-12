@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DM Smart Report & Calling Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- PapaParse for Downloading Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -13,7 +12,6 @@
         .container { max-width: 1450px; margin: 0 auto; }
         .header { background: #0f172a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative;}
         .header h1 { margin: 0; font-size: 24px; color: #fbbf24; }
-        
         .update-pill { background: #16a34a; color: white; padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-top: 10px; border: 1px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
         
         .loader { text-align: center; padding: 50px; font-size: 20px; font-weight: bold; color: #2563eb; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -55,7 +53,6 @@
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
 
-        /* 🌟🌟🌟 MOBILE RESPONSIVENESS 🌟🌟🌟 */
         @media (max-width: 992px) {
             .cards-grid { grid-template-columns: repeat(3, 1fr); }
         }
@@ -91,9 +88,7 @@
     </div>
 
     <!-- 0. DASHBOARD SUMMARY -->
-    <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;">
-        <!-- Injected via Script -->
-    </div>
+    <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;"></div>
 
     <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
     <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
@@ -242,22 +237,37 @@
         </div>
     </div>
 
-    <!-- 5. MONTH ON MONTH (MoM) REPORT -->
+    <!-- 5. DYNAMIC MONTH ON MONTH (MoM) REPORT WITH DROPDOWNS -->
     <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
         <div class="report-header-flex">
-            <h2><i class="fa-solid fa-code-compare"></i> V. MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
+            <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION</h2>
             <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
+        
+        <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Base Month (పాత నెల):</label>
+                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Target Month (కొత్త నెల):</label>
+                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+            </div>
+            <div style="margin-left: auto; font-size: 13px; color: #64748b; max-width: 300px;">
+                <i class="fa-solid fa-circle-info"></i> ఏ రెండు నెలలు సెలెక్ట్ చేస్తే ఆ రెండు నెలల మధ్య ఉన్న <b>Dropouts</b> వస్తాయి.
+            </div>
+        </div>
+
         <div class="table-responsive">
             <table id="momTable">
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
-                        <th style="background:#475569;">BASE MONTH ACTIVE</th>
+                        <th id="th-mom-base" style="background:#475569;">BASE MONTH ACTIVE</th>
                         <th style="background:#0d9488;">RETAINED (ACTIVE)</th>
                         <th style="background:#e11d48;">DROPOUTS (INACTIVE)</th>
                         <th style="background:#d97706;">NEW ADDITIONS</th>
-                        <th style="background:#2563eb;">TARGET MONTH TOTAL</th>
+                        <th id="th-mom-target" style="background:#2563eb;">TARGET MONTH TOTAL</th>
                     </tr>
                 </thead>
                 <tbody id="momBody"></tbody>
@@ -268,13 +278,12 @@
 </div>
 
 <script>
-    // 🌟 మీ ఒరిజినల్ GOOGLE SCRIPT URL ఇక్కడే ఉంది 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    // Global variables for Calling Portal
+    // Global variables for Calling Portal & MoM
     let vleDb = {}; 
     let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
-    let momBaseCscs = new Set(), momTargetCscs = new Set();
+    let monthlyData = {}; // For dynamic MoM
     let currentCallingListData = [];
 
     window.onload = function() {
@@ -288,45 +297,164 @@
 
             document.getElementById('loadingDiv').style.display = 'none';
 
-            // 1. Inject HTML into the dashboard
+            // 1. Inject static HTML parts
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
-            
-            if (data.html_mom && data.html_mom.trim() !== "") {
-                document.getElementById('momBody').innerHTML = data.html_mom;
-                document.getElementById('momReportArea').style.display = 'block';
-            }
 
-            // 2. Load Calling Portal Arrays into Sets
+            // 2. Load basic Arrays into Sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
             stateMtdCscs = new Set(data.stateMtdCscs || []);
             stateFtdCscs = new Set(data.stateFtdCscs || []);
-            momBaseCscs = new Set(data.momBaseCscs || []);
-            momTargetCscs = new Set(data.momTargetCscs || []);
             
-            let bnStr = data.bnStr || "Base Month";
-            let tnStr = data.tnStr || "Target Month";
-
-            document.getElementById('momOptionText').innerText = `📅 MoM DROPOUTS (${bnStr} vs ${tnStr})`;
+            // 3. Load Monthly Data for dynamic Dropdowns
+            if (data.monthlyData) {
+                for(let m in data.monthlyData) {
+                    monthlyData[m] = {
+                        all: new Set(data.monthlyData[m].all),
+                        gsw: new Set(data.monthlyData[m].gsw)
+                    };
+                }
+            }
+            
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
 
-            // 3. Show all sections
-            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea'];
-            sections.forEach(id => document.getElementById(id).style.display = 'block');
-
-            // 4. Initialize Dropdowns & Table
+            // 4. Initialize Dropdowns & Render Tables
             populateDistrictDropdown();
-            renderCallingList();
+            populateMonthDropdowns(data.bnStr, data.tnStr);
+            renderMomReport(); // Computes the selected months locally
+            
+            // Show all sections
+            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+            sections.forEach(id => document.getElementById(id).style.display = 'block');
         })
         .catch(error => {
             document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
             console.error(error);
         });
+    }
+
+    // Populate the base & target dropdowns
+    function populateMonthDropdowns(defBase, defTarget) {
+        let baseSel = document.getElementById('momBaseSelect');
+        let tarSel = document.getElementById('momTargetSelect');
+        baseSel.innerHTML = ""; tarSel.innerHTML = "";
+        
+        let keys = Object.keys(monthlyData);
+        keys.forEach(k => {
+            baseSel.innerHTML += `<option value="${k}">${k}</option>`;
+            tarSel.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+        
+        if (defBase && keys.includes(defBase)) baseSel.value = defBase;
+        if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget;
+    }
+
+    // Generate MoM table dynamically
+    function renderMomReport() {
+        let bName = document.getElementById('momBaseSelect').value;
+        let tName = document.getElementById('momTargetSelect').value;
+
+        if(!bName || !tName) return;
+
+        document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
+        document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
+        document.getElementById('momOptionText').innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
+
+        let bSet = monthlyData[bName]?.all || new Set();
+        let bGsw = monthlyData[bName]?.gsw || new Set();
+        let tSet = monthlyData[tName]?.all || new Set();
+        let tGsw = monthlyData[tName]?.gsw || new Set();
+
+        let validDists = new Set();
+        Object.values(vleDb).forEach(v => {
+            if(v.dist && v.dist !== "UNKNOWN") validDists.add(v.dist);
+        });
+        
+        let distStats = {};
+        Array.from(validDists).sort().forEach(d => {
+            distStats[d] = { base:0, baseGsw:0, target:0, targetGsw:0, retained:0, retainedGsw:0, drop:0, dropGsw:0, new:0, newGsw:0 };
+        });
+
+        // Compute Base Stats
+        bSet.forEach(cscid => {
+            let dist = vleDb[cscid]?.dist;
+            if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                distStats[dist].base++;
+                let isG = bGsw.has(cscid);
+                if(isG) distStats[dist].baseGsw++;
+
+                if(tSet.has(cscid)) {
+                    distStats[dist].retained++;
+                    if(isG) distStats[dist].retainedGsw++;
+                } else {
+                    distStats[dist].drop++;
+                    if(isG) distStats[dist].dropGsw++;
+                }
+            }
+        });
+
+        // Compute Target Stats (New)
+        tSet.forEach(cscid => {
+            let dist = vleDb[cscid]?.dist;
+            if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                distStats[dist].target++;
+                let isG = tGsw.has(cscid);
+                if(isG) distStats[dist].targetGsw++;
+
+                if(!bSet.has(cscid)) {
+                    distStats[dist].new++;
+                    if(isG) distStats[dist].newGsw++;
+                }
+            }
+        });
+
+        // Generate HTML
+        let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
+        let momHtml = "";
+        let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
+
+        sortedDists.forEach(dName => {
+            let s = distStats[dName];
+            if (s.base === 0 && s.target === 0) return; // Skip empty districts
+            
+            totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
+            totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
+            totTar+=s.target; totTarGsw+=s.targetGsw;
+
+            let bRetained = s.retained > 0 ? `<span class="badge badge-green">${s.retained.toLocaleString()}</span>` : `0`;
+            let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+            let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
+
+            momHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${dName}</td>
+                <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
+                <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
+                <td>${bDropout}<br><span style="font-size:9px; color:#e11d48;">(GSW: ${s.dropGsw})</span></td>
+                <td>${bNew}<br><span style="font-size:9px; color:#d97706;">(GSW: ${s.newGsw})</span></td>
+                <td style="color:#2563eb;">${s.target.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.targetGsw})</span></td>
+            </tr>`;
+        });
+
+        let momTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
+            <td style="color:#ffffff; font-weight:900;">${totBase.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totBaseGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totRet.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totRetGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totDrop.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totNew.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totNewGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
+        </tr>`;
+        
+        document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
+
+        // Auto-refresh calling list if MOM category is selected
+        if(document.getElementById('filterCategory').value === 'MOM') {
+            renderCallingList();
+        }
     }
 
     function populateDistrictDropdown() {
@@ -351,7 +479,12 @@
         if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
         else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
         else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
-        else if(category === 'MOM') { baseSet = momBaseCscs; activeSet = momTargetCscs; }
+        else if(category === 'MOM') { 
+            let bName = document.getElementById('momBaseSelect').value;
+            let tName = document.getElementById('momTargetSelect').value;
+            baseSet = monthlyData[bName]?.all || new Set(); 
+            activeSet = monthlyData[tName]?.all || new Set(); 
+        }
 
         currentCallingListData = [];
         

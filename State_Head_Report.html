@@ -1026,7 +1026,7 @@
     }
 
    
-    // PUBLISH TO DMs DASHBOARD FUNCTION (GOOGLE SCRIPT VERSION)
+   // PUBLISH TO DMs DASHBOARD FUNCTION (UPDATED)
     function publishToDMs() {
         let btn = document.getElementById('btnPublish');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...';
@@ -1035,6 +1035,15 @@
         let bName = document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "BASE MONTH";
         let tName = document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "TARGET MONTH";
 
+        // 🌟 KOTTHA CODE: DMs కి డైనమిక్ గా నెలలు పంపించడానికి 🌟
+        let monthlyDataArrays = {};
+        for(let m in monthlyData) {
+            monthlyDataArrays[m] = {
+                all: Array.from(monthlyData[m].all),
+                gsw: Array.from(monthlyData[m].gsw)
+            };
+        }
+
         // Final data to send
         let dataPacket = {
             html_summary: document.getElementById('summaryArea').innerHTML,
@@ -1042,7 +1051,6 @@
             html_district: document.getElementById('districtBody').innerHTML,
             html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
             html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
-            html_mom: document.getElementById('momBody').innerHTML,
             
             // Calling portal arrays
             vleDb: vleDb,
@@ -1050,27 +1058,22 @@
             stateYtdCscs: Array.from(stateYtdCscs),
             stateMtdCscs: Array.from(stateMtdCscs),
             stateFtdCscs: Array.from(stateFtdCscs),
-            momBaseCscs: Array.from(monthlyData[bName]?.all || []),
-            momTargetCscs: Array.from(monthlyData[tName]?.all || []),
+            
+            monthlyData: monthlyDataArrays, // 👈 నెలల డేటా ప్యాకెట్
+            
             bnStr: bName,
             tnStr: tName,
             updateTime: new Date().toLocaleString()
         };
 
-        // 🌟 మీ ఒరిజినల్ GOOGLE SCRIPT URL ఇక్కడే ఫిక్స్ చేశాను 🌟
+        // GOOGLE SCRIPT URL
         let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        let payload = {
-            action: "publishDMReport",
-            reportData: JSON.stringify(dataPacket)
-        };
+        let payload = { action: "publishDMReport", reportData: JSON.stringify(dataPacket) };
 
-        // 🌟 CORS & REDIRECT ఎర్రర్స్ రాకుండా సేఫ్టీ సెట్టింగ్స్ 🌟
         fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload),
             redirect: "follow"
         })
@@ -1087,7 +1090,6 @@
             }
         })
         .catch(error => {
-            console.error(error);
             alert("❌ Server / Network Error. Please check your internet or Google Script deployment.");
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
             btn.disabled = false;
