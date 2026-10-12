@@ -979,7 +979,14 @@
       else if (moduleName === "FASTAG" && reportId === "Monthly Closure Report") iframeSrc = "FASTAG_Monthly_Closure.html";
 
       else if (moduleName === "MASTER" && reportId === "AP Consolidated Report") iframeSrc = "Master_AP_Consolidated.html";
-      else if (moduleName === "MASTER" && reportId === "StateHeadSmartReports") iframeSrc = "State_Head_Report.html"; // <-- Ee line kothaga add cheyali
+      else if (moduleName === "MASTER" && reportId === "StateHeadSmartReports") {
+    var currentRole = loggedInDesig ? loggedInDesig.toUpperCase() : "";
+    if (currentRole === "DM" || currentRole.indexOf("DISTRICT MANAGER") > -1) {
+        iframeSrc = "DM_Smart_Report.html"; // DMs కి అప్‌లోడ్ బటన్స్ లేని ఫైల్
+    } else {
+        iframeSrc = "State_Head_Report.html"; // Admin కి అప్‌లోడ్ బటన్స్ ఉండే ఫైల్
+    }
+}
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
       else if (moduleName === "MASTER" && reportId === "SendDailyEmails") iframeSrc = "Master_Send_Emails.html";
       else if (moduleName === "MASTER" && reportId === "VLEDetails") iframeSrc = "Master_VLE_Details.html";
