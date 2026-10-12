@@ -1057,7 +1057,7 @@
             updateTime: new Date().toLocaleString()
         };
 
-        // 🌟 ఇక్కడ మీ కొత్త GOOGLE SCRIPT URL పెట్టండి 🌟
+        // 🌟 మీ ఒరిజినల్ GOOGLE SCRIPT URL ఇక్కడే ఫిక్స్ చేశాను 🌟
         let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
         let payload = {
@@ -1065,10 +1065,14 @@
             reportData: JSON.stringify(dataPacket)
         };
 
-        // Sending to Google Server
+        // 🌟 CORS & REDIRECT ఎర్రర్స్ రాకుండా సేఫ్టీ సెట్టింగ్స్ 🌟
         fetch(SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify(payload)
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload),
+            redirect: "follow"
         })
         .then(response => response.json())
         .then(data => {
@@ -1083,7 +1087,8 @@
             }
         })
         .catch(error => {
-            alert("❌ Server Error. Please try again.");
+            console.error(error);
+            alert("❌ Server / Network Error. Please check your internet or Google Script deployment.");
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
             btn.disabled = false;
         });
