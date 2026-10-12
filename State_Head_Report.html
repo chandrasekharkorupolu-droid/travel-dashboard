@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Head Consolidated Report & Calling Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #334155; margin: 0; padding: 20px; }
+        .container { max-width: 1450px; margin: 0 auto; }
+        .header { background: #0f172a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 24px; color: #fbbf24; }
+        
+        .upload-section { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-wrap: wrap; justify-content: space-between; }
+        .upload-box { flex: 1; border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 8px; background: #f8fafc; min-width: 280px; }
+        .upload-box h3 { margin-top: 0; color: #1e3a8a; font-size: 15px; }
+        .upload-box input[type="file"] { display: block; margin: 10px auto; font-size: 13px; }
+        
+        .btn-generate { width: 100%; padding: 15px; font-size: 16px; font-weight: bold; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); margin-bottom: 20px;}
+        .btn-generate:hover { background: #059669; }
+        .btn-generate:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .loader { display: none; text-align: center; padding: 20px; font-size: 18px; font-weight: bold; color: #2563eb; }
+
+        .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
+        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+        .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
+        
+        .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
+        .btn-download:hover { background: #1d4ed8; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-call { background: #16a34a; color: white; border: none; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; }
+        .btn-call:hover { background: #15803d; }
+        .btn-disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .cards-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+        .card { flex: 1; min-width: 150px; background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 6px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card h4 { margin: 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; }
+        .card h2 { margin: 8px 0 0 0; font-size: 22px; color: #0f172a; font-weight: 900; }
+        .card p { margin: 2px 0 0 0; font-weight: bold; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th { color: white; padding: 12px 10px; font-size: 11px; text-transform: uppercase; border: 1px solid #cbd5e1; text-align: center; }
+        td { padding: 12px 10px; font-size: 13px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
+        .text-left { text-align: left; font-weight: 800; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-red { background: #fee2e2; color: #dc2626; }
+        .badge-green { background: #dcfce7; color: #16a34a; }
+        .badge-amber { background: #fef3c7; color: #d97706; }
+        .badge-gsw { background: #f59e0b; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 5px;}
+
+        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
+        .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
+
+        .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fa-solid fa-chess-king"></i> STATE HEAD CONSOLIDATED REPORT</h1>
+        <p style="margin: 5px 0 0 0; color: #cbd5e1; font-size: 14px;">Smart Browser Aggregation, Dynamic MoM & VLE Calling Portal</p>
+    </div>
+
+    <!-- MAIN REPORTS UPLOAD (ONLY 3 BUTTONS) -->
+    <div class="upload-section">
+        <div class="upload-box">
+            <h3><i class="fa-solid fa-history"></i> Button 1: FY 25-26 Data</h3>
+            <input type="file" id="fileLastYear" accept=".csv">
+        </div>
+        <div class="upload-box">
+            <h3><i class="fa-solid fa-file-csv"></i> Button 2: Master File (YTD)</h3>
+            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(Apr to Sep డేటా దీంట్లో నుండే ఆటోమేటిక్ గా వస్తుంది)</p>
+            <input type="file" id="fileMaster" accept=".csv">
+        </div>
+        <div class="upload-box">
+            <h3><i class="fa-solid fa-calendar-day"></i> Button 3: Day-wise (MTD)</h3>
+            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(ప్రస్తుత నెల డేటా దీంట్లో నుండి వస్తుంది)</p>
+            <input type="file" id="fileDayWise" accept=".csv">
+        </div>
+    </div>
+
+    <button class="btn-generate" id="btnGen" onclick="processReports()">
+        <i class="fa-solid fa-gears"></i> GENERATE STATE REPORTS & PORTAL
+    </button>
+
+    <div class="loader" id="loadingDiv">
+        <i class="fa-solid fa-spinner fa-spin"></i> Processing Data... Please wait...
+    </div>
+
+    <!-- 0. DASHBOARD SUMMARY -->
+    <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;">
+        <div class="report-header-flex">
+            <h2 style="color: #1e3a8a;"><i class="fa-solid fa-chart-pie"></i> AP STATE OVERALL SUMMARY</h2>
+            <div>
+                <button class="btn-download" id="btnDlSummary" onclick="downloadImage('summaryArea', 'State_Summary')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
+        </div>
+        <div class="cards-grid">
+            <div class="card" style="border-left-color: #475569;">
+                <h4>FY 25-26 Active VLEs</h4>
+                <h2 id="sumLastYearCsc">0</h2>
+                <p id="sumLyGsw" style="font-size:11px; color:#475569;"></p>
+            </div>
+            <div class="card" style="border-left-color: #2563eb;">
+                <h4>FY 26-27 YTD Active</h4>
+                <h2 id="sumYtdCsc" style="color: #2563eb;">0</h2>
+                <p id="sumYtdGsw" style="font-size:11px; color:#2563eb;"></p>
+            </div>
+            <div class="card" style="border-left-color: #d946ef;">
+                <h4>Yesterday Active (FTD)</h4>
+                <h2 id="sumFtdCsc" style="color: #d946ef;">0</h2>
+            </div>
+            <div class="card" style="border-left-color: #dc2626;">
+                <h4>State Zero Txns (YTD Dropouts)</h4>
+                <h2 id="sumZeroTxn" style="color: #dc2626;">0</h2>
+                <p id="sumZeroGsw" style="font-size:11px; color:#dc2626;"></p>
+            </div>
+            <div class="card" style="border-left-color: #c026d3;">
+                <h4>Yesterday Txns (FTD)</h4>
+                <h2 id="sumFtdTxn" style="color: #c026d3;">0</h2>
+            </div>
+            <div class="card" style="border-left-color: #059669;">
+                <h4>Yesterday Revenue</h4>
+                <h2 id="sumFtdRev" style="color: #059669;">₹ 0</h2>
+            </div>
+            <div class="card" style="border-left-color: #16a34a;">
+                <h4>Total Transactions (YTD)</h4>
+                <h2 id="sumTotTxn" style="color: #16a34a;">0</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
+    <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
+        <div class="report-header-flex">
+            <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> VI. DROPOUTS TRACKING & CALLING PORTAL</h2>
+            <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+        </div>
+        
+        <div class="filter-bar">
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
+                <select id="filterCategory" onchange="renderCallingList()">
+                    <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
+                    <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
+                    <option value="FTD">⏰ FTD DROPOUTS (Active This Month but ZERO Yesterday)</option>
+                    <option value="MOM">📅 MoM DROPOUTS (Selected in V. Report below)</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select District:</label>
+                <select id="filterDistrict" onchange="renderCallingList()">
+                    <option value="ALL">ALL DISTRICTS</option>
+                </select>
+            </div>
+            <div style="margin-left: auto; font-weight:bold; color:#0f172a;">
+                Total Dropouts Found: <span id="dropoutCount" style="color:#dc2626; font-size:18px;">0</span>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table id="callingTable">
+                <thead style="position: sticky; top: 0;">
+                    <tr>
+                        <th style="background:#0f172a;">S.NO</th>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#0f172a;">CSC ID</th>
+                        <th style="background:#0f172a;">MOBILE NUMBER</th>
+                        <th style="background:#dc2626;">ACTION (CALL)</th>
+                    </tr>
+                </thead>
+                <tbody id="callingBody">
+                    <tr><td colspan="5" style="color:#64748b;">Please click Generate Reports to load data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 1. OVERALL SERVICE WISE REPORT -->
+    <div class="report-section" id="serviceReportArea">
+        <div class="report-header-flex">
+            <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
+            <button class="btn-download" id="btnDlService" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="serviceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#1d4ed8;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#3b82f6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS <br><span style="font-size:9px;">(YTD+MTD)</span></th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. YESTERDAY (FTD) SERVICE WISE REPORT -->
+    <div class="report-section" id="yesterdayServiceReportArea">
+        <div class="report-header-flex">
+            <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
+            <button class="btn-download" id="btnDlYesterdayService" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="yesterdayServiceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
+                <tbody id="yesterdayServiceBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. OVERALL DISTRICT WISE REPORT -->
+    <div class="report-section" id="districtReportArea">
+        <div class="report-header-flex">
+            <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
+            <button class="btn-download" id="btnDlDistrict" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="districtTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#059669;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#8b5cf6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#dc2626;">ZERO TXN <br><span style="font-size:9px;">(YTD Dropouts)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS</th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="districtBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. YESTERDAY (FTD) DISTRICT WISE REPORT -->
+    <div class="report-section" id="yesterdayDistrictReportArea">
+        <div class="report-header-flex">
+            <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
+            <button class="btn-download" id="btnDlYesterdayDistrict" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        <div class="table-responsive">
+            <table id="yesterdayDistrictTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
+                <tbody id="yesterdayDistrictBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. MONTH ON MONTH (MoM) DYNAMIC DISTRICT REPORT -->
+    <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
+        <div class="report-header-flex">
+            <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
+            <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+        </div>
+        
+        <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Base Month (పాత నెల):</label>
+                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Target Month (కొత్త నెల):</label>
+                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+            </div>
+            <div style="margin-left: auto; font-size: 13px; color: #64748b; max-width: 300px;">
+                <i class="fa-solid fa-circle-info"></i> ఏ రెండు నెలలు సెలెక్ట్ చేస్తే ఆ రెండు నెలల మధ్య ఉన్న <b>Dropouts</b> మరియు <b>New VLEs</b> వస్తాయి.
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="momTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th id="th-mom-base" style="background:#475569;">BASE MONTH ACTIVE</th>
+                        <th style="background:#0d9488;">RETAINED (ACTIVE)</th>
+                        <th style="background:#e11d48;">DROPOUTS (INACTIVE)</th>
+                        <th style="background:#d97706;">NEW ADDITIONS</th>
+                        <th id="th-mom-target" style="background:#2563eb;">TARGET MONTH TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="momBody"></tbody>
+            </table>
+        </div>
+        <div class="report-footer">Report Generated by K Chandra Sekhara Babu</div>
+    </div>
+</div>
+
+<script>
+    // Main variables
+    let districtData = {};
+    let serviceData = {};
+    
+    let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
+    let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
+    let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
+    let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
+    
+    // Dynamic MoM DB: { "Apr": { all: Set, gsw: Set }, "May": ... }
+    let monthlyData = {};
+    let monthNamesList = [];
+
+    // Master DB & Errors
+    let vleDb = {}; 
+    let currentCallingListData = [];
+    let hasScientificError = false;
+
+    function createDistObj() {
+        return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 };
+    }
+    function createSrvObj() {
+        return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 };
+    }
+
+    function getVal(row, searchTerms) {
+        let keys = Object.keys(row);
+        let key = keys.find(k => {
+            if(!k) return false;
+            let cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return searchTerms.some(term => cleanKey.includes(term));
+        });
+        return key ? row[key] : undefined;
+    }
+
+    function safeParseFloat(val) {
+        if (!val) return 0;
+        if (typeof val === 'string') val = val.replace(/,/g, '').trim();
+        return parseFloat(val) || 0;
+    }
+
+    function normalizeDistrict(d) {
+        if(!d) return "UNKNOWN";
+        d = d.toString().toUpperCase().replace(/[\s\uFEFF\xA0]+/g, ' ').trim();
+        d = d.replace(/\./g, '');
+        if (d === "ANANTHAPUR" || d === "ANANTHAPURAM") return "ANANTAPUR";
+        if (d === "VISAKHAPTNAM" || d === "VISAKHAPATANAM" || d === "VIZAG") return "VISAKHAPATNAM";
+        if (d === "YSR" || d === "KADAPA" || d === "YSR KADAPA") return "YSR KADAPA";
+        if (d === "NELLORE" || d === "SPSR NELLORE") return "SPSR NELLORE";
+        return d;
+    }
+
+    function checkScientificNotation(val) {
+        if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true;
+    }
+
+    async function processReports() {
+        const fileLastYear = document.getElementById('fileLastYear').files[0];
+        const fileMaster = document.getElementById('fileMaster').files[0];
+        const fileDayWise = document.getElementById('fileDayWise').files[0];
+
+        if (!fileMaster || !fileDayWise) {
+            alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్స్ సెలెక్ట్ చేయండి!");
+            return;
+        }
+
+        document.getElementById('btnGen').disabled = true;
+        document.getElementById('loadingDiv').style.display = 'block';
+        
+        let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+        sections.forEach(id => document.getElementById(id).style.display = 'none');
+
+        // Reset
+        districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
+        stateLyCscs.clear(); stateLyGswCscs.clear(); stateYtdCscs.clear(); stateYtdGswCscs.clear();
+        stateMtdCscs.clear(); stateFtdCscs.clear();
+        stateTotTxn = 0; stateFtdTxn = 0; stateFtdRev = 0; stateTotRev = 0;
+        hasScientificError = false;
+
+        // Initialize Base & Current Month tracking
+        monthlyData["FY 25-26"] = { all: new Set(), gsw: new Set() };
+        monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
+
+        try {
+            if (fileLastYear) {
+                await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } }));
+            }
+            await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { 
+                let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]);
+                processMasterData(res.data, headers); r(); 
+            } }));
+            await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
+
+            populateMonthDropdowns();
+            generateHTMLReports();
+            populateDistrictDropdown();
+            renderMomReport(); // This generates 5th report & calls renderCallingList()
+
+            if (hasScientificError) {
+                setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500);
+            }
+
+        } catch (error) {
+            alert("ఎర్రర్ వచ్చింది: " + error.message);
+        } finally {
+            document.getElementById('btnGen').disabled = false;
+            document.getElementById('loadingDiv').style.display = 'none';
+        }
+    }
+
+    function processLastYearData(data) {
+        data.forEach(row => {
+            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+            checkScientificNotation(cscid);
+            let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
+            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            if(!cscid) return;
+
+            let dist = rawDist === "" ? "UNKNOWN" : rawDist;
+            let isGSW = cscid.startsWith('9');
+
+            stateLyCscs.add(cscid);
+            if(isGSW) stateLyGswCscs.add(cscid);
+            
+            // Add to monthly tracker
+            monthlyData["FY 25-26"].all.add(cscid);
+            if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
+
+            vleDb[cscid] = { dist: dist, mobile: mob };
+
+            if(!districtData[dist]) districtData[dist] = createDistObj();
+            districtData[dist].ly_cscs.add(cscid);
+            if(isGSW) districtData[dist].ly_gsw.add(cscid);
+
+            if(!serviceData[srv]) serviceData[srv] = createSrvObj();
+            serviceData[srv].ly_cscs.add(cscid);
+            if(isGSW) serviceData[srv].ly_gsw.add(cscid);
+        });
+    }
+
+    function processMasterData(data, headers) {
+        // Detect Month Columns Dynamically (e.g. "Apr Txn", "May Txn")
+        let monthCols = [];
+        headers.forEach(h => {
+            if(h) {
+                let lowerH = h.toLowerCase();
+                if(lowerH.endsWith(' txn') && !lowerH.includes('total') && !lowerH.includes('ytd')) {
+                    let mName = h.replace(/txn/i, '').trim();
+                    monthCols.push({ col: h, name: mName });
+                    if(!monthlyData[mName]) monthlyData[mName] = { all: new Set(), gsw: new Set() };
+                }
+            }
+        });
+
+        data.forEach(row => {
+            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+            checkScientificNotation(cscid);
+            let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
+            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            if(!cscid) return;
+            let isGSW = cscid.startsWith('9');
+
+            let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN") ? vleDb[cscid].dist : (rawDist === "" ? "UNKNOWN" : rawDist);
+            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob };
+            else if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+
+            if(!districtData[dist]) districtData[dist] = createDistObj();
+            if(!serviceData[srv]) serviceData[srv] = createSrvObj();
+
+            let ytdTxn = 0, ytdAmt = 0, ytdRev = 0;
+            
+            // Track dynamic months
+            monthCols.forEach(mInfo => {
+                let val = safeParseFloat(row[mInfo.col]);
+                if(val > 0) {
+                    monthlyData[mInfo.name].all.add(cscid);
+                    if(isGSW) monthlyData[mInfo.name].gsw.add(cscid);
+                }
+            });
+
+            for (let key in row) {
+                if(!key) continue; let k = key.toLowerCase();
+                if (k.endsWith(' txn')) ytdTxn += safeParseFloat(row[key]);
+                if (k.endsWith(' amt')) ytdAmt += safeParseFloat(row[key]);
+                if (k.endsWith(' rev')) ytdRev += safeParseFloat(row[key]);
+            }
+
+            if(ytdTxn > 0) {
+                stateYtdCscs.add(cscid);
+                districtData[dist].ytd_cscs.add(cscid);
+                serviceData[srv].ytd_cscs.add(cscid);
+
+                if(isGSW) {
+                    stateYtdGswCscs.add(cscid);
+                    districtData[dist].ytd_gsw.add(cscid);
+                    serviceData[srv].ytd_gsw.add(cscid);
+                }
+            }
+            districtData[dist].total_txn += ytdTxn; districtData[dist].total_amt += ytdAmt; districtData[dist].total_rev += ytdRev;
+            serviceData[srv].total_txn += ytdTxn; serviceData[srv].total_amt += ytdAmt; serviceData[srv].total_rev += ytdRev;
+            stateTotTxn += ytdTxn; stateTotRev += ytdRev;
+        });
+    }
+
+    function processDayWiseData(data, headers) {
+        let txnCols = headers.filter(h => h && h.toLowerCase().endsWith(' txn'));
+        let amtCols = headers.filter(h => h && h.toLowerCase().endsWith(' amt'));
+        let revCols = headers.filter(h => h && h.toLowerCase().endsWith(' rev'));
+        let lastTxnCol = txnCols.length > 0 ? txnCols[txnCols.length - 1] : null;
+        let lastAmtCol = amtCols.length > 0 ? amtCols[amtCols.length - 1] : null;
+        let lastRevCol = revCols.length > 0 ? revCols[revCols.length - 1] : null;
+
+        data.forEach(row => {
+            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+            checkScientificNotation(cscid);
+            let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
+            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            if(!cscid) return;
+
+            let isGSW = cscid.startsWith('9');
+            let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN") ? vleDb[cscid].dist : (rawDist === "" ? "UNKNOWN" : rawDist);
+            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob };
+            else if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+
+            if(!districtData[dist]) districtData[dist] = createDistObj();
+            if(!serviceData[srv]) serviceData[srv] = createSrvObj();
+
+            let mtdTxn = 0, mtdAmt = 0, mtdRev = 0;
+            txnCols.forEach(col => { mtdTxn += safeParseFloat(row[col]); });
+            amtCols.forEach(col => { mtdAmt += safeParseFloat(row[col]); });
+            revCols.forEach(col => { mtdRev += safeParseFloat(row[col]); });
+
+            let ftdTxn = lastTxnCol ? safeParseFloat(row[lastTxnCol]) : 0;
+            let ftdAmt = lastAmtCol ? safeParseFloat(row[lastAmtCol]) : 0;
+            let ftdRev = lastRevCol ? safeParseFloat(row[lastRevCol]) : 0;
+
+            if(mtdTxn > 0) {
+                stateMtdCscs.add(cscid);
+                districtData[dist].mtd_cscs.add(cscid);
+                serviceData[srv].mtd_cscs.add(cscid);
+                
+                // Track MTD dynamic month
+                monthlyData["MTD (Current Month)"].all.add(cscid);
+                if(isGSW) monthlyData["MTD (Current Month)"].gsw.add(cscid);
+            }
+            if(ftdTxn > 0) {
+                stateFtdCscs.add(cscid);
+                districtData[dist].ftd_cscs.add(cscid);
+                serviceData[srv].ftd_cscs.add(cscid);
+                serviceData[srv].ftd_rows++; 
+            }
+            districtData[dist].total_txn += mtdTxn; districtData[dist].total_amt += mtdAmt; districtData[dist].total_rev += mtdRev;
+            districtData[dist].ftd_txn += ftdTxn; districtData[dist].ftd_amt += ftdAmt; districtData[dist].ftd_rev += ftdRev;
+            serviceData[srv].total_txn += mtdTxn; serviceData[srv].mtd_txn += mtdTxn; serviceData[srv].total_amt += mtdAmt; serviceData[srv].total_rev += mtdRev;
+            serviceData[srv].ftd_txn += ftdTxn; serviceData[srv].ftd_amt += ftdAmt; serviceData[srv].ftd_rev += ftdRev;
+            stateTotTxn += mtdTxn; stateTotRev += mtdRev; stateFtdTxn += ftdTxn; stateFtdRev += ftdRev;
+        });
+    }
+
+    function populateMonthDropdowns() {
+        let baseSel = document.getElementById('momBaseSelect');
+        let tarSel = document.getElementById('momTargetSelect');
+        baseSel.innerHTML = ""; tarSel.innerHTML = "";
+        
+        let keys = Object.keys(monthlyData);
+        keys.forEach(k => {
+            baseSel.innerHTML += `<option value="${k}">${k}</option>`;
+            tarSel.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+        
+        // Default Selections if possible
+        if(keys.length > 2) {
+            baseSel.value = keys[keys.length - 2]; // e.g. Sep
+            tarSel.value = keys[keys.length - 1]; // e.g. MTD
+        }
+    }
+
+    function renderMomReport() {
+        let bName = document.getElementById('momBaseSelect').value;
+        let tName = document.getElementById('momTargetSelect').value;
+
+        document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
+        document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
+
+        let bSet = monthlyData[bName]?.all || new Set();
+        let bGsw = monthlyData[bName]?.gsw || new Set();
+        let tSet = monthlyData[tName]?.all || new Set();
+        let tGsw = monthlyData[tName]?.gsw || new Set();
+
+        let validDists = Object.keys(districtData).filter(d => d !== "UNKNOWN").sort();
+        let distStats = {};
+        validDists.forEach(d => {
+            distStats[d] = { base:0, baseGsw:0, target:0, targetGsw:0, retained:0, retainedGsw:0, drop:0, dropGsw:0, new:0, newGsw:0 };
+        });
+
+        // Compute Base Stats
+        bSet.forEach(cscid => {
+            let dist = vleDb[cscid]?.dist;
+            if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                distStats[dist].base++;
+                let isG = bGsw.has(cscid);
+                if(isG) distStats[dist].baseGsw++;
+
+                if(tSet.has(cscid)) {
+                    distStats[dist].retained++;
+                    if(isG) distStats[dist].retainedGsw++;
+                } else {
+                    distStats[dist].drop++;
+                    if(isG) distStats[dist].dropGsw++;
+                }
+            }
+        });
+
+        // Compute Target Stats (New)
+        tSet.forEach(cscid => {
+            let dist = vleDb[cscid]?.dist;
+            if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                distStats[dist].target++;
+                let isG = tGsw.has(cscid);
+                if(isG) distStats[dist].targetGsw++;
+
+                if(!bSet.has(cscid)) {
+                    distStats[dist].new++;
+                    if(isG) distStats[dist].newGsw++;
+                }
+            }
+        });
+
+        // Generate HTML
+        let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
+        let momHtml = "";
+        let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
+
+        sortedDists.forEach(dName => {
+            let s = distStats[dName];
+            totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
+            totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
+            totTar+=s.target; totTarGsw+=s.targetGsw;
+
+            let bRetained = s.retained > 0 ? `<span class="badge badge-green">${s.retained.toLocaleString()}</span>` : `0`;
+            let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+            let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
+
+            momHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${dName}</td>
+                <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
+                <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
+                <td>${bDropout}<br><span style="font-size:9px; color:#e11d48;">(GSW: ${s.dropGsw})</span></td>
+                <td>${bNew}<br><span style="font-size:9px; color:#d97706;">(GSW: ${s.newGsw})</span></td>
+                <td style="color:#2563eb;">${s.target.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.targetGsw})</span></td>
+            </tr>`;
+        });
+
+        let momTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
+            <td style="color:#ffffff; font-weight:900;">${totBase.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totBaseGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totRet.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totRetGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totDrop.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totNew.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totNewGsw.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
+        </tr>`;
+        
+        document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
+
+        // Trigger Calling List Update in case MoM is selected
+        renderCallingList();
+    }
+
+    function populateDistrictDropdown() {
+        let distSelect = document.getElementById('filterDistrict');
+        distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
+        Object.keys(districtData).sort().forEach(d => {
+            if(d !== "UNKNOWN") distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+    }
+
+    function renderCallingList() {
+        let category = document.getElementById('filterCategory').value;
+        let distFilter = document.getElementById('filterDistrict').value;
+        
+        let baseSet, activeSet;
+        if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
+        else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
+        else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
+        else if(category === 'MOM') { 
+            let bName = document.getElementById('momBaseSelect').value;
+            let tName = document.getElementById('momTargetSelect').value;
+            baseSet = monthlyData[bName]?.all || new Set(); 
+            activeSet = monthlyData[tName]?.all || new Set(); 
+        }
+
+        currentCallingListData = [];
+        
+        if(baseSet && activeSet) {
+            baseSet.forEach(cscid => {
+                if(!activeSet.has(cscid)) {
+                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '' };
+                    if(distFilter === "ALL" || distFilter === details.dist) {
+                        currentCallingListData.push({
+                            "District": details.dist,
+                            "CSC_ID": cscid,
+                            "Mobile": details.mobile || "Not Available"
+                        });
+                    }
+                }
+            });
+        }
+
+        document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+
+        let tbody = "";
+        if(currentCallingListData.length === 0) {
+            tbody = `<tr><td colspan="5" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
+        } else {
+            currentCallingListData.sort((a, b) => a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID));
+            let displayList = currentCallingListData.slice(0, 500);
+            
+            displayList.forEach((vle, idx) => {
+                let callBtn = vle.Mobile !== "Not Available" ? 
+                    `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : 
+                    `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                
+                let cscDisplay = vle.CSC_ID;
+                if(vle.CSC_ID.startsWith('9')) {
+                    cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
+                }
+                    
+                tbody += `<tr>
+                    <td>${idx + 1}</td>
+                    <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
+                    <td style="color:#0f172a;">${cscDisplay}</td>
+                    <td style="color:#475569;">${vle.Mobile}</td>
+                    <td>${callBtn}</td>
+                </tr>`;
+            });
+            if(currentCallingListData.length > 500) {
+                tbody += `<tr><td colspan="5" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
+            }
+        }
+        document.getElementById('callingBody').innerHTML = tbody;
+    }
+
+    function downloadCallingList() {
+        if(currentCallingListData.length === 0) {
+            alert("No data available to download for this selection.");
+            return;
+        }
+        let category = document.getElementById('filterCategory').value;
+        let dist = document.getElementById('filterDistrict').value;
+        
+        let exportData = currentCallingListData.map(v => ({
+            "District Name": v.District,
+            "CSC ID": v.CSC_ID,
+            "Mobile Number": v.Mobile,
+            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE"
+        }));
+
+        let csv = Papa.unparse(exportData);
+        let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        let link = document.createElement("a");
+        let url = URL.createObjectURL(blob);
+        let d = new Date(); 
+        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Dropouts_List_${category}_${dist}_${dateStr}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function generateHTMLReports() {
+        let stateZeroTxn = Math.max(0, stateLyCscs.size - stateYtdCscs.size);
+        
+        let stateGswZeroTxn = 0;
+        stateLyGswCscs.forEach(id => { if(!stateYtdCscs.has(id)) stateGswZeroTxn++; });
+
+        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
+        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+
+        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
+        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+
+        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
+        
+        document.getElementById('sumZeroTxn').innerText = stateZeroTxn.toLocaleString();
+        document.getElementById('sumZeroGsw').innerText = `(GSW: ${stateGswZeroTxn.toLocaleString()})`;
+
+        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
+        document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2});
+        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
+
+        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN");
+        let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN");
+
+        let sortedOverallServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
+        let sortedYesterdayServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
+        let sortedOverallDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
+        let sortedYesterdayDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
+
+        // 1. Overall Service
+        let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
+        sortedOverallServices.forEach(item => {
+            let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
+            srvHtml += `<tr>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td>
+                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovTxn += d.total_txn; ovMtdTxn += d.mtd_txn; ovAmt += d.total_amt; ovRev += d.total_rev;
+        });
+        let srvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">OVERALL STATE</td>
+            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovMtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('serviceBody').innerHTML = srvTotalHtml + srvHtml;
+
+        // 2. Yesterday Service
+        let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
+        sortedYesterdayServices.forEach(item => {
+            let d = item.data;
+            ySrvHtml += `<tr>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td>
+                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovFtdTxn += d.ftd_txn; ovFtdAmt += d.ftd_amt; ovFtdRev += d.ftd_rev;
+        });
+        let ySrvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovFtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('yesterdayServiceBody').innerHTML = ySrvTotalHtml + ySrvHtml;
+
+        // 3. Overall District
+        let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0;
+        let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
+        
+        sortedOverallDistricts.forEach(item => {
+            let d = item.data;
+            let distGswZero = 0;
+            d.ly_gsw.forEach(id => { if(!d.ytd_cscs.has(id)) distGswZero++; });
+            let zeroTxn = Math.max(0, d.ly_cscs.size - d.ytd_cscs.size);
+            let zeroBadge = zeroTxn > 0 ? `<span class="badge badge-red">${zeroTxn.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+            let ytdDisplay = `${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:10px; color:#047857;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span>`;
+            let zeroDisplay = `${zeroBadge}<br><span style="font-size:10px; color:#dc2626;">(GSW: ${distGswZero.toLocaleString()})</span>`;
+
+            distHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#059669;">${ytdDisplay}</td>
+                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td>${zeroDisplay}</td>
+                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            
+            ovDistTotTxn += d.total_txn; ovDistAmt += d.total_amt; ovDistRev += d.total_rev;
+            ovDistFtdTxn_overall += d.ftd_txn; ovDistFtdAmt_overall += d.ftd_amt; ovDistFtdRev_overall += d.ftd_rev;
+        });
+
+        let distTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateYtdGswCscs.size.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn_overall.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateZeroTxn.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateGswZeroTxn.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistTotTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('districtBody').innerHTML = distTotalHtml + distHtml;
+
+        // 4. Yesterday District
+        let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
+        sortedYesterdayDistricts.forEach(item => {
+            let d = item.data;
+            yDistHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
+                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovDistFtdTxn += d.ftd_txn; ovDistFtdAmt += d.ftd_amt; ovDistFtdRev += d.ftd_rev;
+        });
+        let yDistTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('yesterdayDistrictBody').innerHTML = yDistTotalHtml + yDistHtml;
+
+        let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+        sections.forEach(id => document.getElementById(id).style.display = 'block');
+    }
+
+    async function downloadImage(elementId, prefix) {
+        const reportDiv = document.getElementById(elementId);
+        const dlBtns = reportDiv.querySelectorAll('.btn-download');
+        dlBtns.forEach(btn => btn.style.display = 'none');
+
+        const table = reportDiv.querySelector('table');
+        let originalStyles = {};
+        if (table) {
+            originalStyles = {
+                tableWidth: table.style.width, tableMinWidth: table.style.minWidth,
+                divWidth: reportDiv.style.width, divPadding: reportDiv.style.padding
+            };
+            reportDiv.style.width = 'max-content'; reportDiv.style.padding = '15px'; 
+            table.style.width = 'max-content'; table.style.minWidth = 'auto'; 
+        }
+        
+        try {
+            const canvas = await html2canvas(reportDiv, { scale: 2, backgroundColor: "#ffffff" });
+            const link = document.createElement('a');
+            let d = new Date(); 
+            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            link.download = `${prefix}_${dateStr}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch(err) {
+            alert("Image capture failed. Please try again.");
+        } finally {
+            if (table) {
+                reportDiv.style.width = originalStyles.divWidth; reportDiv.style.padding = originalStyles.divPadding;
+                table.style.width = originalStyles.tableWidth; table.style.minWidth = originalStyles.tableMinWidth;
+            }
+            dlBtns.forEach(btn => btn.style.display = 'inline-block');
+        }
+    }
+</script>
+
+</body>
+</html>
