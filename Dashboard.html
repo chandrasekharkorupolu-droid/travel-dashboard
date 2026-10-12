@@ -979,6 +979,7 @@
       else if (moduleName === "FASTAG" && reportId === "Monthly Closure Report") iframeSrc = "FASTAG_Monthly_Closure.html";
 
       else if (moduleName === "MASTER" && reportId === "AP Consolidated Report") iframeSrc = "Master_AP_Consolidated.html";
+      else if (moduleName === "MASTER" && reportId === "StateHeadSmartReports") iframeSrc = "State_Head_Report.html"; // <-- Ee line kothaga add cheyali
       else if (moduleName === "MASTER" && reportId === "DailyDataUpload") iframeSrc = "DailyDataUpload.html";
       else if (moduleName === "MASTER" && reportId === "SendDailyEmails") iframeSrc = "Master_Send_Emails.html";
       else if (moduleName === "MASTER" && reportId === "VLEDetails") iframeSrc = "Master_VLE_Details.html";
@@ -1049,11 +1050,22 @@
       document.getElementById('sidebarTitle').innerText = moduleName + (moduleName === 'MASTER' || moduleName === 'HELPDESK' || moduleName === 'E-STAMPING' ? ' OPTIONS' : ' REPORTS');
       const list = document.getElementById('reportList'); list.innerHTML = ''; 
 
-      if(moduleName === 'ACTION CENTER') {
+    if(moduleName === 'ACTION CENTER') {
           loadReport('ACTION CENTER', '🚀 DM Action Center - Priority Tasks'); return;
       } else if(moduleName === 'MASTER') {
           
           let li0 = document.createElement('li'); li0.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-map-location-dot" style="color:#0284c7;"></i></span> <span class="menu-text">AP Consolidated Report</span>'; li0.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li0.classList.add('active-item'); loadReport('MASTER', 'AP Consolidated Report'); }; list.appendChild(li0);
+
+          // 👇👇👇 కొత్తగా యాడ్ చేసిన State Head Smart Reports కోడ్ 👇👇👇
+          let liSmart = document.createElement('li'); 
+          liSmart.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-chess-king" style="color:#fbbf24;"></i></span> <span class="menu-text">State Head Smart Reports</span>'; 
+          liSmart.onclick = function() { 
+              document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); 
+              liSmart.classList.add('active-item'); 
+              loadReport('MASTER', 'StateHeadSmartReports', 'State Head Smart Reports'); 
+          }; 
+          list.appendChild(liSmart);
+          // 👆👆👆 ఎండ్ 👆👆👆
 
           if(!isDM) {
               let li1 = document.createElement('li'); li1.innerHTML = '<span class="menu-icon"><i class="fa-solid fa-cloud-arrow-up" style="color:#16a34a;"></i></span> <span class="menu-text">Daily Data Upload</span>'; li1.onclick = function() { document.querySelectorAll('.report-list li').forEach(el => el.classList.remove('active-item')); li1.classList.add('active-item'); loadReport('MASTER', 'DailyDataUpload', 'Daily Data Upload'); }; list.appendChild(li1);
