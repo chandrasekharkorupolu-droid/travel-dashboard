@@ -1025,7 +1025,8 @@
         }
     }
 
-    // PUBLISH TO DMs DASHBOARD FUNCTION
+   
+    // PUBLISH TO DMs DASHBOARD FUNCTION (GOOGLE SCRIPT VERSION)
     function publishToDMs() {
         let btn = document.getElementById('btnPublish');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...';
@@ -1056,11 +1057,18 @@
             updateTime: new Date().toLocaleString()
         };
 
-        // Sending to server
-        fetch('save_report.php', {
+        // 🌟 ఇక్కడ మీ కొత్త GOOGLE SCRIPT URL పెట్టండి 🌟
+        let SCRIPT_URL = "https://script.google.com/macros/s/మీ_కొత్త_లింక్_ఇక్కడ_పెట్టండి/exec";
+
+        let payload = {
+            action: "publishDMReport",
+            reportData: JSON.stringify(dataPacket)
+        };
+
+        // Sending to Google Server
+        fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataPacket)
+            body: JSON.stringify(payload)
         })
         .then(response => response.json())
         .then(data => {
@@ -1075,7 +1083,7 @@
             }
         })
         .catch(error => {
-            alert("❌ Server Error: Please check if save_report.php is uploaded correctly on your server.");
+            alert("❌ Server Error. Please try again.");
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
             btn.disabled = false;
         });
