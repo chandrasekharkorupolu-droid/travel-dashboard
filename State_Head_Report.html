@@ -60,6 +60,29 @@
         .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+
+        /* 🌟🌟🌟 MOBILE RESPONSIVENESS 🌟🌟🌟 */
+        @media (max-width: 992px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .upload-section { flex-direction: column; gap: 10px; }
+            .upload-box { width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 18px; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
+            .report-header-flex h2 { font-size: 15px; }
+            .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .filter-bar select { width: 100%; }
+            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
+            td, th { font-size: 11px; padding: 8px; }
+            .badge { font-size: 10px; padding: 3px 6px; }
+        }
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .card h2 { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -90,6 +113,11 @@
 
     <button class="btn-generate" id="btnGen" onclick="processReports()">
         <i class="fa-solid fa-gears"></i> GENERATE STATE REPORTS & PORTAL
+    </button>
+    
+    <!-- 🌟 NEW PUBLISH BUTTON 🌟 -->
+    <button class="btn-generate" id="btnPublish" onclick="publishToDMs()" style="background: #4f46e5; display: none; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
+        <i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD
     </button>
 
     <div class="loader" id="loadingDiv">
@@ -957,6 +985,9 @@
 
         let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'block');
+        
+        // Publish button display
+        document.getElementById('btnPublish').style.display = 'block';
     }
 
     async function downloadImage(elementId, prefix) {
@@ -992,6 +1023,62 @@
             }
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
         }
+    }
+
+    // PUBLISH TO DMs DASHBOARD FUNCTION
+    function publishToDMs() {
+        let btn = document.getElementById('btnPublish');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...';
+        btn.disabled = true;
+        
+        let bName = document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "BASE MONTH";
+        let tName = document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "TARGET MONTH";
+
+        // Final data to send
+        let dataPacket = {
+            html_summary: document.getElementById('summaryArea').innerHTML,
+            html_service: document.getElementById('serviceBody').innerHTML,
+            html_district: document.getElementById('districtBody').innerHTML,
+            html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
+            html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
+            html_mom: document.getElementById('momBody').innerHTML,
+            
+            // Calling portal arrays
+            vleDb: vleDb,
+            stateLyCscs: Array.from(stateLyCscs),
+            stateYtdCscs: Array.from(stateYtdCscs),
+            stateMtdCscs: Array.from(stateMtdCscs),
+            stateFtdCscs: Array.from(stateFtdCscs),
+            momBaseCscs: Array.from(monthlyData[bName]?.all || []),
+            momTargetCscs: Array.from(monthlyData[tName]?.all || []),
+            bnStr: bName,
+            tnStr: tName,
+            updateTime: new Date().toLocaleString()
+        };
+
+        // Sending to server
+        fetch('save_report.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataPacket)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                alert("✅ " + data.message);
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> PUBLISHED SUCCESSFULLY';
+                btn.style.background = '#16a34a';
+            } else {
+                alert("❌ Error: " + data.message);
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            alert("❌ Server Error: Please check if save_report.php is uploaded correctly on your server.");
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
+            btn.disabled = false;
+        });
     }
 </script>
 
