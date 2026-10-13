@@ -13,7 +13,7 @@
         .header { background: #0f172a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header h1 { margin: 0; font-size: 24px; color: #fbbf24; }
         
-        .upload-section { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-wrap: wrap; justify-content: space-between; }
+        .upload-section { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-wrap: justify-content: space-between; }
         .upload-box { flex: 1; border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 8px; background: #f8fafc; min-width: 280px; }
         .upload-box h3 { margin-top: 0; color: #1e3a8a; font-size: 15px; }
         .upload-box input[type="file"] { display: block; margin: 10px auto; font-size: 13px; }
@@ -60,28 +60,6 @@
         .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
-
-        @media (max-width: 992px) {
-            .cards-grid { grid-template-columns: repeat(3, 1fr); }
-            .upload-section { flex-direction: column; gap: 10px; }
-            .upload-box { width: 100%; }
-        }
-        @media (max-width: 768px) {
-            .header h1 { font-size: 18px; }
-            .cards-grid { grid-template-columns: repeat(2, 1fr); }
-            .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
-            .report-header-flex h2 { font-size: 15px; }
-            .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
-            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .filter-bar select { width: 100%; }
-            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
-            td, th { font-size: 11px; padding: 8px; }
-            .badge { font-size: 10px; padding: 3px 6px; }
-        }
-        @media (max-width: 480px) {
-            .cards-grid { grid-template-columns: 1fr; }
-            .card h2 { font-size: 20px; }
-        }
     </style>
 </head>
 <body>
@@ -100,12 +78,12 @@
         </div>
         <div class="upload-box">
             <h3><i class="fa-solid fa-file-csv"></i> Button 2: Master File (YTD)</h3>
-            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(Apr to Sep డేటా దీంట్లో నుండే ఆటోమేటిక్ గా వస్తుంది)</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(Apr to Sep డేటా)</p>
             <input type="file" id="fileMaster" accept=".csv">
         </div>
         <div class="upload-box">
             <h3><i class="fa-solid fa-calendar-day"></i> Button 3: Day-wise (MTD)</h3>
-            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(ప్రస్తుత నెల డేటా దీంట్లో నుండి వస్తుంది)</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 2px;">(ప్రస్తుత నెల డేటా)</p>
             <input type="file" id="fileDayWise" accept=".csv">
         </div>
     </div>
@@ -206,6 +184,7 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
+                        <!-- 🌟 REMARKS COLUMN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
@@ -220,25 +199,10 @@
     <div class="report-section" id="serviceReportArea">
         <div class="report-header-flex">
             <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
-            <button class="btn-download" id="btnDlService" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="background:#0f172a;">SERVICE</th>
-                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
-                        <th style="background:#1d4ed8;">FY 26-27 YTD VLEs</th>
-                        <th style="background:#3b82f6;">MTD VLEs</th>
-                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#047857;">TOTAL TXNS <br><span style="font-size:9px;">(YTD+MTD)</span></th>
-                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
-                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
-                    </tr>
-                </thead>
                 <tbody id="serviceBody"></tbody>
             </table>
         </div>
@@ -248,19 +212,10 @@
     <div class="report-section" id="yesterdayServiceReportArea">
         <div class="report-header-flex">
             <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" id="btnDlYesterdayService" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
-                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                    </tr>
-                </thead>
                 <tbody id="yesterdayServiceBody"></tbody>
             </table>
         </div>
@@ -270,26 +225,10 @@
     <div class="report-section" id="districtReportArea">
         <div class="report-header-flex">
             <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
-            <button class="btn-download" id="btnDlDistrict" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
         <div class="table-responsive">
             <table id="districtTable">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
-                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
-                        <th style="background:#059669;">FY 26-27 YTD VLEs</th>
-                        <th style="background:#8b5cf6;">MTD VLEs</th>
-                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#dc2626;">ZERO TXN <br><span style="font-size:9px;">(YTD Dropouts)</span></th>
-                        <th style="background:#047857;">TOTAL TXNS</th>
-                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
-                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
-                    </tr>
-                </thead>
                 <tbody id="districtBody"></tbody>
             </table>
         </div>
@@ -299,25 +238,16 @@
     <div class="report-section" id="yesterdayDistrictReportArea">
         <div class="report-header-flex">
             <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" id="btnDlYesterdayDistrict" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
-                <thead>
-                    <tr>
-                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
-                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
-                    </tr>
-                </thead>
                 <tbody id="yesterdayDistrictBody"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- 5. DYNAMIC MONTH ON MONTH (MoM) REPORT WITH DROPDOWNS -->
+    <!-- 5. DYNAMIC MONTH ON MONTH (MoM) REPORT -->
     <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
         <div class="report-header-flex">
             <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
@@ -332,9 +262,6 @@
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Target Month (కొత్త నెల):</label>
                 <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
-            </div>
-            <div style="margin-left: auto; font-size: 13px; color: #64748b; max-width: 300px;">
-                <i class="fa-solid fa-circle-info"></i> ఏ రెండు నెలలు సెలెక్ట్ చేస్తే ఆ రెండు నెలల మధ్య ఉన్న <b>Dropouts</b> మరియు <b>New VLEs</b> వస్తాయి.
             </div>
         </div>
 
@@ -361,33 +288,21 @@
     // 🌟 GOOGLE SCRIPT URL 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    // Main variables
     let districtData = {};
     let serviceData = {};
-    
-    let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
-    let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
-    let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
+    let stateLyCscs = new Set(), stateLyGswCscs = new Set(); 
+    let stateYtdCscs = new Set(), stateYtdGswCscs = new Set(); 
+    let stateMtdCscs = new Set(), stateFtdCscs = new Set();
     let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
-    
-    // Dynamic MoM DB
     let monthlyData = {};
     let monthNamesList = [];
-
-    // Master DB & Errors
     let vleDb = {}; 
     let currentCallingListData = [];
     let hasScientificError = false;
-    
-    // 🌟 NEW: To Store Only Today's Remarks 🌟
     let latestRemarks = {};
 
-    function createDistObj() {
-        return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 };
-    }
-    function createSrvObj() {
-        return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 };
-    }
+    function createDistObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 }; }
+    function createSrvObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 }; }
 
     function getVal(row, searchTerms) {
         let keys = Object.keys(row);
@@ -436,7 +351,6 @@
         let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'none');
 
-        // Reset
         districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
         stateLyCscs.clear(); stateLyGswCscs.clear(); stateYtdCscs.clear(); stateYtdGswCscs.clear();
         stateMtdCscs.clear(); stateFtdCscs.clear();
@@ -461,7 +375,6 @@
             populateDistrictDropdown();
             renderMomReport(); 
 
-            // 🌟 FETCH BOTH LEADERBOARD & TODAY'S REMARKS AT ONCE 🌟
             fetchCallingReport();
 
             if (hasScientificError) {
@@ -816,24 +729,23 @@
                     cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
                 }
                 
-                // 🌟 REMARKS BADGE (NOW WITH DM NAME!) 🌟
                 let lastRemHtml = "";
                 if (latestRemarks[vle.CSC_ID]) {
                     let lr = latestRemarks[vle.CSC_ID];
-                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span></div>`;
+                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
+                // 🌟 NEW EXACT REMARKS OPTIONS ADDED HERE 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px;">
                             <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;">
                                 <option value="">Select...</option>
-                                <option value="Will Transact Today">Will Transact Today</option>
-                                <option value="Issue/Error Faced">Issue/Error Faced</option>
-                                <option value="Not Interested">Not Interested</option>
-                                <option value="Number Busy">Number Busy</option>
-                                <option value="Switched Off">Switched Off</option>
-                                <option value="Wrong Number">Wrong Number</option>
+                                <option value="Not answering/ Busy">Not answering/ Busy</option>
+                                <option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
+                                <option value="Intrested/will active">Intrested/will active</option>
+                                <option value="Not interested/ Person not available">Not interested/ Person not available</option>
+                                <option value="Others">Others</option>
                             </select>
                             <button onclick="saveRemark('${vle.CSC_ID}')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Save Remark"><i class="fa-solid fa-save"></i></button>
                         </div>
@@ -858,7 +770,6 @@
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
-    // 🌟 SAVE REMARKS FROM ADMIN PORTAL 🌟
     function saveRemark(cscId) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
@@ -905,7 +816,7 @@
                 
                 setTimeout(() => { 
                     renderCallingList(); 
-                    fetchCallingReport(); // 🌟 Update leaderboard instantly!
+                    fetchCallingReport(); 
                 }, 1000); 
             } else {
                 alert("Error: " + data.message);
@@ -934,7 +845,7 @@
             "VLE Name": v.Name, 
             "Mobile Number": v.Mobile,
             "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName})` : "No Remark"
+            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
         }));
 
         let csv = Papa.unparse(exportData);
@@ -981,7 +892,6 @@
         let sortedOverallDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
         let sortedYesterdayDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
 
-        // 1. Overall Service
         let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
         sortedOverallServices.forEach(item => {
             let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
@@ -1013,7 +923,6 @@
         </tr>`;
         document.getElementById('serviceBody').innerHTML = srvTotalHtml + srvHtml;
 
-        // 2. Yesterday Service
         let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
         sortedYesterdayServices.forEach(item => {
             let d = item.data;
@@ -1035,7 +944,6 @@
         </tr>`;
         document.getElementById('yesterdayServiceBody').innerHTML = ySrvTotalHtml + ySrvHtml;
 
-        // 3. Overall District
         let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0;
         let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
         
@@ -1083,7 +991,6 @@
         </tr>`;
         document.getElementById('districtBody').innerHTML = distTotalHtml + distHtml;
 
-        // 4. Yesterday District
         let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
         sortedYesterdayDistricts.forEach(item => {
             let d = item.data;
@@ -1108,7 +1015,6 @@
         let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'block');
         
-        // Publish button display
         document.getElementById('btnPublish').style.display = 'block';
     }
 
@@ -1211,9 +1117,6 @@
         });
     }
 
-    // 🌟 1. FETCH BOTH LEADERBOARD & CALLING REMARKS AT ONCE (FOR TODAY) 🌟
-    // 🌟 1. FETCH BOTH LEADERBOARD (TODAY) & CALLING REMARKS (ALL TIME) 🌟
-    // 🌟 1. FETCH BOTH LEADERBOARD (TODAY) & CALLING REMARKS (ALL TIME) 🌟
     function fetchCallingReport() {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
@@ -1235,23 +1138,21 @@
             if(data.success) {
                 let logs = data.data;
                 let dmStats = {};
-                latestRemarks = {}; // పాతవి క్లియర్ చేసి మళ్ళీ లోడ్ చేస్తాం
+                latestRemarks = {}; 
                 
                 logs.forEach(log => {
                     let dm = log.dmName || "Unknown DM";
                     let cat = log.category || "";
                     let logDate = log.date ? log.date.split(" ")[0] : "";
                     
-                    // 🌟 1. REMARKS: ఇది ఎప్పటిదైనా సరే పాత రిమార్క్ ని అప్డేట్ చేస్తుంది (Date తో సహా) 🌟
                     if (log.cscId) {
                         latestRemarks[log.cscId] = {
                             remark: log.remark,
                             dmName: dm,
-                            date: logDate // ఏ రోజు కాల్ చేశారో ఆ డేట్
+                            date: logDate 
                         };
                     }
                     
-                    // 🌟 2. LEADERBOARD: ఇది కేవలం "ఈ రోజు" కాల్స్ మాత్రమే లెక్కపెడుతుంది 🌟
                     if (log.date && log.date.startsWith(todayStr)) {
                         if(!dmStats[dm]) {
                             dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
@@ -1305,7 +1206,6 @@
                 }
                 tbody.innerHTML = html;
 
-                // 🌟 లీడర్ బోర్డ్ తో పాటే కాలింగ్ టేబుల్ లో రిమార్క్స్ కూడా అప్డేట్ అవ్వాలి 🌟
                 renderCallingList();
             } else {
                 tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
