@@ -202,12 +202,13 @@
                         <th style="background:#0f172a;">S.NO</th>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
                         <th style="background:#0f172a;">CSC ID</th>
+                        <th style="background:#0f172a;">VLE NAME</th> <!-- 🌟 NEW VLE NAME COLUMN 🌟 -->
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#dc2626;">ACTION (CALL)</th>
                     </tr>
                 </thead>
                 <tbody id="callingBody">
-                    <tr><td colspan="5" style="color:#64748b;">Please click Generate Reports to load data...</td></tr>
+                    <tr><td colspan="6" style="color:#64748b;">Please click Generate Reports to load data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -472,6 +473,8 @@
             let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
             let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
             let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            // 🌟 NEW: Extract VLE Name
+            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
             if(!cscid) return;
 
             let dist = rawDist === "" ? "UNKNOWN" : rawDist;
@@ -484,7 +487,12 @@
             monthlyData["FY 25-26"].all.add(cscid);
             if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
 
-            vleDb[cscid] = { dist: dist, mobile: mob };
+            // 🌟 NEW: Store VLE Name
+            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+            else {
+                if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+                if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName;
+            }
 
             if(!districtData[dist]) districtData[dist] = createDistObj();
             districtData[dist].ly_cscs.add(cscid);
@@ -516,12 +524,19 @@
             let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
             let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
             let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            // 🌟 NEW: Extract VLE Name
+            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
             if(!cscid) return;
             let isGSW = cscid.startsWith('9');
 
             let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN") ? vleDb[cscid].dist : (rawDist === "" ? "UNKNOWN" : rawDist);
-            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob };
-            else if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+            
+            // 🌟 NEW: Update VLE DB with Name
+            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+            else {
+                if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+                if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName;
+            }
 
             if(!districtData[dist]) districtData[dist] = createDistObj();
             if(!serviceData[srv]) serviceData[srv] = createSrvObj();
@@ -575,12 +590,19 @@
             let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
             let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
             let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+            // 🌟 NEW: Extract VLE Name
+            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
             if(!cscid) return;
 
             let isGSW = cscid.startsWith('9');
             let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN") ? vleDb[cscid].dist : (rawDist === "" ? "UNKNOWN" : rawDist);
-            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob };
-            else if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+            
+            // 🌟 NEW: Update VLE DB with Name
+            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+            else {
+                if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob;
+                if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName;
+            }
 
             if(!districtData[dist]) districtData[dist] = createDistObj();
             if(!serviceData[srv]) serviceData[srv] = createSrvObj();
@@ -754,11 +776,12 @@
         if(baseSet && activeSet) {
             baseSet.forEach(cscid => {
                 if(!activeSet.has(cscid)) {
-                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '' };
+                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown' };
                     if(distFilter === "ALL" || distFilter === details.dist) {
                         currentCallingListData.push({
                             "District": details.dist,
                             "CSC_ID": cscid,
+                            "Name": details.name || "Unknown VLE", // 🌟 NEW: Added Name
                             "Mobile": details.mobile || "Not Available"
                         });
                     }
@@ -770,7 +793,7 @@
 
         let tbody = "";
         if(currentCallingListData.length === 0) {
-            tbody = `<tr><td colspan="5" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
+            tbody = `<tr><td colspan="6" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
         } else {
             currentCallingListData.sort((a, b) => a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID));
             let displayList = currentCallingListData.slice(0, 500);
@@ -785,16 +808,18 @@
                     cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
                 }
                     
+                // 🌟 NEW: VLE Name column added to table rendering
                 tbody += `<tr>
                     <td>${idx + 1}</td>
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
                     <td style="color:#0f172a;">${cscDisplay}</td>
+                    <td style="color:#475569;">${vle.Name}</td>
                     <td style="color:#475569;">${vle.Mobile}</td>
                     <td>${callBtn}</td>
                 </tr>`;
             });
             if(currentCallingListData.length > 500) {
-                tbody += `<tr><td colspan="5" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
+                tbody += `<tr><td colspan="6" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
             }
         }
         document.getElementById('callingBody').innerHTML = tbody;
@@ -811,6 +836,7 @@
         let exportData = currentCallingListData.map(v => ({
             "District Name": v.District,
             "CSC ID": v.CSC_ID,
+            "VLE Name": v.Name, // 🌟 NEW: Added Name to Excel
             "Mobile Number": v.Mobile,
             "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE"
         }));
@@ -1025,8 +1051,7 @@
         }
     }
 
-   
-   // PUBLISH TO DMs DASHBOARD FUNCTION (UPDATED)
+    // PUBLISH TO DMs DASHBOARD FUNCTION (UPDATED)
     function publishToDMs() {
         let btn = document.getElementById('btnPublish');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...';
@@ -1035,7 +1060,7 @@
         let bName = document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "BASE MONTH";
         let tName = document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "TARGET MONTH";
 
-        // 🌟 KOTTHA CODE: DMs కి డైనమిక్ గా నెలలు పంపించడానికి 🌟
+        // 🌟 DMs కి డైనమిక్ గా నెలలు పంపించడానికి 🌟
         let monthlyDataArrays = {};
         for(let m in monthlyData) {
             monthlyDataArrays[m] = {
@@ -1059,7 +1084,7 @@
             stateMtdCscs: Array.from(stateMtdCscs),
             stateFtdCscs: Array.from(stateFtdCscs),
             
-            monthlyData: monthlyDataArrays, // 👈 నెలల డేటా ప్యాకెట్
+            monthlyData: monthlyDataArrays, 
             
             bnStr: bName,
             tnStr: tName,
