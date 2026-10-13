@@ -118,21 +118,22 @@
             </div>
         </div>
 
-        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
             <table id="callingTable">
-                <thead style="position: sticky; top: 0;">
+                <thead style="position: sticky; top: 0; z-index: 10;">
                     <tr>
                         <th style="background:#0f172a;">S.NO</th>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
                         <th style="background:#0f172a;">CSC ID</th>
-                        <!-- 🌟 NEW: VLE NAME COLUMN 🌟 -->
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
-                        <th style="background:#dc2626;">ACTION (CALL)</th>
+                        <th style="background:#16a34a;">CALL</th>
+                        <!-- 🌟 NEW: REMARKS COLUMN 🌟 -->
+                        <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
                 <tbody id="callingBody">
-                    <tr><td colspan="6" style="color:#64748b;">Loading Data...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Loading Data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -285,10 +286,14 @@
     // Global variables for Calling Portal & MoM
     let vleDb = {}; 
     let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
-    let monthlyData = {}; // For dynamic MoM
+    let monthlyData = {}; 
     let currentCallingListData = [];
+    
+    // 🌟 KOTTHA VARIABLE: Пాత రిమార్క్స్ దాచుకోవడానికి 🌟
+    let latestRemarks = {};
 
     window.onload = function() {
+        // 1. Fetch Main Report JSON
         fetch(SCRIPT_URL + "?action=fetchDMReport")
         .then(response => response.json())
         .then(data => {
@@ -299,21 +304,18 @@
 
             document.getElementById('loadingDiv').style.display = 'none';
 
-            // 1. Inject static HTML parts
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
-            // 2. Load basic Arrays into Sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
             stateMtdCscs = new Set(data.stateMtdCscs || []);
             stateFtdCscs = new Set(data.stateFtdCscs || []);
             
-            // 3. Load Monthly Data for dynamic Dropdowns
             if (data.monthlyData) {
                 for(let m in data.monthlyData) {
                     monthlyData[m] = {
@@ -325,22 +327,39 @@
             
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
 
-            // 4. Initialize Dropdowns & Render Tables
             populateDistrictDropdown();
             populateMonthDropdowns(data.bnStr, data.tnStr);
-            renderMomReport(); // Computes the selected months locally
+            renderMomReport(); 
             
-            // Show all sections
             let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'block');
+
+            // 🌟 2. Fetch Live Remarks immediately after loading dashboard 🌟
+            fetchRemarks();
         })
         .catch(error => {
             document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
-            console.error(error);
         });
     }
 
-    // Populate the base & target dropdowns
+    // 🌟 FETCH LIVE REMARKS FUNCTION 🌟
+    function fetchRemarks() {
+        let payload = { action: "getFollowUpRemarks" };
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload),
+            redirect: "follow"
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                latestRemarks = data.data || {};
+                renderCallingList(); // రీఫ్రెష్ టేబుల్ పాత రిమార్క్స్ తో!
+            }
+        }).catch(err => console.log("Remarks fetch error:", err));
+    }
+
     function populateMonthDropdowns(defBase, defTarget) {
         let baseSel = document.getElementById('momBaseSelect');
         let tarSel = document.getElementById('momTargetSelect');
@@ -356,7 +375,6 @@
         if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget;
     }
 
-    // Generate MoM table dynamically
     function renderMomReport() {
         let bName = document.getElementById('momBaseSelect').value;
         let tName = document.getElementById('momTargetSelect').value;
@@ -382,7 +400,6 @@
             distStats[d] = { base:0, baseGsw:0, target:0, targetGsw:0, retained:0, retainedGsw:0, drop:0, dropGsw:0, new:0, newGsw:0 };
         });
 
-        // Compute Base Stats
         bSet.forEach(cscid => {
             let dist = vleDb[cscid]?.dist;
             if(dist && dist !== "UNKNOWN" && distStats[dist]) {
@@ -400,7 +417,6 @@
             }
         });
 
-        // Compute Target Stats (New)
         tSet.forEach(cscid => {
             let dist = vleDb[cscid]?.dist;
             if(dist && dist !== "UNKNOWN" && distStats[dist]) {
@@ -415,14 +431,13 @@
             }
         });
 
-        // Generate HTML
         let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
         let momHtml = "";
         let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
 
         sortedDists.forEach(dName => {
             let s = distStats[dName];
-            if (s.base === 0 && s.target === 0) return; // Skip empty districts
+            if (s.base === 0 && s.target === 0) return; 
             
             totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
             totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
@@ -453,7 +468,6 @@
         
         document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
 
-        // Auto-refresh calling list if MOM category is selected
         if(document.getElementById('filterCategory').value === 'MOM') {
             renderCallingList();
         }
@@ -493,13 +507,12 @@
         if(baseSet && activeSet) {
             baseSet.forEach(cscid => {
                 if(!activeSet.has(cscid)) {
-                    // 🌟 NEW: VLE Name 'name' parameter added here
                     let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
                     if(distFilter === "ALL" || distFilter === details.dist) {
                         currentCallingListData.push({
                             "District": details.dist,
                             "CSC_ID": cscid,
-                            "Name": details.name || "Unknown VLE", // 🌟 Added Name
+                            "Name": details.name || "Unknown VLE", 
                             "Mobile": details.mobile || "Not Available"
                         });
                     }
@@ -511,8 +524,7 @@
 
         let tbody = "";
         if(currentCallingListData.length === 0) {
-            // 🌟 Changed colspan to 6 🌟
-            tbody = `<tr><td colspan="6" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
+            tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
         } else {
             currentCallingListData.sort((a, b) => a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID));
             let displayList = currentCallingListData.slice(0, 500);
@@ -526,8 +538,32 @@
                 if(vle.CSC_ID.startsWith('9')) {
                     cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
                 }
+                
+                // 🌟 PATA REMARK UNDA LEDA CHECK CHESTHUNNAM 🌟
+                let lastRemHtml = "";
+                if (latestRemarks[vle.CSC_ID]) {
+                    let lr = latestRemarks[vle.CSC_ID];
+                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:2px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; white-space:nowrap;"><i class="fa-solid fa-clock-rotate-left"></i> Last: ${lr.remark} <span style="color:#92400e;">(${lr.date})</span></div>`;
+                }
+                
+                let remarkSelect = `
+                    <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
+                        <div style="display:flex; gap:5px;">
+                            <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;">
+                                <option value="">Select...</option>
+                                <option value="Will Transact Today">Will Transact Today</option>
+                                <option value="Issue/Error Faced">Issue/Error Faced</option>
+                                <option value="Not Interested">Not Interested</option>
+                                <option value="Number Busy">Number Busy</option>
+                                <option value="Switched Off">Switched Off</option>
+                                <option value="Wrong Number">Wrong Number</option>
+                            </select>
+                            <button onclick="saveRemark('${vle.CSC_ID}')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Save Remark"><i class="fa-solid fa-save"></i></button>
+                        </div>
+                        ${lastRemHtml}
+                    </div>
+                `;
                     
-                // 🌟 NEW: Added Name column 🌟
                 tbody += `<tr>
                     <td>${idx + 1}</td>
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
@@ -535,14 +571,74 @@
                     <td style="color:#475569; font-weight:600;">${vle.Name}</td>
                     <td style="color:#475569;">${vle.Mobile}</td>
                     <td>${callBtn}</td>
+                    <td>${remarkSelect}</td>
                 </tr>`;
             });
             if(currentCallingListData.length > 500) {
-                // 🌟 Changed colspan to 6 🌟
-                tbody += `<tr><td colspan="6" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
+                tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
             }
         }
         document.getElementById('callingBody').innerHTML = tbody;
+    }
+
+    // 🌟 FUNCTION TO SAVE REMARKS TO SERVER 🌟
+    function saveRemark(cscId) {
+        let selectEl = document.getElementById("rem_" + cscId);
+        let remark = selectEl.value;
+        if(!remark) {
+            alert("Please select a remark first!");
+            return;
+        }
+        
+        let btn = selectEl.nextElementSibling;
+        let originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+
+        let dmNameStr = "DM";
+        if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
+
+        let categoryType = document.getElementById('filterCategory').value;
+
+        let payload = {
+            action: "saveFollowUp",
+            cscId: cscId,
+            service: categoryType + " DROPOUT",
+            dmName: dmNameStr,
+            remark: remark,
+            location: "DM Smart Portal"
+        };
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload),
+            redirect: "follow"
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.style.background = "#16a34a";
+                selectEl.style.borderColor = "#16a34a";
+                
+                // 🌟 సేవ్ చేసిన వెంటనే పాత రిమార్క్ ప్లేస్ లో కనపడేలా సెట్ చేయడం 🌟
+                let d = new Date();
+                let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+                latestRemarks[cscId] = { remark: remark, date: dateStr };
+                
+                setTimeout(() => { renderCallingList(); }, 1000); 
+            } else {
+                alert("Error: " + data.message);
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            alert("Network Error while saving remark!");
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
     }
 
     function downloadCallingList() {
@@ -556,9 +652,10 @@
         let exportData = currentCallingListData.map(v => ({
             "District Name": v.District,
             "CSC ID": v.CSC_ID,
-            "VLE Name": v.Name, // 🌟 NEW: VLE Name Excel ki add chesanu 🌟
+            "VLE Name": v.Name, 
             "Mobile Number": v.Mobile,
-            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE"
+            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+            "Last Remark": latestRemarks[v.CSC_ID] ? latestRemarks[v.CSC_ID].remark : "No Remark" // 🌟 యాడ్ చేసిన రిమార్క్ ఎక్సెల్ లోకి కూడా వస్తుంది!
         }));
 
         let csv = Papa.unparse(exportData);
