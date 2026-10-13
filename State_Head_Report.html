@@ -178,7 +178,6 @@
         <div class="filter-bar">
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
-                <!-- 🌟 BUG FIX: id="momOptionText" యాడ్ చేసాను 🌟 -->
                 <select id="filterCategory" onchange="renderCallingList()">
                     <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
                     <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
@@ -380,7 +379,7 @@
     let currentCallingListData = [];
     let hasScientificError = false;
     
-    // 🌟 NEW: To Store Remarks 🌟
+    // 🌟 NEW: To Store Only Today's Remarks 🌟
     let latestRemarks = {};
 
     function createDistObj() {
@@ -462,11 +461,8 @@
             populateDistrictDropdown();
             renderMomReport(); 
 
-            // 🌟 FETCH CALLING REPORT FROM SERVER 🌟
+            // 🌟 FETCH BOTH LEADERBOARD & TODAY'S REMARKS AT ONCE 🌟
             fetchCallingReport();
-            
-            // 🌟 FETCH LIVE REMARKS 🌟
-            fetchRemarks();
 
             if (hasScientificError) {
                 setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500);
@@ -478,23 +474,6 @@
             document.getElementById('btnGen').disabled = false;
             document.getElementById('loadingDiv').style.display = 'none';
         }
-    }
-
-    function fetchRemarks() {
-        let payload = { action: "getFollowUpRemarks" };
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-            redirect: "follow"
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                latestRemarks = data.data || {};
-                renderCallingList();
-            }
-        }).catch(err => console.log("Remarks fetch error:", err));
     }
 
     function processLastYearData(data) {
@@ -683,7 +662,6 @@
 
         if(!bName || !tName) return;
 
-        // 🌟 FIX: id="momOptionText" error ki solution kindhane undi 🌟
         document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
         document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
         
@@ -838,11 +816,11 @@
                     cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
                 }
                 
-                // 🌟 REMARKS BADGE & DROPDOWN IN ADMIN 🌟
+                // 🌟 REMARKS BADGE (NOW WITH DM NAME!) 🌟
                 let lastRemHtml = "";
                 if (latestRemarks[vle.CSC_ID]) {
                     let lr = latestRemarks[vle.CSC_ID];
-                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:2px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; white-space:nowrap;"><i class="fa-solid fa-clock-rotate-left"></i> Last: ${lr.remark} <span style="color:#92400e;">(${lr.date})</span></div>`;
+                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span></div>`;
                 }
                 
                 let remarkSelect = `
@@ -923,9 +901,12 @@
                 
                 let d = new Date();
                 let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
-                latestRemarks[cscId] = { remark: remark, date: dateStr };
+                latestRemarks[cscId] = { remark: remark, dmName: dmNameStr, date: dateStr };
                 
-                setTimeout(() => { renderCallingList(); }, 1000); 
+                setTimeout(() => { 
+                    renderCallingList(); 
+                    fetchCallingReport(); // 🌟 Update leaderboard instantly!
+                }, 1000); 
             } else {
                 alert("Error: " + data.message);
                 btn.innerHTML = originalHtml;
@@ -953,7 +934,7 @@
             "VLE Name": v.Name, 
             "Mobile Number": v.Mobile,
             "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? latestRemarks[v.CSC_ID].remark : "No Remark"
+            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName})` : "No Remark"
         }));
 
         let csv = Papa.unparse(exportData);
@@ -1230,6 +1211,9 @@
         });
     }
 
+    // 🌟 1. FETCH BOTH LEADERBOARD & CALLING REMARKS AT ONCE (FOR TODAY) 🌟
+    // 🌟 1. FETCH BOTH LEADERBOARD (TODAY) & CALLING REMARKS (ALL TIME) 🌟
+    // 🌟 1. FETCH BOTH LEADERBOARD (TODAY) & CALLING REMARKS (ALL TIME) 🌟
     function fetchCallingReport() {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
@@ -1251,12 +1235,24 @@
             if(data.success) {
                 let logs = data.data;
                 let dmStats = {};
+                latestRemarks = {}; // పాతవి క్లియర్ చేసి మళ్ళీ లోడ్ చేస్తాం
                 
                 logs.forEach(log => {
+                    let dm = log.dmName || "Unknown DM";
+                    let cat = log.category || "";
+                    let logDate = log.date ? log.date.split(" ")[0] : "";
+                    
+                    // 🌟 1. REMARKS: ఇది ఎప్పటిదైనా సరే పాత రిమార్క్ ని అప్డేట్ చేస్తుంది (Date తో సహా) 🌟
+                    if (log.cscId) {
+                        latestRemarks[log.cscId] = {
+                            remark: log.remark,
+                            dmName: dm,
+                            date: logDate // ఏ రోజు కాల్ చేశారో ఆ డేట్
+                        };
+                    }
+                    
+                    // 🌟 2. LEADERBOARD: ఇది కేవలం "ఈ రోజు" కాల్స్ మాత్రమే లెక్కపెడుతుంది 🌟
                     if (log.date && log.date.startsWith(todayStr)) {
-                        let dm = log.dmName || "Unknown DM";
-                        let cat = log.category || "";
-                        
                         if(!dmStats[dm]) {
                             dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
                         }
@@ -1308,6 +1304,9 @@
                     html = totalHtml + html;
                 }
                 tbody.innerHTML = html;
+
+                // 🌟 లీడర్ బోర్డ్ తో పాటే కాలింగ్ టేబుల్ లో రిమార్క్స్ కూడా అప్డేట్ అవ్వాలి 🌟
+                renderCallingList();
             } else {
                 tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
             }

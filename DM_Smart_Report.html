@@ -90,10 +90,39 @@
     <!-- 0. DASHBOARD SUMMARY -->
     <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;"></div>
 
+    <!-- 🌟 VII. NEW: DM CALLING PERFORMANCE REPORT (LEADERBOARD) 🌟 -->
+    <div class="report-section" id="dmCallingReportArea" style="border: 2px solid #059669; background: #f0fdf4;">
+        <div class="report-header-flex">
+            <h2 style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
+            <div>
+                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table id="dmCallingTable">
+                <thead style="position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="background:#0f172a;">S.NO</th>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT MANAGER (DM)</th>
+                        <th style="background:#d97706;">YTD CALLS</th>
+                        <th style="background:#8b5cf6;">MTD CALLS</th>
+                        <th style="background:#d946ef;">FTD CALLS</th>
+                        <th style="background:#3b82f6;">MoM CALLS</th>
+                        <th style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
+                    </tr>
+                </thead>
+                <tbody id="dmCallingBody">
+                    <tr><td colspan="7" style="color:#64748b;">Loading today's DM performance from server...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
     <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
         <div class="report-header-flex">
-            <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> V. DROPOUTS TRACKING & CALLING PORTAL</h2>
+            <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> VI. DROPOUTS TRACKING & CALLING PORTAL</h2>
             <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
         </div>
         
@@ -118,7 +147,7 @@
             </div>
         </div>
 
-        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table id="callingTable">
                 <thead style="position: sticky; top: 0; z-index: 10;">
                     <tr>
@@ -128,7 +157,7 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
-                        <!-- 🌟 NEW: REMARKS COLUMN 🌟 -->
+                        <!-- 🌟 REMARKS COLUMN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
@@ -288,12 +317,9 @@
     let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
     let monthlyData = {}; 
     let currentCallingListData = [];
-    
-    // 🌟 KOTTHA VARIABLE: Пాత రిమార్క్స్ దాచుకోవడానికి 🌟
-    let latestRemarks = {};
+    let latestRemarks = {}; // 🌟 For storing remarks
 
     window.onload = function() {
-        // 1. Fetch Main Report JSON
         fetch(SCRIPT_URL + "?action=fetchDMReport")
         .then(response => response.json())
         .then(data => {
@@ -304,18 +330,21 @@
 
             document.getElementById('loadingDiv').style.display = 'none';
 
+            // 1. Inject static HTML parts
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
+            // 2. Load basic Arrays into Sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
             stateMtdCscs = new Set(data.stateMtdCscs || []);
             stateFtdCscs = new Set(data.stateFtdCscs || []);
             
+            // 3. Load Monthly Data for dynamic Dropdowns
             if (data.monthlyData) {
                 for(let m in data.monthlyData) {
                     monthlyData[m] = {
@@ -327,24 +356,33 @@
             
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
 
+            // 4. Initialize Dropdowns & Render Tables
             populateDistrictDropdown();
             populateMonthDropdowns(data.bnStr, data.tnStr);
             renderMomReport(); 
             
-            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+            let sections = ['summaryArea', 'dmCallingReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'block');
 
-            // 🌟 2. Fetch Live Remarks immediately after loading dashboard 🌟
-            fetchRemarks();
+            // 🌟 5. Fetch Live Remarks & Leaderboard 🌟
+            fetchCallingReport();
         })
         .catch(error => {
             document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
+            console.error(error);
         });
     }
 
-    // 🌟 FETCH LIVE REMARKS FUNCTION 🌟
-    function fetchRemarks() {
-        let payload = { action: "getFollowUpRemarks" };
+    // 🌟 FETCH BOTH LEADERBOARD (TODAY) & CALLING REMARKS (ALL TIME) 🌟
+    function fetchCallingReport() {
+        let tbody = document.getElementById('dmCallingBody');
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
+        
+        let payload = { action: "getCallingReport" };
+
+        let d = new Date();
+        let todayStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -354,10 +392,87 @@
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                latestRemarks = data.data || {};
-                renderCallingList(); // రీఫ్రెష్ టేబుల్ పాత రిమార్క్స్ తో!
+                let logs = data.data;
+                let dmStats = {};
+                latestRemarks = {}; 
+                
+                logs.forEach(log => {
+                    let dm = log.dmName || "Unknown DM";
+                    let cat = log.category || "";
+                    let logDate = log.date ? log.date.split(" ")[0] : "";
+                    
+                    // 🌟 1. REMARKS: ఇది ఎప్పటిదైనా సరే పాత రిమార్క్ ని అప్డేట్ చేస్తుంది 🌟
+                    if (log.cscId) {
+                        latestRemarks[log.cscId] = {
+                            remark: log.remark,
+                            dmName: dm,
+                            date: logDate 
+                        };
+                    }
+                    
+                    // 🌟 2. LEADERBOARD: ఇది కేవలం "ఈ రోజు" కాల్స్ మాత్రమే లెక్కపెడుతుంది 🌟
+                    if (log.date && log.date.startsWith(todayStr)) {
+                        if(!dmStats[dm]) {
+                            dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                        }
+                        
+                        if(cat.includes("YTD")) dmStats[dm].ytd++;
+                        else if(cat.includes("MTD")) dmStats[dm].mtd++;
+                        else if(cat.includes("FTD")) dmStats[dm].ftd++;
+                        else if(cat.includes("MOM")) dmStats[dm].mom++;
+                        
+                        dmStats[dm].total++;
+                    }
+                });
+                
+                let sortedDMs = Object.keys(dmStats).sort((a,b) => dmStats[b].total - dmStats[a].total);
+                
+                let html = "";
+                let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+
+                if(sortedDMs.length === 0) {
+                    html = '<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made today yet!</td></tr>';
+                } else {
+                    sortedDMs.forEach((dm, idx) => {
+                        let stat = dmStats[dm];
+                        grandTotal.ytd += stat.ytd;
+                        grandTotal.mtd += stat.mtd;
+                        grandTotal.ftd += stat.ftd;
+                        grandTotal.mom += stat.mom;
+                        grandTotal.total += stat.total;
+                        
+                        html += `<tr>
+                            <td>${idx + 1}</td>
+                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${dm}</td>
+                            <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
+                            <td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
+                            <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td>
+                            <td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
+                            <td style="color:#16a34a; font-size:16px; font-weight:900;">${stat.total}</td>
+                        </tr>`;
+                    });
+                    
+                    let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
+                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (TODAY)</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mom}</td>
+                        <td style="color:#10b981; font-size:16px; font-weight:900;">${grandTotal.total}</td>
+                    </tr>`;
+                    html = totalHtml + html;
+                }
+                tbody.innerHTML = html;
+
+                // 🌟 లీడర్ బోర్డ్ తో పాటే కాలింగ్ టేబుల్ లో రిమార్క్స్ కూడా అప్డేట్ అవ్వాలి 🌟
+                renderCallingList();
+            } else {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
             }
-        }).catch(err => console.log("Remarks fetch error:", err));
+        })
+        .catch(err => {
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
+        });
     }
 
     function populateMonthDropdowns(defBase, defTarget) {
@@ -539,11 +654,10 @@
                     cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
                 }
                 
-                // 🌟 PATA REMARK UNDA LEDA CHECK CHESTHUNNAM 🌟
                 let lastRemHtml = "";
                 if (latestRemarks[vle.CSC_ID]) {
                     let lr = latestRemarks[vle.CSC_ID];
-                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:2px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; white-space:nowrap;"><i class="fa-solid fa-clock-rotate-left"></i> Last: ${lr.remark} <span style="color:#92400e;">(${lr.date})</span></div>`;
+                    lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
                 let remarkSelect = `
@@ -563,7 +677,7 @@
                         ${lastRemHtml}
                     </div>
                 `;
-                    
+                
                 tbody += `<tr>
                     <td>${idx + 1}</td>
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
@@ -581,7 +695,6 @@
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
-    // 🌟 FUNCTION TO SAVE REMARKS TO SERVER 🌟
     function saveRemark(cscId) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
@@ -622,12 +735,14 @@
                 btn.style.background = "#16a34a";
                 selectEl.style.borderColor = "#16a34a";
                 
-                // 🌟 సేవ్ చేసిన వెంటనే పాత రిమార్క్ ప్లేస్ లో కనపడేలా సెట్ చేయడం 🌟
                 let d = new Date();
                 let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
-                latestRemarks[cscId] = { remark: remark, date: dateStr };
+                latestRemarks[cscId] = { remark: remark, dmName: dmNameStr, date: dateStr };
                 
-                setTimeout(() => { renderCallingList(); }, 1000); 
+                setTimeout(() => { 
+                    renderCallingList(); 
+                    fetchCallingReport(); 
+                }, 1000); 
             } else {
                 alert("Error: " + data.message);
                 btn.innerHTML = originalHtml;
@@ -655,7 +770,7 @@
             "VLE Name": v.Name, 
             "Mobile Number": v.Mobile,
             "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? latestRemarks[v.CSC_ID].remark : "No Remark" // 🌟 యాడ్ చేసిన రిమార్క్ ఎక్సెల్ లోకి కూడా వస్తుంది!
+            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
         }));
 
         let csv = Papa.unparse(exportData);
