@@ -139,11 +139,14 @@
         </div>
     </div>
 
-    <!-- 🌟 VII. NEW: DM CALLING PERFORMANCE REPORT (LEADERBOARD) 🌟 -->
+    <!-- 🌟 VII. NEW: DM CALLING PERFORMANCE REPORT (LEADERBOARD) WITH DOWNLOAD IMAGE 🌟 -->
     <div class="report-section" id="dmCallingReportArea" style="border: 2px solid #059669; background: #f0fdf4;">
         <div class="report-header-flex">
-            <h2 style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (LIVE)</h2>
-            <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+            <h2 style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
+            <div>
+                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table id="dmCallingTable">
@@ -155,11 +158,11 @@
                         <th style="background:#8b5cf6;">MTD CALLS</th>
                         <th style="background:#d946ef;">FTD CALLS</th>
                         <th style="background:#3b82f6;">MoM CALLS</th>
-                        <th style="background:#16a34a;">TOTAL CALLS</th>
+                        <th style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
                     </tr>
                 </thead>
                 <tbody id="dmCallingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh Leaderboard" to load DM performance from server...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh Leaderboard" to load today's DM performance from server...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -455,7 +458,7 @@
             populateDistrictDropdown();
             renderMomReport(); // This generates 5th report & calls renderCallingList()
 
-            // 🌟 FETCH DM CALLING REPORT FROM SERVER 🌟
+            // 🌟 FETCH TODAY'S DM CALLING REPORT FROM SERVER 🌟
             fetchCallingReport();
 
             if (hasScientificError) {
@@ -719,6 +722,8 @@
 
         sortedDists.forEach(dName => {
             let s = distStats[dName];
+            if (s.base === 0 && s.target === 0) return; // Skip empty districts
+            
             totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
             totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
             totTar+=s.target; totTarGsw+=s.targetGsw;
@@ -749,7 +754,9 @@
         document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
 
         // Trigger Calling List Update in case MoM is selected
-        renderCallingList();
+        if(document.getElementById('filterCategory').value === 'MOM') {
+            renderCallingList();
+        }
     }
 
     function populateDistrictDropdown() {
@@ -1118,13 +1125,17 @@
         });
     }
 
-    // 🌟 NEW: FUNCTION TO FETCH DM CALLING REPORT 🌟
+    // 🌟 NEW: FUNCTION TO FETCH TODAY'S DM CALLING REPORT 🌟
     function fetchCallingReport() {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
         let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         let payload = { action: "getCallingReport" };
+
+        // 🌟 Get Today's Date String in DD-MM-YYYY format to match server data 🌟
+        let d = new Date();
+        let todayStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
 
         fetch(SCRIPT_URL, {
             method: 'POST',
@@ -1139,19 +1150,22 @@
                 let dmStats = {};
                 
                 logs.forEach(log => {
-                    let dm = log.dmName || "Unknown DM";
-                    let cat = log.category || "";
-                    
-                    if(!dmStats[dm]) {
-                        dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                    // 🌟 ఇక్కడే మనం ఫిల్టర్ చేస్తున్నాం - కేవలం "ఈ రోజు" డేటా మాత్రమే 🌟
+                    if (log.date === todayStr) {
+                        let dm = log.dmName || "Unknown DM";
+                        let cat = log.category || "";
+                        
+                        if(!dmStats[dm]) {
+                            dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                        }
+                        
+                        if(cat.includes("YTD")) dmStats[dm].ytd++;
+                        else if(cat.includes("MTD")) dmStats[dm].mtd++;
+                        else if(cat.includes("FTD")) dmStats[dm].ftd++;
+                        else if(cat.includes("MOM")) dmStats[dm].mom++;
+                        
+                        dmStats[dm].total++;
                     }
-                    
-                    if(cat.includes("YTD")) dmStats[dm].ytd++;
-                    else if(cat.includes("MTD")) dmStats[dm].mtd++;
-                    else if(cat.includes("FTD")) dmStats[dm].ftd++;
-                    else if(cat.includes("MOM")) dmStats[dm].mom++;
-                    
-                    dmStats[dm].total++;
                 });
                 
                 let sortedDMs = Object.keys(dmStats).sort((a,b) => dmStats[b].total - dmStats[a].total);
@@ -1160,7 +1174,7 @@
                 let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
 
                 if(sortedDMs.length === 0) {
-                    html = '<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calling records found!</td></tr>';
+                    html = '<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made today yet!</td></tr>';
                 } else {
                     sortedDMs.forEach((dm, idx) => {
                         let stat = dmStats[dm];
@@ -1182,7 +1196,7 @@
                     });
                     
                     let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
-                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (AP STATE)</td>
+                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (TODAY)</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
