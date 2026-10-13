@@ -1125,6 +1125,7 @@
         });
     }
 
+
     // 🌟 NEW: FUNCTION TO FETCH TODAY'S DM CALLING REPORT 🌟
     function fetchCallingReport() {
         let tbody = document.getElementById('dmCallingBody');
@@ -1133,7 +1134,6 @@
         let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         let payload = { action: "getCallingReport" };
 
-        // 🌟 Get Today's Date String in DD-MM-YYYY format to match server data 🌟
         let d = new Date();
         let todayStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
 
@@ -1150,8 +1150,8 @@
                 let dmStats = {};
                 
                 logs.forEach(log => {
-                    // 🌟 ఇక్కడే మనం ఫిల్టర్ చేస్తున్నాం - కేవలం "ఈ రోజు" డేటా మాత్రమే 🌟
-                    if (log.date === todayStr) {
+                    // 🌟 FIX: startsWith వాడాను, కాబట్టి టైమ్ ఉన్నా కూడా మ్యాచ్ అవుతుంది 🌟
+                    if (log.date && log.date.startsWith(todayStr)) {
                         let dm = log.dmName || "Unknown DM";
                         let cat = log.category || "";
                         
