@@ -1106,11 +1106,23 @@
         document.getElementById('btnPublish').style.display = 'block';
     }
 
-    async function downloadImage(elementId, prefix) {
+async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
+        
+        // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
+        // 2. స్క్రోల్ ని తీసేసి టేబుల్ ని పూర్తిగా ఓపెన్ చేయడం (ఇదే అసలు ట్రిక్)
+        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
+        let originalMaxHeights = [];
+        tableResponsiveDivs.forEach(div => {
+            originalMaxHeights.push(div.style.maxHeight);
+            div.style.maxHeight = 'none'; // స్క్రోల్ తీసేస్తున్నాం
+            div.style.overflow = 'visible'; // మొత్తం కనపడేలా చేస్తున్నాం
+        });
+
+        // 3. వెడల్పు కోసం పాత ట్రిక్
         const table = reportDiv.querySelector('table');
         let originalStyles = {};
         if (table) {
@@ -1123,6 +1135,7 @@
         }
         
         try {
+            // 4. ఇమేజ్ క్యాప్చర్ (పూర్తి టేబుల్ ఇప్పుడు క్యాప్చర్ అవుతుంది)
             const canvas = await html2canvas(reportDiv, { scale: 2, backgroundColor: "#ffffff" });
             const link = document.createElement('a');
             let d = new Date(); 
@@ -1133,13 +1146,19 @@
         } catch(err) {
             alert("Image capture failed. Please try again.");
         } finally {
+            // 5. అన్నీ మళ్లీ నార్మల్ చేయడం (స్క్రోల్ బార్స్ మళ్లీ తీసుకురావడం)
+            tableResponsiveDivs.forEach((div, index) => {
+                div.style.maxHeight = originalMaxHeights[index]; // పాత 400px మళ్ళీ పెడుతున్నాం
+                div.style.overflow = 'auto'; 
+            });
+
             if (table) {
                 reportDiv.style.width = originalStyles.divWidth; reportDiv.style.padding = originalStyles.divPadding;
                 table.style.width = originalStyles.tableWidth; table.style.minWidth = originalStyles.tableMinWidth;
             }
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
         }
-    }
+    }    
 
     function publishToDMs() {
         let btn = document.getElementById('btnPublish');
