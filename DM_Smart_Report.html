@@ -168,6 +168,8 @@
         </div>
     </div>
 
+    <!-- 🌟 RESTORED TABLE HEADERS 🌟 -->
+
     <!-- 1. OVERALL SERVICE WISE REPORT -->
     <div class="report-section" id="serviceReportArea">
         <div class="report-header-flex">
@@ -176,6 +178,21 @@
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#1d4ed8;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#3b82f6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS <br><span style="font-size:9px;">(YTD+MTD)</span></th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
                 <tbody id="serviceBody"></tbody>
             </table>
         </div>
@@ -189,6 +206,15 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
                 <tbody id="yesterdayServiceBody"></tbody>
             </table>
         </div>
@@ -202,6 +228,22 @@
         </div>
         <div class="table-responsive">
             <table id="districtTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#059669;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#8b5cf6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#dc2626;">ZERO TXN <br><span style="font-size:9px;">(YTD Dropouts)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS</th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
                 <tbody id="districtBody"></tbody>
             </table>
         </div>
@@ -215,6 +257,15 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
                 <tbody id="yesterdayDistrictBody"></tbody>
             </table>
         </div>
@@ -240,6 +291,16 @@
 
         <div class="table-responsive">
             <table id="momTable">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th id="th-mom-base" style="background:#475569;">BASE MONTH ACTIVE</th>
+                        <th style="background:#0d9488;">RETAINED (ACTIVE)</th>
+                        <th style="background:#e11d48;">DROPOUTS (INACTIVE)</th>
+                        <th style="background:#d97706;">NEW ADDITIONS</th>
+                        <th id="th-mom-target" style="background:#2563eb;">TARGET MONTH TOTAL</th>
+                    </tr>
+                </thead>
                 <tbody id="momBody"></tbody>
             </table>
         </div>
@@ -258,8 +319,6 @@
     let latestRemarks = {}; 
 
     window.onload = function() {
-        document.getElementById('loadingDiv').style.display = 'block';
-        
         fetch(SCRIPT_URL + "?action=fetchDMReport")
         .then(response => response.json())
         .then(data => {
@@ -430,6 +489,9 @@
         let tName = document.getElementById('momTargetSelect').value;
 
         if(!bName || !tName) return;
+
+        document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
+        document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
         
         let momOpt = document.getElementById('momOptionText');
         if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
@@ -481,15 +543,7 @@
         });
 
         let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
-        let momHtml = `<tr style="background:#0f172a; color:white;">
-            <th class="text-left">DISTRICT NAME</th>
-            <th>${bName.toUpperCase()} ACTIVE</th>
-            <th style="background:#0d9488;">RETAINED (ACTIVE)</th>
-            <th style="background:#e11d48;">DROPOUTS (INACTIVE)</th>
-            <th style="background:#d97706;">NEW ADDITIONS</th>
-            <th style="background:#2563eb;">${tName.toUpperCase()} TOTAL</th>
-        </tr>`;
-        
+        let momHtml = "";
         let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
 
         sortedDists.forEach(dName => {
@@ -523,7 +577,7 @@
             <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
         </tr>`;
         
-        document.getElementById('momBody').innerHTML = momHtml + momTotalHtml;
+        document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
 
         if(document.getElementById('filterCategory').value === 'MOM') {
             renderCallingList();
@@ -602,11 +656,11 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 NEW PRECISE OPTIONS ARE HERE 🌟
+                // 🌟 "OTHERS" OPTION LOGIC AND NEW REMARKS ADDED 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
-                        <div style="display:flex; gap:5px;">
-                            <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;">
+                        <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
+                            <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;" onchange="if(this.value==='Others'){document.getElementById('other_${vle.CSC_ID}').style.display='block';}else{document.getElementById('other_${vle.CSC_ID}').style.display='none';}">
                                 <option value="">Select...</option>
                                 <option value="Not answering/ Busy">Not answering/ Busy</option>
                                 <option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
@@ -614,6 +668,7 @@
                                 <option value="Not interested/ Person not available">Not interested/ Person not available</option>
                                 <option value="Others">Others</option>
                             </select>
+                            <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
                             <button onclick="saveRemark('${vle.CSC_ID}')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Save Remark"><i class="fa-solid fa-save"></i></button>
                         </div>
                         ${lastRemHtml}
@@ -637,21 +692,31 @@
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
+    // 🌟 SAVE LOGIC FOR "OTHERS" TEXT BOX 🌟
     function saveRemark(cscId) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
-        if(!remark) {
+        
+        if (remark === "Others") {
+            let otherInput = document.getElementById("other_" + cscId).value.trim();
+            if (otherInput === "") {
+                alert("Please type the reason in the text box!");
+                return;
+            }
+            remark = "Others - " + otherInput; 
+        } else if (!remark) {
             alert("Please select a remark first!");
             return;
         }
         
         let btn = selectEl.nextElementSibling;
+        if(selectEl.value === "Others") btn = selectEl.nextElementSibling.nextElementSibling;
+        
         let originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         btn.disabled = true;
 
-        let dmNameStr = "DM";
-        if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
+        let dmNameStr = localStorage.getItem("userName") ? localStorage.getItem("userName") : "DM";
 
         let categoryType = document.getElementById('filterCategory').value;
 

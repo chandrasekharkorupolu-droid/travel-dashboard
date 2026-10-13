@@ -13,7 +13,7 @@
         .header { background: #0f172a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header h1 { margin: 0; font-size: 24px; color: #fbbf24; }
         
-        .upload-section { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-wrap: justify-content: space-between; }
+        .upload-section { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; flex-wrap: wrap; justify-content: space-between; }
         .upload-box { flex: 1; border: 2px dashed #cbd5e1; padding: 15px; text-align: center; border-radius: 8px; background: #f8fafc; min-width: 280px; }
         .upload-box h3 { margin-top: 0; color: #1e3a8a; font-size: 15px; }
         .upload-box input[type="file"] { display: block; margin: 10px auto; font-size: 13px; }
@@ -60,6 +60,28 @@
         .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+
+        @media (max-width: 992px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .upload-section { flex-direction: column; gap: 10px; }
+            .upload-box { width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 18px; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
+            .report-header-flex h2 { font-size: 15px; }
+            .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .filter-bar select { width: 100%; }
+            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
+            td, th { font-size: 11px; padding: 8px; }
+            .badge { font-size: 10px; padding: 3px 6px; }
+        }
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .card h2 { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -203,6 +225,22 @@
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
+                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#1d4ed8;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#3b82f6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS <br><span style="font-size:9px;">(YTD+MTD)</span></th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
                 <tbody id="serviceBody"></tbody>
             </table>
         </div>
@@ -216,6 +254,16 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
+                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
                 <tbody id="yesterdayServiceBody"></tbody>
             </table>
         </div>
@@ -229,6 +277,23 @@
         </div>
         <div class="table-responsive">
             <table id="districtTable">
+                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#475569;">FY 25-26 ACTIVE</th>
+                        <th style="background:#059669;">FY 26-27 YTD VLEs</th>
+                        <th style="background:#8b5cf6;">MTD VLEs</th>
+                        <th style="background:#d946ef;">FTD VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#b91c1c;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#dc2626;">ZERO TXN <br><span style="font-size:9px;">(YTD Dropouts)</span></th>
+                        <th style="background:#047857;">TOTAL TXNS</th>
+                        <th style="background:#0f766e;">TOTAL AMOUNT (₹)</th>
+                        <th style="background:#059669;">TOTAL REVENUE (₹)</th>
+                    </tr>
+                </thead>
                 <tbody id="districtBody"></tbody>
             </table>
         </div>
@@ -242,6 +307,16 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
+                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
+                <thead>
+                    <tr>
+                        <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
+                        <th style="background:#2563eb;">ACTIVE VLEs <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#c026d3;">FTD TXNS <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#a21caf;">FTD AMOUNT (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                        <th style="background:#059669;">FTD REVENUE (₹) <br><span style="font-size:9px;">(Yesterday)</span></th>
+                    </tr>
+                </thead>
                 <tbody id="yesterdayDistrictBody"></tbody>
             </table>
         </div>
@@ -267,6 +342,7 @@
 
         <div class="table-responsive">
             <table id="momTable">
+                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
@@ -290,9 +366,9 @@
 
     let districtData = {};
     let serviceData = {};
-    let stateLyCscs = new Set(), stateLyGswCscs = new Set(); 
-    let stateYtdCscs = new Set(), stateYtdGswCscs = new Set(); 
-    let stateMtdCscs = new Set(), stateFtdCscs = new Set();
+    let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
+    let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
+    let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
     let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
     let monthlyData = {};
     let monthNamesList = [];
@@ -735,11 +811,11 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 NEW EXACT REMARKS OPTIONS ADDED HERE 🌟
+                // 🌟 OTHERS SELECT CHESINAPUDU TEXT BOX RAVADANIKI LOGIC ADD CHESANU 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
-                        <div style="display:flex; gap:5px;">
-                            <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;">
+                        <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
+                            <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;" onchange="if(this.value==='Others'){document.getElementById('other_${vle.CSC_ID}').style.display='block';}else{document.getElementById('other_${vle.CSC_ID}').style.display='none';}">
                                 <option value="">Select...</option>
                                 <option value="Not answering/ Busy">Not answering/ Busy</option>
                                 <option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
@@ -747,6 +823,7 @@
                                 <option value="Not interested/ Person not available">Not interested/ Person not available</option>
                                 <option value="Others">Others</option>
                             </select>
+                            <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
                             <button onclick="saveRemark('${vle.CSC_ID}')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Save Remark"><i class="fa-solid fa-save"></i></button>
                         </div>
                         ${lastRemHtml}
@@ -773,18 +850,29 @@
     function saveRemark(cscId) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
-        if(!remark) {
+        
+        // 🌟 OTHERS TYPE CHESINAPUDU TEXT BOX VALUE THEESUKOVADANIKI LOGIC 🌟
+        if (remark === "Others") {
+            let otherInput = document.getElementById("other_" + cscId).value.trim();
+            if (otherInput === "") {
+                alert("Please type the reason in the text box!");
+                return;
+            }
+            remark = "Others - " + otherInput; // గూగుల్ షీట్ లో "Others - Out of town" లాగా వెళ్తుంది
+        } else if (!remark) {
             alert("Please select a remark first!");
             return;
         }
         
         let btn = selectEl.nextElementSibling;
+        if(selectEl.value === "Others") btn = selectEl.nextElementSibling.nextElementSibling; // Button element changing slightly if text box is visible
+        
         let originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         btn.disabled = true;
 
-        let dmNameStr = "STATE HEAD";
-        if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
+        // 🌟 ఇక్కడ అడ్మిన్ కి అయితే STATE HEAD అని, DMs కి అయితే DM అని మార్చుకోండి లేదా అలానే ఉంచినా పర్వాలేదు.
+        let dmNameStr = localStorage.getItem("userName") ? localStorage.getItem("userName") : "USER";
 
         let categoryType = document.getElementById('filterCategory').value;
 
@@ -794,7 +882,7 @@
             service: categoryType + " DROPOUT",
             dmName: dmNameStr,
             remark: remark,
-            location: "State Head Portal"
+            location: "Portal"
         };
 
         fetch(SCRIPT_URL, {
