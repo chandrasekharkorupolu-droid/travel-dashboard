@@ -178,11 +178,12 @@
         <div class="filter-bar">
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
+                <!-- 🌟 BUG FIX: id="momOptionText" యాడ్ చేసాను 🌟 -->
                 <select id="filterCategory" onchange="renderCallingList()">
                     <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
                     <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
                     <option value="FTD">⏰ FTD DROPOUTS (Active This Month but ZERO Yesterday)</option>
-                    <option value="MOM">📅 MoM DROPOUTS (Selected in V. Report below)</option>
+                    <option value="MOM" id="momOptionText">📅 MoM DROPOUTS</option>
                 </select>
             </div>
             <div>
@@ -206,7 +207,6 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
-                        <!-- 🌟 NEW: REMARKS COLUMN ADDED FOR ADMIN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
@@ -371,7 +371,7 @@
     let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
     let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
     
-    // Dynamic MoM DB: { "Apr": { all: Set, gsw: Set }, "May": ... }
+    // Dynamic MoM DB
     let monthlyData = {};
     let monthNamesList = [];
 
@@ -380,7 +380,7 @@
     let currentCallingListData = [];
     let hasScientificError = false;
     
-    // 🌟 NEW: To Store Remarks in State Head portal too 🌟
+    // 🌟 NEW: To Store Remarks 🌟
     let latestRemarks = {};
 
     function createDistObj() {
@@ -444,7 +444,6 @@
         stateTotTxn = 0; stateFtdTxn = 0; stateFtdRev = 0; stateTotRev = 0;
         hasScientificError = false;
 
-        // Initialize Base & Current Month tracking
         monthlyData["FY 25-26"] = { all: new Set(), gsw: new Set() };
         monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
 
@@ -461,12 +460,12 @@
             populateMonthDropdowns();
             generateHTMLReports();
             populateDistrictDropdown();
-            renderMomReport(); // This generates 5th report & calls renderCallingList()
+            renderMomReport(); 
 
-            // 🌟 FETCH TODAY'S DM CALLING REPORT FROM SERVER 🌟
+            // 🌟 FETCH CALLING REPORT FROM SERVER 🌟
             fetchCallingReport();
             
-            // 🌟 FETCH LIVE REMARKS FROM SERVER FOR ADMIN PORTAL 🌟
+            // 🌟 FETCH LIVE REMARKS 🌟
             fetchRemarks();
 
             if (hasScientificError) {
@@ -481,7 +480,6 @@
         }
     }
 
-    // 🌟 FUNCTION TO FETCH ALL PAST REMARKS 🌟
     function fetchRemarks() {
         let payload = { action: "getFollowUpRemarks" };
         fetch(SCRIPT_URL, {
@@ -685,9 +683,12 @@
 
         if(!bName || !tName) return;
 
+        // 🌟 FIX: id="momOptionText" error ki solution kindhane undi 🌟
         document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
         document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
-        document.getElementById('momOptionText').innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
+        
+        let momOpt = document.getElementById('momOptionText');
+        if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
 
         let bSet = monthlyData[bName]?.all || new Set();
         let bGsw = monthlyData[bName]?.gsw || new Set();
