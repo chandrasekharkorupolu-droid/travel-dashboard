@@ -116,6 +116,10 @@
         <i class="fa-solid fa-gears"></i> GENERATE STATE REPORTS & PORTAL
     </button>
     
+    <button class="btn-generate btn-danger" id="btnClear" onclick="clearLocalData()" style="display: none; margin-bottom: 20px;">
+        <i class="fa-solid fa-trash"></i> UPLOAD NEW FILES (CLEAR CURRENT DATA)
+    </button>
+    
     <button class="btn-generate" id="btnPublish" onclick="publishToDMs()" style="background: #4f46e5; display: none; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
         <i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD
     </button>
@@ -146,7 +150,6 @@
         <div class="report-header-flex">
             <h2 id="callingReportHeading" style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
             <div style="display:flex; gap:10px; align-items:center;">
-                <!-- 🌟 DATE FILTER 🌟 -->
                 <select id="leaderboardDateFilter" onchange="fetchCallingReport(true)" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #059669; color:#0f172a; outline:none; background:#dcfce7; cursor:pointer;">
                     <option value="TODAY">📅 Today's Calls</option>
                     <option value="YESTERDAY">📆 Yesterday's Calls</option>
@@ -213,12 +216,11 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
-                        <!-- 🌟 REMARKS COLUMN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
                 <tbody id="callingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Please click Generate Reports or wait for server data to load...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Please click Generate Reports or wait for server data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -379,7 +381,6 @@
     let hasScientificError = false;
     let latestRemarks = {};
 
-    // 🌟 1. FETCH DATA DIRECTLY FROM SERVER INSTEAD OF LOCAL STORAGE 🌟
     window.onload = function() {
         document.getElementById('loadingDiv').style.display = 'block';
         
@@ -387,23 +388,24 @@
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
-                // If no data on server yet, show the normal upload options
                 document.getElementById('loadingDiv').style.display = 'none';
                 return;
             }
 
             document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('uploadSectionDiv').style.display = 'none';
+            document.getElementById('btnGen').style.display = 'none';
+            document.getElementById('btnClear').style.display = 'block';
+
             document.getElementById('lastUpdatedText').style.display = 'inline-block';
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
 
-            // Inject static HTML parts published from State Head
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
-            // Load sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
@@ -427,7 +429,6 @@
             sections.forEach(id => document.getElementById(id).style.display = 'block');
             document.getElementById('btnPublish').style.display = 'block';
 
-            // Fetch live Leaderboard & Remarks
             fetchCallingReport(true);
         })
         .catch(error => {
@@ -435,6 +436,12 @@
             console.error("Server fetch failed, fallback to fresh upload mode:", error);
         });
     };
+
+    function clearLocalData() {
+        if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
+            location.reload();
+        }
+    }
 
     function createDistObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 }; }
     function createSrvObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 }; }
@@ -510,7 +517,6 @@
             populateDistrictDropdown();
             renderMomReport(); 
 
-            // 🌟 FETCH LIVE DATA FOR REMARKS/LEADERBOARD 🌟
             fetchCallingReport(true);
 
             if (hasScientificError) {
@@ -806,11 +812,18 @@
         }
     }
 
+    // 🌟 FIX FOR DROPDOWN LIST 🌟
     function populateDistrictDropdown() {
         let distSelect = document.getElementById('filterDistrict');
         distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        Object.keys(districtData).sort().forEach(d => {
-            if(d !== "UNKNOWN") distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        
+        let dists = new Set();
+        Object.values(vleDb).forEach(v => {
+            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
+        });
+        
+        Array.from(dists).sort().forEach(d => {
+            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
         });
     }
 
@@ -1165,14 +1178,12 @@
         document.getElementById('btnPublish').style.display = 'block';
     }
 
-    // 🌟 FULL TABLE IMAGE DOWNLOAD LOGIC FIX 🌟
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
-        // Date filter unte adhi kuda hide cheyali
         const dateFilter = reportDiv.querySelector('#leaderboardDateFilter');
         if(dateFilter) dateFilter.style.display = 'none';
 
@@ -1284,14 +1295,12 @@
         });
     }
 
-    // 🌟 NEW: FETCH CALLING REPORT WITH YESTERDAY LOGIC 🌟
     function fetchCallingReport(forceLive = false) {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
         let filterVal = document.getElementById('leaderboardDateFilter') ? document.getElementById('leaderboardDateFilter').value : "TODAY";
         
-        // 🌟 CALCULATE DATES DYNAMICALLY 🌟
         let targetDate = new Date();
         if(filterVal === "YESTERDAY") {
             targetDate.setDate(targetDate.getDate() - 1);
@@ -1300,10 +1309,9 @@
         let dd = ("0"+targetDate.getDate()).slice(-2);
         let mm = ("0"+(targetDate.getMonth()+1)).slice(-2);
         let yyyy = targetDate.getFullYear();
-        let targetStr1 = `${dd}-${mm}-${yyyy}`; // Format: 14-10-2026
-        let targetStr2 = `${yyyy}-${mm}-${dd}`; // Format: 2026-10-14 
+        let targetStr1 = `${dd}-${mm}-${yyyy}`; 
+        let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
-        // Update Headers Based on Filter
         let thTitle = filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)";
         document.getElementById('thTotalCalls').innerText = thTitle;
         
@@ -1340,7 +1348,6 @@
                         };
                     }
                     
-                    // 🌟 CHECKING FOR SELECTED DATE (TODAY OR YESTERDAY) 🌟
                     if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
                         if(!dmStats[dm]) {
                             dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
