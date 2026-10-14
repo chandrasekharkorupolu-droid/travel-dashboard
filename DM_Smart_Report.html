@@ -17,7 +17,7 @@
         .loader { text-align: center; padding: 50px; font-size: 20px; font-weight: bold; color: #2563eb; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
         .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
-        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap:10px; }
         .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
         
         .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
@@ -48,8 +48,10 @@
         .badge-amber { background: #fef3c7; color: #d97706; }
         .badge-gsw { background: #f59e0b; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 5px;}
 
-        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
-        .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
+        /* MOBILE FRIENDLY CSS FOR DROPDOWNS */
+        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
+        .filter-bar > div { flex: 1; min-width: 250px; }
+        .filter-bar select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
 
@@ -62,9 +64,10 @@
             .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
             .report-header-flex h2 { font-size: 15px; }
             .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
-            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .filter-bar select { width: 100%; }
-            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
+            
+            .filter-bar > div { min-width: 100%; text-align: left; }
+            .filter-bar div[style*="text-align: right"] { text-align: left !important; margin-top: 10px; }
+            
             td, th { font-size: 11px; padding: 8px; }
             .badge { font-size: 10px; padding: 3px 6px; }
         }
@@ -93,10 +96,15 @@
     <!-- VII. DM CALLING PERFORMANCE REPORT (LEADERBOARD) -->
     <div class="report-section" id="dmCallingReportArea" style="border: 2px solid #059669; background: #f0fdf4;">
         <div class="report-header-flex">
-            <h2 style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
-            <div>
-                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
-                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <h2 id="callingReportHeading" style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <!-- 🌟 DATE FILTER 🌟 -->
+                <select id="leaderboardDateFilter" onchange="fetchCallingReport(true)" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #059669; color:#0f172a; outline:none; background:#dcfce7; cursor:pointer;">
+                    <option value="TODAY">📅 Today's Calls</option>
+                    <option value="YESTERDAY">📆 Yesterday's Calls</option>
+                </select>
+                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
             </div>
         </div>
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -109,11 +117,11 @@
                         <th style="background:#8b5cf6;">MTD CALLS</th>
                         <th style="background:#d946ef;">FTD CALLS</th>
                         <th style="background:#3b82f6;">MoM CALLS</th>
-                        <th style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
+                        <th id="thTotalCalls" style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
                     </tr>
                 </thead>
                 <tbody id="dmCallingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Loading today's DM performance from server...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Loading DM performance from server...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -128,7 +136,7 @@
         
         <div class="filter-bar">
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select Category:</label>
                 <select id="filterCategory" onchange="renderCallingList()">
                     <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
                     <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
@@ -137,13 +145,14 @@
                 </select>
             </div>
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select District:</label>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select District:</label>
                 <select id="filterDistrict" onchange="renderCallingList()">
                     <option value="ALL">Loading Districts...</option>
                 </select>
             </div>
-            <div style="margin-left: auto; font-weight:bold; color:#0f172a;">
-                Total Dropouts Found: <span id="dropoutCount" style="color:#dc2626; font-size:18px;">0</span>
+            <div style="text-align: right;">
+                <span style="font-weight:bold; color:#0f172a; font-size:14px;">Total Dropouts:</span><br>
+                <span id="dropoutCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
             </div>
         </div>
 
@@ -157,18 +166,15 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
-                        <!-- 🌟 REMARKS COLUMN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
                 <tbody id="callingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Loading Data...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Please wait for server data...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
-
-    <!-- 🌟 RESTORED TABLE HEADERS 🌟 -->
 
     <!-- 1. OVERALL SERVICE WISE REPORT -->
     <div class="report-section" id="serviceReportArea">
@@ -280,12 +286,12 @@
         
         <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Base Month (పాత నెల):</label>
-                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block; margin-bottom:5px;">Select Base Month (పాత నెల):</label>
+                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a;"></select>
             </div>
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Target Month (కొత్త నెల):</label>
-                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block; margin-bottom:5px;">Select Target Month (కొత్త నెల):</label>
+                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a;"></select>
             </div>
         </div>
 
@@ -370,20 +376,53 @@
         });
     }
 
-    function fetchCallingReport() {
+    // Populate District Dropdown correctly from vleDb
+    function populateDistrictDropdown() {
+        let distSelect = document.getElementById('filterDistrict');
+        distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
+        
+        let dists = new Set();
+        Object.values(vleDb).forEach(v => {
+            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
+        });
+        
+        Array.from(dists).sort().forEach(d => {
+            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+    }
+
+    // 🌟 ALL DMS, EXACT MATCH, NO DUPLICATES LOGIC FOR DM PORTAL 🌟
+    function fetchCallingReport(forceLive = false) {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
-        let payload = { action: "getCallingReport" };
+        let filterVal = document.getElementById('leaderboardDateFilter') ? document.getElementById('leaderboardDateFilter').value : "TODAY";
+        
+        let targetDate = new Date();
+        if(filterVal === "YESTERDAY") {
+            targetDate.setDate(targetDate.getDate() - 1);
+        }
+        
+        let dd = ("0"+targetDate.getDate()).slice(-2);
+        let mm = ("0"+(targetDate.getMonth()+1)).slice(-2);
+        let yyyy = targetDate.getFullYear();
+        let targetStr1 = `${dd}-${mm}-${yyyy}`; 
+        let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
-        let d = new Date();
-        let todayStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+        let thTitle = filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)";
+        document.getElementById('thTotalCalls').innerText = thTitle;
+        
+        let headingText = filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)";
+        document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
+
+        let payload = { action: "getCallingReport" };
 
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload),
-            redirect: "follow"
+            redirect: "follow",
+            cache: "no-store" 
         })
         .then(response => response.json())
         .then(data => {
@@ -392,63 +431,100 @@
                 let dmStats = {};
                 latestRemarks = {}; 
                 
+                // 35 DMs Exact Names from Sheet
+                const ALL_DMS = [
+                    "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
+                    "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
+                    "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
+                    "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
+                    "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
+                    "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan",
+                    "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
+                    "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
+                ];
+
+                ALL_DMS.forEach(dm => {
+                    dmStats[dm.toLowerCase().trim()] = { 
+                        originalName: dm,
+                        ytd:0, mtd:0, ftd:0, mom:0, total:0, 
+                        calledVles: new Set() 
+                    };
+                });
+                
                 logs.forEach(log => {
-                    let dm = log.dmName || "Unknown DM";
+                    let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
+                    let matchKey = rawDm.toLowerCase();
+                    
                     let cat = log.category || "";
+                    let cscId = log.cscId || "";
                     let logDate = log.date ? log.date.split(" ")[0] : "";
                     
-                    if (log.cscId) {
-                        latestRemarks[log.cscId] = {
+                    if (cscId) {
+                        latestRemarks[cscId] = {
                             remark: log.remark,
-                            dmName: dm,
+                            dmName: rawDm,
                             date: logDate 
                         };
                     }
                     
-                    // Leaderboard filters for today
-                    if (log.date && log.date.startsWith(todayStr)) {
-                        if(!dmStats[dm]) {
-                            dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                    if (matchKey === "state head" || matchKey === "unknown dm") return;
+
+                    if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
+                        // Exact Match Check
+                        if(dmStats[matchKey]) {
+                            // Prevent Duplicates: If already counted for this VLE today, skip
+                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) {
+                                return; 
+                            }
+                            if (cscId) {
+                                dmStats[matchKey].calledVles.add(cscId);
+                            }
+                            
+                            if(cat.includes("YTD")) dmStats[matchKey].ytd++;
+                            else if(cat.includes("MTD")) dmStats[matchKey].mtd++;
+                            else if(cat.includes("FTD")) dmStats[matchKey].ftd++;
+                            else if(cat.includes("MOM")) dmStats[matchKey].mom++;
+                            
+                            dmStats[matchKey].total++;
                         }
-                        
-                        if(cat.includes("YTD")) dmStats[dm].ytd++;
-                        else if(cat.includes("MTD")) dmStats[dm].mtd++;
-                        else if(cat.includes("FTD")) dmStats[dm].ftd++;
-                        else if(cat.includes("MOM")) dmStats[dm].mom++;
-                        
-                        dmStats[dm].total++;
                     }
                 });
                 
-                let sortedDMs = Object.keys(dmStats).sort((a,b) => dmStats[b].total - dmStats[a].total);
+                let sortedDMs = Object.values(dmStats).sort((a,b) => {
+                    if (b.total !== a.total) {
+                        return b.total - a.total;
+                    }
+                    return a.originalName.localeCompare(b.originalName);
+                });
                 
                 let html = "";
                 let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
 
                 if(sortedDMs.length === 0) {
-                    html = '<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made today yet!</td></tr>';
+                    html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made on ${targetStr1} yet!</td></tr>`;
                 } else {
-                    sortedDMs.forEach((dm, idx) => {
-                        let stat = dmStats[dm];
+                    sortedDMs.forEach((stat, idx) => {
                         grandTotal.ytd += stat.ytd;
                         grandTotal.mtd += stat.mtd;
                         grandTotal.ftd += stat.ftd;
                         grandTotal.mom += stat.mom;
                         grandTotal.total += stat.total;
                         
+                        let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
+                        
                         html += `<tr>
                             <td>${idx + 1}</td>
-                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${dm}</td>
+                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
                             <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
                             <td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
                             <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td>
                             <td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
-                            <td style="color:#16a34a; font-size:16px; font-weight:900;">${stat.total}</td>
+                            <td style="color:${displayTotalColor}; font-size:16px; font-weight:900;">${stat.total}</td>
                         </tr>`;
                     });
                     
                     let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
-                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (TODAY)</td>
+                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
@@ -584,20 +660,6 @@
         }
     }
 
-    function populateDistrictDropdown() {
-        let distSelect = document.getElementById('filterDistrict');
-        distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        
-        let dists = new Set();
-        Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
-        });
-        
-        Array.from(dists).sort().forEach(d => {
-            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
-        });
-    }
-
     function renderCallingList() {
         let category = document.getElementById('filterCategory').value;
         let distFilter = document.getElementById('filterDistrict').value;
@@ -656,7 +718,7 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 "OTHERS" OPTION LOGIC AND NEW REMARKS ADDED 🌟
+                // 🌟 FIX: Lockable Save Button with visual feedback 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
@@ -669,7 +731,7 @@
                                 <option value="Others">Others</option>
                             </select>
                             <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
-                            <button onclick="saveRemark('${vle.CSC_ID}')" style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Save Remark"><i class="fa-solid fa-save"></i></button>
+                            <button onclick="saveRemark('${vle.CSC_ID}', this)" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; min-width:70px; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1);" title="Save Remark"><i class="fa-solid fa-save"></i> Save</button>
                         </div>
                         ${lastRemHtml}
                     </div>
@@ -692,8 +754,8 @@
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
-    // 🌟 SAVE LOGIC FOR "OTHERS" TEXT BOX 🌟
-    function saveRemark(cscId) {
+    // 🌟 ENHANCED SAVE LOGIC (PREVENTS DOUBLE CLICK) 🌟
+    function saveRemark(cscId, btn) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
         
@@ -709,12 +771,14 @@
             return;
         }
         
-        let btn = selectEl.nextElementSibling;
-        if(selectEl.value === "Others") btn = selectEl.nextElementSibling.nextElementSibling;
-        
         let originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        let originalBg = btn.style.background;
+
+        // Visual feedback immediately
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
+        btn.style.background = '#d97706'; // Orange warning color
         btn.disabled = true;
+        btn.style.cursor = 'not-allowed';
 
         let dmNameStr = localStorage.getItem("userName") ? localStorage.getItem("userName") : "DM";
 
@@ -738,8 +802,8 @@
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                btn.style.background = "#16a34a";
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
+                btn.style.background = "#16a34a"; // Green success color
                 selectEl.style.borderColor = "#16a34a";
                 
                 let d = new Date();
@@ -748,18 +812,22 @@
                 
                 setTimeout(() => { 
                     renderCallingList(); 
-                    fetchCallingReport(); 
+                    fetchCallingReport(true); 
                 }, 1000); 
             } else {
                 alert("Error: " + data.message);
                 btn.innerHTML = originalHtml;
+                btn.style.background = originalBg;
                 btn.disabled = false;
+                btn.style.cursor = 'pointer';
             }
         })
         .catch(err => {
             alert("Network Error while saving remark!");
             btn.innerHTML = originalHtml;
+            btn.style.background = originalBg;
             btn.disabled = false;
+            btn.style.cursor = 'pointer';
         });
     }
 
@@ -795,57 +863,56 @@
         document.body.removeChild(link);
     }
 
+    // 🌟 FIX: Full HD Image Download for Leaderboard 🌟
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         
-        // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
-        // 2. స్క్రోల్ ని తీసేసి టేబుల్ ని పూర్తిగా ఓపెన్ చేయడం (ఇదే అసలు ట్రిక్)
+        const dateFilter = reportDiv.querySelector('#leaderboardDateFilter');
+        if(dateFilter) dateFilter.style.display = 'none';
+
         const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
         let originalMaxHeights = [];
         tableResponsiveDivs.forEach(div => {
             originalMaxHeights.push(div.style.maxHeight);
-            div.style.maxHeight = 'none'; // స్క్రోల్ తీసేస్తున్నాం
-            div.style.overflow = 'visible'; // మొత్తం కనపడేలా చేస్తున్నాం
+            div.style.maxHeight = 'none'; 
+            div.style.overflow = 'visible'; 
         });
 
-        // 3. వెడల్పు కోసం పాత ట్రిక్
-        const table = reportDiv.querySelector('table');
-        let originalStyles = {};
-        if (table) {
-            originalStyles = {
-                tableWidth: table.style.width, tableMinWidth: table.style.minWidth,
-                divWidth: reportDiv.style.width, divPadding: reportDiv.style.padding
-            };
-            reportDiv.style.width = 'max-content'; reportDiv.style.padding = '15px'; 
-            table.style.width = 'max-content'; table.style.minWidth = 'auto'; 
-        }
+        // 🌟 FORCE WIDE WIDTH FOR CAPTURE TO PREVENT SQUISHING 🌟
+        let originalDivWidth = reportDiv.style.width;
+        let originalDivPadding = reportDiv.style.padding;
+        reportDiv.style.width = '1200px'; 
+        reportDiv.style.padding = '20px'; 
         
         try {
-            // 4. ఇమేజ్ క్యాప్చర్ (పూర్తి టేబుల్ ఇప్పుడు క్యాప్చర్ అవుతుంది)
-            const canvas = await html2canvas(reportDiv, { scale: 2, backgroundColor: "#ffffff" });
+            // 🌟 SET SCALE TO 3 FOR HD QUALITY 🌟
+            const canvas = await html2canvas(reportDiv, { 
+                scale: 3, 
+                backgroundColor: "#ffffff",
+                useCORS: true 
+            });
             const link = document.createElement('a');
             let d = new Date(); 
             let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
             link.download = `${prefix}_${dateStr}.png`;
-            link.href = canvas.toDataURL("image/png");
+            link.href = canvas.toDataURL("image/png", 1.0);
             link.click();
         } catch(err) {
             alert("Image capture failed. Please try again.");
         } finally {
-            // 5. అన్నీ మళ్లీ నార్మల్ చేయడం (స్క్రోల్ బార్స్ మళ్లీ తీసుకురావడం)
             tableResponsiveDivs.forEach((div, index) => {
-                div.style.maxHeight = originalMaxHeights[index]; // పాత 400px మళ్ళీ పెడుతున్నాం
+                div.style.maxHeight = originalMaxHeights[index]; 
                 div.style.overflow = 'auto'; 
             });
 
-            if (table) {
-                reportDiv.style.width = originalStyles.divWidth; reportDiv.style.padding = originalStyles.divPadding;
-                table.style.width = originalStyles.tableWidth; table.style.minWidth = originalStyles.tableMinWidth;
-            }
+            reportDiv.style.width = originalDivWidth; 
+            reportDiv.style.padding = originalDivPadding;
+            
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
+            if(dateFilter) dateFilter.style.display = 'inline-block';
         }
     }
 </script>
