@@ -25,7 +25,7 @@
         .loader { display: none; text-align: center; padding: 20px; font-size: 18px; font-weight: bold; color: #2563eb; }
 
         .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
-        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+        .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap:10px; }
         .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
         
         .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
@@ -93,7 +93,7 @@
     </div>
 
     <!-- MAIN REPORTS UPLOAD -->
-    <div class="upload-section">
+    <div id="uploadSectionDiv" class="upload-section">
         <div class="upload-box">
             <h3><i class="fa-solid fa-history"></i> Button 1: FY 25-26 Data</h3>
             <input type="file" id="fileLastYear" accept=".csv">
@@ -112,6 +112,10 @@
 
     <button class="btn-generate" id="btnGen" onclick="processReports()">
         <i class="fa-solid fa-gears"></i> GENERATE STATE REPORTS & PORTAL
+    </button>
+    
+    <button class="btn-generate btn-danger" id="btnClear" onclick="clearLocalData()" style="display: none; margin-bottom: 20px;">
+        <i class="fa-solid fa-trash"></i> CLEAR SAVED DATA & UPLOAD NEW FILES
     </button>
     
     <button class="btn-generate" id="btnPublish" onclick="publishToDMs()" style="background: #4f46e5; display: none; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
@@ -139,13 +143,18 @@
         </div>
     </div>
 
-    <!-- VII. DM CALLING PERFORMANCE REPORT -->
+    <!-- 🌟 VII. DM CALLING PERFORMANCE REPORT (WITH DATE FILTER) 🌟 -->
     <div class="report-section" id="dmCallingReportArea" style="border: 2px solid #059669; background: #f0fdf4;">
         <div class="report-header-flex">
-            <h2 style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
-            <div>
-                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
-                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <h2 id="callingReportHeading" style="color: #059669;"><i class="fa-solid fa-chart-line"></i> VII. DM CALLING PERFORMANCE (TODAY)</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <!-- 🌟 NEW YESTERDAY FILTER DROPDOWN 🌟 -->
+                <select id="leaderboardDateFilter" onchange="fetchCallingReport(true)" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #059669; color:#0f172a; outline:none; background:#dcfce7; cursor:pointer;">
+                    <option value="TODAY">📅 Today's Calls</option>
+                    <option value="YESTERDAY">📆 Yesterday's Calls</option>
+                </select>
+                <button class="btn-download" onclick="fetchCallingReport(true)" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh</button>
+                <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
             </div>
         </div>
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -158,11 +167,11 @@
                         <th style="background:#8b5cf6;">MTD CALLS</th>
                         <th style="background:#d946ef;">FTD CALLS</th>
                         <th style="background:#3b82f6;">MoM CALLS</th>
-                        <th style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
+                        <th id="thTotalCalls" style="background:#16a34a;">TOTAL CALLS (TODAY)</th>
                     </tr>
                 </thead>
                 <tbody id="dmCallingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh Leaderboard" to load today's DM performance from server...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh" to load DM performance from server...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -206,7 +215,6 @@
                         <th style="background:#0f172a;">VLE NAME</th>
                         <th style="background:#0f172a;">MOBILE NUMBER</th>
                         <th style="background:#16a34a;">CALL</th>
-                        <!-- 🌟 REMARKS COLUMN 🌟 -->
                         <th style="background:#dc2626;">UPDATE REMARK</th>
                     </tr>
                 </thead>
@@ -225,7 +233,6 @@
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
-                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">SERVICE</th>
@@ -254,7 +261,6 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
-                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">SERVICE NAME</th>
@@ -277,7 +283,6 @@
         </div>
         <div class="table-responsive">
             <table id="districtTable">
-                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
@@ -307,7 +312,6 @@
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
-                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
@@ -322,7 +326,7 @@
         </div>
     </div>
 
-    <!-- 5. DYNAMIC MONTH ON MONTH (MoM) REPORT -->
+    <!-- 5. DYNAMIC MONTH ON MONTH (MoM) REPORT WITH DROPDOWNS -->
     <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
         <div class="report-header-flex">
             <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
@@ -342,7 +346,6 @@
 
         <div class="table-responsive">
             <table id="momTable">
-                <!-- 🌟 HEADINGS ADDED HERE 🌟 -->
                 <thead>
                     <tr>
                         <th class="text-left" style="background:#0f172a;">DISTRICT NAME</th>
@@ -376,6 +379,55 @@
     let currentCallingListData = [];
     let hasScientificError = false;
     let latestRemarks = {};
+
+    window.onload = function() {
+        let cached = localStorage.getItem("shReportCache");
+        if(cached) {
+            document.getElementById('uploadSectionDiv').style.display = 'none';
+            document.getElementById('btnGen').style.display = 'none';
+            document.getElementById('btnClear').style.display = 'block';
+            
+            let data = JSON.parse(cached);
+            
+            document.getElementById('summaryArea').innerHTML = data.html_summary || "";
+            document.getElementById('serviceBody').innerHTML = data.html_service || "";
+            document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
+            document.getElementById('districtBody').innerHTML = data.html_district || "";
+            document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
+
+            vleDb = data.vleDb || {};
+            stateLyCscs = new Set(data.stateLyCscs || []);
+            stateYtdCscs = new Set(data.stateYtdCscs || []);
+            stateMtdCscs = new Set(data.stateMtdCscs || []);
+            stateFtdCscs = new Set(data.stateFtdCscs || []);
+            
+            if (data.monthlyData) {
+                for(let m in data.monthlyData) {
+                    monthlyData[m] = {
+                        all: new Set(data.monthlyData[m].all),
+                        gsw: new Set(data.monthlyData[m].gsw)
+                    };
+                }
+            }
+
+            populateDistrictDropdown();
+            populateMonthDropdowns(data.bnStr, data.tnStr);
+            renderMomReport(); 
+
+            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
+            sections.forEach(id => document.getElementById(id).style.display = 'block');
+            document.getElementById('btnPublish').style.display = 'block';
+
+            fetchCallingReport(true);
+        }
+    };
+
+    function clearLocalData() {
+        if(confirm("Are you sure you want to clear the saved data and upload new files?")) {
+            localStorage.removeItem("shReportCache");
+            location.reload();
+        }
+    }
 
     function createDistObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 }; }
     function createSrvObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 }; }
@@ -451,7 +503,7 @@
             populateDistrictDropdown();
             renderMomReport(); 
 
-            fetchCallingReport();
+            fetchCallingReport(true);
 
             if (hasScientificError) {
                 setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500);
@@ -811,7 +863,6 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 OTHERS SELECT CHESINAPUDU TEXT BOX RAVADANIKI LOGIC ADD CHESANU 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
@@ -851,27 +902,25 @@
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
         
-        // 🌟 OTHERS TYPE CHESINAPUDU TEXT BOX VALUE THEESUKOVADANIKI LOGIC 🌟
         if (remark === "Others") {
             let otherInput = document.getElementById("other_" + cscId).value.trim();
             if (otherInput === "") {
                 alert("Please type the reason in the text box!");
                 return;
             }
-            remark = "Others - " + otherInput; // గూగుల్ షీట్ లో "Others - Out of town" లాగా వెళ్తుంది
+            remark = "Others - " + otherInput; 
         } else if (!remark) {
             alert("Please select a remark first!");
             return;
         }
         
         let btn = selectEl.nextElementSibling;
-        if(selectEl.value === "Others") btn = selectEl.nextElementSibling.nextElementSibling; // Button element changing slightly if text box is visible
+        if(selectEl.value === "Others") btn = selectEl.nextElementSibling.nextElementSibling;
         
         let originalHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         btn.disabled = true;
 
-        // 🌟 ఇక్కడ అడ్మిన్ కి అయితే STATE HEAD అని, DMs కి అయితే DM అని మార్చుకోండి లేదా అలానే ఉంచినా పర్వాలేదు.
         let dmNameStr = localStorage.getItem("userName") ? localStorage.getItem("userName") : "USER";
 
         let categoryType = document.getElementById('filterCategory').value;
@@ -904,7 +953,7 @@
                 
                 setTimeout(() => { 
                     renderCallingList(); 
-                    fetchCallingReport(); 
+                    fetchCallingReport(true); 
                 }, 1000); 
             } else {
                 alert("Error: " + data.message);
@@ -1095,8 +1144,8 @@
             <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
             <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
             <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
         </tr>`;
         document.getElementById('yesterdayDistrictBody').innerHTML = yDistTotalHtml + yDistHtml;
 
@@ -1104,25 +1153,51 @@
         sections.forEach(id => document.getElementById(id).style.display = 'block');
         
         document.getElementById('btnPublish').style.display = 'block';
+
+        // 🌟 CACHE DATA IN LOCAL STORAGE 🌟
+        let monthlyDataArrays = {};
+        for(let m in monthlyData) {
+            monthlyDataArrays[m] = {
+                all: Array.from(monthlyData[m].all),
+                gsw: Array.from(monthlyData[m].gsw)
+            };
+        }
+        let localData = {
+            html_summary: document.getElementById('summaryArea').innerHTML,
+            html_service: document.getElementById('serviceBody').innerHTML,
+            html_district: document.getElementById('districtBody').innerHTML,
+            html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
+            html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
+            vleDb: vleDb,
+            stateLyCscs: Array.from(stateLyCscs),
+            stateYtdCscs: Array.from(stateYtdCscs),
+            stateMtdCscs: Array.from(stateMtdCscs),
+            stateFtdCscs: Array.from(stateFtdCscs),
+            monthlyData: monthlyDataArrays,
+            bnStr: document.getElementById('momBaseSelect').value,
+            tnStr: document.getElementById('momTargetSelect').value
+        };
+        localStorage.setItem("shReportCache", JSON.stringify(localData));
+
+        document.getElementById('uploadSectionDiv').style.display = 'none';
+        document.getElementById('btnGen').style.display = 'none';
+        document.getElementById('btnClear').style.display = 'block';
     }
 
-async function downloadImage(elementId, prefix) {
+    async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         
-        // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
-        // 2. స్క్రోల్ ని తీసేసి టేబుల్ ని పూర్తిగా ఓపెన్ చేయడం (ఇదే అసలు ట్రిక్)
         const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
         let originalMaxHeights = [];
         tableResponsiveDivs.forEach(div => {
             originalMaxHeights.push(div.style.maxHeight);
-            div.style.maxHeight = 'none'; // స్క్రోల్ తీసేస్తున్నాం
-            div.style.overflow = 'visible'; // మొత్తం కనపడేలా చేస్తున్నాం
+            div.style.maxHeight = 'none'; 
+            div.style.overflow = 'visible'; 
         });
 
-        // 3. వెడల్పు కోసం పాత ట్రిక్
         const table = reportDiv.querySelector('table');
         let originalStyles = {};
         if (table) {
@@ -1135,7 +1210,6 @@ async function downloadImage(elementId, prefix) {
         }
         
         try {
-            // 4. ఇమేజ్ క్యాప్చర్ (పూర్తి టేబుల్ ఇప్పుడు క్యాప్చర్ అవుతుంది)
             const canvas = await html2canvas(reportDiv, { scale: 2, backgroundColor: "#ffffff" });
             const link = document.createElement('a');
             let d = new Date(); 
@@ -1146,9 +1220,8 @@ async function downloadImage(elementId, prefix) {
         } catch(err) {
             alert("Image capture failed. Please try again.");
         } finally {
-            // 5. అన్నీ మళ్లీ నార్మల్ చేయడం (స్క్రోల్ బార్స్ మళ్లీ తీసుకురావడం)
             tableResponsiveDivs.forEach((div, index) => {
-                div.style.maxHeight = originalMaxHeights[index]; // పాత 400px మళ్ళీ పెడుతున్నాం
+                div.style.maxHeight = originalMaxHeights[index]; 
                 div.style.overflow = 'auto'; 
             });
 
@@ -1158,7 +1231,7 @@ async function downloadImage(elementId, prefix) {
             }
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
         }
-    }    
+    }
 
     function publishToDMs() {
         let btn = document.getElementById('btnPublish');
@@ -1224,21 +1297,41 @@ async function downloadImage(elementId, prefix) {
         });
     }
 
-    function fetchCallingReport() {
+    // 🌟 NEW: FETCH CALLING REPORT WITH YESTERDAY LOGIC 🌟
+    function fetchCallingReport(forceLive = false) {
         let tbody = document.getElementById('dmCallingBody');
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
+        let filterVal = document.getElementById('leaderboardDateFilter') ? document.getElementById('leaderboardDateFilter').value : "TODAY";
+        
+        // 🌟 CALCULATE DATES DYNAMICALLY 🌟
+        let targetDate = new Date();
+        if(filterVal === "YESTERDAY") {
+            targetDate.setDate(targetDate.getDate() - 1);
+        }
+        
+        let dd = ("0"+targetDate.getDate()).slice(-2);
+        let mm = ("0"+(targetDate.getMonth()+1)).slice(-2);
+        let yyyy = targetDate.getFullYear();
+        let targetStr1 = `${dd}-${mm}-${yyyy}`; // Format: 14-10-2026
+        let targetStr2 = `${yyyy}-${mm}-${dd}`; // Format: 2026-10-14 
+
+        // Update Headers Based on Filter
+        let thTitle = filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)";
+        document.getElementById('thTotalCalls').innerText = thTitle;
+        
+        let headingText = filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)";
+        document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
+
         let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         let payload = { action: "getCallingReport" };
-
-        let d = new Date();
-        let todayStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
 
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload),
-            redirect: "follow"
+            redirect: "follow",
+            cache: "no-store" 
         })
         .then(response => response.json())
         .then(data => {
@@ -1260,7 +1353,8 @@ async function downloadImage(elementId, prefix) {
                         };
                     }
                     
-                    if (log.date && log.date.startsWith(todayStr)) {
+                    // 🌟 CHECKING FOR SELECTED DATE (TODAY OR YESTERDAY) 🌟
+                    if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
                         if(!dmStats[dm]) {
                             dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
                         }
@@ -1280,7 +1374,7 @@ async function downloadImage(elementId, prefix) {
                 let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
 
                 if(sortedDMs.length === 0) {
-                    html = '<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made today yet!</td></tr>';
+                    html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made on ${targetStr1} yet!</td></tr>`;
                 } else {
                     sortedDMs.forEach((dm, idx) => {
                         let stat = dmStats[dm];
@@ -1302,7 +1396,7 @@ async function downloadImage(elementId, prefix) {
                     });
                     
                     let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
-                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (TODAY)</td>
+                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td>
                         <td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
@@ -1313,7 +1407,7 @@ async function downloadImage(elementId, prefix) {
                 }
                 tbody.innerHTML = html;
 
-                renderCallingList();
+                renderCallingList(); 
             } else {
                 tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
             }
