@@ -57,8 +57,10 @@
         .badge-amber { background: #fef3c7; color: #d97706; }
         .badge-gsw { background: #f59e0b; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 5px;}
 
-        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
-        .filter-bar select { padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; }
+        /* 🌟 NEW MOBILE FRIENDLY CSS FOR DROPDOWNS 🌟 */
+        .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
+        .filter-bar > div { flex: 1; min-width: 250px; }
+        .filter-bar select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
 
@@ -73,9 +75,11 @@
             .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
             .report-header-flex h2 { font-size: 15px; }
             .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
-            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .filter-bar select { width: 100%; }
-            .filter-bar div[style*="margin-left: auto"] { margin-left: 0 !important; text-align: center; margin-top: 10px; }
+            
+            /* 🌟 MOBILE SPECIFIC FIXES 🌟 */
+            .filter-bar > div { min-width: 100%; text-align: left; }
+            .filter-bar div[style*="text-align: right"] { text-align: left !important; margin-top: 10px; }
+            
             td, th { font-size: 11px; padding: 8px; }
             .badge { font-size: 10px; padding: 3px 6px; }
         }
@@ -172,7 +176,7 @@
                     </tr>
                 </thead>
                 <tbody id="dmCallingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Loading DM performance from server...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh Leaderboard" to load today's DM performance from server...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -185,9 +189,10 @@
             <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
         </div>
         
+        <!-- 🌟 UPDATED FILTER BAR FOR MOBILE 🌟 -->
         <div class="filter-bar">
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select Category:</label>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select Category:</label>
                 <select id="filterCategory" onchange="renderCallingList()">
                     <option value="YTD">🔥 YTD DROPOUTS (Active Last Year but NOT This Year)</option>
                     <option value="MTD">⚠️ MTD DROPOUTS (Active This Year but NOT This Month)</option>
@@ -196,13 +201,14 @@
                 </select>
             </div>
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select District:</label>
+                <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select District:</label>
                 <select id="filterDistrict" onchange="renderCallingList()">
-                    <option value="ALL">Loading Districts...</option>
+                    <option value="ALL">ALL DISTRICTS</option>
                 </select>
             </div>
-            <div style="margin-left: auto; font-weight:bold; color:#0f172a;">
-                Total Dropouts Found: <span id="dropoutCount" style="color:#dc2626; font-size:18px;">0</span>
+            <div style="text-align: right;">
+                <span style="font-weight:bold; color:#0f172a; font-size:14px;">Total Dropouts:</span><br>
+                <span id="dropoutCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
             </div>
         </div>
 
@@ -334,14 +340,15 @@
             <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
         </div>
         
+        <!-- 🌟 UPDATED FILTER BAR FOR MOBILE 🌟 -->
         <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Base Month (పాత నెల):</label>
-                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block; margin-bottom:5px;">Select Base Month (పాత నెల):</label>
+                <select id="momBaseSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a;"></select>
             </div>
             <div>
-                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block;">Select Target Month (కొత్త నెల):</label>
-                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
+                <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block; margin-bottom:5px;">Select Target Month (కొత్త నెల):</label>
+                <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a;"></select>
             </div>
         </div>
 
@@ -365,7 +372,6 @@
 </div>
 
 <script>
-    // 🌟 GOOGLE SCRIPT URL 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     let districtData = {};
@@ -388,7 +394,6 @@
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
-                // If no data on server yet, show the normal upload options
                 document.getElementById('loadingDiv').style.display = 'none';
                 return;
             }
@@ -401,14 +406,12 @@
             document.getElementById('lastUpdatedText').style.display = 'inline-block';
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
 
-            // Inject static HTML parts published from State Head
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
-            // Load sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
@@ -432,7 +435,6 @@
             sections.forEach(id => document.getElementById(id).style.display = 'block');
             document.getElementById('btnPublish').style.display = 'block';
 
-            // Fetch live Leaderboard & Remarks
             fetchCallingReport(true);
         })
         .catch(error => {
@@ -441,24 +443,19 @@
         });
     };
 
-    // 🌟 FIX: DO NOT RELOAD PAGE TO PREVENT SERVER FETCH 🌟
     function clearLocalData() {
         if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
-            // 1. Hide all reports
             let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'none');
             
-            // 2. Hide buttons
             document.getElementById('btnPublish').style.display = 'none';
             document.getElementById('btnClear').style.display = 'none';
             document.getElementById('lastUpdatedText').style.display = 'none';
             
-            // 3. Clear file input values
             document.getElementById('fileLastYear').value = "";
             document.getElementById('fileMaster').value = "";
             document.getElementById('fileDayWise').value = "";
             
-            // 4. Show the upload boxes again
             document.getElementById('uploadSectionDiv').style.display = 'flex';
             document.getElementById('btnGen').style.display = 'block';
         }
