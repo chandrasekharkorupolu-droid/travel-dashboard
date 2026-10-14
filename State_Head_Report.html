@@ -59,7 +59,7 @@
 
         .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
         .filter-bar > div { flex: 1; min-width: 250px; }
-        .filter-bar select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
+        .filter-bar select, .filter-bar input { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
 
@@ -174,10 +174,43 @@
                     </tr>
                 </thead>
                 <tbody id="dmCallingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Click "Refresh Leaderboard" to load today's DM performance from server...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Loading DM performance from server...</td></tr>
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- 🌟 VIII. NEW CONVERSION REPORT (WITH YTD & MTD BREAKDOWN) 🌟 -->
+    <div class="report-section" id="conversionReportArea" style="border: 2px solid #8b5cf6; background: #f5f3ff;">
+        <div class="report-header-flex">
+            <h2 style="color: #6d28d9;"><i class="fa-solid fa-bolt"></i> VIII. DM CALL CONVERSION & ACTIVATION REPORT</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <label style="font-size:13px; font-weight:bold; color:#4c1d95;">Calling Date:</label>
+                <input type="date" id="convDateFilter" onchange="renderConversionReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #8b5cf6; color:#0f172a; outline:none; background:#ede9fe; cursor:pointer;">
+                <button class="btn-download" onclick="downloadImage('conversionReportArea', 'DM_Conversion_Report')" style="margin:0; background:#7c3aed;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table id="conversionTable">
+                <thead style="position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="background:#4c1d95;">S.NO</th>
+                        <th class="text-left" style="background:#4c1d95;">DISTRICT MANAGER (DM)</th>
+                        <th style="background:#d97706;">YTD CALLS</th>
+                        <th style="background:#b45309;">YTD ACTV</th>
+                        <th style="background:#8b5cf6;">MTD CALLS</th>
+                        <th style="background:#7c3aed;">MTD ACTV</th>
+                        <th style="background:#1d4ed8;">TOTAL CALLS</th>
+                        <th style="background:#16a34a;">TOT ACTIVATED</th>
+                        <th style="background:#2563eb;">SUCCESS (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="conversionBody">
+                    <tr><td colspan="9" style="color:#64748b;">Waiting for data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="report-footer" style="color:#6d28d9;">Matches called CSC IDs against current FTD active list. (ACTV = Activated)</div>
     </div>
 
     <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
@@ -200,7 +233,7 @@
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select District:</label>
                 <select id="filterDistrict" onchange="renderCallingList()">
-                    <option value="ALL">ALL DISTRICTS</option>
+                    <option value="ALL">Loading Districts...</option>
                 </select>
             </div>
             <div style="text-align: right;">
@@ -382,10 +415,18 @@
     let currentCallingListData = [];
     let hasScientificError = false;
     let latestRemarks = {};
+    let globalCallLogs = []; 
 
     window.onload = function() {
         document.getElementById('loadingDiv').style.display = 'block';
         
+        let d = new Date();
+        d.setDate(d.getDate() - 1);
+        let yyyy = d.getFullYear();
+        let mm = ("0" + (d.getMonth() + 1)).slice(-2);
+        let dd = ("0" + d.getDate()).slice(-2);
+        document.getElementById('convDateFilter').value = `${yyyy}-${mm}-${dd}`;
+
         fetch(SCRIPT_URL + "?action=fetchDMReport")
         .then(response => response.json())
         .then(data => {
@@ -412,7 +453,7 @@
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
             stateMtdCscs = new Set(data.stateMtdCscs || []);
-            stateFtdCscs = new Set(data.stateFtdCscs || []);
+            stateFtdCscs = new Set(data.stateFtdCscs || []); 
             
             if (data.monthlyData) {
                 for(let m in data.monthlyData) {
@@ -427,7 +468,7 @@
             populateMonthDropdowns(data.bnStr, data.tnStr);
             renderMomReport(); 
 
-            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
+            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'block');
             document.getElementById('btnPublish').style.display = 'block';
 
@@ -441,7 +482,7 @@
 
     function clearLocalData() {
         if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
-            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
+            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'none');
             
             document.getElementById('btnPublish').style.display = 'none';
@@ -504,7 +545,7 @@
         document.getElementById('btnGen').disabled = true;
         document.getElementById('loadingDiv').style.display = 'block';
         
-        let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
+        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'none');
 
         districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
@@ -898,7 +939,6 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 BUTTON ENHANCEMENT FOR CLEAR FEEDBACK 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
@@ -934,7 +974,6 @@
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
-    // 🌟 ENHANCED SAVE LOGIC (PREVENTS DOUBLE CLICK) 🌟
     function saveRemark(cscId, btn) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
@@ -954,9 +993,8 @@
         let originalHtml = btn.innerHTML;
         let originalBg = btn.style.background;
 
-        // Visual feedback immediately
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
-        btn.style.background = '#d97706'; // Orange warning color
+        btn.style.background = '#d97706'; 
         btn.disabled = true;
         btn.style.cursor = 'not-allowed';
 
@@ -984,7 +1022,7 @@
         .then(data => {
             if(data.success) {
                 btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
-                btn.style.background = "#16a34a"; // Green success color
+                btn.style.background = "#16a34a"; 
                 selectEl.style.borderColor = "#16a34a";
                 
                 let d = new Date();
@@ -1044,169 +1082,36 @@
         document.body.removeChild(link);
     }
 
-    function generateHTMLReports() {
-        let stateZeroTxn = Math.max(0, stateLyCscs.size - stateYtdCscs.size);
-        
-        let stateGswZeroTxn = 0;
-        stateLyGswCscs.forEach(id => { if(!stateYtdCscs.has(id)) stateGswZeroTxn++; });
-
-        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
-        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
-
-        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
-        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
-
-        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
-        
-        document.getElementById('sumZeroTxn').innerText = stateZeroTxn.toLocaleString();
-        document.getElementById('sumZeroGsw').innerText = `(GSW: ${stateGswZeroTxn.toLocaleString()})`;
-
-        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
-        document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2});
-        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
-
-        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN");
-        let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN");
-
-        let sortedOverallServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
-        let sortedYesterdayServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
-        let sortedOverallDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
-        let sortedYesterdayDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
-
-        let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
-        sortedOverallServices.forEach(item => {
-            let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
-            srvHtml += `<tr>
-                <td class="text-left" style="color:#0f172a;">${item.name}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
-                <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td>
-                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
-                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            </tr>`;
-            ovTxn += d.total_txn; ovMtdTxn += d.mtd_txn; ovAmt += d.total_amt; ovRev += d.total_rev;
-        });
-        let srvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">OVERALL STATE</td>
-            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovMtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-        </tr>`;
-        document.getElementById('serviceBody').innerHTML = srvTotalHtml + srvHtml;
-
-        let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
-        sortedYesterdayServices.forEach(item => {
-            let d = item.data;
-            ySrvHtml += `<tr>
-                <td class="text-left" style="color:#0f172a;">${item.name}</td>
-                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            </tr>`;
-            ovFtdTxn += d.ftd_txn; ovFtdAmt += d.ftd_amt; ovFtdRev += d.ftd_rev;
-        });
-        let ySrvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovFtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-        </tr>`;
-        document.getElementById('yesterdayServiceBody').innerHTML = ySrvTotalHtml + ySrvHtml;
-
-        let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0;
-        let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
-        
-        sortedOverallDistricts.forEach(item => {
-            let d = item.data;
-            let distGswZero = 0;
-            d.ly_gsw.forEach(id => { if(!d.ytd_cscs.has(id)) distGswZero++; });
-            let zeroTxn = Math.max(0, d.ly_cscs.size - d.ytd_cscs.size);
-            let zeroBadge = zeroTxn > 0 ? `<span class="badge badge-red">${zeroTxn.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
-            let ytdDisplay = `${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:10px; color:#047857;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span>`;
-            let zeroDisplay = `${zeroBadge}<br><span style="font-size:10px; color:#dc2626;">(GSW: ${distGswZero.toLocaleString()})</span>`;
-
-            distHtml += `<tr>
-                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
-                <td style="color:#059669;">${ytdDisplay}</td>
-                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td>${zeroDisplay}</td>
-                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
-                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            </tr>`;
-            
-            ovDistTotTxn += d.total_txn; ovDistAmt += d.total_amt; ovDistRev += d.total_rev;
-            ovDistFtdTxn_overall += d.ftd_txn; ovDistFtdAmt_overall += d.ftd_amt; ovDistFtdRev_overall += d.ftd_rev;
-        });
-
-        let distTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateYtdGswCscs.size.toLocaleString()})</span></td>
-            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn_overall.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateZeroTxn.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateGswZeroTxn.toLocaleString()})</span></td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistTotTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-        </tr>`;
-        document.getElementById('districtBody').innerHTML = distTotalHtml + distHtml;
-
-        let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
-        sortedYesterdayDistricts.forEach(item => {
-            let d = item.data;
-            yDistHtml += `<tr>
-                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
-                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            </tr>`;
-            ovDistFtdTxn += d.ftd_txn; ovDistFtdAmt += d.ftd_amt; ovDistFtdRev += d.ftd_rev;
-        });
-        let yDistTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-        </tr>`;
-        document.getElementById('yesterdayDistrictBody').innerHTML = yDistTotalHtml + yDistHtml;
-
-        let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
-        sections.forEach(id => document.getElementById(id).style.display = 'block');
-        
-        document.getElementById('btnPublish').style.display = 'block';
-    }
-
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
-        const dateFilter = reportDiv.querySelector('#leaderboardDateFilter');
-        if(dateFilter) dateFilter.style.display = 'none';
+        const inputsAndSelects = reportDiv.querySelectorAll('select, input[type="date"]');
+        const tempElements = [];
+
+        inputsAndSelects.forEach(el => {
+            let span = document.createElement('span');
+            let color = el.style.color || '#0f172a';
+            let bg = el.style.backgroundColor || '#f1f5f9';
+            span.style.cssText = `font-weight:bold; color:${color}; font-size:14px; padding:6px 10px; background:${bg}; border-radius:4px; display:inline-block; border:1px solid ${el.style.borderColor || '#cbd5e1'};`;
+            
+            if (el.tagName === 'SELECT') {
+                span.innerText = el.options[el.selectedIndex].text;
+            } else if (el.tagName === 'INPUT' && el.type === 'date') {
+                if(el.value) {
+                    let parts = el.value.split('-');
+                    span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; 
+                } else {
+                    span.innerText = "Date Not Selected";
+                }
+            }
+            
+            el.style.display = 'none';
+            el.parentNode.insertBefore(span, el);
+            tempElements.push({ original: el, temp: span });
+        });
 
         const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
         let originalMaxHeights = [];
@@ -1216,7 +1121,6 @@
             div.style.overflow = 'visible'; 
         });
 
-        // 🌟 FORCE WIDE WIDTH FOR HD IMAGE DOWNLOAD 🌟
         let originalDivWidth = reportDiv.style.width;
         let originalDivPadding = reportDiv.style.padding;
         reportDiv.style.width = '1200px'; 
@@ -1224,7 +1128,7 @@
         
         try {
             const canvas = await html2canvas(reportDiv, { 
-                scale: 3, // 🌟 HIGH DEFINITION 🌟
+                scale: 3, 
                 backgroundColor: "#ffffff",
                 useCORS: true 
             });
@@ -1246,7 +1150,11 @@
             reportDiv.style.padding = originalDivPadding;
             
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
-            if(dateFilter) dateFilter.style.display = 'inline-block';
+            
+            tempElements.forEach(item => {
+                item.original.style.display = 'inline-block';
+                item.temp.remove();
+            });
         }
     }
 
@@ -1337,7 +1245,6 @@
         let headingText = filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)";
         document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
 
-        let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         let payload = { action: "getCallingReport" };
 
         fetch(SCRIPT_URL, {
@@ -1350,9 +1257,8 @@
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                let logs = data.data;
+                globalCallLogs = data.data || []; 
                 let dmStats = {};
-                let allDMs = new Set();
                 latestRemarks = {}; 
                 
                 const ALL_DMS = [
@@ -1367,11 +1273,17 @@
                 ];
 
                 ALL_DMS.forEach(dm => {
-                    dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() };
+                    dmStats[dm.toLowerCase().trim()] = { 
+                        originalName: dm,
+                        ytd:0, mtd:0, ftd:0, mom:0, total:0, 
+                        calledVles: new Set() 
+                    };
                 });
                 
-                logs.forEach(log => {
-                    let dm = log.dmName ? log.dmName.trim() : "Unknown DM";
+                globalCallLogs.forEach(log => {
+                    let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
+                    let matchKey = rawDm.toLowerCase();
+                    
                     let cat = log.category || "";
                     let cscId = log.cscId || "";
                     let logDate = log.date ? log.date.split(" ")[0] : "";
@@ -1379,39 +1291,37 @@
                     if (cscId) {
                         latestRemarks[cscId] = {
                             remark: log.remark,
-                            dmName: dm,
+                            dmName: rawDm,
                             date: logDate 
                         };
                     }
                     
-                    if (dm === "STATE HEAD" || dm === "Unknown DM") return;
+                    if (matchKey === "state head" || matchKey === "unknown dm") return;
 
                     if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
-                        if(!dmStats[dm]) {
-                            dmStats[dm] = { ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() };
+                        if(dmStats[matchKey]) {
+                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) {
+                                return; 
+                            }
+                            if (cscId) {
+                                dmStats[matchKey].calledVles.add(cscId);
+                            }
+                            
+                            if(cat.includes("YTD")) dmStats[matchKey].ytd++;
+                            else if(cat.includes("MTD")) dmStats[matchKey].mtd++;
+                            else if(cat.includes("FTD")) dmStats[matchKey].ftd++;
+                            else if(cat.includes("MOM")) dmStats[matchKey].mom++;
+                            
+                            dmStats[matchKey].total++;
                         }
-                        
-                        if (cscId && dmStats[dm].calledVles.has(cscId)) {
-                            return; 
-                        }
-                        if (cscId) {
-                            dmStats[dm].calledVles.add(cscId);
-                        }
-                        
-                        if(cat.includes("YTD")) dmStats[dm].ytd++;
-                        else if(cat.includes("MTD")) dmStats[dm].mtd++;
-                        else if(cat.includes("FTD")) dmStats[dm].ftd++;
-                        else if(cat.includes("MOM")) dmStats[dm].mom++;
-                        
-                        dmStats[dm].total++;
                     }
                 });
                 
-                let sortedDMs = Object.keys(dmStats).sort((a,b) => {
-                    if (dmStats[b].total !== dmStats[a].total) {
-                        return dmStats[b].total - dmStats[a].total;
+                let sortedDMs = Object.values(dmStats).sort((a,b) => {
+                    if (b.total !== a.total) {
+                        return b.total - a.total;
                     }
-                    return a.localeCompare(b);
+                    return a.originalName.localeCompare(b.originalName);
                 });
                 
                 let html = "";
@@ -1420,8 +1330,7 @@
                 if(sortedDMs.length === 0) {
                     html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made on ${targetStr1} yet!</td></tr>`;
                 } else {
-                    sortedDMs.forEach((dm, idx) => {
-                        let stat = dmStats[dm];
+                    sortedDMs.forEach((stat, idx) => {
                         grandTotal.ytd += stat.ytd;
                         grandTotal.mtd += stat.mtd;
                         grandTotal.ftd += stat.ftd;
@@ -1432,7 +1341,7 @@
                         
                         html += `<tr>
                             <td>${idx + 1}</td>
-                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${dm}</td>
+                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
                             <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
                             <td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
                             <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td>
@@ -1451,16 +1360,133 @@
                     </tr>`;
                     html = totalHtml + html;
                 }
-                tbody.innerHTML = html;
+                document.getElementById('dmCallingBody').innerHTML = html;
 
                 renderCallingList(); 
+                renderConversionReport(); 
             } else {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
+                document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
             }
         })
         .catch(err => {
-            tbody.innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
+            document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
         });
+    }
+
+    // 🌟 2. NEW LOGIC: YTD & MTD CONVERSION REPORT 🌟
+    function renderConversionReport() {
+        let tbody = document.getElementById('conversionBody');
+        let filterVal = document.getElementById('convDateFilter').value;
+        
+        if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>';
+            return;
+        }
+        
+        let dParts = filterVal.split('-');
+        let targetStr1 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; 
+        let targetStr2 = filterVal; 
+
+        let dmConvStats = {};
+        
+        const ALL_DMS = [
+            "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
+            "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
+            "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
+            "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
+            "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
+            "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan",
+            "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
+            "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
+        ];
+
+        ALL_DMS.forEach(dm => {
+            dmConvStats[dm.toLowerCase().trim()] = { 
+                originalName: dm, 
+                ytdCalled: new Set(), ytdActive: 0,
+                mtdCalled: new Set(), mtdActive: 0,
+                totalCalled: new Set(), totalActive: 0
+            };
+        });
+        
+        globalCallLogs.forEach(log => {
+            let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
+            let matchKey = rawDm.toLowerCase();
+            let cscId = log.cscId || "";
+            let cat = log.category || "";
+            
+            if (matchKey === "state head" || matchKey === "unknown dm") return;
+            
+            if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
+                if(dmConvStats[matchKey] && cscId) {
+                    dmConvStats[matchKey].totalCalled.add(cscId);
+                    if(cat.includes("YTD")) dmConvStats[matchKey].ytdCalled.add(cscId);
+                    if(cat.includes("MTD")) dmConvStats[matchKey].mtdCalled.add(cscId);
+                }
+            }
+        });
+        
+        let sortedDMs = Object.values(dmConvStats).sort((a,b) => {
+            if (b.totalCalled.size !== a.totalCalled.size) return b.totalCalled.size - a.totalCalled.size;
+            return a.originalName.localeCompare(b.originalName);
+        });
+
+        let html = "";
+        let grandTotals = { ytdC:0, ytdA:0, mtdC:0, mtdA:0, totC:0, totA:0 };
+
+        sortedDMs.forEach((stat, idx) => {
+            // Count activations based on FTD active set
+            stat.ytdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.ytdActive++; });
+            stat.mtdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.mtdActive++; });
+            stat.totalCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.totalActive++; });
+
+            let yC = stat.ytdCalled.size; let yA = stat.ytdActive;
+            let mC = stat.mtdCalled.size; let mA = stat.mtdActive;
+            let tC = stat.totalCalled.size; let tA = stat.totalActive;
+
+            grandTotals.ytdC += yC; grandTotals.ytdA += yA;
+            grandTotals.mtdC += mC; grandTotals.mtdA += mA;
+            grandTotals.totC += tC; grandTotals.totA += tA;
+
+            let rate = tC > 0 ? Math.round((tA / tC) * 100) : 0;
+            
+            let displayYC = yC > 0 ? yC : '-';
+            let displayYA = yA > 0 ? `<span style="color:#16a34a; font-weight:900;">${yA}</span>` : '-';
+            let displayMC = mC > 0 ? mC : '-';
+            let displayMA = mA > 0 ? `<span style="color:#16a34a; font-weight:900;">${mA}</span>` : '-';
+            let displayTC = tC > 0 ? tC : '-';
+            let displayTA = tA > 0 ? `<span class="badge badge-green" style="font-size:14px;">${tA}</span>` : '-';
+            
+            let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626');
+            let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
+            
+            html += `<tr>
+                <td>${idx + 1}</td>
+                <td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
+                <td style="color:#d97706; font-weight:bold;">${displayYC}</td>
+                <td style="background:#fef3c7;">${displayYA}</td>
+                <td style="color:#8b5cf6; font-weight:bold;">${displayMC}</td>
+                <td style="background:#f3e8ff;">${displayMA}</td>
+                <td style="color:#1e3a8a; font-weight:bold; font-size:15px;">${displayTC}</td>
+                <td style="background:#dcfce7;">${displayTA}</td>
+                <td>${displayRate}</td>
+            </tr>`;
+        });
+
+        let totRate = grandTotals.totC > 0 ? Math.round((grandTotals.totA / grandTotals.totC) * 100) : 0;
+
+        let totalHtml = `<tr style="background:#2e1065; border-bottom: 3px solid #c4b5fd;">
+            <td colspan="2" class="text-left" style="color:#ddd6fe; font-weight:900; font-size:14px;">OVERALL ACTIVATION (STATE)</td>
+            <td style="color:#fbbf24; font-size:15px; font-weight:900;">${grandTotals.ytdC}</td>
+            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.ytdA}</td>
+            <td style="color:#c084fc; font-size:15px; font-weight:900;">${grandTotals.mtdC}</td>
+            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td>
+            <td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
+            <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td>
+            <td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
+        </tr>`;
+
+        tbody.innerHTML = totalHtml + html;
     }
 </script>
 
