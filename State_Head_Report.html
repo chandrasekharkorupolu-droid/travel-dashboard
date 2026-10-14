@@ -198,7 +198,7 @@
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#64748b; display:block;">Select District:</label>
                 <select id="filterDistrict" onchange="renderCallingList()">
-                    <option value="ALL">ALL DISTRICTS</option>
+                    <option value="ALL">Loading Districts...</option>
                 </select>
             </div>
             <div style="margin-left: auto; font-weight:bold; color:#0f172a;">
@@ -220,7 +220,7 @@
                     </tr>
                 </thead>
                 <tbody id="callingBody">
-                    <tr><td colspan="7" style="color:#64748b;">Please click Generate Reports or wait for server data...</td></tr>
+                    <tr><td colspan="7" style="color:#64748b;">Please click Generate Reports to load data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -388,6 +388,7 @@
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
+                // If no data on server yet, show the normal upload options
                 document.getElementById('loadingDiv').style.display = 'none';
                 return;
             }
@@ -400,12 +401,14 @@
             document.getElementById('lastUpdatedText').style.display = 'inline-block';
             document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
 
+            // Inject static HTML parts published from State Head
             document.getElementById('summaryArea').innerHTML = data.html_summary || "";
             document.getElementById('serviceBody').innerHTML = data.html_service || "";
             document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
             document.getElementById('districtBody').innerHTML = data.html_district || "";
             document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
+            // Load sets
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
@@ -429,6 +432,7 @@
             sections.forEach(id => document.getElementById(id).style.display = 'block');
             document.getElementById('btnPublish').style.display = 'block';
 
+            // Fetch live Leaderboard & Remarks
             fetchCallingReport(true);
         })
         .catch(error => {
@@ -437,9 +441,26 @@
         });
     };
 
+    // 🌟 FIX: DO NOT RELOAD PAGE TO PREVENT SERVER FETCH 🌟
     function clearLocalData() {
         if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
-            location.reload();
+            // 1. Hide all reports
+            let sections = ['summaryArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea', 'dmCallingReportArea'];
+            sections.forEach(id => document.getElementById(id).style.display = 'none');
+            
+            // 2. Hide buttons
+            document.getElementById('btnPublish').style.display = 'none';
+            document.getElementById('btnClear').style.display = 'none';
+            document.getElementById('lastUpdatedText').style.display = 'none';
+            
+            // 3. Clear file input values
+            document.getElementById('fileLastYear').value = "";
+            document.getElementById('fileMaster').value = "";
+            document.getElementById('fileDayWise').value = "";
+            
+            // 4. Show the upload boxes again
+            document.getElementById('uploadSectionDiv').style.display = 'flex';
+            document.getElementById('btnGen').style.display = 'block';
         }
     }
 
@@ -812,18 +833,11 @@
         }
     }
 
-    // 🌟 FIX FOR DROPDOWN LIST 🌟
     function populateDistrictDropdown() {
         let distSelect = document.getElementById('filterDistrict');
         distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        
-        let dists = new Set();
-        Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
-        });
-        
-        Array.from(dists).sort().forEach(d => {
-            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        Object.keys(districtData).sort().forEach(d => {
+            if(d !== "UNKNOWN") distSelect.innerHTML += `<option value="${d}">${d}</option>`;
         });
     }
 
