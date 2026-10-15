@@ -262,7 +262,7 @@
         </div>
     </div>
 
-    <!-- 1. OVERALL SERVICE WISE REPORT -->
+    <!-- 🌟 1. OVERALL SERVICE WISE REPORT 🌟 -->
     <div class="report-section" id="serviceReportArea">
         <div class="report-header-flex">
             <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
@@ -290,7 +290,7 @@
         </div>
     </div>
 
-    <!-- 2. YESTERDAY (FTD) SERVICE WISE REPORT -->
+    <!-- 🌟 2. YESTERDAY (FTD) SERVICE WISE REPORT 🌟 -->
     <div class="report-section" id="yesterdayServiceReportArea">
         <div class="report-header-flex">
             <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
@@ -312,7 +312,7 @@
         </div>
     </div>
 
-    <!-- 3. OVERALL DISTRICT WISE REPORT -->
+    <!-- 🌟 3. OVERALL DISTRICT WISE REPORT 🌟 -->
     <div class="report-section" id="districtReportArea">
         <div class="report-header-flex">
             <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
@@ -341,7 +341,7 @@
         </div>
     </div>
 
-    <!-- 4. YESTERDAY (FTD) DISTRICT WISE REPORT -->
+    <!-- 🌟 4. YESTERDAY (FTD) DISTRICT WISE REPORT 🌟 -->
     <div class="report-section" id="yesterdayDistrictReportArea">
         <div class="report-header-flex">
             <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
@@ -568,7 +568,10 @@
             await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
 
             populateMonthDropdowns();
+            
+            // 🌟 RESTORED THIS FUNCTION CALL 🌟
             generateHTMLReports();
+
             populateDistrictDropdown();
             renderMomReport(); 
 
@@ -1082,6 +1085,162 @@
         document.body.removeChild(link);
     }
 
+    // 🌟 RESTORED THIS FUNCTION: generateHTMLReports (For Tables I, II, III, IV) 🌟
+    function generateHTMLReports() {
+        let stateZeroTxn = Math.max(0, stateLyCscs.size - stateYtdCscs.size);
+        
+        let stateGswZeroTxn = 0;
+        stateLyGswCscs.forEach(id => { if(!stateYtdCscs.has(id)) stateGswZeroTxn++; });
+
+        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
+        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+
+        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
+        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+
+        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
+        
+        document.getElementById('sumZeroTxn').innerText = stateZeroTxn.toLocaleString();
+        document.getElementById('sumZeroGsw').innerText = `(GSW: ${stateGswZeroTxn.toLocaleString()})`;
+
+        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
+        document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2});
+        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
+
+        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN");
+        let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN");
+
+        let sortedOverallServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
+        let sortedYesterdayServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
+        let sortedOverallDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
+        let sortedYesterdayDistricts = validDistricts.map(dist => ({ name: dist, data: districtData[dist] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
+
+        let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
+        sortedOverallServices.forEach(item => {
+            let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
+            srvHtml += `<tr>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td>
+                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovTxn += d.total_txn; ovMtdTxn += d.mtd_txn; ovAmt += d.total_amt; ovRev += d.total_rev;
+        });
+        let srvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">OVERALL STATE</td>
+            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovMtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('serviceBody').innerHTML = srvTotalHtml + srvHtml;
+
+        let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
+        sortedYesterdayServices.forEach(item => {
+            let d = item.data;
+            ySrvHtml += `<tr>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td>
+                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovFtdTxn += d.ftd_txn; ovFtdAmt += d.ftd_amt; ovFtdRev += d.ftd_rev;
+        });
+        let ySrvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovFtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('yesterdayServiceBody').innerHTML = ySrvTotalHtml + ySrvHtml;
+
+        let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0;
+        let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
+        
+        sortedOverallDistricts.forEach(item => {
+            let d = item.data;
+            let distGswZero = 0;
+            d.ly_gsw.forEach(id => { if(!d.ytd_cscs.has(id)) distGswZero++; });
+            let zeroTxn = Math.max(0, d.ly_cscs.size - d.ytd_cscs.size);
+            let zeroBadge = zeroTxn > 0 ? `<span class="badge badge-red">${zeroTxn.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+            let ytdDisplay = `${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:10px; color:#047857;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span>`;
+            let zeroDisplay = `${zeroBadge}<br><span style="font-size:10px; color:#dc2626;">(GSW: ${distGswZero.toLocaleString()})</span>`;
+
+            distHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#059669;">${ytdDisplay}</td>
+                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td>${zeroDisplay}</td>
+                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            
+            ovDistTotTxn += d.total_txn; ovDistAmt += d.total_amt; ovDistRev += d.total_rev;
+            ovDistFtdTxn_overall += d.ftd_txn; ovDistFtdAmt_overall += d.ftd_amt; ovDistFtdRev_overall += d.ftd_rev;
+        });
+
+        let distTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateYtdGswCscs.size.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn_overall.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateZeroTxn.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateGswZeroTxn.toLocaleString()})</span></td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistTotTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('districtBody').innerHTML = distTotalHtml + distHtml;
+
+        let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
+        sortedYesterdayDistricts.forEach(item => {
+            let d = item.data;
+            yDistHtml += `<tr>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
+                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            </tr>`;
+            ovDistFtdTxn += d.ftd_txn; ovDistFtdAmt += d.ftd_amt; ovDistFtdRev += d.ftd_rev;
+        });
+        let yDistTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        </tr>`;
+        document.getElementById('yesterdayDistrictBody').innerHTML = yDistTotalHtml + yDistHtml;
+
+        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+        sections.forEach(id => document.getElementById(id).style.display = 'block');
+        
+        document.getElementById('btnPublish').style.display = 'block';
+    }
+
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         
@@ -1261,7 +1420,6 @@
                 let dmStats = {};
                 latestRemarks = {}; 
                 
-                // 🌟 ADDED: Chandra Sekhara Babu K (SPOC) TO THE LIST 🌟
                 const ALL_DMS = [
                     "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
                     "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
@@ -1389,7 +1547,6 @@
 
         let dmConvStats = {};
         
-        // 🌟 ADDED: Chandra Sekhara Babu K (SPOC) TO CONVERSION LOGIC 🌟
         const ALL_DMS = [
             "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
             "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
