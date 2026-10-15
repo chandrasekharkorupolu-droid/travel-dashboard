@@ -26,11 +26,21 @@
         .loader { display: none; text-align: center; padding: 20px; font-size: 18px; font-weight: bold; color: #2563eb; }
 
         .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
+        
+        /* 🌟 FULL SCREEN CSS LOGIC 🌟 */
+        .report-section:fullscreen { width: 100vw !important; height: 100vh !important; overflow-y: hidden !important; background-color: #ffffff !important; padding: 30px !important; margin: 0 !important; max-width: none !important; border: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; }
+        .report-section:-webkit-full-screen { width: 100vw !important; height: 100vh !important; overflow-y: hidden !important; background-color: #ffffff !important; padding: 30px !important; margin: 0 !important; max-width: none !important; border: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; }
+        
+        .report-section:fullscreen .table-responsive { max-height: calc(100vh - 150px) !important; flex-grow: 1 !important; }
+        .report-section:-webkit-full-screen .table-responsive { max-height: calc(100vh - 150px) !important; flex-grow: 1 !important; }
+
         .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap:10px; }
         .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
         
         .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
         .btn-download:hover { background: #1d4ed8; }
+        .btn-fullscreen { background: #475569; }
+        .btn-fullscreen:hover { background: #334155; }
         .btn-danger { background: #dc2626; }
         .btn-danger:hover { background: #b91c1c; }
         .btn-call { background: #16a34a; color: white; border: none; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; }
@@ -62,6 +72,9 @@
         .filter-bar select, .filter-bar input { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+
+        /* 🌟 NEW: CURSOR POINTER FOR DOUBLE CLICK HIGHLIGHT 🌟 */
+        .data-row { cursor: pointer; }
 
         @media (max-width: 992px) {
             .cards-grid { grid-template-columns: repeat(3, 1fr); }
@@ -134,7 +147,10 @@
     <div class="report-section" id="summaryArea" style="background: #ffffff; border: 2px solid #e2e8f0;">
         <div class="report-header-flex">
             <h2 style="color: #1e3a8a;"><i class="fa-solid fa-chart-pie"></i> AP STATE OVERALL SUMMARY</h2>
-            <div><button class="btn-download" onclick="downloadImage('summaryArea', 'State_Summary')"><i class="fa-solid fa-camera"></i> Download Image</button></div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('summaryArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('summaryArea', 'State_Summary')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         <div class="cards-grid">
             <div class="card" style="border-left-color: #475569;"><h4>FY 25-26 Active VLEs</h4><h2 id="sumLastYearCsc">0</h2><p id="sumLyGsw" style="font-size:11px; color:#475569;"></p></div>
@@ -157,6 +173,7 @@
                     <option value="YESTERDAY">📆 Yesterday's Calls</option>
                 </select>
                 <button class="btn-download" onclick="fetchCallingReport(true)" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh</button>
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('dmCallingReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
                 <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
             </div>
         </div>
@@ -180,13 +197,14 @@
         </div>
     </div>
 
-    <!-- 🌟 VIII. NEW CONVERSION REPORT (WITH YTD & MTD BREAKDOWN) 🌟 -->
+    <!-- 🌟 VIII. CONVERSION REPORT 🌟 -->
     <div class="report-section" id="conversionReportArea" style="border: 2px solid #8b5cf6; background: #f5f3ff;">
         <div class="report-header-flex">
             <h2 style="color: #6d28d9;"><i class="fa-solid fa-bolt"></i> VIII. DM CALL CONVERSION & ACTIVATION REPORT</h2>
             <div style="display:flex; gap:10px; align-items:center;">
                 <label style="font-size:13px; font-weight:bold; color:#4c1d95;">Calling Date:</label>
                 <input type="date" id="convDateFilter" onchange="renderConversionReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #8b5cf6; color:#0f172a; outline:none; background:#ede9fe; cursor:pointer;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('conversionReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
                 <button class="btn-download" onclick="downloadImage('conversionReportArea', 'DM_Conversion_Report')" style="margin:0; background:#7c3aed;"><i class="fa-solid fa-camera"></i> Download</button>
             </div>
         </div>
@@ -217,7 +235,10 @@
     <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
         <div class="report-header-flex">
             <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> VI. DROPOUTS TRACKING & CALLING PORTAL</h2>
-            <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('callingPortalArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download btn-danger" onclick="downloadCallingList()" style="margin:0;"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+            </div>
         </div>
         
         <div class="filter-bar">
@@ -262,11 +283,14 @@
         </div>
     </div>
 
-    <!-- 🌟 1. OVERALL SERVICE WISE REPORT 🌟 -->
+    <!-- 1. OVERALL SERVICE WISE REPORT -->
     <div class="report-section" id="serviceReportArea">
         <div class="report-header-flex">
             <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
-            <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('serviceReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
@@ -290,11 +314,14 @@
         </div>
     </div>
 
-    <!-- 🌟 2. YESTERDAY (FTD) SERVICE WISE REPORT 🌟 -->
+    <!-- 2. YESTERDAY (FTD) SERVICE WISE REPORT -->
     <div class="report-section" id="yesterdayServiceReportArea">
         <div class="report-header-flex">
             <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('yesterdayServiceReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
@@ -312,11 +339,14 @@
         </div>
     </div>
 
-    <!-- 🌟 3. OVERALL DISTRICT WISE REPORT 🌟 -->
+    <!-- 3. OVERALL DISTRICT WISE REPORT -->
     <div class="report-section" id="districtReportArea">
         <div class="report-header-flex">
             <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
-            <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('districtReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="districtTable">
@@ -341,11 +371,14 @@
         </div>
     </div>
 
-    <!-- 🌟 4. YESTERDAY (FTD) DISTRICT WISE REPORT 🌟 -->
+    <!-- 4. YESTERDAY (FTD) DISTRICT WISE REPORT -->
     <div class="report-section" id="yesterdayDistrictReportArea">
         <div class="report-header-flex">
             <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('yesterdayDistrictReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
@@ -367,7 +400,10 @@
     <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
         <div class="report-header-flex">
             <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION REPORT</h2>
-            <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('momReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
         </div>
         
         <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
@@ -480,6 +516,72 @@
         });
     };
 
+    // 🌟 FULLSCREEN LOGIC 🌟
+    function toggleFullScreen(elementId, btn) {
+        let elem = document.getElementById(elementId);
+        
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { 
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { 
+                elem.msRequestFullscreen();
+            }
+            btn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { 
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { 
+                document.msExitFullscreen();
+            }
+            btn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            let btns = document.querySelectorAll('.btn-fullscreen');
+            btns.forEach(b => b.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen');
+        }
+    });
+
+    document.addEventListener('webkitfullscreenchange', () => {
+        if (!document.webkitFullscreenElement) {
+            let btns = document.querySelectorAll('.btn-fullscreen');
+            btns.forEach(b => b.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen');
+        }
+    });
+
+    // 🌟 NEW: DOUBLE CLICK TO ISOLATE ROW LOGIC 🌟
+    function toggleRow(tr) {
+        let tbody = tr.closest('tbody');
+        let isFiltered = tbody.getAttribute('data-filtered') === 'true';
+
+        if (!isFiltered) {
+            // Hide all other data rows
+            let rows = tbody.querySelectorAll('.data-row');
+            rows.forEach(r => {
+                if (r !== tr) r.style.display = 'none';
+            });
+            tbody.setAttribute('data-filtered', 'true');
+            // Highlight isolated row
+            tr.style.outline = '3px solid #3b82f6'; 
+            tr.style.background = '#e0f2fe';
+        } else {
+            // Unhide all data rows
+            let rows = tbody.querySelectorAll('.data-row');
+            rows.forEach(r => {
+                r.style.display = '';
+                r.style.outline = 'none';
+                r.style.background = ''; // reset to CSS default hover/nth-child
+            });
+            tbody.setAttribute('data-filtered', 'false');
+        }
+    }
+
     function clearLocalData() {
         if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
             let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
@@ -568,10 +670,7 @@
             await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
 
             populateMonthDropdowns();
-            
-            // 🌟 RESTORED THIS FUNCTION CALL 🌟
             generateHTMLReports();
-
             populateDistrictDropdown();
             renderMomReport(); 
 
@@ -844,7 +943,8 @@
             let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
             let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
 
-            momHtml += `<tr>
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#1e3a8a;">${dName}</td>
                 <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
                 <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
@@ -960,7 +1060,8 @@
                     </div>
                 `;
                 
-                tbody += `<tr>
+                // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+                tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                     <td>${idx + 1}</td>
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
                     <td style="color:#0f172a;">${cscDisplay}</td>
@@ -1118,7 +1219,9 @@
         let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
         sortedOverallServices.forEach(item => {
             let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
-            srvHtml += `<tr>
+            
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            srvHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#0f172a;">${item.name}</td>
                 <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
                 <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td>
@@ -1149,7 +1252,9 @@
         let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
         sortedYesterdayServices.forEach(item => {
             let d = item.data;
-            ySrvHtml += `<tr>
+            
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            ySrvHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#0f172a;">${item.name}</td>
                 <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
                 <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
@@ -1179,7 +1284,8 @@
             let ytdDisplay = `${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:10px; color:#047857;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span>`;
             let zeroDisplay = `${zeroBadge}<br><span style="font-size:10px; color:#dc2626;">(GSW: ${distGswZero.toLocaleString()})</span>`;
 
-            distHtml += `<tr>
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            distHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
                 <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
                 <td style="color:#059669;">${ytdDisplay}</td>
@@ -1217,7 +1323,9 @@
         let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
         sortedYesterdayDistricts.forEach(item => {
             let d = item.data;
-            yDistHtml += `<tr>
+            
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            yDistHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
                 <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
                 <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
@@ -1498,7 +1606,8 @@
                         
                         let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
                         
-                        html += `<tr>
+                        // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+                        html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                             <td>${idx + 1}</td>
                             <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
                             <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
@@ -1617,7 +1726,8 @@
             let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626');
             let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
             
-            html += `<tr>
+            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
+            html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td>${idx + 1}</td>
                 <td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
                 <td style="color:#d97706; font-weight:bold;">${displayYC}</td>
