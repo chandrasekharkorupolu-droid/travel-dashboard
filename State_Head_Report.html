@@ -27,7 +27,6 @@
 
         .report-section { display: none; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; position: relative; }
         
-        /* 🌟 FULL SCREEN CSS LOGIC 🌟 */
         .report-section:fullscreen { width: 100vw !important; height: 100vh !important; overflow-y: hidden !important; background-color: #ffffff !important; padding: 30px !important; margin: 0 !important; max-width: none !important; border: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; }
         .report-section:-webkit-full-screen { width: 100vw !important; height: 100vh !important; overflow-y: hidden !important; background-color: #ffffff !important; padding: 30px !important; margin: 0 !important; max-width: none !important; border: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; }
         
@@ -73,7 +72,6 @@
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
 
-        /* 🌟 NEW: CURSOR POINTER FOR DOUBLE CLICK HIGHLIGHT 🌟 */
         .data-row { cursor: pointer; }
 
         @media (max-width: 992px) {
@@ -87,16 +85,8 @@
             .report-header-flex { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
             .report-header-flex h2 { font-size: 15px; }
             .btn-download { width: 100%; margin-left: 0; margin-top: 5px; }
-            
             .filter-bar > div { min-width: 100%; text-align: left; }
-            .filter-bar div[style*="text-align: right"] { text-align: left !important; margin-top: 10px; }
-            
             td, th { font-size: 11px; padding: 8px; }
-            .badge { font-size: 10px; padding: 3px 6px; }
-        }
-        @media (max-width: 480px) {
-            .cards-grid { grid-template-columns: 1fr; }
-            .card h2 { font-size: 20px; }
         }
     </style>
 </head>
@@ -109,7 +99,6 @@
         <div class="update-pill" id="lastUpdatedText" style="display:none;"><i class="fa-solid fa-clock"></i> Checking for server updates...</div>
     </div>
 
-    <!-- MAIN REPORTS UPLOAD -->
     <div id="uploadSectionDiv" class="upload-section">
         <div class="upload-box">
             <h3><i class="fa-solid fa-history"></i> Button 1: FY 25-26 Data</h3>
@@ -171,6 +160,7 @@
                 <select id="leaderboardDateFilter" onchange="fetchCallingReport(true)" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #059669; color:#0f172a; outline:none; background:#dcfce7; cursor:pointer;">
                     <option value="TODAY">📅 Today's Calls</option>
                     <option value="YESTERDAY">📆 Yesterday's Calls</option>
+                    <option value="OVERALL">📊 Overall (All Time)</option>
                 </select>
                 <button class="btn-download" onclick="fetchCallingReport(true)" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh</button>
                 <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('dmCallingReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
@@ -197,7 +187,7 @@
         </div>
     </div>
 
-    <!-- 🌟 VIII. CONVERSION REPORT 🌟 -->
+    <!-- VIII. CONVERSION REPORT -->
     <div class="report-section" id="conversionReportArea" style="border: 2px solid #8b5cf6; background: #f5f3ff;">
         <div class="report-header-flex">
             <h2 style="color: #6d28d9;"><i class="fa-solid fa-bolt"></i> VIII. DM CALL CONVERSION & ACTIVATION REPORT</h2>
@@ -231,6 +221,45 @@
         <div class="report-footer" style="color:#6d28d9;">Matches called CSC IDs against current FTD active list. (ACTV = Activated)</div>
     </div>
 
+    <!-- IX. EMPLOYEE REPORT CARD -->
+    <div class="report-section" id="empReportCardArea" style="border: 2px solid #0284c7; background: #f0f9ff;">
+        <div class="report-header-flex">
+            <h2 style="color: #0369a1;"><i class="fa-solid fa-id-card-clip"></i> IX. EMPLOYEE REPORT CARD (TODAY)</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <select id="empReportDateFilter" onchange="renderEmployeeReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; background:#e0f2fe; cursor:pointer;">
+                    <option value="TODAY">📅 Today's Calls</option>
+                    <option value="YESTERDAY">📆 Yesterday's Calls</option>
+                    <option value="OVERALL">📊 Overall (All Time)</option>
+                </select>
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('empReportCardArea', this)" style="margin:0; background:#0ea5e9;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('empReportCardArea', 'Employee_Report_Card')" style="margin:0; background:#0284c7;"><i class="fa-solid fa-camera"></i> Download</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table id="empReportTable">
+                <thead style="position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="background:#0f172a;">S.NO</th>
+                        <th class="text-left" style="background:#0f172a;">EMPLOYEE NAME</th>
+                        <th style="background:#475569;">TARGET</th>
+                        <th style="background:#2563eb;">CALLS MADE</th>
+                        <th style="background:#0284c7;">ACHIEVED (%)</th>
+                        <th style="background:#16a34a;">ACTIVATED</th>
+                        <th style="background:#d97706;">WILL ACTIVATE</th>
+                        <th style="background:#dc2626;">NOT ANSWERING</th>
+                        <th style="background:#991b1b;">SWITCH OFF</th>
+                        <th style="background:#be123c;">NOT INTERESTED</th>
+                        <th style="background:#64748b;">OTHERS</th>
+                    </tr>
+                </thead>
+                <tbody id="empReportBody">
+                    <tr><td colspan="11" style="color:#64748b;">Waiting for data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="report-footer" style="color:#0284c7;" id="empReportFooter">Target: State Team = 20 Calls | Regular DMs = 40 Calls</div>
+    </div>
+
     <!-- VI. VLE CALLING & DROPOUTS PORTAL -->
     <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
         <div class="report-header-flex">
@@ -240,7 +269,6 @@
                 <button class="btn-download btn-danger" onclick="downloadCallingList()" style="margin:0;"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
             </div>
         </div>
-        
         <div class="filter-bar">
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#64748b; display:block; margin-bottom:5px;">Select Category:</label>
@@ -262,7 +290,6 @@
                 <span id="dropoutCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
             </div>
         </div>
-
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table id="callingTable">
                 <thead style="position: sticky; top: 0; z-index: 10;">
@@ -405,7 +432,6 @@
                 <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download</button>
             </div>
         </div>
-        
         <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
             <div>
                 <label style="font-size:12px; font-weight:bold; color:#1e3a8a; display:block; margin-bottom:5px;">Select Base Month (పాత నెల):</label>
@@ -416,7 +442,6 @@
                 <select id="momTargetSelect" onchange="renderMomReport()" style="border-color:#3b82f6; color:#1e3a8a; min-width: 150px;"></select>
             </div>
         </div>
-
         <div class="table-responsive">
             <table id="momTable">
                 <thead>
@@ -435,6 +460,7 @@
         <div class="report-footer">Report Generated by K Chandra Sekhara Babu</div>
     </div>
 </div>
+
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -504,7 +530,7 @@
             populateMonthDropdowns(data.bnStr, data.tnStr);
             renderMomReport(); 
 
-            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'block');
             document.getElementById('btnPublish').style.display = 'block';
 
@@ -516,27 +542,17 @@
         });
     };
 
-    // 🌟 FULLSCREEN LOGIC 🌟
     function toggleFullScreen(elementId, btn) {
         let elem = document.getElementById(elementId);
-        
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { 
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { 
-                elem.msRequestFullscreen();
-            }
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             btn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
         } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) { 
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { 
-                document.msExitFullscreen();
-            }
+            if (document.exitFullscreen) { document.exitFullscreen(); } 
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             btn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
         }
     }
@@ -555,46 +571,33 @@
         }
     });
 
-    // 🌟 NEW: DOUBLE CLICK TO ISOLATE ROW LOGIC 🌟
     function toggleRow(tr) {
         let tbody = tr.closest('tbody');
         let isFiltered = tbody.getAttribute('data-filtered') === 'true';
 
         if (!isFiltered) {
-            // Hide all other data rows
             let rows = tbody.querySelectorAll('.data-row');
-            rows.forEach(r => {
-                if (r !== tr) r.style.display = 'none';
-            });
+            rows.forEach(r => { if (r !== tr) r.style.display = 'none'; });
             tbody.setAttribute('data-filtered', 'true');
-            // Highlight isolated row
             tr.style.outline = '3px solid #3b82f6'; 
             tr.style.background = '#e0f2fe';
         } else {
-            // Unhide all data rows
             let rows = tbody.querySelectorAll('.data-row');
-            rows.forEach(r => {
-                r.style.display = '';
-                r.style.outline = 'none';
-                r.style.background = ''; // reset to CSS default hover/nth-child
-            });
+            rows.forEach(r => { r.style.display = ''; r.style.outline = 'none'; r.style.background = ''; });
             tbody.setAttribute('data-filtered', 'false');
         }
     }
 
     function clearLocalData() {
         if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
-            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => document.getElementById(id).style.display = 'none');
-            
             document.getElementById('btnPublish').style.display = 'none';
             document.getElementById('btnClear').style.display = 'none';
             document.getElementById('lastUpdatedText').style.display = 'none';
-            
             document.getElementById('fileLastYear').value = "";
             document.getElementById('fileMaster').value = "";
             document.getElementById('fileDayWise').value = "";
-            
             document.getElementById('uploadSectionDiv').style.display = 'flex';
             document.getElementById('btnGen').style.display = 'block';
         }
@@ -639,15 +642,12 @@
         const fileMaster = document.getElementById('fileMaster').files[0];
         const fileDayWise = document.getElementById('fileDayWise').files[0];
 
-        if (!fileMaster || !fileDayWise) {
-            alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్స్ సెలెక్ట్ చేయండి!");
-            return;
-        }
+        if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్స్ సెలెక్ట్ చేయండి!"); return; }
 
         document.getElementById('btnGen').disabled = true;
         document.getElementById('loadingDiv').style.display = 'block';
         
-        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'none');
 
         districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
@@ -660,26 +660,17 @@
         monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
 
         try {
-            if (fileLastYear) {
-                await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } }));
-            }
-            await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { 
-                let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]);
-                processMasterData(res.data, headers); r(); 
-            } }));
+            if (fileLastYear) { await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } })); }
+            await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]); processMasterData(res.data, headers); r(); } }));
             await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
 
             populateMonthDropdowns();
             generateHTMLReports();
             populateDistrictDropdown();
             renderMomReport(); 
-
             fetchCallingReport(true);
 
-            if (hasScientificError) {
-                setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500);
-            }
-
+            if (hasScientificError) { setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500); }
         } catch (error) {
             alert("ఎర్రర్ వచ్చింది: " + error.message);
         } finally {
@@ -833,7 +824,6 @@
                 stateMtdCscs.add(cscid);
                 districtData[dist].mtd_cscs.add(cscid);
                 serviceData[srv].mtd_cscs.add(cscid);
-                
                 monthlyData["MTD (Current Month)"].all.add(cscid);
                 if(isGSW) monthlyData["MTD (Current Month)"].gsw.add(cscid);
             }
@@ -872,7 +862,6 @@
     function renderMomReport() {
         let bName = document.getElementById('momBaseSelect').value;
         let tName = document.getElementById('momTargetSelect').value;
-
         if(!bName || !tName) return;
 
         document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
@@ -887,9 +876,7 @@
         let tGsw = monthlyData[tName]?.gsw || new Set();
 
         let validDists = new Set();
-        Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") validDists.add(v.dist);
-        });
+        Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN") validDists.add(v.dist); });
         
         let distStats = {};
         Array.from(validDists).sort().forEach(d => {
@@ -902,14 +889,8 @@
                 distStats[dist].base++;
                 let isG = bGsw.has(cscid);
                 if(isG) distStats[dist].baseGsw++;
-
-                if(tSet.has(cscid)) {
-                    distStats[dist].retained++;
-                    if(isG) distStats[dist].retainedGsw++;
-                } else {
-                    distStats[dist].drop++;
-                    if(isG) distStats[dist].dropGsw++;
-                }
+                if(tSet.has(cscid)) { distStats[dist].retained++; if(isG) distStats[dist].retainedGsw++; } 
+                else { distStats[dist].drop++; if(isG) distStats[dist].dropGsw++; }
             }
         });
 
@@ -919,11 +900,7 @@
                 distStats[dist].target++;
                 let isG = tGsw.has(cscid);
                 if(isG) distStats[dist].targetGsw++;
-
-                if(!bSet.has(cscid)) {
-                    distStats[dist].new++;
-                    if(isG) distStats[dist].newGsw++;
-                }
+                if(!bSet.has(cscid)) { distStats[dist].new++; if(isG) distStats[dist].newGsw++; }
             }
         });
 
@@ -943,7 +920,6 @@
             let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
             let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
 
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#1e3a8a;">${dName}</td>
                 <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
@@ -964,24 +940,15 @@
         </tr>`;
         
         document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
-
-        if(document.getElementById('filterCategory').value === 'MOM') {
-            renderCallingList();
-        }
+        if(document.getElementById('filterCategory').value === 'MOM') { renderCallingList(); }
     }
 
     function populateDistrictDropdown() {
         let distSelect = document.getElementById('filterDistrict');
         distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        
         let dists = new Set();
-        Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
-        });
-        
-        Array.from(dists).sort().forEach(d => {
-            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
-        });
+        Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist); });
+        Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
     }
 
     function renderCallingList() {
@@ -1006,12 +973,7 @@
                 if(!activeSet.has(cscid)) {
                     let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
                     if(distFilter === "ALL" || distFilter === details.dist) {
-                        currentCallingListData.push({
-                            "District": details.dist,
-                            "CSC_ID": cscid,
-                            "Name": details.name || "Unknown VLE", 
-                            "Mobile": details.mobile || "Not Available"
-                        });
+                        currentCallingListData.push({ "District": details.dist, "CSC_ID": cscid, "Name": details.name || "Unknown VLE", "Mobile": details.mobile || "Not Available" });
                     }
                 }
             });
@@ -1027,14 +989,9 @@
             let displayList = currentCallingListData.slice(0, 500);
             
             displayList.forEach((vle, idx) => {
-                let callBtn = vle.Mobile !== "Not Available" ? 
-                    `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : 
-                    `<button class="btn-call btn-disabled" disabled>N/A</button>`;
-                
+                let callBtn = vle.Mobile !== "Not Available" ? `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
                 let cscDisplay = vle.CSC_ID;
-                if(vle.CSC_ID.startsWith('9')) {
-                    cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
-                }
+                if(vle.CSC_ID.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
                 
                 let lastRemHtml = "";
                 if (latestRemarks[vle.CSC_ID]) {
@@ -1046,12 +1003,8 @@
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
                             <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;" onchange="if(this.value==='Others'){document.getElementById('other_${vle.CSC_ID}').style.display='block';}else{document.getElementById('other_${vle.CSC_ID}').style.display='none';}">
-                                <option value="">Select...</option>
-                                <option value="Not answering/ Busy">Not answering/ Busy</option>
-                                <option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
-                                <option value="Intrested/will active">Intrested/will active</option>
-                                <option value="Not interested/ Person not available">Not interested/ Person not available</option>
-                                <option value="Others">Others</option>
+                                <option value="">Select...</option><option value="Not answering/ Busy">Not answering/ Busy</option><option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
+                                <option value="Intrested/will active">Intrested/will active</option><option value="Not interested/ Person not available">Not interested/ Person not available</option><option value="Others">Others</option>
                             </select>
                             <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
                             <button onclick="saveRemark('${vle.CSC_ID}', this)" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; min-width:70px; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1);" title="Save Remark"><i class="fa-solid fa-save"></i> Save</button>
@@ -1060,156 +1013,72 @@
                     </div>
                 `;
                 
-                // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
                 tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                    <td>${idx + 1}</td>
-                    <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
-                    <td style="color:#0f172a;">${cscDisplay}</td>
-                    <td style="color:#475569; font-weight:600;">${vle.Name}</td>
-                    <td style="color:#475569;">${vle.Mobile}</td>
-                    <td>${callBtn}</td>
-                    <td>${remarkSelect}</td>
+                    <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a;">${vle.District}</td><td style="color:#0f172a;">${cscDisplay}</td>
+                    <td style="color:#475569; font-weight:600;">${vle.Name}</td><td style="color:#475569;">${vle.Mobile}</td><td>${callBtn}</td><td>${remarkSelect}</td>
                 </tr>`;
             });
-            if(currentCallingListData.length > 500) {
-                tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
-            }
+            if(currentCallingListData.length > 500) { tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`; }
         }
         document.getElementById('callingBody').innerHTML = tbody;
     }
 
     function saveRemark(cscId, btn) {
-        let selectEl = document.getElementById("rem_" + cscId);
-        let remark = selectEl.value;
-        
+        let selectEl = document.getElementById("rem_" + cscId); let remark = selectEl.value;
         if (remark === "Others") {
             let otherInput = document.getElementById("other_" + cscId).value.trim();
-            if (otherInput === "") {
-                alert("Please type the reason in the text box!");
-                return;
-            }
+            if (otherInput === "") { alert("Please type the reason in the text box!"); return; }
             remark = "Others - " + otherInput; 
-        } else if (!remark) {
-            alert("Please select a remark first!");
-            return;
-        }
+        } else if (!remark) { alert("Please select a remark first!"); return; }
         
-        let originalHtml = btn.innerHTML;
-        let originalBg = btn.style.background;
+        let originalHtml = btn.innerHTML; let originalBg = btn.style.background;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..'; btn.style.background = '#d97706'; btn.disabled = true; btn.style.cursor = 'not-allowed';
 
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
-        btn.style.background = '#d97706'; 
-        btn.disabled = true;
-        btn.style.cursor = 'not-allowed';
-
-        let dmNameStr = "STATE HEAD";
-        if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
-
+        let dmNameStr = "STATE HEAD"; if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
         let categoryType = document.getElementById('filterCategory').value;
 
-        let payload = {
-            action: "saveFollowUp",
-            cscId: cscId,
-            service: categoryType + " DROPOUT",
-            dmName: dmNameStr,
-            remark: remark,
-            location: "State Head Portal"
-        };
+        let payload = { action: "saveFollowUp", cscId: cscId, service: categoryType + " DROPOUT", dmName: dmNameStr, remark: remark, location: "State Head Portal" };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-            redirect: "follow"
-        })
+        fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" })
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
-                btn.style.background = "#16a34a"; 
-                selectEl.style.borderColor = "#16a34a";
-                
-                let d = new Date();
-                let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!'; btn.style.background = "#16a34a"; selectEl.style.borderColor = "#16a34a";
+                let d = new Date(); let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
                 latestRemarks[cscId] = { remark: remark, dmName: dmNameStr, date: dateStr };
-                
-                setTimeout(() => { 
-                    renderCallingList(); 
-                    fetchCallingReport(true); 
-                }, 1000); 
+                setTimeout(() => { renderCallingList(); fetchCallingReport(true); }, 1000); 
             } else {
-                alert("Error: " + data.message);
-                btn.innerHTML = originalHtml;
-                btn.style.background = originalBg;
-                btn.disabled = false;
-                btn.style.cursor = 'pointer';
+                alert("Error: " + data.message); btn.innerHTML = originalHtml; btn.style.background = originalBg; btn.disabled = false; btn.style.cursor = 'pointer';
             }
         })
-        .catch(err => {
-            alert("Network Error while saving remark!");
-            btn.innerHTML = originalHtml;
-            btn.style.background = originalBg;
-            btn.disabled = false;
-            btn.style.cursor = 'pointer';
-        });
+        .catch(err => { alert("Network Error while saving remark!"); btn.innerHTML = originalHtml; btn.style.background = originalBg; btn.disabled = false; btn.style.cursor = 'pointer'; });
     }
 
     function downloadCallingList() {
-        if(currentCallingListData.length === 0) {
-            alert("No data available to download for this selection.");
-            return;
-        }
+        if(currentCallingListData.length === 0) { alert("No data available to download for this selection."); return; }
         let category = document.getElementById('filterCategory').value;
         let dist = document.getElementById('filterDistrict').value;
-        
         let exportData = currentCallingListData.map(v => ({
-            "District Name": v.District,
-            "CSC ID": v.CSC_ID,
-            "VLE Name": v.Name, 
-            "Mobile Number": v.Mobile,
-            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+            "District Name": v.District, "CSC ID": v.CSC_ID, "VLE Name": v.Name, "Mobile Number": v.Mobile, "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
             "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
         }));
-
-        let csv = Papa.unparse(exportData);
-        let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-        let link = document.createElement("a");
-        let url = URL.createObjectURL(blob);
-        let d = new Date(); 
-        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Dropouts_List_${category}_${dist}_${dateStr}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        let csv = Papa.unparse(exportData); let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        let link = document.createElement("a"); let url = URL.createObjectURL(blob); let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        link.setAttribute("href", url); link.setAttribute("download", `Dropouts_List_${category}_${dist}_${dateStr}.csv`);
+        link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // 🌟 RESTORED THIS FUNCTION: generateHTMLReports (For Tables I, II, III, IV) 🌟
     function generateHTMLReports() {
         let stateZeroTxn = Math.max(0, stateLyCscs.size - stateYtdCscs.size);
-        
-        let stateGswZeroTxn = 0;
-        stateLyGswCscs.forEach(id => { if(!stateYtdCscs.has(id)) stateGswZeroTxn++; });
+        let stateGswZeroTxn = 0; stateLyGswCscs.forEach(id => { if(!stateYtdCscs.has(id)) stateGswZeroTxn++; });
 
-        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
-        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString(); document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString(); document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString(); document.getElementById('sumZeroTxn').innerText = stateZeroTxn.toLocaleString();
+        document.getElementById('sumZeroGsw').innerText = `(GSW: ${stateGswZeroTxn.toLocaleString()})`; document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
+        document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2}); document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
 
-        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
-        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
-
-        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
-        
-        document.getElementById('sumZeroTxn').innerText = stateZeroTxn.toLocaleString();
-        document.getElementById('sumZeroGsw').innerText = `(GSW: ${stateGswZeroTxn.toLocaleString()})`;
-
-        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
-        document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2});
-        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
-
-        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN");
-        let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN");
+        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN"); let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN");
 
         let sortedOverallServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
         let sortedYesterdayServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
@@ -1219,32 +1088,22 @@
         let srvHtml = ""; let ovTxn = 0, ovMtdTxn = 0, ovAmt = 0, ovRev = 0;
         sortedOverallServices.forEach(item => {
             let d = item.data; if(d.total_txn === 0 && d.ly_cscs.size === 0) return; 
-            
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             srvHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td class="text-left" style="color:#0f172a;">${item.name}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
-                <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td>
-                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td><td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#1d4ed8;">${d.ytd_cscs.size.toLocaleString()}</td><td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td><td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
                 <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
-                <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td><td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             </tr>`;
             ovTxn += d.total_txn; ovMtdTxn += d.mtd_txn; ovAmt += d.total_amt; ovRev += d.total_rev;
         });
         let srvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">OVERALL STATE</td>
-            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovMtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">OVERALL STATE</td><td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">${ovTxn.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovMtdTxn.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">₹ ${ovAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">₹ ${ovRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
         </tr>`;
         document.getElementById('serviceBody').innerHTML = srvTotalHtml + srvHtml;
@@ -1252,70 +1111,50 @@
         let ySrvHtml = ""; let ovFtdTxn = 0, ovFtdAmt = 0, ovFtdRev = 0;
         sortedYesterdayServices.forEach(item => {
             let d = item.data;
-            
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             ySrvHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td class="text-left" style="color:#0f172a;">${item.name}</td>
-                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td class="text-left" style="color:#0f172a;">${item.name}</td><td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td><td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             </tr>`;
             ovFtdTxn += d.ftd_txn; ovFtdAmt += d.ftd_amt; ovFtdRev += d.ftd_rev;
         });
         let ySrvTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovFtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td><td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovFtdTxn.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
         </tr>`;
         document.getElementById('yesterdayServiceBody').innerHTML = ySrvTotalHtml + ySrvHtml;
 
-        let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0;
-        let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
-        
+        let distHtml = ""; let ovDistTotTxn = 0, ovDistAmt = 0, ovDistRev = 0; let ovDistFtdTxn_overall = 0, ovDistFtdAmt_overall = 0, ovDistFtdRev_overall = 0;
         sortedOverallDistricts.forEach(item => {
-            let d = item.data;
-            let distGswZero = 0;
-            d.ly_gsw.forEach(id => { if(!d.ytd_cscs.has(id)) distGswZero++; });
+            let d = item.data; let distGswZero = 0; d.ly_gsw.forEach(id => { if(!d.ytd_cscs.has(id)) distGswZero++; });
             let zeroTxn = Math.max(0, d.ly_cscs.size - d.ytd_cscs.size);
             let zeroBadge = zeroTxn > 0 ? `<span class="badge badge-red">${zeroTxn.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
             let ytdDisplay = `${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:10px; color:#047857;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span>`;
             let zeroDisplay = `${zeroBadge}<br><span style="font-size:10px; color:#dc2626;">(GSW: ${distGswZero.toLocaleString()})</span>`;
 
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             distHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
-                <td style="color:#059669;">${ytdDisplay}</td>
-                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td><td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}</td>
+                <td style="color:#059669;">${ytdDisplay}</td><td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef;">${d.ftd_cscs.size.toLocaleString()}</td><td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
                 <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#b91c1c;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td>${zeroDisplay}</td>
-                <td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
+                <td>${zeroDisplay}</td><td style="color:#047857;">${d.total_txn.toLocaleString()}</td>
                 <td style="color:#0f766e;">₹ ${d.total_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#059669;">₹ ${d.total_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             </tr>`;
-            
             ovDistTotTxn += d.total_txn; ovDistAmt += d.total_amt; ovDistRev += d.total_rev;
             ovDistFtdTxn_overall += d.ftd_txn; ovDistFtdAmt_overall += d.ftd_amt; ovDistFtdRev_overall += d.ftd_rev;
         });
 
         let distTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td><td style="color:#ffffff; font-weight:900;">${stateLyCscs.size.toLocaleString()}</td>
             <td style="color:#ffffff; font-weight:900;">${stateYtdCscs.size.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateYtdGswCscs.size.toLocaleString()})</span></td>
-            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn_overall.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">${stateMtdCscs.size.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn_overall.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdAmt_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">₹ ${ovDistFtdRev_overall.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">${stateZeroTxn.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${stateGswZeroTxn.toLocaleString()})</span></td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistTotTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovDistAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistTotTxn.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">₹ ${ovDistAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">₹ ${ovDistRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
         </tr>`;
         document.getElementById('districtBody').innerHTML = distTotalHtml + distHtml;
@@ -1323,367 +1162,152 @@
         let yDistHtml = ""; let ovDistFtdTxn = 0, ovDistFtdAmt = 0, ovDistFtdRev = 0;
         sortedYesterdayDistricts.forEach(item => {
             let d = item.data;
-            
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             yDistHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td class="text-left" style="color:#1e3a8a;">${item.name}</td>
-                <td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td class="text-left" style="color:#1e3a8a;">${item.name}</td><td style="color:#2563eb;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3;">${d.ftd_txn.toLocaleString()}</td><td style="color:#a21caf;">₹ ${d.ftd_amt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td style="color:#059669;">₹ ${d.ftd_rev.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
             </tr>`;
             ovDistFtdTxn += d.ftd_txn; ovDistFtdAmt += d.ftd_amt; ovDistFtdRev += d.ftd_rev;
         });
         let yDistTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td>
-            <td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td>
-            <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+            <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (YESTERDAY)</td><td style="color:#ffffff; font-weight:900;">${stateFtdCscs.size.toLocaleString()}</td>
+            <td style="color:#ffffff; font-weight:900;">${ovDistFtdTxn.toLocaleString()}</td><td style="color:#ffffff; font-weight:900;">₹ ${ovFtdAmt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
             <td style="color:#ffffff; font-weight:900;">₹ ${ovFtdRev.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
         </tr>`;
         document.getElementById('yesterdayDistrictBody').innerHTML = yDistTotalHtml + yDistHtml;
 
-        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'block');
-        
         document.getElementById('btnPublish').style.display = 'block';
     }
 
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
-        
-        const dlBtns = reportDiv.querySelectorAll('.btn-download');
-        dlBtns.forEach(btn => btn.style.display = 'none');
-
-        const inputsAndSelects = reportDiv.querySelectorAll('select, input[type="date"]');
-        const tempElements = [];
+        const dlBtns = reportDiv.querySelectorAll('.btn-download'); dlBtns.forEach(btn => btn.style.display = 'none');
+        const inputsAndSelects = reportDiv.querySelectorAll('select, input[type="date"]'); const tempElements = [];
 
         inputsAndSelects.forEach(el => {
-            let span = document.createElement('span');
-            let color = el.style.color || '#0f172a';
-            let bg = el.style.backgroundColor || '#f1f5f9';
+            let span = document.createElement('span'); let color = el.style.color || '#0f172a'; let bg = el.style.backgroundColor || '#f1f5f9';
             span.style.cssText = `font-weight:bold; color:${color}; font-size:14px; padding:6px 10px; background:${bg}; border-radius:4px; display:inline-block; border:1px solid ${el.style.borderColor || '#cbd5e1'};`;
-            
-            if (el.tagName === 'SELECT') {
-                span.innerText = el.options[el.selectedIndex].text;
-            } else if (el.tagName === 'INPUT' && el.type === 'date') {
-                if(el.value) {
-                    let parts = el.value.split('-');
-                    span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; 
-                } else {
-                    span.innerText = "Date Not Selected";
-                }
+            if (el.tagName === 'SELECT') { span.innerText = el.options[el.selectedIndex].text; } 
+            else if (el.tagName === 'INPUT' && el.type === 'date') {
+                if(el.value) { let parts = el.value.split('-'); span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; } else { span.innerText = "Date Not Selected"; }
             }
-            
-            el.style.display = 'none';
-            el.parentNode.insertBefore(span, el);
-            tempElements.push({ original: el, temp: span });
+            el.style.display = 'none'; el.parentNode.insertBefore(span, el); tempElements.push({ original: el, temp: span });
         });
 
-        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
-        let originalMaxHeights = [];
-        tableResponsiveDivs.forEach(div => {
-            originalMaxHeights.push(div.style.maxHeight);
-            div.style.maxHeight = 'none'; 
-            div.style.overflow = 'visible'; 
-        });
+        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive'); let originalMaxHeights = [];
+        tableResponsiveDivs.forEach(div => { originalMaxHeights.push(div.style.maxHeight); div.style.maxHeight = 'none'; div.style.overflow = 'visible'; });
 
-        let originalDivWidth = reportDiv.style.width;
-        let originalDivPadding = reportDiv.style.padding;
-        reportDiv.style.width = '1200px'; 
-        reportDiv.style.padding = '20px'; 
+        let originalDivWidth = reportDiv.style.width; let originalDivPadding = reportDiv.style.padding;
+        reportDiv.style.width = '1200px'; reportDiv.style.padding = '20px'; 
         
         try {
-            const canvas = await html2canvas(reportDiv, { 
-                scale: 3, 
-                backgroundColor: "#ffffff",
-                useCORS: true 
-            });
-            const link = document.createElement('a');
-            let d = new Date(); 
-            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-            link.download = `${prefix}_${dateStr}.png`;
-            link.href = canvas.toDataURL("image/png", 1.0);
-            link.click();
-        } catch(err) {
-            alert("Image capture failed. Please try again.");
-        } finally {
-            tableResponsiveDivs.forEach((div, index) => {
-                div.style.maxHeight = originalMaxHeights[index]; 
-                div.style.overflow = 'auto'; 
-            });
-
-            reportDiv.style.width = originalDivWidth; 
-            reportDiv.style.padding = originalDivPadding;
-            
+            const canvas = await html2canvas(reportDiv, { scale: 3, backgroundColor: "#ffffff", useCORS: true });
+            const link = document.createElement('a'); let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            link.download = `${prefix}_${dateStr}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click();
+        } catch(err) { alert("Image capture failed. Please try again."); } 
+        finally {
+            tableResponsiveDivs.forEach((div, index) => { div.style.maxHeight = originalMaxHeights[index]; div.style.overflow = 'auto'; });
+            reportDiv.style.width = originalDivWidth; reportDiv.style.padding = originalDivPadding;
             dlBtns.forEach(btn => btn.style.display = 'inline-block');
-            
-            tempElements.forEach(item => {
-                item.original.style.display = 'inline-block';
-                item.temp.remove();
-            });
+            tempElements.forEach(item => { item.original.style.display = 'inline-block'; item.temp.remove(); });
         }
     }
 
     function publishToDMs() {
-        let btn = document.getElementById('btnPublish');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...';
-        btn.disabled = true;
-        
-        let bName = document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "BASE MONTH";
-        let tName = document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "TARGET MONTH";
-
-        let monthlyDataArrays = {};
-        for(let m in monthlyData) {
-            monthlyDataArrays[m] = {
-                all: Array.from(monthlyData[m].all),
-                gsw: Array.from(monthlyData[m].gsw)
-            };
-        }
+        let btn = document.getElementById('btnPublish'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing Data to Server...'; btn.disabled = true;
+        let bName = document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "BASE MONTH"; let tName = document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "TARGET MONTH";
+        let monthlyDataArrays = {}; for(let m in monthlyData) { monthlyDataArrays[m] = { all: Array.from(monthlyData[m].all), gsw: Array.from(monthlyData[m].gsw) }; }
 
         let dataPacket = {
-            html_summary: document.getElementById('summaryArea').innerHTML,
-            html_service: document.getElementById('serviceBody').innerHTML,
-            html_district: document.getElementById('districtBody').innerHTML,
-            html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
-            html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
-            
-            vleDb: vleDb,
-            stateLyCscs: Array.from(stateLyCscs),
-            stateYtdCscs: Array.from(stateYtdCscs),
-            stateMtdCscs: Array.from(stateMtdCscs),
-            stateFtdCscs: Array.from(stateFtdCscs),
-            
-            monthlyData: monthlyDataArrays, 
-            
-            bnStr: bName,
-            tnStr: tName,
-            updateTime: new Date().toLocaleString()
+            html_summary: document.getElementById('summaryArea').innerHTML, html_service: document.getElementById('serviceBody').innerHTML, html_district: document.getElementById('districtBody').innerHTML, html_y_service: document.getElementById('yesterdayServiceBody').innerHTML, html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
+            vleDb: vleDb, stateLyCscs: Array.from(stateLyCscs), stateYtdCscs: Array.from(stateYtdCscs), stateMtdCscs: Array.from(stateMtdCscs), stateFtdCscs: Array.from(stateFtdCscs),
+            monthlyData: monthlyDataArrays, bnStr: bName, tnStr: tName, updateTime: new Date().toLocaleString()
         };
 
-        let SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-        let payload = { action: "publishDMReport", reportData: JSON.stringify(dataPacket) };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-            redirect: "follow"
-        })
+        fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "publishDMReport", reportData: JSON.stringify(dataPacket) }), redirect: "follow" })
         .then(response => response.json())
         .then(data => {
-            if(data.status === 'success') {
-                alert("✅ " + data.message);
-                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> PUBLISHED SUCCESSFULLY';
-                btn.style.background = '#16a34a';
-            } else {
-                alert("❌ Error: " + data.message);
-                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
-                btn.disabled = false;
-            }
+            if(data.status === 'success') { alert("✅ " + data.message); btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> PUBLISHED SUCCESSFULLY'; btn.style.background = '#16a34a'; } 
+            else { alert("❌ Error: " + data.message); btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD'; btn.disabled = false; }
         })
-        .catch(error => {
-            alert("❌ Server / Network Error. Please check your internet or Google Script deployment.");
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD';
-            btn.disabled = false;
-        });
+        .catch(error => { alert("❌ Server / Network Error. Please check your internet or Google Script deployment."); btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH TO DMs DASHBOARD'; btn.disabled = false; });
     }
 
     function fetchCallingReport(forceLive = false) {
-        let tbody = document.getElementById('dmCallingBody');
-        tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
+        let tbody = document.getElementById('dmCallingBody'); tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
         let filterVal = document.getElementById('leaderboardDateFilter') ? document.getElementById('leaderboardDateFilter').value : "TODAY";
-        
-        let targetDate = new Date();
-        if(filterVal === "YESTERDAY") {
-            targetDate.setDate(targetDate.getDate() - 1);
-        }
-        
-        let dd = ("0"+targetDate.getDate()).slice(-2);
-        let mm = ("0"+(targetDate.getMonth()+1)).slice(-2);
-        let yyyy = targetDate.getFullYear();
-        let targetStr1 = `${dd}-${mm}-${yyyy}`; 
-        let targetStr2 = `${yyyy}-${mm}-${dd}`; 
+        let isOverall = (filterVal === "OVERALL");
+        let targetDate = new Date(); if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
+        let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
+        let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
-        let thTitle = filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)";
-        document.getElementById('thTotalCalls').innerText = thTitle;
-        
-        let headingText = filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)";
-        document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
+        let thTitle = isOverall ? "TOTAL CALLS (ALL TIME)" : (filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)"); document.getElementById('thTotalCalls').innerText = thTitle;
+        let headingText = isOverall ? "VII. DM CALLING PERFORMANCE (OVERALL)" : (filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)"); document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
 
-        let payload = { action: "getCallingReport" };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-            redirect: "follow",
-            cache: "no-store" 
-        })
+        fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "getCallingReport" }), redirect: "follow", cache: "no-store" })
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                globalCallLogs = data.data || []; 
-                let dmStats = {};
-                latestRemarks = {}; 
-                
-                const ALL_DMS = [
-                    "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
-                    "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
-                    "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
-                    "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
-                    "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
-                    "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan",
-                    "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
-                    "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
-                ];
-
-                ALL_DMS.forEach(dm => {
-                    dmStats[dm.toLowerCase().trim()] = { 
-                        originalName: dm,
-                        ytd:0, mtd:0, ftd:0, mom:0, total:0, 
-                        calledVles: new Set() 
-                    };
-                });
+                globalCallLogs = data.data || []; let dmStats = {}; latestRemarks = {}; 
+                const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
+                ALL_DMS.forEach(dm => { dmStats[dm.toLowerCase().trim()] = { originalName: dm, ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() }; });
                 
                 globalCallLogs.forEach(log => {
-                    let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
-                    let matchKey = rawDm.toLowerCase();
-                    
-                    let cat = log.category || "";
-                    let cscId = log.cscId || "";
-                    let logDate = log.date ? log.date.split(" ")[0] : "";
-                    
-                    if (cscId) {
-                        latestRemarks[cscId] = {
-                            remark: log.remark,
-                            dmName: rawDm,
-                            date: logDate 
-                        };
-                    }
-                    
+                    let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM"; let matchKey = rawDm.toLowerCase(); let cat = log.category || ""; let cscId = log.cscId || ""; let logDate = log.date ? log.date.split(" ")[0] : "";
+                    if (cscId) { latestRemarks[cscId] = { remark: log.remark, dmName: rawDm, date: logDate }; }
                     if (matchKey === "state head" || matchKey === "unknown dm") return;
-
-                    if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
+                    if (isOverall || (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2)))) {
                         if(dmStats[matchKey]) {
-                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) {
-                                return; 
-                            }
-                            if (cscId) {
-                                dmStats[matchKey].calledVles.add(cscId);
-                            }
-                            
-                            if(cat.includes("YTD")) dmStats[matchKey].ytd++;
-                            else if(cat.includes("MTD")) dmStats[matchKey].mtd++;
-                            else if(cat.includes("FTD")) dmStats[matchKey].ftd++;
-                            else if(cat.includes("MOM")) dmStats[matchKey].mom++;
-                            
+                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) { return; }
+                            if (cscId) { dmStats[matchKey].calledVles.add(cscId); }
+                            if(cat.includes("YTD")) dmStats[matchKey].ytd++; else if(cat.includes("MTD")) dmStats[matchKey].mtd++; else if(cat.includes("FTD")) dmStats[matchKey].ftd++; else if(cat.includes("MOM")) dmStats[matchKey].mom++;
                             dmStats[matchKey].total++;
                         }
                     }
                 });
                 
-                let sortedDMs = Object.values(dmStats).sort((a,b) => {
-                    if (b.total !== a.total) {
-                        return b.total - a.total;
-                    }
-                    return a.originalName.localeCompare(b.originalName);
-                });
-                
-                let html = "";
-                let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                let sortedDMs = Object.values(dmStats).sort((a,b) => { if (b.total !== a.total) { return b.total - a.total; } return a.originalName.localeCompare(b.originalName); });
+                let html = ""; let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
 
-                if(sortedDMs.length === 0) {
-                    html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made on ${targetStr1} yet!</td></tr>`;
-                } else {
+                if(sortedDMs.length === 0) { html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made yet!</td></tr>`; } 
+                else {
                     sortedDMs.forEach((stat, idx) => {
-                        grandTotal.ytd += stat.ytd;
-                        grandTotal.mtd += stat.mtd;
-                        grandTotal.ftd += stat.ftd;
-                        grandTotal.mom += stat.mom;
-                        grandTotal.total += stat.total;
-                        
+                        grandTotal.ytd += stat.ytd; grandTotal.mtd += stat.mtd; grandTotal.ftd += stat.ftd; grandTotal.mom += stat.mom; grandTotal.total += stat.total;
                         let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
-                        
-                        // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
                         html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                            <td>${idx + 1}</td>
-                            <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
-                            <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
-                            <td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
-                            <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td>
-                            <td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
+                            <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
+                            <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td><td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
+                            <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td><td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
                             <td style="color:${displayTotalColor}; font-size:16px; font-weight:900;">${stat.total}</td>
                         </tr>`;
                     });
-                    
                     let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
-                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td>
-                        <td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
-                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td>
-                        <td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
-                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mom}</td>
-                        <td style="color:#10b981; font-size:16px; font-weight:900;">${grandTotal.total}</td>
-                    </tr>`;
-                    html = totalHtml + html;
+                        <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
+                        <td style="color:#ffffff; font-weight:900;">${grandTotal.mom}</td><td style="color:#10b981; font-size:16px; font-weight:900;">${grandTotal.total}</td>
+                    </tr>`; html = totalHtml + html;
                 }
-                document.getElementById('dmCallingBody').innerHTML = html;
-
-                renderCallingList(); 
-                renderConversionReport(); 
-            } else {
-                document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
-            }
+                document.getElementById('dmCallingBody').innerHTML = html; renderCallingList(); renderConversionReport(); renderEmployeeReport();
+            } else { document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`; }
         })
-        .catch(err => {
-            document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
-        });
+        .catch(err => { document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>'; });
     }
 
     function renderConversionReport() {
-        let tbody = document.getElementById('conversionBody');
-        let filterVal = document.getElementById('convDateFilter').value;
+        let tbody = document.getElementById('conversionBody'); let filterVal = document.getElementById('convDateFilter').value;
+        if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; return; }
         
-        if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>';
-            return;
-        }
-        
-        let dParts = filterVal.split('-');
-        let targetStr1 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; 
-        let targetStr2 = filterVal; 
-
+        let dParts = filterVal.split('-'); let targetStr1 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; let targetStr2 = filterVal; 
         let dmConvStats = {};
-        
-        const ALL_DMS = [
-            "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
-            "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
-            "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
-            "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
-            "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
-            "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan",
-            "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
-            "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
-        ];
-
-        ALL_DMS.forEach(dm => {
-            dmConvStats[dm.toLowerCase().trim()] = { 
-                originalName: dm, 
-                ytdCalled: new Set(), ytdActive: 0,
-                mtdCalled: new Set(), mtdActive: 0,
-                totalCalled: new Set(), totalActive: 0
-            };
-        });
+        const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
+        ALL_DMS.forEach(dm => { dmConvStats[dm.toLowerCase().trim()] = { originalName: dm, ytdCalled: new Set(), ytdActive: 0, mtdCalled: new Set(), mtdActive: 0, totalCalled: new Set(), totalActive: 0 }; });
         
         globalCallLogs.forEach(log => {
-            let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
-            let matchKey = rawDm.toLowerCase();
-            let cscId = log.cscId || "";
-            let cat = log.category || "";
-            
+            let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM"; let matchKey = rawDm.toLowerCase(); let cscId = log.cscId || ""; let cat = log.category || "";
             if (matchKey === "state head" || matchKey === "unknown dm") return;
-            
             if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
                 if(dmConvStats[matchKey] && cscId) {
                     dmConvStats[matchKey].totalCalled.add(cscId);
@@ -1693,69 +1317,144 @@
             }
         });
         
-        let sortedDMs = Object.values(dmConvStats).sort((a,b) => {
-            if (b.totalCalled.size !== a.totalCalled.size) return b.totalCalled.size - a.totalCalled.size;
-            return a.originalName.localeCompare(b.originalName);
-        });
-
-        let html = "";
-        let grandTotals = { ytdC:0, ytdA:0, mtdC:0, mtdA:0, totC:0, totA:0 };
+        let sortedDMs = Object.values(dmConvStats).sort((a,b) => { if (b.totalCalled.size !== a.totalCalled.size) return b.totalCalled.size - a.totalCalled.size; return a.originalName.localeCompare(b.originalName); });
+        let html = ""; let grandTotals = { ytdC:0, ytdA:0, mtdC:0, mtdA:0, totC:0, totA:0 };
 
         sortedDMs.forEach((stat, idx) => {
-            stat.ytdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.ytdActive++; });
-            stat.mtdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.mtdActive++; });
-            stat.totalCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.totalActive++; });
-
-            let yC = stat.ytdCalled.size; let yA = stat.ytdActive;
-            let mC = stat.mtdCalled.size; let mA = stat.mtdActive;
-            let tC = stat.totalCalled.size; let tA = stat.totalActive;
-
-            grandTotals.ytdC += yC; grandTotals.ytdA += yA;
-            grandTotals.mtdC += mC; grandTotals.mtdA += mA;
-            grandTotals.totC += tC; grandTotals.totA += tA;
+            stat.ytdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.ytdActive++; }); stat.mtdCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.mtdActive++; }); stat.totalCalled.forEach(id => { if(stateFtdCscs.has(id)) stat.totalActive++; });
+            let yC = stat.ytdCalled.size; let yA = stat.ytdActive; let mC = stat.mtdCalled.size; let mA = stat.mtdActive; let tC = stat.totalCalled.size; let tA = stat.totalActive;
+            grandTotals.ytdC += yC; grandTotals.ytdA += yA; grandTotals.mtdC += mC; grandTotals.mtdA += mA; grandTotals.totC += tC; grandTotals.totA += tA;
 
             let rate = tC > 0 ? Math.round((tA / tC) * 100) : 0;
+            let displayYC = yC > 0 ? yC : '-'; let displayYA = yA > 0 ? `<span style="color:#16a34a; font-weight:900;">${yA}</span>` : '-'; let displayMC = mC > 0 ? mC : '-'; let displayMA = mA > 0 ? `<span style="color:#16a34a; font-weight:900;">${mA}</span>` : '-'; let displayTC = tC > 0 ? tC : '-'; let displayTA = tA > 0 ? `<span class="badge badge-green" style="font-size:14px;">${tA}</span>` : '-';
+            let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626'); let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
             
-            let displayYC = yC > 0 ? yC : '-';
-            let displayYA = yA > 0 ? `<span style="color:#16a34a; font-weight:900;">${yA}</span>` : '-';
-            let displayMC = mC > 0 ? mC : '-';
-            let displayMA = mA > 0 ? `<span style="color:#16a34a; font-weight:900;">${mA}</span>` : '-';
-            let displayTC = tC > 0 ? tC : '-';
-            let displayTA = tA > 0 ? `<span class="badge badge-green" style="font-size:14px;">${tA}</span>` : '-';
-            
-            let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626');
-            let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
-            
-            // 🌟 ADDED ONDBLCLICK CLASS TO ROW 🌟
             html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td>${idx + 1}</td>
-                <td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
-                <td style="color:#d97706; font-weight:bold;">${displayYC}</td>
-                <td style="background:#fef3c7;">${displayYA}</td>
-                <td style="color:#8b5cf6; font-weight:bold;">${displayMC}</td>
-                <td style="background:#f3e8ff;">${displayMA}</td>
-                <td style="color:#1e3a8a; font-weight:bold; font-size:15px;">${displayTC}</td>
-                <td style="background:#dcfce7;">${displayTA}</td>
-                <td>${displayRate}</td>
+                <td>${idx + 1}</td><td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
+                <td style="color:#d97706; font-weight:bold;">${displayYC}</td><td style="background:#fef3c7;">${displayYA}</td>
+                <td style="color:#8b5cf6; font-weight:bold;">${displayMC}</td><td style="background:#f3e8ff;">${displayMA}</td>
+                <td style="color:#1e3a8a; font-weight:bold; font-size:15px;">${displayTC}</td><td style="background:#dcfce7;">${displayTA}</td><td>${displayRate}</td>
             </tr>`;
         });
 
         let totRate = grandTotals.totC > 0 ? Math.round((grandTotals.totA / grandTotals.totC) * 100) : 0;
-
         let totalHtml = `<tr style="background:#2e1065; border-bottom: 3px solid #c4b5fd;">
-            <td colspan="2" class="text-left" style="color:#ddd6fe; font-weight:900; font-size:14px;">OVERALL ACTIVATION (STATE)</td>
-            <td style="color:#fbbf24; font-size:15px; font-weight:900;">${grandTotals.ytdC}</td>
-            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.ytdA}</td>
-            <td style="color:#c084fc; font-size:15px; font-weight:900;">${grandTotals.mtdC}</td>
-            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td>
-            <td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
-            <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td>
-            <td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
+            <td colspan="2" class="text-left" style="color:#ddd6fe; font-weight:900; font-size:14px;">OVERALL ACTIVATION (STATE)</td><td style="color:#fbbf24; font-size:15px; font-weight:900;">${grandTotals.ytdC}</td>
+            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.ytdA}</td><td style="color:#c084fc; font-size:15px; font-weight:900;">${grandTotals.mtdC}</td>
+            <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td><td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
+            <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td><td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
+        </tr>`;
+        tbody.innerHTML = totalHtml + html;
+    }
+
+    // 🌟 EMPLOYEE REPORT CARD LOGIC WITH DYNAMIC MULTIPLIER 🌟
+    function renderEmployeeReport() {
+        let tbody = document.getElementById('empReportBody'); 
+        let filterVal = document.getElementById('empReportDateFilter') ? document.getElementById('empReportDateFilter').value : "TODAY";
+        
+        if(!globalCallLogs || globalCallLogs.length === 0) { 
+            tbody.innerHTML = '<tr><td colspan="11" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
+            return; 
+        }
+
+        let isOverall = (filterVal === "OVERALL"); 
+        let targetDate = new Date(); 
+        if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
+        let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
+        let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
+
+        // 🌟 CALCULATE TOTAL WORKING DAYS FOR OVERALL MULTIPLIER 🌟
+        let totalWorkingDays = 1;
+        if (isOverall) {
+            let uniqueDates = new Set();
+            globalCallLogs.forEach(log => {
+                if (log.date) {
+                    uniqueDates.add(log.date.split(" ")[0]); // Get only the date part
+                }
+            });
+            totalWorkingDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
+        }
+
+        const STATE_EMPLOYEES = ["Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti", "Chandra Sekhara Babu K"].map(name => name.toLowerCase().trim());
+        const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
+
+        let empStats = {};
+        ALL_DMS.forEach(emp => {
+            let key = emp.toLowerCase().trim();
+            let dailyBaseTarget = STATE_EMPLOYEES.includes(key) ? 20 : 40;
+            empStats[key] = { 
+                originalName: emp, 
+                target: dailyBaseTarget * totalWorkingDays, // 🌟 TARGET MULTIPLIED BY DAYS 🌟
+                callsMade: 0, activated: 0, calledIds: new Set(), 
+                willActivate: 0, notAnswering: 0, switchOff: 0, notInterested: 0, others: 0 
+            };
+        });
+
+        globalCallLogs.forEach(log => {
+            let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM"; let matchKey = rawDm.toLowerCase(); let cscId = log.cscId || ""; let remark = (log.remark || "").toLowerCase();
+            if (matchKey === "state head" || matchKey === "unknown dm" || !empStats[matchKey]) return;
+            
+            if (isOverall || (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2)))) {
+                if (cscId && !empStats[matchKey].calledIds.has(cscId)) {
+                    empStats[matchKey].calledIds.add(cscId); empStats[matchKey].callsMade++;
+                    if (remark.includes('will active') || remark.includes('intrested')) { empStats[matchKey].willActivate++; } 
+                    else if (remark.includes('not answering') || remark.includes('busy')) { empStats[matchKey].notAnswering++; } 
+                    else if (remark.includes('switch off') || remark.includes('wrong number')) { empStats[matchKey].switchOff++; } 
+                    else if (remark.includes('not interested') || remark.includes('not available')) { empStats[matchKey].notInterested++; } 
+                    else { empStats[matchKey].others++; }
+                }
+            }
+        });
+
+        Object.values(empStats).forEach(stat => { stat.calledIds.forEach(id => { if (stateFtdCscs.has(id)) { stat.activated++; } }); });
+        let sortedEmps = Object.values(empStats).sort((a,b) => { if (b.callsMade !== a.callsMade) return b.callsMade - a.callsMade; return a.originalName.localeCompare(b.originalName); });
+
+        let html = ""; let grandTotals = { target:0, calls:0, act:0, will:0, noAns:0, swOff:0, noInt:0, oth:0 };
+
+        sortedEmps.forEach((stat, idx) => {
+            grandTotals.target += stat.target; grandTotals.calls += stat.callsMade; grandTotals.act += stat.activated; grandTotals.will += stat.willActivate; grandTotals.noAns += stat.notAnswering; grandTotals.swOff += stat.switchOff; grandTotals.noInt += stat.notInterested; grandTotals.oth += stat.others;
+            
+            let isStateBadge = (stat.target / totalWorkingDays) === 20 ? `<span style="font-size:9px; background:#e2e8f0; color:#475569; padding:2px 4px; border-radius:4px; margin-left:5px; border:1px solid #cbd5e1;">STATE</span>` : '';
+            
+            let pct = stat.target > 0 ? Math.round((stat.callsMade / stat.target) * 100) : 0; 
+            let pctColor = pct >= 100 ? '#16a34a' : (pct >= 50 ? '#d97706' : '#dc2626');
+            let displayPct = `<span style="color:${pctColor}; font-weight:900;">${pct}%</span>`;
+
+            html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
+                <td>${idx + 1}</td><td class="text-left" style="color:#0f172a; font-weight:bold; font-size:13px;">${stat.originalName} ${isStateBadge}</td>
+                <td style="color:#475569; font-weight:bold;">${stat.target}</td><td style="color:#2563eb; font-weight:900; font-size:15px;">${stat.callsMade > 0 ? stat.callsMade : '-'}</td>
+                <td>${displayPct}</td><td style="color:#16a34a; font-weight:900;">${stat.activated > 0 ? stat.activated : '-'}</td>
+                <td style="color:#d97706; font-weight:bold;">${stat.willActivate > 0 ? stat.willActivate : '-'}</td><td style="color:#dc2626; font-weight:bold;">${stat.notAnswering > 0 ? stat.notAnswering : '-'}</td>
+                <td style="color:#991b1b; font-weight:bold;">${stat.switchOff > 0 ? stat.switchOff : '-'}</td><td style="color:#be123c; font-weight:bold;">${stat.notInterested > 0 ? stat.notInterested : '-'}</td>
+                <td style="color:#64748b; font-weight:bold;">${stat.others > 0 ? stat.others : '-'}</td>
+            </tr>`;
+        });
+
+        let ovPct = grandTotals.target > 0 ? Math.round((grandTotals.calls / grandTotals.target) * 100) : 0;
+
+        let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #0ea5e9;">
+            <td colspan="2" class="text-left" style="color:#38bdf8; font-weight:900; font-size:14px;">OVERALL PERFORMANCE</td><td style="color:#ffffff; font-weight:900;">${grandTotals.target}</td>
+            <td style="color:#ffffff; font-weight:900; font-size:16px;">${grandTotals.calls}</td><td style="color:#38bdf8; font-weight:900;">${ovPct}%</td>
+            <td style="color:#4ade80; font-weight:900;">${grandTotals.act}</td><td style="color:#fbbf24; font-weight:900;">${grandTotals.will}</td>
+            <td style="color:#f87171; font-weight:900;">${grandTotals.noAns}</td><td style="color:#fca5a5; font-weight:900;">${grandTotals.swOff}</td>
+            <td style="color:#fda4af; font-weight:900;">${grandTotals.noInt}</td><td style="color:#cbd5e1; font-weight:900;">${grandTotals.oth}</td>
         </tr>`;
 
         tbody.innerHTML = totalHtml + html;
+        
+        let hText = isOverall ? "IX. EMPLOYEE REPORT CARD (OVERALL)" : (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
+        document.querySelector('#empReportCardArea h2').innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
+        
+        // 🌟 DYNAMIC FOOTER UPDATE 🌟
+        let footerEl = document.getElementById('empReportFooter');
+        if (footerEl) {
+            if (isOverall) {
+                footerEl.innerHTML = `Target: State Team = ${20 * totalWorkingDays} Calls | Regular DMs = ${40 * totalWorkingDays} Calls <b>(Calculated for ${totalWorkingDays} Working Days)</b>`;
+            } else {
+                footerEl.innerText = `Target: State Team = 20 Calls | Regular DMs = 40 Calls (Daily Target)`;
+            }
+        }
     }
 </script>
-
 </body>
 </html>
