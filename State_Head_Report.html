@@ -462,6 +462,7 @@
 </div>
 
 
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
@@ -580,10 +581,18 @@
             rows.forEach(r => { if (r !== tr) r.style.display = 'none'; });
             tbody.setAttribute('data-filtered', 'true');
             tr.style.outline = '3px solid #3b82f6'; 
-            tr.style.background = '#e0f2fe';
+            if(!tr.style.backgroundColor || tr.style.backgroundColor !== 'rgb(254, 242, 242)') {
+                tr.style.background = '#e0f2fe';
+            }
         } else {
             let rows = tbody.querySelectorAll('.data-row');
-            rows.forEach(r => { r.style.display = ''; r.style.outline = 'none'; r.style.background = ''; });
+            rows.forEach(r => { 
+                r.style.display = ''; 
+                r.style.outline = 'none'; 
+                if(r.style.backgroundColor !== 'rgb(254, 242, 242)' && r.style.backgroundColor !== '#fef2f2') {
+                    r.style.background = ''; 
+                }
+            });
             tbody.setAttribute('data-filtered', 'false');
         }
     }
@@ -1347,7 +1356,6 @@
         tbody.innerHTML = totalHtml + html;
     }
 
-    // 🌟 EMPLOYEE REPORT CARD LOGIC WITH DYNAMIC MULTIPLIER 🌟
     function renderEmployeeReport() {
         let tbody = document.getElementById('empReportBody'); 
         let filterVal = document.getElementById('empReportDateFilter') ? document.getElementById('empReportDateFilter').value : "TODAY";
@@ -1363,14 +1371,11 @@
         let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
         let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
-        // 🌟 CALCULATE TOTAL WORKING DAYS FOR OVERALL MULTIPLIER 🌟
         let totalWorkingDays = 1;
         if (isOverall) {
             let uniqueDates = new Set();
             globalCallLogs.forEach(log => {
-                if (log.date) {
-                    uniqueDates.add(log.date.split(" ")[0]); // Get only the date part
-                }
+                if (log.date) { uniqueDates.add(log.date.split(" ")[0]); }
             });
             totalWorkingDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
         }
@@ -1383,8 +1388,7 @@
             let key = emp.toLowerCase().trim();
             let dailyBaseTarget = STATE_EMPLOYEES.includes(key) ? 20 : 40;
             empStats[key] = { 
-                originalName: emp, 
-                target: dailyBaseTarget * totalWorkingDays, // 🌟 TARGET MULTIPLIED BY DAYS 🌟
+                originalName: emp, target: dailyBaseTarget * totalWorkingDays, 
                 callsMade: 0, activated: 0, calledIds: new Set(), 
                 willActivate: 0, notAnswering: 0, switchOff: 0, notInterested: 0, others: 0 
             };
@@ -1407,7 +1411,16 @@
         });
 
         Object.values(empStats).forEach(stat => { stat.calledIds.forEach(id => { if (stateFtdCscs.has(id)) { stat.activated++; } }); });
-        let sortedEmps = Object.values(empStats).sort((a,b) => { if (b.callsMade !== a.callsMade) return b.callsMade - a.callsMade; return a.originalName.localeCompare(b.originalName); });
+        
+        // 🌟 MODIFIED SORTING LOGIC: DMs First, State Team Last 🌟
+        let sortedEmps = Object.values(empStats).sort((a,b) => { 
+            let aIsState = (a.target / totalWorkingDays) === 20 ? 1 : 0;
+            let bIsState = (b.target / totalWorkingDays) === 20 ? 1 : 0;
+            
+            if (aIsState !== bIsState) return aIsState - bIsState;
+            if (b.callsMade !== a.callsMade) return b.callsMade - a.callsMade; 
+            return a.originalName.localeCompare(b.originalName); 
+        });
 
         let html = ""; let grandTotals = { target:0, calls:0, act:0, will:0, noAns:0, swOff:0, noInt:0, oth:0 };
 
@@ -1420,12 +1433,20 @@
             let pctColor = pct >= 100 ? '#16a34a' : (pct >= 50 ? '#d97706' : '#dc2626');
             let displayPct = `<span style="color:${pctColor}; font-weight:900;">${pct}%</span>`;
 
-            html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                <td>${idx + 1}</td><td class="text-left" style="color:#0f172a; font-weight:bold; font-size:13px;">${stat.originalName} ${isStateBadge}</td>
-                <td style="color:#475569; font-weight:bold;">${stat.target}</td><td style="color:#2563eb; font-weight:900; font-size:15px;">${stat.callsMade > 0 ? stat.callsMade : '-'}</td>
-                <td>${displayPct}</td><td style="color:#16a34a; font-weight:900;">${stat.activated > 0 ? stat.activated : '-'}</td>
-                <td style="color:#d97706; font-weight:bold;">${stat.willActivate > 0 ? stat.willActivate : '-'}</td><td style="color:#dc2626; font-weight:bold;">${stat.notAnswering > 0 ? stat.notAnswering : '-'}</td>
-                <td style="color:#991b1b; font-weight:bold;">${stat.switchOff > 0 ? stat.switchOff : '-'}</td><td style="color:#be123c; font-weight:bold;">${stat.notInterested > 0 ? stat.notInterested : '-'}</td>
+            let rowStyle = pct < 50 ? 'background-color: #fef2f2;' : '';
+            let nameColor = pct < 50 ? '#b91c1c' : '#0f172a';
+
+            html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row" style="${rowStyle}">
+                <td>${idx + 1}</td>
+                <td class="text-left" style="color:${nameColor}; font-weight:bold; font-size:13px;">${stat.originalName} ${isStateBadge}</td>
+                <td style="color:#475569; font-weight:bold;">${stat.target}</td>
+                <td style="color:#2563eb; font-weight:900; font-size:15px;">${stat.callsMade > 0 ? stat.callsMade : '-'}</td>
+                <td>${displayPct}</td>
+                <td style="color:#16a34a; font-weight:900;">${stat.activated > 0 ? stat.activated : '-'}</td>
+                <td style="color:#d97706; font-weight:bold;">${stat.willActivate > 0 ? stat.willActivate : '-'}</td>
+                <td style="color:#dc2626; font-weight:bold;">${stat.notAnswering > 0 ? stat.notAnswering : '-'}</td>
+                <td style="color:#991b1b; font-weight:bold;">${stat.switchOff > 0 ? stat.switchOff : '-'}</td>
+                <td style="color:#be123c; font-weight:bold;">${stat.notInterested > 0 ? stat.notInterested : '-'}</td>
                 <td style="color:#64748b; font-weight:bold;">${stat.others > 0 ? stat.others : '-'}</td>
             </tr>`;
         });
@@ -1445,7 +1466,6 @@
         let hText = isOverall ? "IX. EMPLOYEE REPORT CARD (OVERALL)" : (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
         document.querySelector('#empReportCardArea h2').innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
         
-        // 🌟 DYNAMIC FOOTER UPDATE 🌟
         let footerEl = document.getElementById('empReportFooter');
         if (footerEl) {
             if (isOverall) {
