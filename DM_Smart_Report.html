@@ -20,8 +20,13 @@
         .report-header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap:10px; }
         .report-header-flex h2 { color: #0f172a; margin: 0; font-size: 18px; }
         
+        .pseudo-fullscreen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important; background: #ffffff !important; margin: 0 !important; padding: 30px !important; overflow-y: auto !important; box-sizing: border-box !important; display: flex !important; flex-direction: column !important; }
+        .pseudo-fullscreen .table-responsive { max-height: none !important; flex-grow: 1 !important; overflow-y: auto !important; }
+
         .btn-download { background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-left: 10px; text-decoration: none; display: inline-block;}
         .btn-download:hover { background: #1d4ed8; }
+        .btn-fullscreen { background: #475569; }
+        .btn-fullscreen:hover { background: #334155; }
         .btn-danger { background: #dc2626; }
         .btn-danger:hover { background: #b91c1c; }
         .btn-call { background: #16a34a; color: white; border: none; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; }
@@ -32,7 +37,7 @@
         .card { flex: 1; min-width: 150px; background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 6px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .card h4 { margin: 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 800; }
         .card h2 { margin: 8px 0 0 0; font-size: 22px; color: #0f172a; font-weight: 900; }
-        .card p { margin: 2px 0 0 0; font-weight: bold; }
+        .card p { margin: 2px 0 0 0; font-weight: bold; line-height: 1.3;}
 
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1200px; }
@@ -51,9 +56,10 @@
         /* MOBILE FRIENDLY CSS FOR DROPDOWNS */
         .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border: 1px solid #cbd5e1; }
         .filter-bar > div { flex: 1; min-width: 250px; }
-        .filter-bar select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
+        .filter-bar select, .filter-bar input { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0f172a; box-sizing: border-box; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+        .data-row { cursor: pointer; }
 
         @media (max-width: 992px) {
             .cards-grid { grid-template-columns: repeat(3, 1fr); }
@@ -102,8 +108,10 @@
                 <select id="leaderboardDateFilter" onchange="fetchCallingReport(true)" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #059669; color:#0f172a; outline:none; background:#dcfce7; cursor:pointer;">
                     <option value="TODAY">📅 Today's Calls</option>
                     <option value="YESTERDAY">📆 Yesterday's Calls</option>
+                    <option value="OVERALL">📊 Overall (All Time)</option>
                 </select>
-                <button class="btn-download" onclick="fetchCallingReport()" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+                <button class="btn-download" onclick="fetchCallingReport(true)" style="background:#059669; margin:0;"><i class="fa-solid fa-sync"></i> Refresh Leaderboard</button>
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('dmCallingReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
                 <button class="btn-download" onclick="downloadImage('dmCallingReportArea', 'DM_Calling_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
             </div>
         </div>
@@ -131,7 +139,10 @@
     <div class="report-section" id="callingPortalArea" style="border: 2px solid #dc2626;">
         <div class="report-header-flex">
             <h2 style="color: #dc2626;"><i class="fa-solid fa-headset"></i> VI. DROPOUTS TRACKING & CALLING PORTAL</h2>
-            <button class="btn-download btn-danger" onclick="downloadCallingList()"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('callingPortalArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download btn-danger" onclick="downloadCallingList()" style="margin:0;"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+            </div>
         </div>
         
         <div class="filter-bar">
@@ -180,7 +191,10 @@
     <div class="report-section" id="serviceReportArea">
         <div class="report-header-flex">
             <h2>I. OVERALL SERVICE-WISE PERFORMANCE (YTD & MTD)</h2>
-            <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('serviceReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('serviceReportArea', 'Overall_Service_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="serviceTable">
@@ -208,7 +222,10 @@
     <div class="report-section" id="yesterdayServiceReportArea">
         <div class="report-header-flex">
             <h2>II. YESTERDAY'S SERVICE-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('yesterdayServiceReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('yesterdayServiceReportArea', 'Yesterday_Service_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="yesterdayServiceTable">
@@ -230,7 +247,10 @@
     <div class="report-section" id="districtReportArea">
         <div class="report-header-flex">
             <h2>III. OVERALL DISTRICT-WISE PERFORMANCE (YTD)</h2>
-            <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('districtReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('districtReportArea', 'Overall_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="districtTable">
@@ -259,7 +279,10 @@
     <div class="report-section" id="yesterdayDistrictReportArea">
         <div class="report-header-flex">
             <h2>IV. YESTERDAY'S DISTRICT-WISE PERFORMANCE (FTD)</h2>
-            <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('yesterdayDistrictReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('yesterdayDistrictReportArea', 'Yesterday_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="yesterdayDistrictTable">
@@ -281,7 +304,10 @@
     <div class="report-section" id="momReportArea" style="border: 2px solid #0f172a; background: #f8fafc;">
         <div class="report-header-flex">
             <h2><i class="fa-solid fa-code-compare"></i> V. DYNAMIC MONTH-ON-MONTH (MoM) RETENTION</h2>
-            <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')"><i class="fa-solid fa-camera"></i> Download Image</button>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-download btn-fullscreen" onclick="toggleFullScreen('momReportArea', this)" style="margin:0;"><i class="fa-solid fa-expand"></i> Full Screen</button>
+                <button class="btn-download" onclick="downloadImage('momReportArea', 'MoM_District_Report')" style="margin:0;"><i class="fa-solid fa-camera"></i> Download Image</button>
+            </div>
         </div>
         
         <div class="filter-bar" style="background: #ffffff; border: 2px solid #3b82f6;">
@@ -314,76 +340,153 @@
     </div>
 </div>
 
+
+
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    // Global variables
+    // 🌟 100% AP STRICT DISTRICT LIST (28 DISTRICTS) 🌟
+    const VALID_AP_DISTRICTS = [
+        "ALLURI SITHARAMA RAJU", "ANAKAPALLI", "ANANTAPUR", "ANNAMAYYA", "BAPATLA", 
+        "CHITTOOR", "DR B R AMBEDKAR KONASEEMA", "EAST GODAVARI", "ELURU", "GUNTUR", 
+        "KAKINADA", "KRISHNA", "KURNOOL", "MARKAPURAM", "NANDYAL", "NTR", "PALNADU", 
+        "PARVATHIPURAM MANYAM", "POLAVARAM", "PRAKASAM", "SPSR NELLORE", "SRI SATHYA SAI", 
+        "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
+    ];
+
     let vleDb = {}; 
     let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
+    let stateYtdGswCscs = new Set();
+    let file2Cscs = new Set(); 
     let monthlyData = {}; 
     let currentCallingListData = [];
     let latestRemarks = {}; 
+    let globalCallLogs = []; 
 
     window.onload = function() {
-        fetch(SCRIPT_URL + "?action=fetchDMReport")
+        let loadingEl = document.getElementById('loadingDiv');
+        if(loadingEl) loadingEl.style.display = 'block';
+
+        fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
-                document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.message} <br><br><span style="font-size:14px; color:#64748b;">(దయచేసి మీ State Head అడ్మిన్ ప్యానెల్ నుండి "Publish" చేసేంతవరకు వేచి ఉండండి)</span>`;
+                if(loadingEl) {
+                    loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.message} <br><br><span style="font-size:14px; color:#64748b;">(దయచేసి State Head ప్యానెల్ నుండి "Publish" చేయండి)</span>`;
+                }
                 return;
             }
 
-            document.getElementById('loadingDiv').style.display = 'none';
+            if(loadingEl) loadingEl.style.display = 'none';
 
-            // Inject static HTML parts published from State Head
-            document.getElementById('summaryArea').innerHTML = data.html_summary || "";
-            document.getElementById('serviceBody').innerHTML = data.html_service || "";
-            document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
-            document.getElementById('districtBody').innerHTML = data.html_district || "";
-            document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
+            // Inject static HTML parts
+            if(document.getElementById('summaryArea')) document.getElementById('summaryArea').innerHTML = data.html_summary || "";
+            if(document.getElementById('serviceBody')) document.getElementById('serviceBody').innerHTML = data.html_service || "";
+            if(document.getElementById('yesterdayServiceBody')) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
+            if(document.getElementById('districtBody')) document.getElementById('districtBody').innerHTML = data.html_district || "";
+            if(document.getElementById('yesterdayDistrictBody')) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
 
-            // Load sets
+            // Load sets safely
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
             stateMtdCscs = new Set(data.stateMtdCscs || []);
-            stateFtdCscs = new Set(data.stateFtdCscs || []);
+            stateFtdCscs = new Set(data.stateFtdCscs || []); 
+            file2Cscs = new Set(data.file2Cscs || []); 
             
+            stateYtdGswCscs.clear();
+            stateYtdCscs.forEach(id => {
+                if(id && id.toString().startsWith('9')) stateYtdGswCscs.add(id);
+            });
+
             if (data.monthlyData) {
                 for(let m in data.monthlyData) {
                     monthlyData[m] = {
-                        all: new Set(data.monthlyData[m].all),
-                        gsw: new Set(data.monthlyData[m].gsw)
+                        all: new Set(data.monthlyData[m].all || []),
+                        gsw: new Set(data.monthlyData[m].gsw || [])
                     };
                 }
             }
             
-            document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
+            monthlyData["YTD (FY 26-27)"] = {
+                all: new Set(stateYtdCscs),
+                gsw: new Set(stateYtdGswCscs)
+            };
+            
+            let lastUp = document.getElementById('lastUpdatedText');
+            if(lastUp) {
+                lastUp.style.display = 'inline-block';
+                lastUp.innerHTML = `<i class="fa-solid fa-clock"></i> Last Updated: ${data.updateTime || new Date().toLocaleString()}`;
+            }
 
             populateDistrictDropdown();
             populateMonthDropdowns(data.bnStr, data.tnStr);
             renderMomReport(); 
             
             let sections = ['summaryArea', 'dmCallingReportArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
-            sections.forEach(id => document.getElementById(id).style.display = 'block');
+            sections.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.style.display = 'block';
+            });
 
-            // Fetch live Leaderboard & Remarks
-            fetchCallingReport();
+            fetchCallingReport(true);
         })
         .catch(error => {
-            document.getElementById('loadingDiv').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
+            if(loadingEl) {
+                loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
+            }
             console.error(error);
         });
+    };
+
+    function toggleFullScreen(elementId, btn) {
+        let elem = document.getElementById(elementId);
+        if(!elem) return;
+        if (elem.classList.contains('pseudo-fullscreen')) {
+            elem.classList.remove('pseudo-fullscreen');
+            btn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen';
+            document.body.style.overflow = '';
+        } else {
+            elem.classList.add('pseudo-fullscreen');
+            btn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen';
+            document.body.style.overflow = 'hidden';
+        }
     }
 
-    // Populate District Dropdown correctly from vleDb
+    function toggleRow(tr) {
+        let tbody = tr.closest('tbody');
+        let isFiltered = tbody.getAttribute('data-filtered') === 'true';
+
+        if (!isFiltered) {
+            let rows = tbody.querySelectorAll('.data-row');
+            rows.forEach(r => { if (r !== tr) r.style.display = 'none'; });
+            tbody.setAttribute('data-filtered', 'true');
+            tr.style.outline = '3px solid #3b82f6'; 
+            if(!tr.style.backgroundColor || tr.style.backgroundColor !== 'rgb(254, 242, 242)') {
+                tr.style.background = '#e0f2fe';
+            }
+        } else {
+            let rows = tbody.querySelectorAll('.data-row');
+            rows.forEach(r => { 
+                r.style.display = ''; 
+                r.style.outline = 'none'; 
+                if(r.style.backgroundColor !== 'rgb(254, 242, 242)' && r.style.backgroundColor !== '#fef2f2') {
+                    r.style.background = ''; 
+                }
+            });
+            tbody.setAttribute('data-filtered', 'false');
+        }
+    }
+
     function populateDistrictDropdown() {
         let distSelect = document.getElementById('filterDistrict');
+        if(!distSelect) return;
         distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
         
         let dists = new Set();
         Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") dists.add(v.dist);
+            if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") dists.add(v.dist);
         });
         
         Array.from(dists).sort().forEach(d => {
@@ -391,17 +494,43 @@
         });
     }
 
-    // 🌟 ALL DMS, EXACT MATCH, NO DUPLICATES LOGIC FOR DM PORTAL 🌟
+    function parseCustomDate(dStr) {
+        if(!dStr) return 0;
+        let datePart = dStr.split(" ")[0]; 
+        let parts = datePart.split("-");
+        if(parts.length === 3) {
+            if(parts[0].length === 4) return parseInt(parts[0] + parts[1] + parts[2]); 
+            if(parts[2].length === 4) return parseInt(parts[2] + parts[1] + parts[0]); 
+        }
+        return 0;
+    }
+
+    function checkIsActive(id, callDateStr, cat) {
+        if (cat && cat.includes("YTD") && file2Cscs.has(id)) { return false; }
+        let isMtdActive = stateMtdCscs.has(id);
+        if (!isMtdActive) return false; 
+        
+        let actvDateStr = vleDb[id] ? vleDb[id].lastTxnDate : null;
+        if (actvDateStr && callDateStr) {
+            let callVal = parseCustomDate(callDateStr);
+            let actvVal = parseCustomDate(actvDateStr);
+            if (callVal > 0 && actvVal > 0) {
+                return actvVal >= callVal;
+            }
+        }
+        return isMtdActive; 
+    }
+
     function fetchCallingReport(forceLive = false) {
         let tbody = document.getElementById('dmCallingBody');
+        if(!tbody) return;
         tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
         
         let filterVal = document.getElementById('leaderboardDateFilter') ? document.getElementById('leaderboardDateFilter').value : "TODAY";
+        let isOverall = (filterVal === "OVERALL");
         
         let targetDate = new Date();
-        if(filterVal === "YESTERDAY") {
-            targetDate.setDate(targetDate.getDate() - 1);
-        }
+        if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
         
         let dd = ("0"+targetDate.getDate()).slice(-2);
         let mm = ("0"+(targetDate.getMonth()+1)).slice(-2);
@@ -409,31 +538,28 @@
         let targetStr1 = `${dd}-${mm}-${yyyy}`; 
         let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
-        let thTitle = filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)";
-        document.getElementById('thTotalCalls').innerText = thTitle;
+        let thTitle = isOverall ? "TOTAL CALLS (ALL TIME)" : (filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)");
+        if(document.getElementById('thTotalCalls')) document.getElementById('thTotalCalls').innerText = thTitle;
         
-        let headingText = filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)";
-        document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
-
-        let payload = { action: "getCallingReport" };
+        let headingText = isOverall ? "VII. DM CALLING PERFORMANCE (OVERALL)" : (filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)");
+        if(document.getElementById('callingReportHeading')) document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
 
         fetch(SCRIPT_URL, {
             method: 'POST',
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ action: "getCallingReport" }),
             redirect: "follow",
             cache: "no-store" 
         })
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                let logs = data.data;
+                globalCallLogs = data.data || [];
                 let dmStats = {};
                 latestRemarks = {}; 
                 
-                // 35 DMs Exact Names from Sheet
                 const ALL_DMS = [
-                    "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
+                    "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
                     "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
                     "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
                     "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
@@ -451,34 +577,23 @@
                     };
                 });
                 
-                logs.forEach(log => {
+                globalCallLogs.forEach(log => {
                     let rawDm = log.dmName ? log.dmName.trim() : "Unknown DM";
                     let matchKey = rawDm.toLowerCase();
-                    
                     let cat = log.category || "";
                     let cscId = log.cscId || "";
                     let logDate = log.date ? log.date.split(" ")[0] : "";
                     
                     if (cscId) {
-                        latestRemarks[cscId] = {
-                            remark: log.remark,
-                            dmName: rawDm,
-                            date: logDate 
-                        };
+                        latestRemarks[cscId] = { remark: log.remark, dmName: rawDm, date: logDate };
                     }
                     
                     if (matchKey === "state head" || matchKey === "unknown dm") return;
 
-                    if (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2))) {
-                        // Exact Match Check
+                    if (isOverall || (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2)))) {
                         if(dmStats[matchKey]) {
-                            // Prevent Duplicates: If already counted for this VLE today, skip
-                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) {
-                                return; 
-                            }
-                            if (cscId) {
-                                dmStats[matchKey].calledVles.add(cscId);
-                            }
+                            if (cscId && dmStats[matchKey].calledVles.has(cscId)) return;
+                            if (cscId) dmStats[matchKey].calledVles.add(cscId);
                             
                             if(cat.includes("YTD")) dmStats[matchKey].ytd++;
                             else if(cat.includes("MTD")) dmStats[matchKey].mtd++;
@@ -491,28 +606,20 @@
                 });
                 
                 let sortedDMs = Object.values(dmStats).sort((a,b) => {
-                    if (b.total !== a.total) {
-                        return b.total - a.total;
-                    }
+                    if (b.total !== a.total) return b.total - a.total;
                     return a.originalName.localeCompare(b.originalName);
                 });
                 
-                let html = "";
-                let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                let html = ""; let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
 
                 if(sortedDMs.length === 0) {
-                    html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made on ${targetStr1} yet!</td></tr>`;
+                    html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made yet!</td></tr>`;
                 } else {
                     sortedDMs.forEach((stat, idx) => {
-                        grandTotal.ytd += stat.ytd;
-                        grandTotal.mtd += stat.mtd;
-                        grandTotal.ftd += stat.ftd;
-                        grandTotal.mom += stat.mom;
-                        grandTotal.total += stat.total;
-                        
+                        grandTotal.ytd += stat.ytd; grandTotal.mtd += stat.mtd; grandTotal.ftd += stat.ftd; grandTotal.mom += stat.mom; grandTotal.total += stat.total;
                         let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
                         
-                        html += `<tr>
+                        html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                             <td>${idx + 1}</td>
                             <td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
                             <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td>
@@ -534,7 +641,6 @@
                     html = totalHtml + html;
                 }
                 tbody.innerHTML = html;
-
                 renderCallingList();
             } else {
                 tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
@@ -548,6 +654,7 @@
     function populateMonthDropdowns(defBase, defTarget) {
         let baseSel = document.getElementById('momBaseSelect');
         let tarSel = document.getElementById('momTargetSelect');
+        if(!baseSel || !tarSel) return;
         baseSel.innerHTML = ""; tarSel.innerHTML = "";
         
         let keys = Object.keys(monthlyData);
@@ -557,17 +664,22 @@
         });
         
         if (defBase && keys.includes(defBase)) baseSel.value = defBase;
+        else if(keys.includes("FY 25-26")) baseSel.value = "FY 25-26";
+        
         if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget;
+        else if(keys.includes("YTD (FY 26-27)")) tarSel.value = "YTD (FY 26-27)";
     }
 
     function renderMomReport() {
-        let bName = document.getElementById('momBaseSelect').value;
-        let tName = document.getElementById('momTargetSelect').value;
-
+        let baseSel = document.getElementById('momBaseSelect');
+        let tarSel = document.getElementById('momTargetSelect');
+        if(!baseSel || !tarSel) return;
+        let bName = baseSel.value;
+        let tName = tarSel.value;
         if(!bName || !tName) return;
 
-        document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
-        document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
+        if(document.getElementById('th-mom-base')) document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
+        if(document.getElementById('th-mom-target')) document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
         
         let momOpt = document.getElementById('momOptionText');
         if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
@@ -579,7 +691,7 @@
 
         let validDists = new Set();
         Object.values(vleDb).forEach(v => {
-            if(v.dist && v.dist !== "UNKNOWN") validDists.add(v.dist);
+            if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") validDists.add(v.dist);
         });
         
         let distStats = {};
@@ -634,7 +746,7 @@
             let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
             let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
 
-            momHtml += `<tr>
+            momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                 <td class="text-left" style="color:#1e3a8a;">${dName}</td>
                 <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
                 <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
@@ -653,24 +765,29 @@
             <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
         </tr>`;
         
-        document.getElementById('momBody').innerHTML = momTotalHtml + momHtml;
+        let mb = document.getElementById('momBody');
+        if(mb) mb.innerHTML = momTotalHtml + momHtml;
 
-        if(document.getElementById('filterCategory').value === 'MOM') {
+        let fc = document.getElementById('filterCategory');
+        if(fc && fc.value === 'MOM') {
             renderCallingList();
         }
     }
 
     function renderCallingList() {
-        let category = document.getElementById('filterCategory').value;
-        let distFilter = document.getElementById('filterDistrict').value;
+        let fc = document.getElementById('filterCategory');
+        let fd = document.getElementById('filterDistrict');
+        if(!fc || !fd) return;
+        let category = fc.value;
+        let distFilter = fd.value;
         
         let baseSet, activeSet;
         if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
         else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
         else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
         else if(category === 'MOM') { 
-            let bName = document.getElementById('momBaseSelect').value;
-            let tName = document.getElementById('momTargetSelect').value;
+            let bName = document.getElementById('momBaseSelect')?.value;
+            let tName = document.getElementById('momTargetSelect')?.value;
             baseSet = monthlyData[bName]?.all || new Set(); 
             activeSet = monthlyData[tName]?.all || new Set(); 
         }
@@ -681,6 +798,8 @@
             baseSet.forEach(cscid => {
                 if(!activeSet.has(cscid)) {
                     let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
+                    if(details.dist === "INVALID") return;
+                    
                     if(distFilter === "ALL" || distFilter === details.dist) {
                         currentCallingListData.push({
                             "District": details.dist,
@@ -693,7 +812,9 @@
             });
         }
 
-        document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+        if(document.getElementById('dropoutCount')) {
+            document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+        }
 
         let tbody = "";
         if(currentCallingListData.length === 0) {
@@ -718,7 +839,6 @@
                     lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
                 }
                 
-                // 🌟 FIX: Lockable Save Button with visual feedback 🌟
                 let remarkSelect = `
                     <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
@@ -737,7 +857,7 @@
                     </div>
                 `;
                 
-                tbody += `<tr>
+                tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                     <td>${idx + 1}</td>
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
                     <td style="color:#0f172a;">${cscDisplay}</td>
@@ -751,10 +871,10 @@
                 tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`;
             }
         }
-        document.getElementById('callingBody').innerHTML = tbody;
+        let cb = document.getElementById('callingBody');
+        if(cb) cb.innerHTML = tbody;
     }
 
-    // 🌟 ENHANCED SAVE LOGIC (PREVENTS DOUBLE CLICK) 🌟
     function saveRemark(cscId, btn) {
         let selectEl = document.getElementById("rem_" + cscId);
         let remark = selectEl.value;
@@ -774,15 +894,13 @@
         let originalHtml = btn.innerHTML;
         let originalBg = btn.style.background;
 
-        // Visual feedback immediately
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
-        btn.style.background = '#d97706'; // Orange warning color
+        btn.style.background = '#d97706'; 
         btn.disabled = true;
         btn.style.cursor = 'not-allowed';
 
         let dmNameStr = localStorage.getItem("userName") ? localStorage.getItem("userName") : "DM";
-
-        let categoryType = document.getElementById('filterCategory').value;
+        let categoryType = document.getElementById('filterCategory')?.value || "DROPOUT";
 
         let payload = {
             action: "saveFollowUp",
@@ -803,7 +921,7 @@
         .then(data => {
             if(data.success) {
                 btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
-                btn.style.background = "#16a34a"; // Green success color
+                btn.style.background = "#16a34a"; 
                 selectEl.style.borderColor = "#16a34a";
                 
                 let d = new Date();
@@ -831,41 +949,104 @@
         });
     }
 
-    function downloadCallingList() {
-        if(currentCallingListData.length === 0) {
-            alert("No data available to download for this selection.");
-            return;
-        }
-        let category = document.getElementById('filterCategory').value;
-        let dist = document.getElementById('filterDistrict').value;
-        
-        let exportData = currentCallingListData.map(v => ({
-            "District Name": v.District,
-            "CSC ID": v.CSC_ID,
-            "VLE Name": v.Name, 
-            "Mobile Number": v.Mobile,
-            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
-        }));
+    // 🌟 100% PERFECT HTML TO XLS EXPORTER WITH STYLES & STRICT TEXT FORMAT 🌟
+    function exportToStyledExcel(dataList, fileName, title) {
+        if(!dataList || dataList.length === 0) { alert("No data available to download."); return; }
 
-        let csv = Papa.unparse(exportData);
-        let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+        let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="utf-8"></head><body>`;
+        
+        tableHtml += `<h2 style="text-align:center; color:#1e3a8a; font-family: Arial, sans-serif;">${title}</h2>`;
+        tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; width: 100%;">`;
+        tableHtml += `<thead><tr style="background-color: #0f172a; color: #ffffff; font-weight: bold; text-align: center;">`;
+        
+        let headers = Object.keys(dataList[0]);
+        headers.forEach(h => {
+            tableHtml += `<th style="padding: 10px; border: 1px solid #cbd5e1;">${h}</th>`;
+        });
+        tableHtml += `</tr></thead><tbody>`;
+
+        dataList.forEach((row, i) => {
+            let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
+            tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
+            headers.forEach(h => {
+                let val = row[h] !== undefined && row[h] !== null ? row[h] : "";
+                tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
+            });
+            tableHtml += `</tr>`;
+        });
+        tableHtml += `</tbody></table></body></html>`;
+
+        let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
         let link = document.createElement("a");
         let url = URL.createObjectURL(blob);
-        let d = new Date(); 
-        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Dropouts_List_${category}_${dist}_${dateStr}.csv`);
-        link.style.visibility = 'hidden';
+        link.href = url;
+        link.download = fileName + ".xls";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
-    // 🌟 FIX: Full HD Image Download for Leaderboard 🌟
+    // 🌟 TRIGGER YTD DROPOUT EXCEL EXPORT (CALLED FROM DISTRICT TABLE BUTTONS) 🌟
+    function downloadYTDDropouts(districtFilter) {
+        let exportData = [];
+        stateLyCscs.forEach(cscid => {
+            if(!stateYtdCscs.has(cscid)) {
+                let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
+                if (details.dist === "INVALID") return;
+                if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
+                    exportData.push({
+                        "District Name": details.dist,
+                        "CSC ID": cscid,
+                        "VLE Name": details.name || "Unknown VLE",
+                        "Mobile Number": details.mobile || "Not Available",
+                        "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE"
+                    });
+                }
+            }
+        });
+
+        if(exportData.length === 0) { 
+            alert("No YTD Dropouts found to download for " + (districtFilter || 'ALL')); 
+            return; 
+        }
+        
+        let d = new Date();
+        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        let distTitle = (!districtFilter || districtFilter === 'ALL') ? "ANDHRA PRADESH STATE" : districtFilter;
+        let fileName = (!districtFilter || districtFilter === 'ALL') ? `YTD_Dropouts_STATE_${dateStr}` : `YTD_Dropouts_${districtFilter}_${dateStr}`;
+        
+        exportToStyledExcel(exportData, fileName, `YTD Dropouts List - ${distTitle} (${dateStr})`);
+    }
+
+    // 🌟 TRIGGER PORTAL CALLING LIST EXCEL EXPORT 🌟
+    function downloadCallingList() {
+        if (!currentCallingListData || currentCallingListData.length === 0) { 
+            alert("No data available to download for this selection."); 
+            return; 
+        }
+        
+        let category = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : "YTD";
+        let dist = document.getElementById('filterDistrict') ? document.getElementById('filterDistrict').value : "DM_DATA";
+        
+        let exportData = currentCallingListData.map(v => ({
+            "District Name": v.District, 
+            "CSC ID": v.CSC_ID, 
+            "VLE Name": v.Name, 
+            "Mobile Number": v.Mobile, 
+            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
+        }));
+
+        let d = new Date(); 
+        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
+    }
+
+    // Full HD Image Download
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
+        if(!reportDiv) return;
         
         const dlBtns = reportDiv.querySelectorAll('.btn-download');
         dlBtns.forEach(btn => btn.style.display = 'none');
@@ -881,14 +1062,12 @@
             div.style.overflow = 'visible'; 
         });
 
-        // 🌟 FORCE WIDE WIDTH FOR CAPTURE TO PREVENT SQUISHING 🌟
         let originalDivWidth = reportDiv.style.width;
         let originalDivPadding = reportDiv.style.padding;
         reportDiv.style.width = '1200px'; 
         reportDiv.style.padding = '20px'; 
         
         try {
-            // 🌟 SET SCALE TO 3 FOR HD QUALITY 🌟
             const canvas = await html2canvas(reportDiv, { 
                 scale: 3, 
                 backgroundColor: "#ffffff",
@@ -916,6 +1095,5 @@
         }
     }
 </script>
-
 </body>
 </html>
