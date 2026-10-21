@@ -505,7 +505,7 @@
         let dd = ("0" + d.getDate()).slice(-2);
         document.getElementById('convDateFilter').value = `${yyyy}-${mm}-${dd}`;
 
-        fetch(SCRIPT_URL + "?action=fetchDMReport")
+        fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
@@ -640,7 +640,6 @@
         return parseFloat(val) || 0;
     }
 
-    // 🌟 SMART NORMALIZATION: 28 DISTRICTS & ALIASES 🌟
     function normalizeDistrict(d) {
         if(!d) return "INVALID";
         d = d.toString().toUpperCase().replace(/[\s\uFEFF\xA0]+/g, ' ').trim();
@@ -656,7 +655,7 @@
         if (d === "TIRUPATHI") d = "TIRUPATI";
 
         if (VALID_AP_DISTRICTS.includes(d)) return d;
-        return "INVALID"; // Drops non-AP districts like Belagavi, Hyderabad etc.
+        return "INVALID"; 
     }
 
     function checkScientificNotation(val) {
@@ -668,7 +667,7 @@
         const fileMaster = document.getElementById('fileMaster').files[0];
         const fileDayWise = document.getElementById('fileDayWise').files[0];
 
-        if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్స్ సెలెక్ట్ చేయండి!"); return; }
+        if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్s సెలెక్ట్ చేయండి!"); return; }
 
         document.getElementById('btnGen').disabled = true;
         document.getElementById('loadingDiv').style.display = 'block';
@@ -713,7 +712,7 @@
     function processLastYearData(data) {
         data.forEach(row => {
             let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
-            if(dist === "INVALID") return; // Drops other state names
+            if(dist === "INVALID") return; 
 
             let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
             checkScientificNotation(cscid);
@@ -765,7 +764,7 @@
             let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
             let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
             
-            if(dist === "INVALID") return; // Drops other state names
+            if(dist === "INVALID") return; 
 
             let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
             let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
@@ -850,7 +849,7 @@
             let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
             let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
 
-            if(dist === "INVALID") return; // Drops other state names
+            if(dist === "INVALID") return; 
 
             let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
             let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
@@ -1137,7 +1136,6 @@
         .catch(err => { alert("Network Error while saving remark!"); btn.innerHTML = originalHtml; btn.style.background = originalBg; btn.disabled = false; btn.style.cursor = 'pointer'; });
     }
 
-    // 🌟 100% PERFECT HTML TO XLS EXPORTER WITH STYLES & STRICT TEXT FORMAT 🌟
     function exportToStyledExcel(dataList, fileName, title) {
         if(dataList.length === 0) { alert("No data available to download."); return; }
 
@@ -1159,7 +1157,6 @@
             tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
             headers.forEach(h => {
                 let val = row[h];
-                // mso-number-format:"\@" forces Excel to interpret contents as text, preventing Scientific Notation
                 tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
             });
             tableHtml += `</tr>`;
@@ -1176,7 +1173,6 @@
         document.body.removeChild(link);
     }
 
-    // 🌟 TRIGGER YTD DROPOUT EXCEL EXPORT 🌟
     function downloadYTDDropouts(districtFilter) {
         let exportData = [];
         stateLyCscs.forEach(cscid => {
@@ -1194,6 +1190,7 @@
                 }
             }
         });
+        if(exportData.length === 0) { alert("No YTD Dropouts found to download for " + districtFilter); return; }
         
         let d = new Date();
         let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
@@ -1203,7 +1200,6 @@
         exportToStyledExcel(exportData, fileName, `YTD Dropouts List - ${distTitle} (${dateStr})`);
     }
 
-    // 🌟 TRIGGER PORTAL CALLING LIST EXCEL EXPORT 🌟
     function downloadCallingList() {
         let category = document.getElementById('filterCategory').value;
         let dist = document.getElementById('filterDistrict').value;
@@ -1212,6 +1208,8 @@
             "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
         }));
         
+        if(exportData.length === 0) { alert("No data available to download."); return; }
+
         let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
         exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
     }
@@ -1252,7 +1250,8 @@
         document.getElementById('sumFtdRev').innerText = "₹ " + stateFtdRev.toLocaleString(undefined, {minimumFractionDigits:2}); 
         document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
 
-        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN"); let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN" && d !== "INVALID");
+        let validServices = Object.keys(serviceData).filter(s => s !== "UNKNOWN"); 
+        let validDistricts = Object.keys(districtData).filter(d => d !== "UNKNOWN" && d !== "INVALID");
 
         let sortedOverallServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).sort((a, b) => b.data.total_txn - a.data.total_txn);
         let sortedYesterdayServices = validServices.map(srv => ({ name: srv, data: serviceData[srv] })).filter(item => item.data.ftd_txn > 0).sort((a, b) => b.data.ftd_txn - a.data.ftd_txn);
@@ -1384,40 +1383,6 @@
         let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
         sections.forEach(id => document.getElementById(id).style.display = 'block');
         document.getElementById('btnPublish').style.display = 'block';
-    }
-
-    async function downloadImage(elementId, prefix) {
-        const reportDiv = document.getElementById(elementId);
-        const dlBtns = reportDiv.querySelectorAll('.btn-download'); dlBtns.forEach(btn => btn.style.display = 'none');
-        const inputsAndSelects = reportDiv.querySelectorAll('select, input[type="date"]'); const tempElements = [];
-
-        inputsAndSelects.forEach(el => {
-            let span = document.createElement('span'); let color = el.style.color || '#0f172a'; let bg = el.style.backgroundColor || '#f1f5f9';
-            span.style.cssText = `font-weight:bold; color:${color}; font-size:14px; padding:6px 10px; background:${bg}; border-radius:4px; display:inline-block; border:1px solid ${el.style.borderColor || '#cbd5e1'};`;
-            if (el.tagName === 'SELECT') { span.innerText = el.options[el.selectedIndex].text; } 
-            else if (el.tagName === 'INPUT' && el.type === 'date') {
-                if(el.value) { let parts = el.value.split('-'); span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; } else { span.innerText = "Date Not Selected"; }
-            }
-            el.style.display = 'none'; el.parentNode.insertBefore(span, el); tempElements.push({ original: el, temp: span });
-        });
-
-        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive'); let originalMaxHeights = [];
-        tableResponsiveDivs.forEach(div => { originalMaxHeights.push(div.style.maxHeight); div.style.maxHeight = 'none'; div.style.overflow = 'visible'; });
-
-        let originalDivWidth = reportDiv.style.width; let originalDivPadding = reportDiv.style.padding;
-        reportDiv.style.width = '1200px'; reportDiv.style.padding = '20px'; 
-        
-        try {
-            const canvas = await html2canvas(reportDiv, { scale: 3, backgroundColor: "#ffffff", useCORS: true });
-            const link = document.createElement('a'); let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-            link.download = `${prefix}_${dateStr}.png`; link.href = canvas.toDataURL("image/png", 1.0); link.click();
-        } catch(err) { alert("Image capture failed. Please try again."); } 
-        finally {
-            tableResponsiveDivs.forEach((div, index) => { div.style.maxHeight = originalMaxHeights[index]; div.style.overflow = 'auto'; });
-            reportDiv.style.width = originalDivWidth; reportDiv.style.padding = originalDivPadding;
-            dlBtns.forEach(btn => btn.style.display = 'inline-block');
-            tempElements.forEach(item => { item.original.style.display = 'inline-block'; item.temp.remove(); });
-        }
     }
 
     function publishToDMs() {
@@ -1733,6 +1698,100 @@
             } else {
                 footerEl.innerText = `Target: State Team = 20 Calls | Regular DMs = 40 Calls (Daily Target)`;
             }
+        }
+    }
+
+    // 🌟 PERFECT FULL HD IMAGE DOWNLOADER (SOLVES HALF CUT PROBLEM) 🌟
+    async function downloadImage(elementId, prefix) {
+        const reportDiv = document.getElementById(elementId);
+        
+        const dlBtns = reportDiv.querySelectorAll('.btn-download');
+        dlBtns.forEach(btn => btn.style.display = 'none');
+
+        const dateFilter = reportDiv.querySelector('#leaderboardDateFilter, #empReportDateFilter, #convDateFilter');
+        if(dateFilter) dateFilter.style.display = 'none';
+        
+        const inputsAndSelects = reportDiv.querySelectorAll('.filter-bar select, .filter-bar input[type="date"], .report-header-flex input[type="date"], .report-header-flex select'); 
+        const tempElements = [];
+
+        inputsAndSelects.forEach(el => {
+            let span = document.createElement('span'); 
+            span.style.cssText = `font-weight:bold; color:#1e3a8a; font-size:14px; padding:6px 10px; background:#f1f5f9; border-radius:4px; display:inline-block; border:1px solid #cbd5e1;`;
+            if (el.tagName === 'SELECT') { span.innerText = el.options[el.selectedIndex].text; } 
+            else if (el.tagName === 'INPUT' && el.type === 'date') {
+                if(el.value) { let parts = el.value.split('-'); span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; } else { span.innerText = "Date Not Selected"; }
+            }
+            el.style.display = 'none'; 
+            el.parentNode.insertBefore(span, el); 
+            tempElements.push({ original: el, temp: span });
+        });
+
+        // 🌟 AGGRESSIVE SCROLLBAR REMOVAL 🌟
+        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
+        let originalStyles = [];
+        tableResponsiveDivs.forEach(div => {
+            originalStyles.push({
+                maxHeight: div.style.maxHeight,
+                overflow: div.style.overflow,
+                overflowY: div.style.overflowY,
+                height: div.style.height
+            });
+            div.style.setProperty('max-height', 'none', 'important');
+            div.style.setProperty('overflow', 'visible', 'important');
+            div.style.setProperty('overflow-y', 'visible', 'important');
+            div.style.setProperty('height', 'auto', 'important');
+        });
+
+        let originalDivWidth = reportDiv.style.width;
+        let originalDivPadding = reportDiv.style.padding;
+        let originalHeight = reportDiv.style.height;
+        let originalPosition = reportDiv.style.position;
+        
+        reportDiv.style.width = '1200px'; 
+        reportDiv.style.padding = '20px'; 
+        reportDiv.style.height = 'auto'; 
+        reportDiv.style.position = 'relative';
+        
+        // Allow the DOM to fully render the expanded height
+        await new Promise(r => setTimeout(r, 500));
+
+        try {
+            const canvas = await html2canvas(reportDiv, { 
+                scale: 2, 
+                backgroundColor: "#ffffff", 
+                useCORS: true,
+                windowWidth: reportDiv.scrollWidth,
+                windowHeight: reportDiv.scrollHeight,
+                height: reportDiv.scrollHeight,
+                width: reportDiv.scrollWidth,
+                scrollY: 0,
+                scrollX: 0
+            });
+            const link = document.createElement('a');
+            let d = new Date(); 
+            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            link.download = `${prefix}_${dateStr}.png`;
+            link.href = canvas.toDataURL("image/png", 1.0);
+            link.click();
+        } catch(err) {
+            alert("Image capture failed. Please try again.");
+        } finally {
+            // Revert original styles
+            tableResponsiveDivs.forEach((div, index) => {
+                div.style.maxHeight = originalStyles[index].maxHeight;
+                div.style.overflow = originalStyles[index].overflow;
+                div.style.overflowY = originalStyles[index].overflowY;
+                div.style.height = originalStyles[index].height;
+            });
+
+            reportDiv.style.width = originalDivWidth; 
+            reportDiv.style.padding = originalDivPadding;
+            reportDiv.style.height = originalHeight;
+            reportDiv.style.position = originalPosition;
+            
+            dlBtns.forEach(btn => btn.style.display = 'inline-block');
+            if(dateFilter) dateFilter.style.display = 'inline-block';
+            tempElements.forEach(item => { item.original.style.display = 'inline-block'; item.temp.remove(); });
         }
     }
 </script>
