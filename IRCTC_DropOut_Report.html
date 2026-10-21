@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRCTC Drop-Out VLEs</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -129,30 +130,12 @@
             <option value="ALL">All Dists</option>
         </select>
         
-        <select id="month1" onchange="filterData()">
-            <option value="17">Apr '26</option>
-            <option value="18" selected>May '26</option>
-            <option value="19">Jun '26</option>
-            <option value="20">Jul '26</option>
-            <option value="21">Aug '26</option>
-            <option value="22">Sep '26</option>
-        </select>
+        <!-- 🌟 AUTO DYNAMIC MONTHS 🌟 -->
+        <select id="month1" onchange="filterData()"></select>
         <span style="font-weight:900; color:#94a3b8; font-size:12px;">VS</span>
-        <select id="month2" onchange="filterData()">
-            <option value="17">Apr '26</option>
-            <option value="18">May '26</option>
-            <option value="19" selected>Jun '26</option>
-            <option value="20">Jul '26</option>
-            <option value="21">Aug '26</option>
-            <option value="22">Sep '26</option>
-        </select>
+        <select id="month2" onchange="filterData()"></select>
         <select id="month3" onchange="filterData()" style="border-color:#ea580c; background:#fff7ed; width:100px;">
             <option value="NONE">+ 3rd Month</option>
-            <option value="18">May '26</option>
-            <option value="19">Jun '26</option>
-            <option value="20">Jul '26</option>
-            <option value="21">Aug '26</option>
-            <option value="22">Sep '26</option>
         </select>
         
         <button class="btn-primary" onclick="fetchData()">🔄</button>
@@ -188,7 +171,7 @@
             <div class="export-header">
                 <h1>CSC AP Tour & Travels</h1>
                 <h2>IRCTC Drop-Out VLEs Summary</h2>
-                <p id="exportSubtitle">Comparison: May '26 vs Jun '26</p>
+                <p id="exportSubtitle">Comparison</p>
             </div>
             
             <table class="export-table" id="summaryTable">
@@ -204,6 +187,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script>
     // 👇 మీ Web App URL ఇక్కడ కచ్చితంగా పెట్టాలి
@@ -227,7 +212,10 @@
     let waQueue = [];
     let waIndex = 0;
 
-    window.onload = function() { fetchData(); };
+    window.onload = function() { 
+        populateMonthsDynamic(); // ముందుగా ఖాళీగా లేకుండా డీఫాల్ట్ నెలలు సెట్ చేస్తాం
+        fetchData(); 
+    };
 
     function normalizeDistrict(distName) {
         if (!distName) return "";
@@ -236,7 +224,7 @@
         return distMap[d] || d;
     }
 
-    // 🌟 1. AUTO-RETRY FETCH LOGIC (దీనివల్లే మీకు ఎర్రర్ రాకుండా పక్కాగా పనిచేస్తుంది) 🌟
+    // 🌟 1. AUTO-RETRY FETCH LOGIC 🌟
     function fetchWithRetry(url, retries, delay) {
         return fetch(url, { redirect: 'follow' })
             .then(res => {
@@ -279,6 +267,7 @@
                 let cached = sessionStorage.getItem(cacheKey);
                 if (cached) {
                     rawData = JSON.parse(cached);
+                    populateMonthsDynamic(); // 🌟 Auto Populate Months 🌟
                     populateDistricts();
                     filterData();
                     loader.style.display = 'none';
@@ -290,7 +279,7 @@
             }
         }
 
-        // 🌟 2. CACHE-BUSTER: పాత డేటా రాకుండా అడ్డుకుంటుంది 🌟
+        // 🌟 2. CACHE-BUSTER 🌟
         let fetchUrl = SCRIPT_URL + "?sheet=IRCTC&t=" + new Date().getTime();
 
         fetchWithRetry(fetchUrl, 3, 2000)
@@ -306,14 +295,15 @@
                     return;
                 }
 
-                // 🌟 3. SAFE STORAGE: మెమరీ ఫుల్ అయినా క్రాష్ అవ్వకుండా ఆపుతుంది 🌟
+                // 🌟 3. SAFE STORAGE 🌟
                 try {
                     sessionStorage.setItem(cacheKey, JSON.stringify(rawData));
                 } catch(storageErr) {
                     console.warn("Browser session storage full, proceeding without cache.");
-                    sessionStorage.clear(); // Clear existing junk
+                    sessionStorage.clear(); 
                 }
 
+                populateMonthsDynamic(); // 🌟 Auto Populate Months 🌟
                 populateDistricts();
                 filterData();
                 loader.style.display = 'none';
@@ -324,6 +314,68 @@
                 loader.innerHTML = `❌ Connection Failed! Google server might be busy.<br><br>
                 <button class="btn-retry" onclick="fetchData(true)">🔄 Try Again</button>`;
             });
+    }
+
+    // 🌟 NEW FUNCTION: AUTO-DYNAMIC MONTHS POPULATOR 🌟
+    function populateMonthsDynamic() {
+        let monthList = [];
+        
+        // 1. షీట్ డేటా ఉంటే అందులోంచి నెలలు తీస్తాం
+        if (Array.isArray(rawData) && rawData.length >= 2) {
+            let headers = rawData[0];
+            for (let i = 15; i < headers.length; i++) {
+                let h = headers[i] ? headers[i].toString().trim() : "";
+                let hUpper = h.toUpperCase();
+                
+                if (hUpper.includes("TOTAL") || hUpper.includes("REMARK") || hUpper.includes("ACTION") || hUpper === "") {
+                    continue; 
+                }
+                
+                if (/JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC/i.test(hUpper)) {
+                    let cleanName = h.replace(/txn/i, '').trim(); 
+                    monthList.push({ val: i, text: cleanName });
+                }
+            }
+        }
+        
+        // 2. ఒకవేళ ఇంకా డేటా లోడ్ అవ్వకపోయినా (లేదా ఎర్రర్ వచ్చినా) డీఫాల్ట్ గా ఈ లిస్ట్ చూపిస్తాం (అక్టోబర్ తో సహా)
+        if (monthList.length === 0) {
+            monthList = [
+                {val: 17, text: "Apr '26"}, {val: 18, text: "May '26"}, {val: 19, text: "Jun '26"},
+                {val: 20, text: "Jul '26"}, {val: 21, text: "Aug '26"}, {val: 22, text: "Sep '26"},
+                {val: 23, text: "Oct '26"}, {val: 24, text: "Nov '26"}, {val: 25, text: "Dec '26"}
+            ];
+        }
+
+        let m1 = document.getElementById('month1');
+        let m2 = document.getElementById('month2');
+        let m3 = document.getElementById('month3');
+        
+        let sel1 = m1.value;
+        let sel2 = m2.value;
+        let sel3 = m3.value;
+        
+        m1.innerHTML = "";
+        m2.innerHTML = "";
+        m3.innerHTML = '<option value="NONE">+ 3rd Month</option>';
+        
+        monthList.forEach(m => {
+            m1.innerHTML += `<option value="${m.val}">${m.text}</option>`;
+            m2.innerHTML += `<option value="${m.val}">${m.text}</option>`;
+            m3.innerHTML += `<option value="${m.val}">${m.text}</option>`;
+        });
+        
+        // బై డీఫాల్ట్ చివరి 2 నెలలు సెలెక్ట్ అయ్యేలా సెట్టింగ్
+        let len = monthList.length;
+        if (len >= 2) {
+            m1.value = monthList[len - 2].val;
+            m2.value = monthList[len - 1].val;
+        }
+        
+        // పాత సెలెక్షన్ ఉంటే దాన్ని ఉంచడం
+        if (sel1 && Array.from(m1.options).some(o => o.value == sel1)) m1.value = sel1;
+        if (sel2 && Array.from(m2.options).some(o => o.value == sel2)) m2.value = sel2;
+        if (sel3 && Array.from(m3.options).some(o => o.value == sel3)) m3.value = sel3;
     }
 
     function toggleView() {
@@ -352,9 +404,7 @@
 
     function resetFilters() {
         if(!isDM) document.getElementById('distFilter').value = "ALL";
-        document.getElementById('month1').value = "18"; 
-        document.getElementById('month2').value = "19"; 
-        document.getElementById('month3').value = "NONE"; 
+        populateMonthsDynamic(); // 🌟 ఈ రీసెట్ బటన్ నొక్కినా ఆటోమెటిక్ గా లేటెస్ట్ మంత్స్ సెట్ అవుతాయి
         document.getElementsByName('distType')[0].checked = true; 
         currentDistType = "OLD";
         populateDistricts();
@@ -362,7 +412,7 @@
     }
 
     function populateDistricts() {
-        if (rawData.length < 2) return;
+        if (!Array.isArray(rawData) || rawData.length < 2) return;
         let distFilter = document.getElementById('distFilter');
         
         // 🔥 DM Lock Logic 🔥
