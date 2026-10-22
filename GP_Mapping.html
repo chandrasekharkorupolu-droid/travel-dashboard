@@ -154,6 +154,7 @@
                 <option value="Pending">Pending GPs</option>
                 <option value="MappedActive">Mapped - Active (FY 26-27)</option>
                 <option value="MappedZero">Mapped - Zero TXN (FY 26-27)</option>
+                <option value="Duplicates">🚨 Duplicate Mapped IDs</option> <!-- 🌟 NEW FILTER ADDED 🌟 -->
             </select>
             <button class="btn-action" onclick="fetchData(true)" style="color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff;" title="Fetch latest data from server"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
             <button class="btn-action" onclick="resetFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
@@ -208,7 +209,7 @@
 
     <!-- 🌟 1. MASTER SUMMARY MODAL 🌟 -->
     <div class="gpm-modal-overlay" id="summaryModal">
-        <div class="gpm-modal-content" id="captureModalContent1" style="width: 800px; max-height: 85vh;"> <!-- 🌟 Width పెంచాను -->
+        <div class="gpm-modal-content" id="captureModalContent1" style="width: 800px; max-height: 85vh;"> 
             <div class="gpm-modal-header">
                 <div style="display: flex; flex-direction: column;">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -230,7 +231,7 @@
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#059669;">Active (FY)</span><span class="gpm-stat-value" id="modActiveGPs" style="color:#059669;">0</span></div>
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#64748b;">Zero TXN</span><span class="gpm-stat-value" id="modInactiveGPs" style="color:#64748b;">0</span></div>
                 <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#8b5cf6;">Mapped %</span><span class="gpm-stat-value" id="modPercentGPs" style="color:#8b5cf6;">0%</span></div>
-                <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#059669;">Active %</span><span class="gpm-stat-value" id="modActivePercentGPs" style="color:#059669;">0%</span></div> <!-- 🌟 NEW TOP ACTIVE % -->
+                <div class="gpm-stat-item"><span class="gpm-stat-label" style="color:#059669;">Active %</span><span class="gpm-stat-value" id="modActivePercentGPs" style="color:#059669;">0%</span></div>
             </div>
             <div class="gpm-modal-body"><table class="gpm-summary-table">
                 <thead><tr>
@@ -241,7 +242,7 @@
                     <th style="background:#065f46;">Active (FY)</th>
                     <th style="background:#475569;">Zero TXN</th>
                     <th style="background:#6d28d9;">MAPPED %</th>
-                    <th style="background:#059669;">ACTIVE %</th> <!-- 🌟 NEW ACTIVE COLUMN -->
+                    <th style="background:#059669;">ACTIVE %</th> 
                 </tr></thead>
                 <tbody id="summaryTableBody"></tbody>
             </table></div>
@@ -422,727 +423,843 @@
 
 </div>
 
-    <script>
-        const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
-        let globalData = [];
-        let districtsSet = new Set();
-        let mandalsMap = {}; 
-        
-        let loggedInUser = (localStorage.getItem("userName") || "").trim();
-        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
-        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1 || loggedInDesig.toUpperCase() === "DM";
+   
 
-        const cacheKey = "gpMappingDataCache_v1";
+<script>
+    const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec"; 
+    let globalData = [];
+    let districtsSet = new Set();
+    let mandalsMap = {}; 
+    let cscIdLocations = {}; // 🌟 TRACKS DUPLICATE DATA WITH INDEX 🌟
+    
+    let loggedInUser = (localStorage.getItem("userName") || "").trim();
+    let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
+    let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1 || loggedInDesig.toUpperCase() === "DM";
 
-        window.onload = function() { fetchData(); };
+    const cacheKey = "gpMappingDataCache_v1";
 
-        async function fetchData(forceRefresh = false) {
-            if (!forceRefresh) {
-                let cachedData = sessionStorage.getItem(cacheKey);
-                if (cachedData) {
-                    try { processData(JSON.parse(cachedData)); return; } catch(e) {}
-                }
-            }
-            try {
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' class='loader'><i class='fa-solid fa-spinner fa-spin'></i> Fetching Fresh Data...</td></tr>";
-                let gpRes = await fetch(apiURL + "?sheet=GPMAPPING");
-                let rawData = await gpRes.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(rawData)); 
-                processData(rawData);
-            } catch (error) {
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding:20px;'>Error fetching data! Please check your internet connection.</td></tr>";
+    window.onload = function() { fetchData(); };
+
+    async function fetchData(forceRefresh = false) {
+        if (!forceRefresh) {
+            let cachedData = sessionStorage.getItem(cacheKey);
+            if (cachedData) {
+                try { processData(JSON.parse(cachedData)); return; } catch(e) {}
             }
         }
+        try {
+            document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' class='loader'><i class='fa-solid fa-spinner fa-spin'></i> Fetching Fresh Data...</td></tr>";
+            let gpRes = await fetch(apiURL + "?sheet=GPMAPPING");
+            let rawData = await gpRes.json();
+            sessionStorage.setItem(cacheKey, JSON.stringify(rawData)); 
+            processData(rawData);
+        } catch (error) {
+            document.getElementById("tableBody").innerHTML = "<tr><td colspan='11' style='color:red; text-align:center; padding:20px;'>Error fetching data! Please check your internet connection.</td></tr>";
+        }
+    }
 
-        function processData(rawData) {
-            let headers = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-            let idxDist = headers.findIndex(h => h.includes('districtname'));
-            let idxMandal = headers.findIndex(h => h.includes('subdistrictname'));
-            let idxGp = headers.findIndex(h => h.includes('localbodyname'));
-            let idxCscId = headers.findIndex(h => h.includes('cscid'));
-            let idxIdDate = headers.findIndex(h => h.includes('idcreationdate') || h.includes('creationdate'));
-            let idxVleName = headers.findIndex(h => h.includes('vlename'));
-            let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
+    function processData(rawData) {
+        let headers = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+        let idxDist = headers.findIndex(h => h.includes('districtname'));
+        let idxMandal = headers.findIndex(h => h.includes('subdistrictname'));
+        let idxGp = headers.findIndex(h => h.includes('localbodyname'));
+        let idxCscId = headers.findIndex(h => h.includes('cscid'));
+        let idxIdDate = headers.findIndex(h => h.includes('idcreationdate') || h.includes('creationdate'));
+        let idxVleName = headers.findIndex(h => h.includes('vlename'));
+        let idxMobile = headers.findIndex(h => h.includes('mobileno') || h === 'mobile');
+        let idxMappedDate = headers.findIndex(h => h.includes('mappeddate'));
+        let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
+        let idxTxn2526 = headers.findIndex(h => h === 'txn2526');
+        let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
+        let idxApr = headers.findIndex(h => h.includes('apr-26') || h.includes('apr26') || h === 'apr');
+        let idxMay = headers.findIndex(h => h.includes('may-26') || h.includes('may26') || h === 'may');
+        let idxJun = headers.findIndex(h => h.includes('jun-26') || h.includes('jun26') || h === 'jun');
+        let idxJul = headers.findIndex(h => h.includes('jul-26') || h.includes('jul26') || h === 'jul');
+        let idxAug = headers.findIndex(h => h.includes('aug-26') || h.includes('aug26') || h === 'aug');
+        let idxSep = headers.findIndex(h => h.includes('sep-26') || h.includes('sep26') || h === 'sep');
+        let idxOct = headers.findIndex(h => h.includes('oct-26') || h.includes('oct26') || h === 'oct');
+        let idxNov = headers.findIndex(h => h.includes('nov-26') || h.includes('nov26') || h === 'nov');
+        let idxDec = headers.findIndex(h => h.includes('dec-26') || h.includes('dec26') || h === 'dec');
+        let idxJan = headers.findIndex(h => h.includes('jan-27') || h.includes('jan27') || h === 'jan');
+        let idxFeb = headers.findIndex(h => h.includes('feb-27') || h.includes('feb27') || h === 'feb');
+        let idxMar = headers.findIndex(h => h.includes('mar-27') || h.includes('mar27') || h === 'mar');
+        let idxEmpName = headers.findIndex(h => h.includes('employee') || h.includes('dmname'));
+
+        globalData = []; districtsSet.clear(); mandalsMap = {}; cscIdLocations = {};
+
+        for (let i = 1; i < rawData.length; i++) {
+            let row = rawData[i];
+            let dist = idxDist > -1 ? (row[idxDist] || 'Unknown').toString().trim() : 'Unknown';
             
-            let idxMappedDate = headers.findIndex(h => h.includes('mappeddate'));
+            if (isDM && loggedInUser !== "") {
+                let sheetEmpName = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim().toLowerCase() : '';
+                if (sheetEmpName !== loggedInUser.toLowerCase()) continue; 
+            }
+
+            let mandal = idxMandal > -1 ? (row[idxMandal] || 'Unknown').toString().trim() : 'Unknown';
+            let gp = idxGp > -1 ? (row[idxGp] || 'Unknown').toString().trim() : 'Unknown';
+            let cscId = idxCscId > -1 ? (row[idxCscId] || '').toString().trim() : '';
             
-            let idxTxn2425 = headers.findIndex(h => h === 'txn2425');
-            let idxTxn2526 = headers.findIndex(h => h === 'txn2526');
-            let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
+            if (dist !== 'Unknown') {
+                districtsSet.add(dist);
+                if (!mandalsMap[dist]) mandalsMap[dist] = new Set();
+                mandalsMap[dist].add(mandal);
+            }
+            let isMapped = (cscId !== '' && cscId !== '-');
+
+            let rowObj = {
+                district: dist, mandal: mandal, gpName: gp, cscId: isMapped ? cscId : '',
+                idDate: isMapped && idxIdDate > -1 ? (row[idxIdDate] || '').toString().trim() : '',
+                vleName: isMapped && idxVleName > -1 ? row[idxVleName] : '',
+                mobile: isMapped && idxMobile > -1 ? row[idxMobile] : '',
+                mappedDate: isMapped && idxMappedDate > -1 ? (row[idxMappedDate] || '').toString().trim() : '',
+                txn2425: idxTxn2425 > -1 ? (Number(row[idxTxn2425]) || 0) : 0,
+                txn2526: idxTxn2526 > -1 ? (Number(row[idxTxn2526]) || 0) : 0,
+                txn2627: idxTxn2627 > -1 ? (Number(row[idxTxn2627]) || 0) : 0,
+                apr: idxApr > -1 ? (Number(row[idxApr]) || 0) : 0, may: idxMay > -1 ? (Number(row[idxMay]) || 0) : 0,
+                jun: idxJun > -1 ? (Number(row[idxJun]) || 0) : 0, jul: idxJul > -1 ? (Number(row[idxJul]) || 0) : 0,
+                aug: idxAug > -1 ? (Number(row[idxAug]) || 0) : 0, sep: idxSep > -1 ? (Number(row[idxSep]) || 0) : 0,
+                oct: idxOct > -1 ? (Number(row[idxOct]) || 0) : 0, nov: idxNov > -1 ? (Number(row[idxNov]) || 0) : 0,
+                dec: idxDec > -1 ? (Number(row[idxDec]) || 0) : 0, jan: idxJan > -1 ? (Number(row[idxJan]) || 0) : 0,
+                feb: idxFeb > -1 ? (Number(row[idxFeb]) || 0) : 0, mar: idxMar > -1 ? (Number(row[idxMar]) || 0) : 0,
+                isMapped: isMapped
+            };
             
-            let idxApr = headers.findIndex(h => h.includes('apr-26') || h.includes('apr26') || h === 'apr');
-            let idxMay = headers.findIndex(h => h.includes('may-26') || h.includes('may26') || h === 'may');
-            let idxJun = headers.findIndex(h => h.includes('jun-26') || h.includes('jun26') || h === 'jun');
-            let idxJul = headers.findIndex(h => h.includes('jul-26') || h.includes('jul26') || h === 'jul');
-            let idxAug = headers.findIndex(h => h.includes('aug-26') || h.includes('aug26') || h === 'aug');
-            let idxSep = headers.findIndex(h => h.includes('sep-26') || h.includes('sep26') || h === 'sep');
-            let idxOct = headers.findIndex(h => h.includes('oct-26') || h.includes('oct26') || h === 'oct');
-            let idxNov = headers.findIndex(h => h.includes('nov-26') || h.includes('nov26') || h === 'nov');
-            let idxDec = headers.findIndex(h => h.includes('dec-26') || h.includes('dec26') || h === 'dec');
-            let idxJan = headers.findIndex(h => h.includes('jan-27') || h.includes('jan27') || h === 'jan');
-            let idxFeb = headers.findIndex(h => h.includes('feb-27') || h.includes('feb27') || h === 'feb');
-            let idxMar = headers.findIndex(h => h.includes('mar-27') || h.includes('mar27') || h === 'mar');
-            let idxEmpName = headers.findIndex(h => h.includes('employee') || h.includes('dmname'));
+            globalData.push(rowObj);
 
-            globalData = []; districtsSet.clear(); mandalsMap = {};
-
-            for (let i = 1; i < rawData.length; i++) {
-                let row = rawData[i];
-                let dist = idxDist > -1 ? (row[idxDist] || 'Unknown').toString().trim() : 'Unknown';
-                
-                if (isDM && loggedInUser !== "") {
-                    let sheetEmpName = idxEmpName > -1 ? (row[idxEmpName] || '').toString().trim().toLowerCase() : '';
-                    if (sheetEmpName !== loggedInUser.toLowerCase()) continue; 
-                }
-
-                let mandal = idxMandal > -1 ? (row[idxMandal] || 'Unknown').toString().trim() : 'Unknown';
-                let gp = idxGp > -1 ? (row[idxGp] || 'Unknown').toString().trim() : 'Unknown';
-                let cscId = idxCscId > -1 ? (row[idxCscId] || '').toString().trim() : '';
-                
-                if (dist !== 'Unknown') {
-                    districtsSet.add(dist);
-                    if (!mandalsMap[dist]) mandalsMap[dist] = new Set();
-                    mandalsMap[dist].add(mandal);
-                }
-                let isMapped = (cscId !== '' && cscId !== '-');
-
-                globalData.push({
-                    district: dist, mandal: mandal, gpName: gp, cscId: isMapped ? cscId : '',
-                    idDate: isMapped && idxIdDate > -1 ? (row[idxIdDate] || '').toString().trim() : '',
-                    vleName: isMapped && idxVleName > -1 ? row[idxVleName] : '',
-                    mobile: isMapped && idxMobile > -1 ? row[idxMobile] : '',
-                    mappedDate: isMapped && idxMappedDate > -1 ? (row[idxMappedDate] || '').toString().trim() : '',
-                    
-                    txn2425: idxTxn2425 > -1 ? (Number(row[idxTxn2425]) || 0) : 0,
-                    txn2526: idxTxn2526 > -1 ? (Number(row[idxTxn2526]) || 0) : 0,
-                    txn2627: idxTxn2627 > -1 ? (Number(row[idxTxn2627]) || 0) : 0,
-                    apr: idxApr > -1 ? (Number(row[idxApr]) || 0) : 0, may: idxMay > -1 ? (Number(row[idxMay]) || 0) : 0,
-                    jun: idxJun > -1 ? (Number(row[idxJun]) || 0) : 0, jul: idxJul > -1 ? (Number(row[idxJul]) || 0) : 0,
-                    aug: idxAug > -1 ? (Number(row[idxAug]) || 0) : 0, sep: idxSep > -1 ? (Number(row[idxSep]) || 0) : 0,
-                    oct: idxOct > -1 ? (Number(row[idxOct]) || 0) : 0, nov: idxNov > -1 ? (Number(row[idxNov]) || 0) : 0,
-                    dec: idxDec > -1 ? (Number(row[idxDec]) || 0) : 0, jan: idxJan > -1 ? (Number(row[idxJan]) || 0) : 0,
-                    feb: idxFeb > -1 ? (Number(row[idxFeb]) || 0) : 0, mar: idxMar > -1 ? (Number(row[idxMar]) || 0) : 0,
-                    isMapped: isMapped
+            // 🌟 TRACK DUPLICATES WITH EXACT INDEX FOR QUICK DELETE 🌟
+            if (isMapped) {
+                if (!cscIdLocations[cscId]) cscIdLocations[cscId] = [];
+                cscIdLocations[cscId].push({
+                    index: globalData.length - 1,
+                    gpName: gp,
+                    mandal: mandal,
+                    district: dist
                 });
             }
-            populateDistricts(); renderTable();
         }
+        populateDistricts(); renderTable();
+    }
 
-        function populateDistricts() {
-            const distFilter = document.getElementById("districtFilter");
-            distFilter.innerHTML = '<option value="All">All Districts</option>';
-            Array.from(districtsSet).sort().forEach(dist => { distFilter.innerHTML += `<option value="${dist}">${dist}</option>`; });
-            populateMandals();
-        }
+    function populateDistricts() {
+        const distFilter = document.getElementById("districtFilter");
+        distFilter.innerHTML = '<option value="All">All Districts</option>';
+        Array.from(districtsSet).sort().forEach(dist => { distFilter.innerHTML += `<option value="${dist}">${dist}</option>`; });
+        populateMandals();
+    }
 
-        function populateMandals() {
-            const dist = document.getElementById("districtFilter").value;
-            const mandalFilter = document.getElementById("mandalFilter");
-            mandalFilter.innerHTML = '<option value="All">All Mandals</option>';
-            if (dist !== "All" && mandalsMap[dist]) { Array.from(mandalsMap[dist]).sort().forEach(m => { mandalFilter.innerHTML += `<option value="${m}">${m}</option>`; }); }
-            renderTable();
-        }
+    function populateMandals() {
+        const dist = document.getElementById("districtFilter").value;
+        const mandalFilter = document.getElementById("mandalFilter");
+        mandalFilter.innerHTML = '<option value="All">All Mandals</option>';
+        if (dist !== "All" && mandalsMap[dist]) { Array.from(mandalsMap[dist]).sort().forEach(m => { mandalFilter.innerHTML += `<option value="${m}">${m}</option>`; }); }
+        renderTable();
+    }
 
-        function filterFromBox(status) { document.getElementById("statusFilter").value = status; updateKpiHighlight(); }
+    function filterFromBox(status) { document.getElementById("statusFilter").value = status; updateKpiHighlight(); }
 
-        function updateKpiHighlight() {
-            let status = document.getElementById("statusFilter").value;
-            document.querySelectorAll('#gp-mapping-root .kpi-card').forEach(el => el.classList.remove("active-kpi"));
-            let box = document.getElementById("box-" + status);
-            if(box) box.classList.add("active-kpi"); else if(status.includes("Mapped")) document.getElementById("box-Mapped").classList.add("active-kpi");
-            renderTable();
-        }
+    function updateKpiHighlight() {
+        let status = document.getElementById("statusFilter").value;
+        document.querySelectorAll('#gp-mapping-root .kpi-card').forEach(el => el.classList.remove("active-kpi"));
+        let box = document.getElementById("box-" + status);
+        if(box) box.classList.add("active-kpi"); else if(status.includes("Mapped") || status === "Duplicates") document.getElementById("box-Mapped").classList.add("active-kpi");
+        renderTable();
+    }
 
-        function resetFilters() {
-            document.getElementById("searchInput").value = "";
-            document.getElementById("districtFilter").value = "All";
-            document.getElementById("statusFilter").value = "All";
-            updateKpiHighlight(); populateMandals(); 
-        }
+    function resetFilters() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("districtFilter").value = "All";
+        document.getElementById("statusFilter").value = "All";
+        updateKpiHighlight(); populateMandals(); 
+    }
 
-        function renderTable() {
-            let distFilter = document.getElementById("districtFilter").value;
-            let mandalFilter = document.getElementById("mandalFilter").value;
-            let statusFilter = document.getElementById("statusFilter").value;
-            let searchQ = document.getElementById("searchInput").value.toLowerCase().trim();
+    // 🌟 KOTHA FUNCTION: OPEN DUPLICATE RESOLVE POPUP 🌟
+    function openDuplicateManager(cscId) {
+        let locs = cscIdLocations[cscId];
+        let html = `<div style="text-align:left; color:#334155; font-size:13px;">
+            <p style="margin-bottom:12px; line-height:1.5;">CSC ID <b style="color:#2563eb; font-size:15px;">${cscId}</b> is mapped in <b style="color:#dc2626;">${locs.length}</b> Grama Panchayaths.<br>Identify the wrong GP below and click <b>Delete</b>.</p>
+            <div style="display:flex; flex-direction:column; gap:8px;">`;
+        
+        locs.forEach(loc => {
+            html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px; border:1px solid #cbd5e1; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                        <div>
+                            <div style="font-weight:900; color:#0f172a; font-size:14px; margin-bottom:2px;"><i class="fa-solid fa-map-pin" style="color:#3b82f6;"></i> ${loc.gpName}</div>
+                            <div style="font-size:11px; color:#64748b; font-weight:600; padding-left:14px;">${loc.mandal}, ${loc.district}</div>
+                        </div>
+                        <button id="btnUnmap_${loc.index}" onclick="quickUnmap(${loc.index}, '${cscId}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 2px 0 #b91c1c; transition:0.2s; white-space:nowrap;">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                     </div>`;
+        });
+        html += `</div></div>`;
+        
+        showCustomAlert(`🛠️ Manage Duplicate ID: ${cscId}`, html, 'normal');
+    }
 
-            let tbodyHtml = ""; let counts = { total: 0, mapped: 0, pending: 0 }; let displayCount = 0; 
-
-            globalData.forEach((row, index) => {
-                if (distFilter !== "All" && row.district !== distFilter) return;
-                if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
-                if (searchQ !== "") {
-                    let text = `${row.gpName} ${row.cscId} ${row.vleName}`.toLowerCase();
-                    if (!text.includes(searchQ)) return;
-                }
-
-                counts.total++;
-                if (row.isMapped) counts.mapped++; else counts.pending++;
-
-                if (statusFilter === "Mapped" && !row.isMapped) return;
-                if (statusFilter === "Pending" && row.isMapped) return;
-                if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
-                if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
-
-                displayCount++;
-                if (displayCount <= 300 || searchQ !== "") {
-                    let statusBadge = row.isMapped ? `<span class="badge-success"><i class="fa-solid fa-check"></i> MAPPED</span>` : `<span class="badge-danger"><i class="fa-solid fa-xmark"></i> PENDING</span>`;
-                    let rowStyle = row.isMapped ? "" : "background-color: #fef2f2;";
-                    let actBtn = `<button class="btn-update" onclick="openUpdateForm(${index})"><i class="fa-solid fa-pen"></i> Update</button>`;
-                    
-                    let txnStyle = (row.isMapped && row.txn2627 === 0) ? "background:#fee2e2; color:#dc2626; border-color:#fca5a5;" : "";
-                    let txnValHtml = row.isMapped ? `<span class="txn-link" style="${txnStyle}" onclick="showMonthWiseTxn(${index})" title="Click to view details">${row.txn2627}</span>` : "-";
-
-                    tbodyHtml += `<tr style="${rowStyle}">
-                        <td>${row.district}</td><td>${row.mandal}</td><td class="bold-num text-blue">${row.gpName}</td>
-                        <td>${statusBadge}</td><td class="bold-num">${row.cscId || '-'}</td><td>${row.vleName || '-'}</td>
-                        <td>${row.mobile || '-'}</td><td>${row.txn2425}</td><td>${row.txn2526}</td>
-                        <td style="text-align:center;">${txnValHtml}</td><td style="text-align:center;">${actBtn}</td>
-                    </tr>`;
-                }
-            });
-
-            if (displayCount > 300 && searchQ === "") { tbodyHtml += `<tr><td colspan="11" style="text-align:center; padding:15px; color:#64748b;">Showing top 300 records. Use filters to see specific data.</td></tr>`; } 
-            else if (displayCount === 0) { tbodyHtml = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">No Grama Panchayaths found matching your criteria.</td></tr>`; }
-
-            document.getElementById("tableBody").innerHTML = tbodyHtml;
-            document.getElementById("kpi-total-gps").innerText = counts.total.toLocaleString();
-            document.getElementById("kpi-mapped-gps").innerText = counts.mapped.toLocaleString();
-            document.getElementById("kpi-pending-gps").innerText = counts.pending.toLocaleString();
-        }
-
-        function toggleMainFullscreen() {
-            let elem = document.documentElement;
-            let fsBtnIcon = document.querySelector('#mainFsBtn i');
+    // 🌟 KOTHA FUNCTION: INSTANT UNMAP (DELETE) FRPM POPUP 🌟
+    async function quickUnmap(index, cscId) {
+        if(!confirm("Are you sure you want to UNMAP this CSC ID from this GP?")) return;
+        
+        let btn = document.getElementById(`btnUnmap_${index}`);
+        let origHtml = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Deleting...`;
+        btn.disabled = true;
+        btn.style.background = "#d97706";
+        btn.style.boxShadow = "none";
+        
+        let row = globalData[index];
+        try {
+            // Sending empty values for cscId, vleName, mobile, idCreationDate effectively unmaps it in Google Sheet
+            let saveUrl = apiURL + `?action=updateMapping&district=${encodeURIComponent(row.district)}&mandal=${encodeURIComponent(row.mandal)}&gpName=${encodeURIComponent(row.gpName)}&cscId=&idCreationDate=&vleName=&mobileNo=`;
+            let res = await fetch(saveUrl); 
+            let result = await res.json();
             
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) { elem.requestFullscreen(); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            if (result.status === "success") {
+                // Update Local Data
+                globalData[index].cscId = ""; 
+                globalData[index].vleName = "";
+                globalData[index].mobile = ""; 
+                globalData[index].idDate = ""; 
+                globalData[index].isMapped = false;
+                globalData[index].mappedDate = "";
+                
+                sessionStorage.removeItem(cacheKey); 
+                
+                // Remove from cscIdLocations array
+                cscIdLocations[cscId] = cscIdLocations[cscId].filter(l => l.index !== index);
+                
+                renderTable(); // Update background table
+                
+                // Check if still duplicate
+                if(cscIdLocations[cscId].length > 1) {
+                    openDuplicateManager(cscId); // Refresh popup
+                } else {
+                    closeModal('customAlertModal');
+                    showCustomAlert('✅ Resolved!', `Duplicate mapping for <b>${cscId}</b> resolved successfully. Now it is mapped to only 1 GP.`, 'success');
+                }
             } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-                else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-                else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+                alert("Failed to unmap. Please try again.");
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+                btn.style.background = "#ef4444";
+                btn.style.boxShadow = "0 2px 0 #b91c1c";
             }
+        } catch(e) {
+            alert("Network error.");
+            btn.innerHTML = origHtml;
+            btn.disabled = false;
+            btn.style.background = "#ef4444";
+            btn.style.boxShadow = "0 2px 0 #b91c1c";
         }
-        
-        document.addEventListener('fullscreenchange', (event) => {
-            const fsBtn = document.getElementById('mainFsBtn');
-            if(fsBtn) {
-                if (document.fullscreenElement) fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
-                else fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
+    }
+
+    function renderTable() {
+        let distFilter = document.getElementById("districtFilter").value;
+        let mandalFilter = document.getElementById("mandalFilter").value;
+        let statusFilter = document.getElementById("statusFilter").value;
+        let searchQ = document.getElementById("searchInput").value.toLowerCase().trim();
+
+        let tbodyHtml = ""; let counts = { total: 0, mapped: 0, pending: 0 }; let displayCount = 0; 
+
+        globalData.forEach((row, index) => {
+            if (distFilter !== "All" && row.district !== distFilter) return;
+            if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
+            if (searchQ !== "") {
+                let text = `${row.gpName} ${row.cscId} ${row.vleName}`.toLowerCase();
+                if (!text.includes(searchQ)) return;
+            }
+
+            counts.total++;
+            if (row.isMapped) counts.mapped++; else counts.pending++;
+
+            // 🌟 DUPLICATES FILTER 🌟
+            if (statusFilter === "Duplicates" && (!row.isMapped || cscIdLocations[row.cscId].length <= 1)) return;
+            
+            if (statusFilter === "Mapped" && !row.isMapped) return;
+            if (statusFilter === "Pending" && row.isMapped) return;
+            if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
+            if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
+
+            displayCount++;
+            if (displayCount <= 300 || searchQ !== "") {
+                let statusBadge = row.isMapped ? `<span class="badge-success"><i class="fa-solid fa-check"></i> MAPPED</span>` : `<span class="badge-danger"><i class="fa-solid fa-xmark"></i> PENDING</span>`;
+                let rowStyle = row.isMapped ? "" : "background-color: #fef2f2;";
+                let actBtn = `<button class="btn-update" onclick="openUpdateForm(${index})"><i class="fa-solid fa-pen"></i> Update</button>`;
+                
+                let txnStyle = (row.isMapped && row.txn2627 === 0) ? "background:#fee2e2; color:#dc2626; border-color:#fca5a5;" : "";
+                let txnValHtml = row.isMapped ? `<span class="txn-link" style="${txnStyle}" onclick="showMonthWiseTxn(${index})" title="Click to view details">${row.txn2627}</span>` : "-";
+
+                // 🌟 DUPLICATE RESOLVE BUTTON 🌟
+                let isDup = row.isMapped && cscIdLocations[row.cscId].length > 1;
+                let cscIdDisplay = row.cscId || '-';
+                if (isDup) {
+                    cscIdDisplay = `<span style="color:#dc2626; font-weight:900;">${row.cscId}</span><br>
+                                    <span onclick="openDuplicateManager('${row.cscId}')" 
+                                          style="font-size:9.5px; background:#fee2e2; padding:3px 8px; border-radius:4px; border:1px solid #fca5a5; cursor:pointer; color:#991b1b; font-weight:900; display:inline-flex; align-items:center; gap:4px; margin-top:2px; transition:0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.1);" 
+                                          title="Click to manage mappings"
+                                          onmouseover="this.style.background='#fecaca'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='#fee2e2'; this.style.transform='scale(1)';">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> RESOLVE
+                                    </span>`;
+                }
+
+                tbodyHtml += `<tr style="${rowStyle}">
+                    <td>${row.district}</td><td>${row.mandal}</td><td class="bold-num text-blue">${row.gpName}</td>
+                    <td>${statusBadge}</td><td class="bold-num" style="line-height:1.3;">${cscIdDisplay}</td><td>${row.vleName || '-'}</td>
+                    <td>${row.mobile || '-'}</td><td>${row.txn2425}</td><td>${row.txn2526}</td>
+                    <td style="text-align:center;">${txnValHtml}</td><td style="text-align:center;">${actBtn}</td>
+                </tr>`;
             }
         });
 
-        function toggleExpand(contentId, btnEl) {
-            let el = document.getElementById(contentId);
-            el.classList.toggle('gpm-modal-expanded');
-            let icon = btnEl.querySelector('i');
-            if (el.classList.contains('gpm-modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
-            else { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
+        if (displayCount > 300 && searchQ === "") { tbodyHtml += `<tr><td colspan="11" style="text-align:center; padding:15px; color:#64748b;">Showing top 300 records. Use filters to see specific data.</td></tr>`; } 
+        else if (displayCount === 0) { tbodyHtml = `<tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">No Grama Panchayaths found matching your criteria.</td></tr>`; }
+
+        document.getElementById("tableBody").innerHTML = tbodyHtml;
+        document.getElementById("kpi-total-gps").innerText = counts.total.toLocaleString();
+        document.getElementById("kpi-mapped-gps").innerText = counts.mapped.toLocaleString();
+        document.getElementById("kpi-pending-gps").innerText = counts.pending.toLocaleString();
+    }
+
+    function toggleMainFullscreen() {
+        let elem = document.documentElement;
+        let fsBtnIcon = document.querySelector('#mainFsBtn i');
+        
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+        } else {
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
         }
-
-        function showMonthWiseTxn(index) {
-            let row = globalData[index];
-            document.getElementById("mwVleName").innerText = row.vleName || "Unknown VLE";
-            document.getElementById("mwCscId").innerText = `CSC ID: ${row.cscId} | GP: ${row.gpName}`;
-            let el2425 = document.getElementById('vTxn2425'); let el2526 = document.getElementById('vTxn2526');
-            el2425.innerText = row.txn2425; el2526.innerText = row.txn2526;
-            if(row.txn2425 > 0) el2425.style.color = '#16a34a'; else el2425.style.color = '#0f172a';
-            if(row.txn2526 > 0) el2526.style.color = '#16a34a'; else el2526.style.color = '#0f172a';
-
-            const mlist = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-            mlist.forEach(m => {
-                let val = row[m.toLowerCase()]; let el = document.getElementById('v' + m); el.innerText = val;
-                if(val > 0) el.style.color = '#16a34a'; else el.style.color = '#0f172a';
-            });
-            document.getElementById("monthWiseModal").style.display = "flex";
+    }
+    
+    document.addEventListener('fullscreenchange', (event) => {
+        const fsBtn = document.getElementById('mainFsBtn');
+        if(fsBtn) {
+            if (document.fullscreenElement) fsBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
+            else fsBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
         }
+    });
 
-        window.currentSummaryDist = null;
-        function openSummaryModal(distOverride) {
-            if (distOverride !== undefined) window.currentSummaryDist = distOverride;
-            let globalFilter = document.getElementById("districtFilter").value;
-            let distToUse = (window.currentSummaryDist && window.currentSummaryDist !== "All") ? window.currentSummaryDist : globalFilter;
-            let isStateWide = (distToUse === "All");
+    function toggleExpand(contentId, btnEl) {
+        let el = document.getElementById(contentId);
+        el.classList.toggle('gpm-modal-expanded');
+        let icon = btnEl.querySelector('i');
+        if (el.classList.contains('gpm-modal-expanded')) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); } 
+        else { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
+    }
 
-            let backBtn = document.getElementById("sumBackBtn");
-            if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
+    function showMonthWiseTxn(index) {
+        let row = globalData[index];
+        document.getElementById("mwVleName").innerText = row.vleName || "Unknown VLE";
+        document.getElementById("mwCscId").innerText = `CSC ID: ${row.cscId} | GP: ${row.gpName}`;
+        let el2425 = document.getElementById('vTxn2425'); let el2526 = document.getElementById('vTxn2526');
+        el2425.innerText = row.txn2425; el2526.innerText = row.txn2526;
+        if(row.txn2425 > 0) el2425.style.color = '#16a34a'; else el2425.style.color = '#0f172a';
+        if(row.txn2526 > 0) el2526.style.color = '#16a34a'; else el2526.style.color = '#0f172a';
+
+        const mlist = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+        mlist.forEach(m => {
+            let val = row[m.toLowerCase()]; let el = document.getElementById('v' + m); el.innerText = val;
+            if(val > 0) el.style.color = '#16a34a'; else el.style.color = '#0f172a';
+        });
+        document.getElementById("monthWiseModal").style.display = "flex";
+    }
+
+    window.currentSummaryDist = null;
+    function openSummaryModal(distOverride) {
+        if (distOverride !== undefined) window.currentSummaryDist = distOverride;
+        let globalFilter = document.getElementById("districtFilter").value;
+        let distToUse = (window.currentSummaryDist && window.currentSummaryDist !== "All") ? window.currentSummaryDist : globalFilter;
+        let isStateWide = (distToUse === "All");
+
+        let backBtn = document.getElementById("sumBackBtn");
+        if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
+        
+        document.getElementById("summaryDistName").innerText = isStateWide ? "- Overall State Report (District-wise)" : `- District: ${distToUse}`;
+        document.getElementById("summaryTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
+
+        let summaryData = {};
+        let overallTotal = 0, overallMapped = 0, overallPending = 0, overallActive = 0, overallInactive = 0;
+
+        globalData.forEach(row => {
+            if (!isStateWide && row.district !== distToUse) return;
+            let keyName = isStateWide ? row.district : row.mandal;
+            if (!summaryData[keyName]) summaryData[keyName] = { total: 0, mapped: 0, pending: 0, active: 0, inactive: 0 };
+            summaryData[keyName].total++; overallTotal++;
+
+            if (row.isMapped) { 
+                summaryData[keyName].mapped++; overallMapped++; 
+                if (row.txn2627 > 0) { summaryData[keyName].active++; overallActive++; } else { summaryData[keyName].inactive++; overallInactive++; }
+            } else { summaryData[keyName].pending++; overallPending++; }
+        });
+        
+        let calcPercent = overallTotal === 0 ? 0 : ((overallMapped / overallTotal) * 100).toFixed(1);
+        let calcActPercent = overallMapped === 0 ? 0 : ((overallActive / overallMapped) * 100).toFixed(1); 
+        
+        document.getElementById("modTotalGPs").innerText = overallTotal.toLocaleString();
+        document.getElementById("modMappedGPs").innerText = overallMapped.toLocaleString();
+        document.getElementById("modPendingGPs").innerText = overallPending.toLocaleString();
+        document.getElementById("modActiveGPs").innerText = overallActive.toLocaleString();
+        document.getElementById("modInactiveGPs").innerText = overallInactive.toLocaleString();
+        document.getElementById("modPercentGPs").innerText = calcPercent + "%";
+        document.getElementById("modActivePercentGPs").innerText = calcActPercent + "%"; 
+
+        let tbodyHtml = "";
+        Object.keys(summaryData).sort().forEach(k => {
+            let d = summaryData[k];
+            let mappedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
+            let pctColor = mappedPct >= 80 ? '#10b981' : (mappedPct >= 50 ? '#f59e0b' : '#dc2626');
             
-            document.getElementById("summaryDistName").innerText = isStateWide ? "- Overall State Report (District-wise)" : `- District: ${distToUse}`;
-            document.getElementById("summaryTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
-
-            let summaryData = {};
-            let overallTotal = 0, overallMapped = 0, overallPending = 0, overallActive = 0, overallInactive = 0;
-
-            globalData.forEach(row => {
-                if (!isStateWide && row.district !== distToUse) return;
-                let keyName = isStateWide ? row.district : row.mandal;
-                if (!summaryData[keyName]) summaryData[keyName] = { total: 0, mapped: 0, pending: 0, active: 0, inactive: 0 };
-                summaryData[keyName].total++; overallTotal++;
-
-                if (row.isMapped) { 
-                    summaryData[keyName].mapped++; overallMapped++; 
-                    if (row.txn2627 > 0) { summaryData[keyName].active++; overallActive++; } else { summaryData[keyName].inactive++; overallInactive++; }
-                } else { summaryData[keyName].pending++; overallPending++; }
-            });
+            let activePct = d.mapped === 0 ? 0 : ((d.active / d.mapped) * 100).toFixed(1);
+            let actColor = activePct >= 80 ? '#10b981' : (activePct >= 50 ? '#f59e0b' : '#dc2626');
             
-            let calcPercent = overallTotal === 0 ? 0 : ((overallMapped / overallTotal) * 100).toFixed(1);
-            let calcActPercent = overallMapped === 0 ? 0 : ((overallActive / overallMapped) * 100).toFixed(1); // 🌟 OVERALL ACTIVE %
+            let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
+            let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
+            tbodyHtml += `<tr>
+                ${nameHtml}
+                <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
+                <td>${pendingHtml}</td><td style="color:#16a34a; font-weight:800;">${d.active}</td><td style="color:#64748b; font-weight:800;">${d.inactive}</td>
+                <td style="color:${pctColor}; font-weight:900;">${mappedPct}%</td>
+                <td style="color:${actColor}; font-weight:900;">${activePct}%</td> 
+            </tr>`;
+        });
+        document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
+        document.getElementById("summaryModal").style.display = "flex";
+    }
+
+    function openDailyReportModal() {
+        let drData = {};
+        let ovTotal = 0, ovMapped = 0, ovYesterday = 0, ovBalance = 0;
+
+        let d = new Date();
+        d.setDate(d.getDate() - 1);
+        let yStr1 = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        let yStr2 = `${("0"+d.getDate()).slice(-2)}/${("0"+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`;
+
+        globalData.forEach(row => {
+            let dist = row.district;
+            if (dist === "Unknown") return;
             
-            document.getElementById("modTotalGPs").innerText = overallTotal.toLocaleString();
-            document.getElementById("modMappedGPs").innerText = overallMapped.toLocaleString();
-            document.getElementById("modPendingGPs").innerText = overallPending.toLocaleString();
-            document.getElementById("modActiveGPs").innerText = overallActive.toLocaleString();
-            document.getElementById("modInactiveGPs").innerText = overallInactive.toLocaleString();
-            document.getElementById("modPercentGPs").innerText = calcPercent + "%";
-            document.getElementById("modActivePercentGPs").innerText = calcActPercent + "%"; // 🌟 TOP BANNER ACTIVE %
-
-            let tbodyHtml = "";
-            Object.keys(summaryData).sort().forEach(k => {
-                let d = summaryData[k];
-                // 🌟 MAPPED % ఫార్ములా 🌟
-                let mappedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
-                let pctColor = mappedPct >= 80 ? '#10b981' : (mappedPct >= 50 ? '#f59e0b' : '#dc2626');
-                
-                // 🌟 ACTIVE % ఫార్ములా 🌟
-                let activePct = d.mapped === 0 ? 0 : ((d.active / d.mapped) * 100).toFixed(1);
-                let actColor = activePct >= 80 ? '#10b981' : (activePct >= 50 ? '#f59e0b' : '#dc2626');
-                
-                let pendingHtml = d.pending === 0 ? `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>` : `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.pending}</span>`;
-                let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openSummaryModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
-                tbodyHtml += `<tr>
-                    ${nameHtml}
-                    <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
-                    <td>${pendingHtml}</td><td style="color:#16a34a; font-weight:800;">${d.active}</td><td style="color:#64748b; font-weight:800;">${d.inactive}</td>
-                    <td style="color:${pctColor}; font-weight:900;">${mappedPct}%</td>
-                    <td style="color:${actColor}; font-weight:900;">${activePct}%</td> <!-- 🌟 NEW ACTIVE % -->
-                </tr>`;
-            });
-            document.getElementById("summaryTableBody").innerHTML = tbodyHtml || "<tr><td colspan='8'>No data available</td></tr>";
-            document.getElementById("summaryModal").style.display = "flex";
-        }
-
-        function openDailyReportModal() {
-            let drData = {};
-            let ovTotal = 0, ovMapped = 0, ovYesterday = 0, ovBalance = 0;
-
-            let d = new Date();
-            d.setDate(d.getDate() - 1);
-            let yStr1 = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-            let yStr2 = `${("0"+d.getDate()).slice(-2)}/${("0"+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`;
-
-            globalData.forEach(row => {
-                let dist = row.district;
-                if (dist === "Unknown") return;
-                
-                if (!drData[dist]) drData[dist] = { total: 0, mapped: 0, yesterday: 0, balance: 0 };
-                
-                drData[dist].total++; 
-                ovTotal++;
-                
-                if (row.isMapped) {
-                    drData[dist].mapped++; 
-                    ovMapped++;
-                    
-                    if (row.mappedDate && (row.mappedDate.includes(yStr1) || row.mappedDate.includes(yStr2))) {
-                        drData[dist].yesterday++;
-                        ovYesterday++;
-                    }
-                }
-            });
+            if (!drData[dist]) drData[dist] = { total: 0, mapped: 0, yesterday: 0, balance: 0 };
             
-            ovBalance = ovTotal - ovMapped;
+            drData[dist].total++; 
+            ovTotal++;
             
-            document.getElementById("drTotalGPs").innerText = ovTotal.toLocaleString();
-            document.getElementById("drMappedGPs").innerText = ovMapped.toLocaleString();
-            document.getElementById("drYesterdayGPs").innerText = ovYesterday.toLocaleString();
-            document.getElementById("drBalanceGPs").innerText = ovBalance.toLocaleString();
-            
-            let tbodyHtml = "";
-            Object.keys(drData).sort().forEach(dist => {
-                let d = drData[dist];
-                let balance = d.total - d.mapped;
-                // 🌟 ACHIEVED % ఫార్ములా 🌟
-                let achievedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
-                let pctColor = achievedPct >= 80 ? '#10b981' : (achievedPct >= 50 ? '#f59e0b' : '#dc2626');
+            if (row.isMapped) {
+                drData[dist].mapped++; 
+                ovMapped++;
                 
-                let yHtml = d.yesterday > 0 ? `<span style="color:#10b981; font-weight:900; font-size:16px;">+${d.yesterday}</span>` : `<span style="color:#94a3b8; font-weight:600;">0</span>`;
-                let bHtml = balance > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${balance}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
-                
-                tbodyHtml += `<tr>
-                    <td class="gpm-sum-mandal">${dist}</td>
-                    <td style="color:#475569;">${d.total}</td>
-                    <td style="color:#0284c7; font-weight:800;">${d.mapped}</td>
-                    <td>${yHtml}</td>
-                    <td>${bHtml}</td>
-                    <td style="color:${pctColor}; font-weight:900;">${achievedPct}%</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
-                </tr>`;
-            });
-            
-            document.getElementById("dailyReportTableBody").innerHTML = tbodyHtml || "<tr><td colspan='6'>No data available</td></tr>";
-            document.getElementById("dailyReportModal").style.display = "flex";
-        }
-
-        window.currentDropoutsDist = null;
-        function openDropoutsModal(distOverride) {
-            if (distOverride !== undefined) window.currentDropoutsDist = distOverride;
-            document.getElementById("dropoutsModal").style.display = "flex";
-            calcDropouts();
-        }
-
-        function calcDropouts() {
-            let globalFilter = document.getElementById("districtFilter").value;
-            let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : globalFilter;
-            let isStateWide = (distToUse === "All");
-
-            let backBtn = document.getElementById("doBackBtn");
-            if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
-            
-            document.getElementById("doDistName").innerText = isStateWide ? "- Overall State Report" : `- District: ${distToUse}`;
-            document.getElementById("doTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
-
-            let selM1 = document.getElementById("doMonth1"); let selM2 = document.getElementById("doMonth2");
-            let m1Key = selM1.value; let m2Key = selM2.value;
-            let m1Text = selM1.options[selM1.selectedIndex].text; let m2Text = selM2.options[selM2.selectedIndex].text;
-
-            document.getElementById("lblM1Top").innerText = m1Text + " Active"; 
-            document.getElementById("lblM2Top").innerText = m2Text + " Active";
-            
-            document.getElementById("tblHeadM1").innerText = m1Text.split('-')[0].toUpperCase() + " ACT";
-            document.getElementById("tblHeadM2").innerHTML = m2Text.split('-')[0].toUpperCase() + " ACT <br><span style='font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;'>(Retained + New)</span>";
-
-            let doData = {}; 
-            let ovTotal = 0, ovMapped = 0, ovActFY = 0, ovInactFY = 0, ovM1 = 0, ovM2 = 0, ovDropouts = 0, ovNewAct = 0;
-
-            globalData.forEach(row => {
-                if (!isStateWide && row.district !== distToUse) return;
-                let keyName = isStateWide ? row.district : row.mandal;
-                if (!doData[keyName]) doData[keyName] = { total: 0, mapped: 0, actFY: 0, inactFY: 0, m1: 0, m2: 0, drop: 0, newAct: 0 };
-                
-                doData[keyName].total++; ovTotal++;
-                if (!row.isMapped) return; 
-
-                doData[keyName].mapped++; ovMapped++;
-                if (row.txn2627 > 0) { doData[keyName].actFY++; ovActFY++; } else { doData[keyName].inactFY++; ovInactFY++; }
-                
-                if (row[m1Key] > 0) { doData[keyName].m1++; ovM1++; }
-                if (row[m2Key] > 0) { doData[keyName].m2++; ovM2++; }
-                
-                if (row[m1Key] > 0 && row[m2Key] === 0) { doData[keyName].drop++; ovDropouts++; }
-                if (row[m1Key] === 0 && row[m2Key] > 0) { doData[keyName].newAct++; ovNewAct++; }
-            });
-            
-            let ovRetained = ovM2 - ovNewAct;
-            document.getElementById("doModTotal").innerText = ovTotal.toLocaleString();
-            document.getElementById("doModMapped").innerText = ovMapped.toLocaleString();
-            document.getElementById("doModActFY").innerText = ovActFY.toLocaleString();
-            document.getElementById("doModInactFY").innerText = ovInactFY.toLocaleString();
-            document.getElementById("doModM1").innerText = ovM1.toLocaleString();
-            document.getElementById("doModM2").innerHTML = `<span style="font-size:16px; color:#64748b;">${ovRetained.toLocaleString()} <span style="color:#10b981;">+${ovNewAct.toLocaleString()}</span> = </span>${ovM2.toLocaleString()}`;
-            document.getElementById("doModDropouts").innerText = ovDropouts.toLocaleString();
-
-            let tbodyHtml = "";
-            Object.keys(doData).sort().forEach(k => {
-                let d = doData[k];
-                // 🌟 RETENTION % ఫార్ములా (M1 లో ఉన్న వాళ్ళు M2 కి ఎంత మంది మిగిలారు) 🌟
-                let retentionPct = d.m1 === 0 ? 0 : (((d.m1 - d.drop) / d.m1) * 100).toFixed(1);
-                let pctColor = retentionPct >= 80 ? '#10b981' : (retentionPct >= 50 ? '#f59e0b' : '#dc2626');
-                if (d.m1 === 0) pctColor = '#64748b'; // పాత నెలలో సున్నా ఉంటే గ్రే కలర్
-                
-                let dropHtml = d.drop > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.drop}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
-                
-                let retained = d.m2 - d.newAct;
-                let m2Html = `<span style="color:#475569; font-size:13px;" title="Retained VLEs">${retained}</span> <span style="color:#10b981; font-size:13px; font-weight:800;" title="New VLEs">+${d.newAct}</span> <span style="color:#a21caf; font-weight:900; font-size:16px;" title="Total VLEs">= ${d.m2}</span>`;
-                
-                let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
-                
-                tbodyHtml += `<tr>
-                    ${nameHtml}
-                    <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
-                    <td style="color:#16a34a;">${d.actFY}</td><td style="color:#64748b;">${d.inactFY}</td>
-                    <td style="color:#8b5cf6;">${d.m1}</td><td>${m2Html}</td><td>${dropHtml}</td>
-                    <td style="color:${pctColor}; font-weight:900;">${d.m1 === 0 ? '-' : retentionPct + '%'}</td> <!-- 🌟 NEW PERCENTAGE 🌟 -->
-                </tr>`;
-            });
-            document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='9'>No data available</td></tr>";
-        }
-
-        let currentUpdateIndex = -1;
-        function openUpdateForm(index) {
-            currentUpdateIndex = index; let row = globalData[index];
-            document.getElementById("frmDist").value = row.district; document.getElementById("frmMandal").value = row.mandal;
-            document.getElementById("frmGp").value = row.gpName; document.getElementById("frmCscId").value = row.cscId === '-' ? '' : row.cscId;
-            document.getElementById("frmVleName").value = row.vleName === '-' ? '' : row.vleName;
-            document.getElementById("frmMobile").value = row.mobile === '-' ? '' : row.mobile;
-            document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
-        }
-
-        function showCustomAlert(title, message, type) {
-            let titleColor = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f172a');
-            document.getElementById('customAlertHeader').innerHTML = `<h3 style="color: ${titleColor}; margin: 0; font-size: 17px; font-weight: 800;">${title}</h3>`;
-            document.getElementById('customAlertBody').innerHTML = message;
-            document.getElementById('customAlertModal').style.display = 'flex';
-        }
-
-        async function submitMappingData() {
-            let cscId = document.getElementById("frmCscId").value.trim();
-            let vleName = document.getElementById("frmVleName").value.trim();
-            let mobile = document.getElementById("frmMobile").value.trim();
-            let rawIdDate = document.getElementById("frmIdDate").value.trim(); 
-            
-            let idDate = rawIdDate;
-            if (rawIdDate) {
-                let dParts = rawIdDate.split('-');
-                if (dParts.length === 3) { idDate = dParts[2] + "-" + dParts[1] + "-" + dParts[0]; }
-            }
-
-            let row = globalData[currentUpdateIndex];
-            
-            // 🌟 KOTHA LOGIC: cscId empty ga unte Unmapping ani artham 🌟
-            let isUnmapping = (cscId === "");
-
-            // Duplicate check ni cscId unte matrame cheyali
-            if (!isUnmapping) {
-                let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
-                if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
-                    let dup = globalData[dupIndex];
-                    let errorMsg = `This CSC ID (<b>${cscId}</b>) is already mapped to:<br><br>
-                                   <div style="text-align: left; background: #fee2e2; padding: 12px; border-radius: 6px; display: inline-block; width: 100%; border: 1px solid #fca5a5; color: #991b1b; font-weight: 600; font-size: 13px;">
-                                       📍 <b>District:</b> ${dup.district}<br>
-                                       📍 <b>Mandal:</b> ${dup.mandal}<br>
-                                       📍 <b>GP:</b> ${dup.gpName}
-                                   </div><br><br>Please check and enter a valid CSC ID.`;
-                    showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
-                    return;
+                if (row.mappedDate && (row.mappedDate.includes(yStr1) || row.mappedDate.includes(yStr2))) {
+                    drData[dist].yesterday++;
+                    ovYesterday++;
                 }
             }
+        });
+        
+        ovBalance = ovTotal - ovMapped;
+        
+        document.getElementById("drTotalGPs").innerText = ovTotal.toLocaleString();
+        document.getElementById("drMappedGPs").innerText = ovMapped.toLocaleString();
+        document.getElementById("drYesterdayGPs").innerText = ovYesterday.toLocaleString();
+        document.getElementById("drBalanceGPs").innerText = ovBalance.toLocaleString();
+        
+        let tbodyHtml = "";
+        Object.keys(drData).sort().forEach(dist => {
+            let d = drData[dist];
+            let balance = d.total - d.mapped;
+            let achievedPct = d.total === 0 ? 0 : ((d.mapped / d.total) * 100).toFixed(1);
+            let pctColor = achievedPct >= 80 ? '#10b981' : (achievedPct >= 50 ? '#f59e0b' : '#dc2626');
+            
+            let yHtml = d.yesterday > 0 ? `<span style="color:#10b981; font-weight:900; font-size:16px;">+${d.yesterday}</span>` : `<span style="color:#94a3b8; font-weight:600;">0</span>`;
+            let bHtml = balance > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${balance}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
+            
+            tbodyHtml += `<tr>
+                <td class="gpm-sum-mandal">${dist}</td>
+                <td style="color:#475569;">${d.total}</td>
+                <td style="color:#0284c7; font-weight:800;">${d.mapped}</td>
+                <td>${yHtml}</td>
+                <td>${bHtml}</td>
+                <td style="color:${pctColor}; font-weight:900;">${achievedPct}%</td>
+            </tr>`;
+        });
+        
+        document.getElementById("dailyReportTableBody").innerHTML = tbodyHtml || "<tr><td colspan='6'>No data available</td></tr>";
+        document.getElementById("dailyReportModal").style.display = "flex";
+    }
 
-            const btn = document.getElementById("btnSubmitMapping"); 
-            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving Data..."; 
-            btn.disabled = true;
+    window.currentDropoutsDist = null;
+    function openDropoutsModal(distOverride) {
+        if (distOverride !== undefined) window.currentDropoutsDist = distOverride;
+        document.getElementById("dropoutsModal").style.display = "flex";
+        calcDropouts();
+    }
 
-            try {
-                let saveUrl = apiURL + `?action=updateMapping&district=${encodeURIComponent(row.district)}&mandal=${encodeURIComponent(row.mandal)}&gpName=${encodeURIComponent(row.gpName)}&cscId=${encodeURIComponent(cscId)}&idCreationDate=${encodeURIComponent(idDate)}&vleName=${encodeURIComponent(vleName)}&mobileNo=${encodeURIComponent(mobile)}`;
-                let res = await fetch(saveUrl); let result = await res.json();
+    function calcDropouts() {
+        let globalFilter = document.getElementById("districtFilter").value;
+        let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : globalFilter;
+        let isStateWide = (distToUse === "All");
+
+        let backBtn = document.getElementById("doBackBtn");
+        if (!isStateWide && globalFilter === "All") backBtn.style.display = "flex"; else backBtn.style.display = "none";
+        
+        document.getElementById("doDistName").innerText = isStateWide ? "- Overall State Report" : `- District: ${distToUse}`;
+        document.getElementById("doTableFirstHeader").innerText = isStateWide ? "District Name" : "Mandal Name";
+
+        let selM1 = document.getElementById("doMonth1"); let selM2 = document.getElementById("doMonth2");
+        let m1Key = selM1.value; let m2Key = selM2.value;
+        let m1Text = selM1.options[selM1.selectedIndex].text; let m2Text = selM2.options[selM2.selectedIndex].text;
+
+        document.getElementById("lblM1Top").innerText = m1Text + " Active"; 
+        document.getElementById("lblM2Top").innerText = m2Text + " Active";
+        
+        document.getElementById("tblHeadM1").innerText = m1Text.split('-')[0].toUpperCase() + " ACT";
+        document.getElementById("tblHeadM2").innerHTML = m2Text.split('-')[0].toUpperCase() + " ACT <br><span style='font-size:9px; color:#fdf4ff; text-transform:none; letter-spacing:0;'>(Retained + New)</span>";
+
+        let doData = {}; 
+        let ovTotal = 0, ovMapped = 0, ovActFY = 0, ovInactFY = 0, ovM1 = 0, ovM2 = 0, ovDropouts = 0, ovNewAct = 0;
+
+        globalData.forEach(row => {
+            if (!isStateWide && row.district !== distToUse) return;
+            let keyName = isStateWide ? row.district : row.mandal;
+            if (!doData[keyName]) doData[keyName] = { total: 0, mapped: 0, actFY: 0, inactFY: 0, m1: 0, m2: 0, drop: 0, newAct: 0 };
+            
+            doData[keyName].total++; ovTotal++;
+            if (!row.isMapped) return; 
+
+            doData[keyName].mapped++; ovMapped++;
+            if (row.txn2627 > 0) { doData[keyName].actFY++; ovActFY++; } else { doData[keyName].inactFY++; ovInactFY++; }
+            
+            if (row[m1Key] > 0) { doData[keyName].m1++; ovM1++; }
+            if (row[m2Key] > 0) { doData[keyName].m2++; ovM2++; }
+            
+            if (row[m1Key] > 0 && row[m2Key] === 0) { doData[keyName].drop++; ovDropouts++; }
+            if (row[m1Key] === 0 && row[m2Key] > 0) { doData[keyName].newAct++; ovNewAct++; }
+        });
+        
+        let ovRetained = ovM2 - ovNewAct;
+        document.getElementById("doModTotal").innerText = ovTotal.toLocaleString();
+        document.getElementById("doModMapped").innerText = ovMapped.toLocaleString();
+        document.getElementById("doModActFY").innerText = ovActFY.toLocaleString();
+        document.getElementById("doModInactFY").innerText = ovInactFY.toLocaleString();
+        document.getElementById("doModM1").innerText = ovM1.toLocaleString();
+        document.getElementById("doModM2").innerHTML = `<span style="font-size:16px; color:#64748b;">${ovRetained.toLocaleString()} <span style="color:#10b981;">+${ovNewAct.toLocaleString()}</span> = </span>${ovM2.toLocaleString()}`;
+        document.getElementById("doModDropouts").innerText = ovDropouts.toLocaleString();
+
+        let tbodyHtml = "";
+        Object.keys(doData).sort().forEach(k => {
+            let d = doData[k];
+            let retentionPct = d.m1 === 0 ? 0 : (((d.m1 - d.drop) / d.m1) * 100).toFixed(1);
+            let pctColor = retentionPct >= 80 ? '#10b981' : (retentionPct >= 50 ? '#f59e0b' : '#dc2626');
+            if (d.m1 === 0) pctColor = '#64748b'; 
+            
+            let dropHtml = d.drop > 0 ? `<span style="color:#dc2626; font-weight:900; font-size:15px;">${d.drop}</span>` : `<span style="color:#10b981; font-weight:800;"><i class="fa-solid fa-check"></i> 0</span>`;
+            
+            let retained = d.m2 - d.newAct;
+            let m2Html = `<span style="color:#475569; font-size:13px;" title="Retained VLEs">${retained}</span> <span style="color:#10b981; font-size:13px; font-weight:800;" title="New VLEs">+${d.newAct}</span> <span style="color:#a21caf; font-weight:900; font-size:16px;" title="Total VLEs">= ${d.m2}</span>`;
+            
+            let nameHtml = isStateWide ? `<td class="gpm-sum-mandal" ondblclick="openDropoutsModal('${k}')" title="Double-click to view Mandals" style="cursor:pointer; color:#1e3a8a; transition:0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='#1e3a8a'">${k}</td>` : `<td class="gpm-sum-mandal">${k}</td>`;
+            
+            tbodyHtml += `<tr>
+                ${nameHtml}
+                <td style="color:#475569;">${d.total}</td><td style="color:#2563eb; font-weight:800;">${d.mapped}</td>
+                <td style="color:#16a34a;">${d.actFY}</td><td style="color:#64748b;">${d.inactFY}</td>
+                <td style="color:#8b5cf6;">${d.m1}</td><td>${m2Html}</td><td>${dropHtml}</td>
+                <td style="color:${pctColor}; font-weight:900;">${d.m1 === 0 ? '-' : retentionPct + '%'}</td> 
+            </tr>`;
+        });
+        document.getElementById("dropoutsTableBody").innerHTML = tbodyHtml || "<tr><td colspan='9'>No data available</td></tr>";
+    }
+
+    let currentUpdateIndex = -1;
+    function openUpdateForm(index) {
+        currentUpdateIndex = index; let row = globalData[index];
+        document.getElementById("frmDist").value = row.district; document.getElementById("frmMandal").value = row.mandal;
+        document.getElementById("frmGp").value = row.gpName; document.getElementById("frmCscId").value = row.cscId === '-' ? '' : row.cscId;
+        document.getElementById("frmVleName").value = row.vleName === '-' ? '' : row.vleName;
+        document.getElementById("frmMobile").value = row.mobile === '-' ? '' : row.mobile;
+        document.getElementById("frmIdDate").value = row.idDate || ""; document.getElementById("mapVleModal").style.display = "flex";
+    }
+
+    function showCustomAlert(title, message, type) {
+        let titleColor = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f172a');
+        document.getElementById('customAlertHeader').innerHTML = `<h3 style="color: ${titleColor}; margin: 0; font-size: 17px; font-weight: 800;">${title}</h3>`;
+        document.getElementById('customAlertBody').innerHTML = message;
+        document.getElementById('customAlertModal').style.display = 'flex';
+    }
+
+    async function submitMappingData() {
+        let cscId = document.getElementById("frmCscId").value.trim();
+        let vleName = document.getElementById("frmVleName").value.trim();
+        let mobile = document.getElementById("frmMobile").value.trim();
+        let rawIdDate = document.getElementById("frmIdDate").value.trim(); 
+        
+        let idDate = rawIdDate;
+        if (rawIdDate) {
+            let dParts = rawIdDate.split('-');
+            if (dParts.length === 3) { idDate = dParts[2] + "-" + dParts[1] + "-" + dParts[0]; }
+        }
+
+        let row = globalData[currentUpdateIndex];
+        let isUnmapping = (cscId === "");
+
+        if (!isUnmapping) {
+            let dupIndex = globalData.findIndex(r => r.cscId === cscId && r.cscId !== "");
+            if (dupIndex !== -1 && dupIndex !== currentUpdateIndex) {
+                let dup = globalData[dupIndex];
+                let errorMsg = `This CSC ID (<b>${cscId}</b>) is already mapped to:<br><br>
+                               <div style="text-align: left; background: #fee2e2; padding: 12px; border-radius: 6px; display: inline-block; width: 100%; border: 1px solid #fca5a5; color: #991b1b; font-weight: 600; font-size: 13px;">
+                                   📍 <b>District:</b> ${dup.district}<br>
+                                   📍 <b>Mandal:</b> ${dup.mandal}<br>
+                                   📍 <b>GP:</b> ${dup.gpName}
+                               </div><br><br>Please check and enter a valid CSC ID.`;
+                showCustomAlert('⚠️ CSC ID ALREADY ADDED!', errorMsg, 'error');
+                return;
+            }
+        }
+
+        const btn = document.getElementById("btnSubmitMapping"); 
+        btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving Data..."; 
+        btn.disabled = true;
+
+        try {
+            let saveUrl = apiURL + `?action=updateMapping&district=${encodeURIComponent(row.district)}&mandal=${encodeURIComponent(row.mandal)}&gpName=${encodeURIComponent(row.gpName)}&cscId=${encodeURIComponent(cscId)}&idCreationDate=${encodeURIComponent(idDate)}&vleName=${encodeURIComponent(vleName)}&mobileNo=${encodeURIComponent(mobile)}`;
+            let res = await fetch(saveUrl); let result = await res.json();
+            
+            if (result.status === "success") {
+                globalData[currentUpdateIndex].cscId = cscId; 
+                globalData[currentUpdateIndex].vleName = vleName;
+                globalData[currentUpdateIndex].mobile = mobile; 
+                globalData[currentUpdateIndex].idDate = idDate; 
                 
-                if (result.status === "success") {
-                    globalData[currentUpdateIndex].cscId = cscId; 
-                    globalData[currentUpdateIndex].vleName = vleName;
-                    globalData[currentUpdateIndex].mobile = mobile; 
-                    globalData[currentUpdateIndex].idDate = idDate; 
-                    
-                    // 🌟 Unmap chesthe isMapped ni false cheyali, lekapothe true 🌟
-                    globalData[currentUpdateIndex].isMapped = !isUnmapping;
-                    
-                    if (!isUnmapping) {
-                        let d = new Date();
-                        globalData[currentUpdateIndex].mappedDate = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
-                    } else {
-                        globalData[currentUpdateIndex].mappedDate = "";
-                    }
-                    
-                    sessionStorage.removeItem(cacheKey); 
-                    
-                    closeModal('mapVleModal'); 
-                    renderTable(); 
-                    
-                    if (isUnmapping) {
-                        showCustomAlert('✅ Unmapped Successfully!', `<b>${row.gpName}</b> nundi VLE ni remove cheyadam jarigindi. Idhi ippudu 'Pending' list lo untundi.`, 'success');
-                    } else {
-                        showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
-                    }
-                } else { 
-                    showCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
+                globalData[currentUpdateIndex].isMapped = !isUnmapping;
+                
+                if (!isUnmapping) {
+                    let d = new Date();
+                    globalData[currentUpdateIndex].mappedDate = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+                } else {
+                    globalData[currentUpdateIndex].mappedDate = "";
                 }
-            } catch (err) { 
-                showCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
-            } finally { 
-                btn.innerHTML = "Save Mapping Data"; 
-                btn.disabled = false; 
-            }
-        }
-
-        function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-
-        async function downloadDropoutsExcel() {
-            let m1Key = document.getElementById("doMonth1").value;
-            let m2Key = document.getElementById("doMonth2").value;
-            let selM1 = document.getElementById("doMonth1");
-            let m1Text = selM1.options[selM1.selectedIndex].text.split('-')[0].toUpperCase();
-            let selM2 = document.getElementById("doMonth2");
-            let m2Text = selM2.options[selM2.selectedIndex].text.split('-')[0].toUpperCase();
-
-            let distFilter = document.getElementById("districtFilter").value;
-            let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : distFilter;
-            let isStateWide = (distToUse === "All");
-
-            let exportData = globalData.filter(row => {
-                if (!isStateWide && row.district !== distToUse) return false;
-                return row.isMapped && row[m1Key] > 0 && row[m2Key] === 0;
-            });
-
-            if (exportData.length === 0) { 
-                showCustomAlert('ℹ️ No Data', `No dropouts found between ${m1Text} and ${m2Text}!`, 'normal'); 
-                return; 
-            }
-
-            const btn = document.querySelector("#gp-mapping-root #dropoutsModal .fa-file-excel").parentNode;
-            let origText = btn.innerHTML;
-            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting...";
-            btn.disabled = true;
-
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Dropouts List');
-            
-            sheet.addRow(["District", "Mandal", "Grama Panchayath", "CSC ID", "VLE Name", "Mobile", `${m1Text} TXN (Base)`, `${m2Text} TXN (Compare)`]);
-            
-            sheet.getRow(1).eachCell(cell => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF991B1B' } };
-                cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-                cell.alignment = { horizontal: 'center' };
-            });
-
-            exportData.forEach(row => {
-                sheet.addRow([
-                    row.district, row.mandal, row.gpName, 
-                    row.cscId, row.vleName, row.mobile, 
-                    row[m1Key], row[m2Key]
-                ]);
-            });
-            sheet.columns.forEach(col => col.width = 20);
-
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            
-            let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-            let fNameDist = isStateWide ? "State" : distToUse.replace(/\s+/g, "_");
-            link.download = `Dropouts_List_${fNameDist}_${m1Text}_vs_${m2Text}_${dateStr}.xlsx`;
-            link.click();
-
-            btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded";
-            setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
-        }
-
-        async function downloadSummaryImage(contentId, prefix, actionBtnId) {
-            const actionBtns = document.getElementById(actionBtnId);
-            const originalContent = document.getElementById(contentId);
-            
-            let origDisplay = actionBtns.style.display; 
-            actionBtns.style.display = "none";
-            
-            let selectors = document.getElementById("dropoutSelectors"); 
-            let origSelectorsDisplay = "flex";
-            if (selectors && contentId === 'captureModalContent2') { 
-                origSelectorsDisplay = selectors.style.display; 
-                selectors.style.display = "none"; 
-            }
-            
-            let backBtns = originalContent.querySelectorAll('.back-btn-capture');
-            backBtns.forEach(btn => btn.style.visibility = 'hidden');
-
-            const clone = originalContent.cloneNode(true);
-            
-            // ఫుల్ స్క్రీన్ లో ఉన్నా సరే ఇమేజ్ కాంపాక్ట్ గా రావడానికి:
-            clone.classList.remove('gpm-modal-expanded'); 
-            
-            actionBtns.style.display = origDisplay;
-            if (selectors && contentId === 'captureModalContent2') selectors.style.display = origSelectorsDisplay;
-            backBtns.forEach(btn => btn.style.visibility = 'visible');
-
-            let cloneHeaders = clone.querySelectorAll('th');
-            cloneHeaders.forEach(th => { th.style.position = 'static'; });
-
-            const tempWrapper = document.createElement('div');
-            tempWrapper.id = "gp-mapping-root";
-            tempWrapper.style.position = 'absolute';
-            tempWrapper.style.top = '-9999px';
-            tempWrapper.style.left = '0';
-            
-            // 🌟 FIX: టేబుల్ ఎంత వెడల్పు ఉంటే (scrollWidth) ఆటోమేటిక్ గా అంతే వెడల్పు తీసుకుంటుంది, కట్ అవ్వదు 🌟
-            let contentActualWidth = Math.max(originalContent.scrollWidth, 1050); 
-            tempWrapper.style.width = contentActualWidth + 'px'; 
-            
-            clone.style.width = '100%';
-            clone.style.height = 'auto';
-            clone.style.maxHeight = 'none';
-            clone.style.overflow = 'visible';
-            clone.style.transform = 'none';
-            clone.style.borderRadius = '0';
-            
-            let cloneBody = clone.querySelector('.gpm-modal-body');
-            if(cloneBody) {
-                cloneBody.style.overflow = 'visible';
-                cloneBody.style.maxHeight = 'none';
-                cloneBody.style.height = 'auto';
-            }
-
-            tempWrapper.appendChild(clone);
-            document.body.appendChild(tempWrapper);
-
-            try {
-                await new Promise(resolve => setTimeout(resolve, 800)); 
-                const canvas = await html2canvas(clone, { 
-                    scale: 2, 
-                    backgroundColor: "#ffffff", 
-                    useCORS: true, 
-                    logging: false, 
-                    windowWidth: contentActualWidth, // ఇక్కడ కరెక్ట్ విడ్త్ సెట్ చేశాను
-                    windowHeight: clone.scrollHeight + 100 
+                
+                sessionStorage.removeItem(cacheKey); 
+                
+                closeModal('mapVleModal'); 
+                
+                // 🌟 REFRESH DUPLICATE LOCATIONS 🌟
+                cscIdLocations = {};
+                globalData.forEach((r, idx) => { 
+                    if (r.isMapped) {
+                        if (!cscIdLocations[r.cscId]) cscIdLocations[r.cscId] = [];
+                        cscIdLocations[r.cscId].push({
+                            index: idx,
+                            gpName: r.gpName,
+                            mandal: r.mandal,
+                            district: r.district
+                        });
+                    }
                 });
+                renderTable(); 
                 
-                const link = document.createElement("a");
-                let distFilter = document.getElementById("districtFilter").value;
-                let distName = distFilter === "All" ? "State" : distFilter.replace(/\s+/g, "_");
-                let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-                
-                link.download = `${prefix}_${distName}_${dateStr}.png`; 
-                link.href = canvas.toDataURL("image/png"); 
-                link.click();
-            } catch (err) { showCustomAlert('❌ Error', 'Sorry, image capture failed!', 'error'); } 
-            finally {
-                document.body.removeChild(tempWrapper);
-            }
-        }
-
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('gpm-modal-overlay') && event.target.closest('#gp-mapping-root')) {
-                if (event.target.id !== 'customAlertModal') {
-                    event.target.style.display = "none";
+                if (isUnmapping) {
+                    showCustomAlert('✅ Unmapped Successfully!', `<b>${row.gpName}</b> nundi VLE ni remove cheyadam jarigindi. Idhi ippudu 'Pending' list lo untundi.`, 'success');
+                } else {
+                    showCustomAlert('✅ Data Saved Successfully!', `CSC ID <b>${cscId}</b> has been updated successfully for <b>${row.gpName}</b>.`, 'success');
                 }
+            } else { 
+                showCustomAlert('❌ Error', 'Failed to save data. Please try again.', 'error'); 
             }
-        });
-        
-        async function downloadExcel() {
-            if (globalData.length === 0) { showCustomAlert('ℹ️ Warning', 'No data to export!', 'error'); return; }
-            const btn = document.getElementById("downloadExcelBtn"); let origText = btn.innerHTML; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting..."; btn.disabled = true;
-
-            const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('GP Mapping Report');
-            sheet.addRow(["District", "Mandal", "Grama Panchayath", "Status", "CSC ID", "ID Creation Date", "VLE Name", "Mobile", "TXN 24-25", "TXN 25-26", "TXN 26-27"]);
-            
-            sheet.getRow(1).eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } }; cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; cell.alignment = { horizontal: 'center' }; });
-
-            let distFilter = document.getElementById("districtFilter").value; let mandalFilter = document.getElementById("mandalFilter").value; let statusFilter = document.getElementById("statusFilter").value;
-
-            globalData.forEach(row => {
-                if (distFilter !== "All" && row.district !== distFilter) return;
-                if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
-                if (statusFilter === "Mapped" && !row.isMapped) return;
-                if (statusFilter === "Pending" && row.isMapped) return;
-                if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
-                if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
-
-                sheet.addRow([row.district, row.mandal, row.gpName, row.isMapped ? "Mapped" : "Pending", row.cscId, row.idDate, row.vleName, row.mobile, row.txn2425, row.txn2526, row.txn2627]);
-            });
-            sheet.columns.forEach(col => col.width = 20);
-
-            const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            let d = new Date(); let dateStr = `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`; link.download = `GP_Mapping_Report_${dateStr}.xlsx`; link.click();
-            btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded"; setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+        } catch (err) { 
+            showCustomAlert('❌ Connection Error', 'Error connecting to server. Please try again.', 'error'); 
+        } finally { 
+            btn.innerHTML = "Save Mapping Data"; 
+            btn.disabled = false; 
         }
-    </script>
+    }
+
+    function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
+
+    async function downloadDropoutsExcel() {
+        let m1Key = document.getElementById("doMonth1").value;
+        let m2Key = document.getElementById("doMonth2").value;
+        let selM1 = document.getElementById("doMonth1");
+        let m1Text = selM1.options[selM1.selectedIndex].text.split('-')[0].toUpperCase();
+        let selM2 = document.getElementById("doMonth2");
+        let m2Text = selM2.options[selM2.selectedIndex].text.split('-')[0].toUpperCase();
+
+        let distFilter = document.getElementById("districtFilter").value;
+        let distToUse = (window.currentDropoutsDist && window.currentDropoutsDist !== "All") ? window.currentDropoutsDist : distFilter;
+        let isStateWide = (distToUse === "All");
+
+        let exportData = globalData.filter(row => {
+            if (!isStateWide && row.district !== distToUse) return false;
+            return row.isMapped && row[m1Key] > 0 && row[m2Key] === 0;
+        });
+
+        if (exportData.length === 0) { 
+            showCustomAlert('ℹ️ No Data', `No dropouts found between ${m1Text} and ${m2Text}!`, 'normal'); 
+            return; 
+        }
+
+        const btn = document.querySelector("#gp-mapping-root #dropoutsModal .fa-file-excel").parentNode;
+        let origText = btn.innerHTML;
+        btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting...";
+        btn.disabled = true;
+
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Dropouts List');
+        
+        sheet.addRow(["District", "Mandal", "Grama Panchayath", "CSC ID", "VLE Name", "Mobile", `${m1Text} TXN (Base)`, `${m2Text} TXN (Compare)`]);
+        
+        sheet.getRow(1).eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF991B1B' } };
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+            cell.alignment = { horizontal: 'center' };
+        });
+
+        exportData.forEach(row => {
+            sheet.addRow([
+                row.district, row.mandal, row.gpName, 
+                row.cscId, row.vleName, row.mobile, 
+                row[m1Key], row[m2Key]
+            ]);
+        });
+        sheet.columns.forEach(col => col.width = 20);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        
+        let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+        let fNameDist = isStateWide ? "State" : distToUse.replace(/\s+/g, "_");
+        link.download = `Dropouts_List_${fNameDist}_${m1Text}_vs_${m2Text}_${dateStr}.xlsx`;
+        link.click();
+
+        btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded";
+        setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+    }
+
+    async function downloadSummaryImage(contentId, prefix, actionBtnId) {
+        const actionBtns = document.getElementById(actionBtnId);
+        const originalContent = document.getElementById(contentId);
+        
+        let origDisplay = actionBtns.style.display; 
+        actionBtns.style.display = "none";
+        
+        let selectors = document.getElementById("dropoutSelectors"); 
+        let origSelectorsDisplay = "flex";
+        if (selectors && contentId === 'captureModalContent2') { 
+            origSelectorsDisplay = selectors.style.display; 
+            selectors.style.display = "none"; 
+        }
+        
+        let backBtns = originalContent.querySelectorAll('.back-btn-capture');
+        backBtns.forEach(btn => btn.style.visibility = 'hidden');
+
+        const clone = originalContent.cloneNode(true);
+        
+        clone.classList.remove('gpm-modal-expanded'); 
+        
+        actionBtns.style.display = origDisplay;
+        if (selectors && contentId === 'captureModalContent2') selectors.style.display = origSelectorsDisplay;
+        backBtns.forEach(btn => btn.style.visibility = 'visible');
+
+        let cloneHeaders = clone.querySelectorAll('th');
+        cloneHeaders.forEach(th => { th.style.position = 'static'; });
+
+        const tempWrapper = document.createElement('div');
+        tempWrapper.id = "gp-mapping-root";
+        tempWrapper.style.position = 'absolute';
+        tempWrapper.style.top = '-9999px';
+        tempWrapper.style.left = '0';
+        
+        let contentActualWidth = Math.max(originalContent.scrollWidth, 1050); 
+        tempWrapper.style.width = contentActualWidth + 'px'; 
+        
+        clone.style.width = '100%';
+        clone.style.height = 'auto';
+        clone.style.maxHeight = 'none';
+        clone.style.overflow = 'visible';
+        clone.style.transform = 'none';
+        clone.style.borderRadius = '0';
+        
+        let cloneBody = clone.querySelector('.gpm-modal-body');
+        if(cloneBody) {
+            cloneBody.style.overflow = 'visible';
+            cloneBody.style.maxHeight = 'none';
+            cloneBody.style.height = 'auto';
+        }
+
+        tempWrapper.appendChild(clone);
+        document.body.appendChild(tempWrapper);
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 800)); 
+            const canvas = await html2canvas(clone, { 
+                scale: 2, 
+                backgroundColor: "#ffffff", 
+                useCORS: true, 
+                logging: false, 
+                windowWidth: contentActualWidth,
+                windowHeight: clone.scrollHeight + 100 
+            });
+            
+            const link = document.createElement("a");
+            let distFilter = document.getElementById("districtFilter").value;
+            let distName = distFilter === "All" ? "State" : distFilter.replace(/\s+/g, "_");
+            let d = new Date(); let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            
+            link.download = `${prefix}_${distName}_${dateStr}.png`; 
+            link.href = canvas.toDataURL("image/png"); 
+            link.click();
+        } catch (err) { showCustomAlert('❌ Error', 'Sorry, image capture failed!', 'error'); } 
+        finally {
+            document.body.removeChild(tempWrapper);
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('gpm-modal-overlay') && event.target.closest('#gp-mapping-root')) {
+            if (event.target.id !== 'customAlertModal') {
+                event.target.style.display = "none";
+            }
+        }
+    });
+    
+    async function downloadExcel() {
+        if (globalData.length === 0) { showCustomAlert('ℹ️ Warning', 'No data to export!', 'error'); return; }
+        const btn = document.getElementById("downloadExcelBtn"); let origText = btn.innerHTML; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Exporting..."; btn.disabled = true;
+
+        const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('GP Mapping Report');
+        sheet.addRow(["District", "Mandal", "Grama Panchayath", "Status", "CSC ID", "ID Creation Date", "VLE Name", "Mobile", "TXN 24-25", "TXN 25-26", "TXN 26-27"]);
+        
+        sheet.getRow(1).eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } }; cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }; cell.alignment = { horizontal: 'center' }; });
+
+        let distFilter = document.getElementById("districtFilter").value; let mandalFilter = document.getElementById("mandalFilter").value; let statusFilter = document.getElementById("statusFilter").value;
+
+        globalData.forEach(row => {
+            if (distFilter !== "All" && row.district !== distFilter) return;
+            if (mandalFilter !== "All" && row.mandal !== mandalFilter) return;
+            
+            // 🌟 EXCEL LO KOODA DUPLICATES FILTER 🌟
+            if (statusFilter === "Duplicates" && (!row.isMapped || cscIdLocations[row.cscId].length <= 1)) return;
+
+            if (statusFilter === "Mapped" && !row.isMapped) return;
+            if (statusFilter === "Pending" && row.isMapped) return;
+            if (statusFilter === "MappedActive" && (!row.isMapped || row.txn2627 <= 0)) return;
+            if (statusFilter === "MappedZero" && (!row.isMapped || row.txn2627 > 0)) return;
+
+            sheet.addRow([row.district, row.mandal, row.gpName, row.isMapped ? "Mapped" : "Pending", row.cscId, row.idDate, row.vleName, row.mobile, row.txn2425, row.txn2526, row.txn2627]);
+        });
+        sheet.columns.forEach(col => col.width = 20);
+
+        const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+        let d = new Date(); let dateStr = `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`; link.download = `GP_Mapping_Report_${dateStr}.xlsx`; link.click();
+        btn.innerHTML = "<i class='fa-solid fa-check'></i> Downloaded"; setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+    }
+</script>
 </div>
 </body>
 </html>
