@@ -72,7 +72,7 @@
         .stat-box h3 { font-size: 26px; font-weight: 900; margin-bottom: 4px; font-family: 'Outfit', sans-serif; line-height: 1; color: #0f172a;}
         .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        .view-selector { width: 100%; max-width: 400px; margin: 0 auto 25px auto; display: block; padding: 12px 20px; border-radius: 30px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer;}
+        .view-selector { width: 100%; max-width: 400px; margin: 0 auto 15px auto; display: block; padding: 12px 20px; border-radius: 30px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer;}
         
         .dash-section-title { font-size: 18px; font-family: 'Outfit', sans-serif; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 25px;}
@@ -150,6 +150,12 @@
             <option value="spoc-report">📊 State Head Report</option>
             <option value="spoc-followup">🚀 DM Follow-Up Center</option>
         </select>
+
+        <!-- 🌟 KOTHA DATE PICKER 🌟 -->
+        <div style="text-align: center; margin-bottom: 25px;">
+            <label style="font-weight: 800; color: #0f172a; margin-right: 10px; font-size:15px;">📅 Select Report Date:</label>
+            <input type="date" id="spocDatePicker" onchange="reloadSpocData()" style="padding: 8px 15px; border-radius: 8px; border: 2px solid #10b981; font-weight: 800; color: #0f172a; outline: none; cursor: pointer; background: #fff; font-family:'Outfit'; font-size:14px;">
+        </div>
         
         <div id="spoc-live">
             <div class="dash-section-title">🟢 Active DMs (Logged In)</div>
@@ -176,7 +182,7 @@
                 <div class="report-table-container">
                     <table class="report-table">
                         <thead>
-                            <tr><th>S.No</th><th>Employee Name</th><th>Total Target</th><th>✅ Act. (Total)</th><th>⏳ Pending</th><th>🎯 Assigned (Today)</th><th>📞 Attempted</th><th>⏱️ Avg Time</th></tr>
+                            <tr><th>S.No</th><th>Employee Name</th><th>Total Target</th><th>✅ Act. (Total)</th><th>⏳ Pending</th><th>🎯 Assigned (On Date)</th><th>📞 Attempted</th><th>⏱️ Avg Time</th></tr>
                         </thead>
                         <tbody id="reportTableBody">
                             <tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>
@@ -246,14 +252,24 @@
         let dmName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toLowerCase().trim();
         let allTaskGroups = {}; let filteredQueue = []; let currentIndex = 0; let todayCalledVLEs = []; let globalSpocLogs = [];
         let activeCallStartTime = null; 
-        let serverCalledIds = new Set(); // 🌟 NEW STATELESS TRACKING
+        let serverCalledIds = new Set(); 
+        
+        // 🌟 CACHED DB VARIABLES FOR DATE FILTERING 🌟
+        let rawSpocLogs = [];
+        let rawSpocTargets = [];
+        let rawSpocUsers = [];
 
         window.onload = async () => {
             if (isSpoc) {
                 document.getElementById("spocScreen").style.display = "block";
                 document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
-                let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-                document.getElementById("reportDateText").innerText = "(" + todayStr + ")";
+                
+                // Set default date to today
+                let today = new Date();
+                let tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+                document.getElementById("spocDatePicker").value = localISOTime;
+                
                 await loadSpocDashboard();
             } else {
                 document.getElementById("dmScreen").style.display = "flex";
@@ -285,8 +301,8 @@
             setTimeout(() => {
                 html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
                     let link = document.createElement('a');
-                    let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-                    link.download = `State_Head_Report_${todayStr}.png`;
+                    let selDate = document.getElementById("spocDatePicker").value || "Report";
+                    link.download = `State_Head_Report_${selDate}.png`;
                     link.href = canvas.toDataURL("image/png");
                     link.click();
                     btn.innerHTML = originalText;
@@ -311,11 +327,10 @@
         }
 
         // ==========================================
-        // 🌟 1. DM VIEW LOGIC (STATELESS FIX) 🌟
+        // 🌟 1. DM VIEW LOGIC 🌟
         // ==========================================
         async function fetchDMData() {
             try {
-                // 🌟 FETCH LOGS & TARGETS SIMULTANEOUSLY FOR BULLETPROOF STATE TRACKING
                 let [targetRes, logsRes] = await Promise.all([
                     fetch(SCRIPT_URL + "?sheet=App_Targets"),
                     fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
@@ -329,7 +344,6 @@
                 let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
                 let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
 
-                // 🌟 1. RECONSTRUCT CALLED LIST FROM SERVER LOGS (SURVIVES LOGOUT) 🌟
                 serverCalledIds.clear();
                 todayCalledVLEs = [];
                 for(let i=1; i<logsRaw.length; i++) {
@@ -348,7 +362,6 @@
                 let rawDMTargets = [];
                 let totalDmIrctc = 0; let totalDmRedbus = 0;
 
-                // 🌟 2. BUILD TARGET LIST (DO NOT EXCLUDE CALLED ONES - KEEPS DROPDOWN ALIVE) 🌟
                 for(let i=1; i<targetRaw.length; i++) {
                     let rDmName = (targetRaw[i][3]||"").toString().toLowerCase().trim();
                     let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
@@ -361,7 +374,6 @@
                             taskName: taskNameStr, extraData: targetRaw[i][5] || "0"
                         });
                         
-                        // Calculate REAL Pending Count (Excluding what was done today)
                         if(!serverCalledIds.has(cscId + "_" + taskNameStr)) {
                             if(taskNameStr === "IRCTC") totalDmIrctc++;
                             if(taskNameStr === "REDBUS") totalDmRedbus++;
@@ -436,12 +448,10 @@
             let selectedTask = document.getElementById("taskSelector").value;
             let fullList = allTaskGroups[selectedTask] || [];
             
-            // 🌟 DETERMINISTIC QUEUE: Always grabs the exact same X users for the day 🌟
             let today = new Date().getDay(); 
             let limit = (today === 5) ? 50 : 40; 
             let baseQueue = fullList.slice(0, limit);
 
-            // 🌟 FILTER COMPLETED ONES ON THE FLY 🌟
             filteredQueue = baseQueue.filter(item => {
                 if(item.taskName === "BOTH") {
                     return !serverCalledIds.has(item.cscId + "_IRCTC") && !serverCalledIds.has(item.cscId + "_REDBUS");
@@ -544,7 +554,6 @@
             let btn = event.target; btn.innerText = "⏳ Saving..."; btn.disabled = true; let v = filteredQueue[idx];
             let dur = activeCallStartTime ? Math.round((new Date() - activeCallStartTime) / 1000) : 12;
 
-            // Update local memory and global tracker simultaneously
             if(v.taskName === "BOTH") {
                 serverCalledIds.add(v.cscId + "_IRCTC");
                 serverCalledIds.add(v.cscId + "_REDBUS");
@@ -553,7 +562,6 @@
             }
             todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, task: v.taskName, remark: rmk });
 
-            // Update stats dynamically if activated
             if(rmk.includes("Activated") || rmk.includes("Withdrawn")) {
                 let dI = parseInt(document.getElementById("dmTotalIrctc").innerText || 0); let dR = parseInt(document.getElementById("dmTotalRedbus").innerText || 0);
                 if(v.taskName === "BOTH" || v.taskName === "IRCTC") dI = Math.max(0, dI - 1);
@@ -563,7 +571,6 @@
                 if(document.getElementById("dmTotalInactive")) document.getElementById("dmTotalInactive").innerText = (dI + dR);
             }
 
-            // Sync with Server silently
             if(v.taskName === "BOTH") {
                 fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "IRCTC", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
                 setTimeout(() => { fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "REDBUS", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) }); }, 1500);
@@ -586,134 +593,162 @@
                 let isRed = c.remark.includes("Not Reachable") || c.remark.includes("lift") || c.remark.includes("Closed") || c.remark.includes("Problem") || c.remark.includes("Pending") || c.remark.includes("Issue") || c.remark.includes("change");
                 let badgeColor = isActivated ? "background:#dcfce7; color:#166534;" : (isRed ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
                 
-                // Show name safely
                 let displayName = c.name && c.name.length > 3 ? c.name : "VLE Action Tracked";
-
                 html += `<div class="summary-card"><div class="summary-info"><h4>${displayName}</h4><p>${c.task} Follow-up</p><span class="summary-remark" style="${badgeColor}">${c.remark}</span></div></div>`;
             });
             document.getElementById("summaryListContainer").innerHTML = html;
         }
 
         // ==========================================
-        // 🌟 2. SPOC MONITORING VIEW 🌟
+        // 🌟 2. SPOC MONITORING VIEW (WITH DATE FILTER) 🌟
         // ==========================================
         async function loadSpocDashboard() {
             try {
                 let [logsRes, targetsRes, usersRes] = await Promise.all([
                     fetch(SCRIPT_URL + "?sheet=FollowUp_Logs"), fetch(SCRIPT_URL + "?sheet=App_Targets"), fetch(SCRIPT_URL + "?sheet=Users")
                 ]);
-                let logs = await logsRes.json(); let targets = await targetsRes.json(); let users = await usersRes.json();
-                let today = new Date();
-                let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
-                let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
-                let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
-
-                let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
-
-                users.forEach(u => { 
-                    if((u[2]||"").toLowerCase().includes("manager") && u[0]) { 
-                        let dmKey = u[5].trim();
-                        uniqueDMs[dmKey] = { name: dmKey, mobile: u[0], irctcTotal: 0, redbusTotal: 0, irctcPending: 0, redbusPending: 0, irctcAct: 0, redbusAct: 0, calledToday: 0, totalDuration: 0 }; 
-                    } 
-                });
-
-                let spocIrctc = 0; let spocRedbus = 0; let activatedVLEs = new Set();
-                for(let i=1; i<logs.length; i++) { if((logs[i][4] || "").includes("Activated")) activatedVLEs.add(logs[i][1]); }
-
-                for(let i=1; i<targets.length; i++) {
-                    let rDmName = (targets[i][3]||"").trim(); let srv = (targets[i][4]||"").trim().toUpperCase(); let cscId = targets[i][0];
-                    let isReallyActivated = activatedVLEs.has(cscId);
-                    if(uniqueDMs[rDmName] && (srv === "IRCTC" || srv === "REDBUS")) {
-                        if(srv === "IRCTC") { uniqueDMs[rDmName].irctcTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].irctcPending++; spocIrctc++; } else { uniqueDMs[rDmName].irctcAct++; } }
-                        if(srv === "REDBUS") { uniqueDMs[rDmName].redbusTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].redbusPending++; spocRedbus++; } else { uniqueDMs[rDmName].redbusAct++; } }
-                    }
-                }
-
-                for(let i = logs.length - 1; i >= 1; i--) {
-                    if(isToday(logs[i][0])) {
-                        totalCallsToday++;
-                        let logDmName = (logs[i][3]||"").trim();
-                        let timeStr = String(logs[i][0]).split(" ")[1] || "Just now";
-                        let isActivated = logs[i][4].includes("Activated");
-                        let isRed = logs[i][4].includes("Not Reachable") || logs[i][4].includes("lift") || logs[i][4].includes("Closed") || logs[i][4].includes("Problem") || logs[i][4].includes("Pending") || logs[i][4].includes("Issue") || logs[i][4].includes("change");
-                        let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
-                        
-                        let durationSec = parseInt(logs[i][5] || 0);
-
-                        if(uniqueDMs[logDmName]) {
-                            uniqueDMs[logDmName].calledToday++;
-                            uniqueDMs[logDmName].totalDuration += durationSec; 
-                            if(!activeDMsMap[logDmName]) {
-                                activeDMsMap[logDmName] = { name: logDmName, calls: 0, time: timeStr, iT: uniqueDMs[logDmName].irctcTotal, rT: uniqueDMs[logDmName].redbusTotal, iP: uniqueDMs[logDmName].irctcPending, rP: uniqueDMs[logDmName].redbusPending };
-                            }
-                            activeDMsMap[logDmName].calls++;
-                        }
-                        let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
-                        
-                        globalSpocLogs.push({
-                            dmName: logDmName, vleName: logs[i][1], service: logs[i][2],
-                            time: timeStr, rmkBadge: rmkBadge, rmk: logs[i][4], actionBtns: actionBtns,
-                            durationText: formatTalkTime(durationSec) 
-                        });
-                    }
-                }
-
-                let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs</option>`;
-                Object.values(activeDMsMap).forEach(adm => {
-                    filterHtml += `<option value="${adm.name}">${adm.name}</option>`;
-                    let iD = adm.iT - adm.iP; let rD = adm.rT - adm.rP;
-                    activeDMsHtml += `<div class="dm-item"><div class="dm-info"><h4>${adm.name}</h4><span class="tgt-badge tgt-irctc">IRCTC: ${iD}/${adm.iT}</span><span class="tgt-badge tgt-redbus">REDBUS: ${rD}/${adm.rT}</span><div class="dm-calls-text">Calls Today: ${adm.calls}</div><div class="dm-login-text">Logged in: ${adm.time}</div></div><span class="dm-status">Online</span></div>`;
-                });
-
-                document.getElementById("spocFeedFilter").innerHTML = filterHtml;
-                document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs are online yet.</p>";
-                renderSpocFeed("ALL"); 
-
-                document.getElementById("spocCallsToday").innerText = totalCallsToday;
-                document.getElementById("spocActiveDMs").innerText = Object.keys(activeDMsMap).length;
-                document.getElementById("spocIrctcPending").innerText = spocIrctc;
-                document.getElementById("spocRedbusPending").innerText = spocRedbus;
+                rawSpocLogs = await logsRes.json(); 
+                rawSpocTargets = await targetsRes.json(); 
+                rawSpocUsers = await usersRes.json();
                 
-                let tableHtml = "";
-                let sno = 1; let isFriday = new Date().getDay() === 5; let iLimit = isFriday ? 20 : 8; 
+                processSpocData();
+            } catch(e) { 
+                document.getElementById("loader").style.display = "none"; 
+                alert("Error loading SPOC Dashboard"); 
+            }
+        }
 
-                Object.values(uniqueDMs).forEach(dm => {
-                    let tTotal = dm.irctcTotal + dm.redbusTotal;
-                    if(tTotal > 0) {
-                        let aTotal = dm.irctcAct + dm.redbusAct; let pTotal = dm.irctcPending + dm.redbusPending;
-                        let assigned = Math.min(pTotal, iLimit); let attemptColor = dm.calledToday > 0 ? "#dc2626" : "#0f172a"; 
-                        let avgSec = dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0;
-                        let avgTimeText = formatTalkTime(avgSec);
+        window.reloadSpocData = function() {
+            processSpocData();
+        };
 
-                        tableHtml += `<tr>
-                            <td>${sno++}</td>
-                            <td style="font-weight:800;">${dm.name}</td>
-                            <td>${tTotal}<span class="sub-stat">(I:${dm.irctcTotal}, R:${dm.redbusTotal})</span></td>
-                            <td style="color:#16a34a;">${aTotal}<span class="sub-stat">(I:${dm.irctcAct}, R:${dm.redbusAct})</span></td>
-                            <td style="color:#dc2626;">${pTotal}</td>
-                            <td style="color:#2563eb;">${assigned}</td>
-                            <td style="color:${attemptColor}; font-weight:900;">${dm.calledToday}</td>
-                            <td style="color:#10b981; font-weight:800;">${avgTimeText}</td>
-                        </tr>`;
+        function processSpocData() {
+            let logs = rawSpocLogs; let targets = rawSpocTargets; let users = rawSpocUsers;
+            
+            // 🌟 READ THE SELECTED DATE 🌟
+            let dateVal = document.getElementById("spocDatePicker").value;
+            let selDate = dateVal ? new Date(dateVal) : new Date();
+            
+            let d1 = String(selDate.getDate()).padStart(2, '0'); 
+            let m1 = String(selDate.getMonth() + 1).padStart(2, '0'); 
+            let y1 = selDate.getFullYear();
+            
+            let format1 = `${d1}-${m1}-${y1}`; 
+            let format2 = `${y1}-${m1}-${d1}`; 
+            let format3 = `${d1}/${m1}/${y1}`; 
+            let format4 = `${m1}/${d1}/${y1}`;
+            
+            let isSelectedDate = (dateString) => { 
+                if(!dateString) return false; 
+                let str = String(dateString).trim(); 
+                return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); 
+            };
+
+            document.getElementById("reportDateText").innerText = "(" + format1 + ")";
+
+            let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
+
+            users.forEach(u => { 
+                if((u[2]||"").toLowerCase().includes("manager") && u[0]) { 
+                    let dmKey = u[5].trim();
+                    uniqueDMs[dmKey] = { name: dmKey, mobile: u[0], irctcTotal: 0, redbusTotal: 0, irctcPending: 0, redbusPending: 0, irctcAct: 0, redbusAct: 0, calledToday: 0, totalDuration: 0 }; 
+                } 
+            });
+
+            let spocIrctc = 0; let spocRedbus = 0; let activatedVLEs = new Set();
+            for(let i=1; i<logs.length; i++) { if((logs[i][4] || "").includes("Activated")) activatedVLEs.add(logs[i][1]); }
+
+            for(let i=1; i<targets.length; i++) {
+                let rDmName = (targets[i][3]||"").trim(); let srv = (targets[i][4]||"").trim().toUpperCase(); let cscId = targets[i][0];
+                let isReallyActivated = activatedVLEs.has(cscId);
+                if(uniqueDMs[rDmName] && (srv === "IRCTC" || srv === "REDBUS")) {
+                    if(srv === "IRCTC") { uniqueDMs[rDmName].irctcTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].irctcPending++; spocIrctc++; } else { uniqueDMs[rDmName].irctcAct++; } }
+                    if(srv === "REDBUS") { uniqueDMs[rDmName].redbusTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].redbusPending++; spocRedbus++; } else { uniqueDMs[rDmName].redbusAct++; } }
+                }
+            }
+
+            // 🌟 FILTER LOGS BASED ON SELECTED DATE 🌟
+            for(let i = logs.length - 1; i >= 1; i--) {
+                if(isSelectedDate(logs[i][0])) {
+                    totalCallsToday++;
+                    let logDmName = (logs[i][3]||"").trim();
+                    let timeStr = String(logs[i][0]).split(" ")[1] || "Just now";
+                    let isActivated = logs[i][4].includes("Activated");
+                    let isRed = logs[i][4].includes("Not Reachable") || logs[i][4].includes("lift") || logs[i][4].includes("Closed") || logs[i][4].includes("Problem") || logs[i][4].includes("Pending") || logs[i][4].includes("Issue") || logs[i][4].includes("change");
+                    let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
+                    
+                    let durationSec = parseInt(logs[i][5] || 0);
+
+                    if(uniqueDMs[logDmName]) {
+                        uniqueDMs[logDmName].calledToday++;
+                        uniqueDMs[logDmName].totalDuration += durationSec; 
+                        if(!activeDMsMap[logDmName]) {
+                            activeDMsMap[logDmName] = { name: logDmName, calls: 0, time: timeStr, iT: uniqueDMs[logDmName].irctcTotal, rT: uniqueDMs[logDmName].redbusTotal, iP: uniqueDMs[logDmName].irctcPending, rP: uniqueDMs[logDmName].redbusPending };
+                        }
+                        activeDMsMap[logDmName].calls++;
                     }
-                });
-                document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>`;
+                    let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
+                    
+                    globalSpocLogs.push({
+                        dmName: logDmName, vleName: logs[i][1], service: logs[i][2],
+                        time: timeStr, rmkBadge: rmkBadge, rmk: logs[i][4], actionBtns: actionBtns,
+                        durationText: formatTalkTime(durationSec) 
+                    });
+                }
+            }
 
-                let followUpHtml = "";
-                let hour = new Date().getHours();
-                let greeting = hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening");
+            let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs</option>`;
+            Object.values(activeDMsMap).forEach(adm => {
+                filterHtml += `<option value="${adm.name}">${adm.name}</option>`;
+                let iD = adm.iT - adm.iP; let rD = adm.rT - adm.rP;
+                activeDMsHtml += `<div class="dm-item"><div class="dm-info"><h4>${adm.name}</h4><span class="tgt-badge tgt-irctc">IRCTC: ${iD}/${adm.iT}</span><span class="tgt-badge tgt-redbus">REDBUS: ${rD}/${adm.rT}</span><div class="dm-calls-text">Calls On Date: ${adm.calls}</div><div class="dm-login-text">Last Log: ${adm.time}</div></div><span class="dm-status">Active</span></div>`;
+            });
 
-                Object.values(uniqueDMs).forEach(dm => {
-                    let pTotal = dm.irctcPending + dm.redbusPending;
-                    if(pTotal > 0) {
-                        let assigned = Math.min(pTotal, iLimit);
-                        let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${pTotal}* pending Inactive VLEs (*IRCTC (${dm.irctcPending})* & *RedBus (${dm.redbusPending})*) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
-                        followUpHtml += `<div class="dm-action-item"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>${dm.name}</h4><span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px;">${pTotal} Pending</span></div><p>Total: ${dm.irctcTotal + dm.redbusTotal} | Assigned Today: ${assigned} | Called: <b style="color:${dm.calledToday!=='0'?'#10b981':'#ef4444'};">${dm.calledToday}</b></p><div class="action-btn-group" style="margin-top:15px; margin-bottom:0;"><a href="tel:${dm.mobile}" class="call-btn" style="padding:10px; font-size:13px; text-align:center; color:#166534; background:#dcfce7; border-color:#bbf7d0;">📞 Call</a><a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(waMsg)}" class="wa-btn" style="padding:10px; font-size:13px; text-align:center;">💬 WhatsApp</a></div></div>`;
-                    }
-                });
-                document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
-                document.getElementById("loader").style.display = "none";
-            } catch(e) { document.getElementById("loader").style.display = "none"; alert("Error loading SPOC Dashboard"); }
+            document.getElementById("spocFeedFilter").innerHTML = filterHtml;
+            document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs logged actions on this date.</p>";
+            renderSpocFeed("ALL"); 
+
+            document.getElementById("spocCallsToday").innerText = totalCallsToday;
+            document.getElementById("spocActiveDMs").innerText = Object.keys(activeDMsMap).length;
+            document.getElementById("spocIrctcPending").innerText = spocIrctc;
+            document.getElementById("spocRedbusPending").innerText = spocRedbus;
+            
+            let tableHtml = "";
+            let sno = 1; let isFriday = selDate.getDay() === 5; let iLimit = isFriday ? 50 : 40; 
+
+            Object.values(uniqueDMs).forEach(dm => {
+                let tTotal = dm.irctcTotal + dm.redbusTotal;
+                if(tTotal > 0) {
+                    let aTotal = dm.irctcAct + dm.redbusAct; let pTotal = dm.irctcPending + dm.redbusPending;
+                    let assigned = Math.min(pTotal, iLimit); let attemptColor = dm.calledToday > 0 ? "#dc2626" : "#0f172a"; 
+                    let avgSec = dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0;
+                    let avgTimeText = formatTalkTime(avgSec);
+
+                    tableHtml += `<tr>
+                        <td>${sno++}</td>
+                        <td style="font-weight:800;">${dm.name}</td>
+                        <td>${tTotal}<span class="sub-stat">(I:${dm.irctcTotal}, R:${dm.redbusTotal})</span></td>
+                        <td style="color:#16a34a;">${aTotal}<span class="sub-stat">(I:${dm.irctcAct}, R:${dm.redbusAct})</span></td>
+                        <td style="color:#dc2626;">${pTotal}</td>
+                        <td style="color:#2563eb;">${assigned}</td>
+                        <td style="color:${attemptColor}; font-weight:900;">${dm.calledToday}</td>
+                        <td style="color:#10b981; font-weight:800;">${avgTimeText}</td>
+                    </tr>`;
+                }
+            });
+            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
+
+            let followUpHtml = "";
+            Object.values(uniqueDMs).forEach(dm => {
+                let pTotal = dm.irctcPending + dm.redbusPending;
+                if(pTotal > 0) {
+                    let assigned = Math.min(pTotal, iLimit);
+                    let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${pTotal}* pending Inactive VLEs (*IRCTC (${dm.irctcPending})* & *RedBus (${dm.redbusPending})*) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
+                    followUpHtml += `<div class="dm-action-item"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>${dm.name}</h4><span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px;">${pTotal} Pending</span></div><p>Total: ${dm.irctcTotal + dm.redbusTotal} | Assigned Today: ${assigned} | Called: <b style="color:${dm.calledToday!=='0'?'#10b981':'#ef4444'};">${dm.calledToday}</b></p><div class="action-btn-group" style="margin-top:15px; margin-bottom:0;"><a href="tel:${dm.mobile}" class="call-btn" style="padding:10px; font-size:13px; text-align:center; color:#166534; background:#dcfce7; border-color:#bbf7d0;">📞 Call</a><a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(waMsg)}" class="wa-btn" style="padding:10px; font-size:13px; text-align:center;">💬 WhatsApp</a></div></div>`;
+                }
+            });
+            document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
+            document.getElementById("loader").style.display = "none";
         }
 
         window.renderSpocFeed = function(filterVal) {
@@ -723,7 +758,7 @@
                     feedHtml += `<div class="live-feed-item"><div><div class="live-feed-header"><h4>${log.vleName} <span style="font-size:11px; color:#64748b;">(${log.service})</span></h4><span style="font-size:11px; color:#64748b;">🕒 ${log.time}</span></div><span class="feed-dm">👤 ${log.dmName}</span><br><span class="feed-rmk" style="${log.rmkBadge}">${log.rmk}</span><div class="feed-duration">⏱️ Talk Time: ${log.durationText}</div></div>${log.actionBtns}</div>`;
                 }
             });
-            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px;'>No calls found.</p>";
+            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px;'>No calls found on this date.</p>";
         };
         window.filterSpocFeed = function() { let val = document.getElementById("spocFeedFilter").value; renderSpocFeed(val); };
     </script>
