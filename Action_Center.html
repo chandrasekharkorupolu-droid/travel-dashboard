@@ -331,43 +331,77 @@
         // ==========================================
         async function fetchDMData() {
             try {
-                let [targetRes, logsRes] = await Promise.all([
+                // 🔥 1. ఇక్కడ App_Targets, Logs తో పాటు GPMAPPING ని కూడా ఒకేసారి చదువుతున్నాము 🔥
+                let [targetRes, logsRes, gpRes] = await Promise.all([
                     fetch(SCRIPT_URL + "?sheet=App_Targets"),
-                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
+                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs"),
+                    fetch(SCRIPT_URL + "?sheet=GPMAPPING")
                 ]);
                 
                 let targetRaw = await targetRes.json();
                 let logsRaw = await logsRes.json();
+                let gpRaw = await gpRes.json();
                 
+                // 🔥 2. GPMAPPING లో యాక్టివ్ అయిన VLE ల లిస్ట్ ని రెడీ చేయడం 🔥
+                let activeCscIds = new Set();
+                if(gpRaw.length > 0) {
+                    let headers = gpRaw[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    let idxCscId = headers.findIndex(h => h.includes('cscid'));
+                    let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
+                    
+                    if(idxCscId > -1 && idxTxn2627 > -1) {
+                        for(let i = 1; i < gpRaw.length; i++) {
+                            let cid = (gpRaw[i][idxCscId] || "").toString().trim();
+                            let txn = Number(gpRaw[i][idxTxn2627]) || 0;
+                            // ఒకవేళ CSC ID ఉండి, లావాదేవీలు 0 కంటే ఎక్కువ ఉంటే... ఆ ID ని రికార్డ్ చేసుకో!
+                            if(cid !== "" && txn > 0) {
+                                activeCscIds.add(cid); 
+                            }
+                        }
+                    }
+                }
+
                 let today = new Date();
                 let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
                 let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
                 let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
 
+                // 🌟 RECONSTRUCT CALLED LIST FROM SERVER LOGS (PERMANENT HIDE FIX) 🌟
                 serverCalledIds.clear();
                 todayCalledVLEs = [];
                 for(let i=1; i<logsRaw.length; i++) {
                     let logDate = logsRaw[i][0];
                     let logDmName = (logsRaw[i][3] || "").toString().toLowerCase().trim();
-                    if (logDmName === dmName && isToday(logDate)) {
+                    
+                    if (logDmName === dmName) {
                         let logCscId = (logsRaw[i][1] || "").toString().trim();
                         let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
                         let logRemark = logsRaw[i][4] || "";
                         
+                        // నిన్న లేదా మొన్న కాల్ చేసినా మళ్ళీ కనపడకుండా లిస్ట్ లో దాచేయడం
                         serverCalledIds.add(logCscId + "_" + logService);
-                        todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
+                        
+                        if (isToday(logDate)) {
+                            todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
+                        }
                     }
                 }
 
                 let rawDMTargets = [];
                 let totalDmIrctc = 0; let totalDmRedbus = 0;
 
+                // 🌟 BUILD TARGET LIST (EXCLUDING NEWLY ACTIVATED VLEs) 🌟
                 for(let i=1; i<targetRaw.length; i++) {
                     let rDmName = (targetRaw[i][3]||"").toString().toLowerCase().trim();
                     let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
                     let cscId = (targetRaw[i][0]||"").toString().trim();
                     let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
                     
+                    // 🔥 ఇక్కడే మ్యాజిక్ జరుగుతుంది: GPMAPPING లో యాక్టివేట్ అయిన వాళ్ళని క్యూలోంచి తీసేస్తుంది 🔥
+                    if(activeCscIds.has(cscId)) {
+                        continue; // వీళ్ళు యాక్టివేట్ అయిపోయారు, కాబట్టి DMs కి కనపడకుండా కిందనున్న కోడ్ కి వెళ్లకుండా Skip చేస్తోంది
+                    }
+
                     if(rDmName === dmName && status === "PENDING") {
                         rawDMTargets.push({
                             cscId: cscId, name: targetRaw[i][1], mobile: targetRaw[i][2],
@@ -431,6 +465,7 @@
                 document.getElementById("loader").style.display = "none";
             }
         }
+
 
         window.unlockActions = function(idx, method) {
             document.getElementById(`lock-msg-${idx}`).style.display = "none";
