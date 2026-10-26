@@ -161,9 +161,22 @@
                     <option value="ALL">Loading Districts...</option>
                 </select>
             </div>
-            <div style="text-align: right;">
-                <span style="font-weight:bold; color:#0f172a; font-size:14px;">Total Dropouts:</span><br>
-                <span id="dropoutCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
+            <!-- FIXED ALIGNMENT HERE -->
+            <div style="display: flex; gap: 15px; justify-content: flex-end; align-items: center; background: #ffffff; padding: 10px 20px; border-radius: 8px; border: 1px dashed #cbd5e1; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Total Dropouts</span><br>
+                    <span id="dropoutCount" style="color:#0f172a; font-size:22px; font-weight:900;">0</span>
+                </div>
+                <div style="width: 2px; height: 30px; background: #e2e8f0; display:inline-block;"></div>
+                <div style="text-align: center;">
+                    <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Calls Done</span><br>
+                    <span id="callsDoneCount" style="color:#16a34a; font-size:22px; font-weight:900;">0</span>
+                </div>
+                <div style="width: 2px; height: 30px; background: #e2e8f0; display:inline-block;"></div>
+                <div style="text-align: center;">
+                    <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Pending</span><br>
+                    <span id="callsPendingCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
+                </div>
             </div>
         </div>
 
@@ -343,8 +356,6 @@
 
 
 
-
-
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
@@ -382,12 +393,22 @@
 
             if(loadingEl) loadingEl.style.display = 'none';
 
-            // Inject static HTML parts
-            if(document.getElementById('summaryArea')) document.getElementById('summaryArea').innerHTML = data.html_summary || "";
-            if(document.getElementById('serviceBody')) document.getElementById('serviceBody').innerHTML = data.html_service || "";
-            if(document.getElementById('yesterdayServiceBody')) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service || "";
-            if(document.getElementById('districtBody')) document.getElementById('districtBody').innerHTML = data.html_district || "";
-            if(document.getElementById('yesterdayDistrictBody')) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district || "";
+            // Inject static HTML parts safely
+            if(document.getElementById('summaryArea') && data.html_summary) {
+                document.getElementById('summaryArea').innerHTML = data.html_summary;
+            }
+            if(document.getElementById('serviceBody') && data.html_service) {
+                document.getElementById('serviceBody').innerHTML = data.html_service;
+            }
+            if(document.getElementById('yesterdayServiceBody') && data.html_y_service) {
+                document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
+            }
+            if(document.getElementById('districtBody') && data.html_district) {
+                document.getElementById('districtBody').innerHTML = data.html_district;
+            }
+            if(document.getElementById('yesterdayDistrictBody') && data.html_y_district) {
+                document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
+            }
 
             // Load sets safely
             vleDb = data.vleDb || {};
@@ -814,9 +835,15 @@
             });
         }
 
-        if(document.getElementById('dropoutCount')) {
-            document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
-        }
+        let callsDone = 0;
+        currentCallingListData.forEach(v => {
+            if(latestRemarks[v.CSC_ID]) callsDone++;
+        });
+        let callsPending = currentCallingListData.length - callsDone;
+
+        if(document.getElementById('dropoutCount')) document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+        if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
+        if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
 
         let tbody = "";
         if(currentCallingListData.length === 0) {
