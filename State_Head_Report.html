@@ -467,6 +467,8 @@
 
 
 
+
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
@@ -1067,7 +1069,18 @@
         if(currentCallingListData.length === 0) {
             tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
         } else {
-            currentCallingListData.sort((a, b) => a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID));
+            // 🔥 MARGINAL SORTING LOGIC: NO REMARKS ON TOP, COMPLETED REMARKS AT BOTTOM 🔥
+            currentCallingListData.sort((a, b) => {
+                let aHasRemark = latestRemarks[a.CSC_ID] ? 1 : 0;
+                let bHasRemark = latestRemarks[b.CSC_ID] ? 1 : 0;
+                
+                if (aHasRemark !== bHasRemark) {
+                    return aHasRemark - bHasRemark; // 0 comes before 1
+                }
+                // If both are same (both no remark, or both have remark), sort by District then CSC ID
+                return a.District.localeCompare(b.District) || a.CSC_ID.localeCompare(b.CSC_ID);
+            });
+
             let displayList = currentCallingListData.slice(0, 500);
             
             displayList.forEach((vle, idx) => {
