@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Registrations (FY 26-27)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- ఫాంట్ ఆసమ్ ఐకాన్స్ (WhatsApp బటన్ కోసం) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -78,7 +77,7 @@
         .th-c8 { background-color: #10b981 !important; } 
         .th-red { background-color: #ef4444 !important; } 
         .th-c9 { background-color: #0f172a !important; } 
-        .th-c10 { background-color: #047857 !important; } /* Action Button Column */
+        .th-c10 { background-color: #047857 !important; } 
 
         tr:hover td { background-color: #f0f8ff; }
         
@@ -93,7 +92,7 @@
         .badge-active { color: #15803d; border-color: #15803d; background-color: #f0fdf4;}
         .badge-inactive { color: #b91c1c; border-color: #b91c1c; background-color: #fef2f2;}
         
-        .wa-btn { display: inline-flex; align-items: center; gap: 5px; background: #25D366; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; box-shadow: 0 2px 5px rgba(37,211,102,0.3); transition: 0.2s; border: 1px solid #1da851; }
+        .wa-btn { display: inline-flex; align-items: center; gap: 5px; background: #25D366; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; box-shadow: 0 2px 5px rgba(37,211,102,0.3); transition: 0.2s; border: 1px solid #1da851; cursor: pointer;}
         .wa-btn:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,211,102,0.4); color: white;}
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -108,10 +107,8 @@
         .capture-compact .dashboard-body { height: auto !important; overflow: visible !important; display: flex !important; }
         .capture-compact .summary-panel, .capture-compact .details-panel { height: auto !important; overflow: visible !important; }
         .capture-compact .table-wrap { height: auto !important; overflow: visible !important; }
-        /* ఇమేజ్ డౌన్‌లోడ్ చేసేటప్పుడు Action కాలమ్ అక్కర్లేదు కాబట్టి హైడ్ చేస్తాం */
         .capture-compact .hide-on-capture { display: none !important; }
 
-/* 📱 MOBILE RESPONSIVE STYLES 📱 */
     @media (max-width: 768px) {
         body { height: auto !important; overflow: auto !important; display: block; padding: 10px; }
         .top-controls { flex-direction: column; gap: 12px; padding: 12px; }
@@ -153,7 +150,6 @@
                 <option value="All">All Districts</option>
             </select>
 
-            <!-- 🌟 కొత్త మంత్ అండ్ డే ఫిల్టర్స్ 🌟 -->
             <select id="filterMonth" onchange="renderTable()">
                 <option value="All">All Months</option>
                 <option value="01">Jan</option>
@@ -171,7 +167,6 @@
             </select>
             <select id="filterDay" onchange="renderTable()">
                 <option value="All">All Days</option>
-                <!-- Javascript ద్వారా 1 నుండి 31 వరకు ఇక్కడ యాడ్ అవుతాయి -->
             </select>
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
@@ -266,7 +261,6 @@
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
             
-            // 🌟 1 నుండి 31 రోజుల డ్రాప్‌డౌన్ క్రియేషన్ 🌟
             let daySelect = document.getElementById("filterDay");
             for(let i=1; i<=31; i++) {
                 let opt = document.createElement("option");
@@ -493,7 +487,6 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUserName = localStorage.getItem("userName") || "";
 
-            // Date Filters for Summary
             let selectedMonth = document.getElementById('filterMonth').value;
             let selectedDay = document.getElementById('filterDay').value;
 
@@ -508,7 +501,6 @@
                     if (!isRowAllowedForDM(row, distType, loggedInUserName)) return;
                 }
 
-                // 🌟 ఫిల్టర్స్ అప్లై చేయడం (Summary కోసం) 🌟
                 let cDateParts = row.creation_date.split('-');
                 if (cDateParts.length === 3) {
                     let rowDay = parseInt(cDateParts[0], 10);
@@ -557,6 +549,11 @@
             </tr>`;
         }
 
+        function openWhatsApp(mobile, message) {
+            let waLink = `whatsapp://send?phone=${mobile}&text=${encodeURIComponent(message)}`;
+            window.location.href = waLink;
+        }
+
         function renderTable() {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -564,11 +561,9 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUserName = localStorage.getItem("userName") || "";
 
-            // 🌟 Date Filters for Table 🌟
             let selectedMonth = document.getElementById('filterMonth').value;
             let selectedDay = document.getElementById('filterDay').value;
 
-            // Target Date 1st Aug 2026
             const augustFirst2026 = new Date(2026, 7, 1); 
             const todayDate = new Date();
 
@@ -585,7 +580,6 @@
                 
                 if (selectedDist !== "All" && dist !== selectedDist) return;
 
-                // 🌟 ఫిల్టర్స్ అప్లై చేయడం (Table కోసం) 🌟
                 let cDateParts = row.creation_date.split('-');
                 let rowDateObj = null;
                 if (cDateParts.length === 3) {
@@ -594,7 +588,6 @@
                     if (selectedMonth !== "All" && rowMonth !== selectedMonth) return;
                     if (selectedDay !== "All" && rowDay !== parseInt(selectedDay, 10)) return;
                     
-                    // Date object for checking 90 days threshold
                     rowDateObj = new Date(cDateParts[2], cDateParts[1] - 1, cDateParts[0]);
                 }
                 
@@ -609,7 +602,7 @@
                     ? `<span class="badge badge-active">ACTIVE</span>` 
                     : `<span class="badge badge-inactive">NOT STARTED</span>`;
 
-                // 🌟 WhatsApp Button Logic (Only for >= 1st Aug 2026) 🌟
+                // 🌟 WhatsApp Button Logic 🌟
                 let actionBtn = "-";
                 if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
                     let diffTime = Math.abs(todayDate - rowDateObj);
@@ -634,12 +627,11 @@
                         }
                     }
 
-                    // Mobile Number Cleanup
                     let cleanMobile = row.mobile ? row.mobile.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length >= 10) {
                         if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
-                        let waLink = `https://wa.me/${cleanMobile}?text=${encodeURIComponent(waMessage)}`;
-                        actionBtn = `<a href="${waLink}" target="_blank" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Alert</a>`;
+                        // ఇక్కడ whatsapp:// డీప్ లింక్ వాడాము
+                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`)" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Alert</button>`;
                     }
                 }
 
@@ -669,7 +661,6 @@
             document.getElementById("val-active").innerText = counts.active;
             document.getElementById("val-notstarted").innerText = counts.notstarted;
 
-            // Summary టేబుల్ ని కూడా అప్డేట్ చేయడం
             if(selectedMonth !== "All" || selectedDay !== "All") {
                 renderSummaryTable();
             }
@@ -701,7 +692,7 @@
             document.getElementById("filterDay").value = "All";
             document.getElementById("detailsPanelTitle").innerText = "📋 VLE Detailed List (All Districts)";
             setKpiFilter('all');
-            updateDistrictsDropdown(); // This re-renders both tables
+            updateDistrictsDropdown(); 
         }
 
         function toggleFullScreen() {
