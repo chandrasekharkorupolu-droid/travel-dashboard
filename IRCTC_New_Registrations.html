@@ -104,15 +104,12 @@
         /* 🌟 WhatsApp Button Dynamic Colors 🌟 */
         .wa-btn { display: inline-flex; align-items: center; gap: 5px; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; transition: 0.2s; border: 1px solid; cursor: pointer; white-space: nowrap;}
         
-        /* 1. Normal Alert (Green) */
         .wa-alert { background: #25D366; border-color: #1da851; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
         .wa-alert:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,211,102,0.4); }
         
-        /* 2. Achieved (Blue) */
         .wa-achieved { background: #3b82f6; border-color: #2563eb; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3); }
         .wa-achieved:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
         
-        /* 3. Expired (Red) */
         .wa-expired { background: #ef4444; border-color: #dc2626; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
         .wa-expired:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4); }
 
@@ -130,11 +127,11 @@
         .capture-compact .table-wrap { height: auto !important; overflow: visible !important; }
         .capture-compact .hide-on-capture { display: none !important; }
 
-        /* 🌟 Hidden Export Area for Summary Image 🌟 */
+        /* 🌟 Black Screen Fix: Opacity తీసేసి వెనకవైపు దాచాం 🌟 */
         #summaryExportArea {
             position: fixed; top: 0; left: 0; width: 850px; 
-            z-index: -9999; opacity: 0; pointer-events: none;
-            background: #f8f9fc;
+            z-index: -9999; pointer-events: none;
+            background: #ffffff; /* పర్ఫెక్ట్ వైట్ బ్యాక్ గ్రౌండ్ */
         }
 
     @media (max-width: 768px) {
@@ -205,7 +202,6 @@
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             
-            <!-- 🌟 కొత్తగా మార్చిన డౌన్‌లోడ్ సమ్మరీ ఇమేజ్ బటన్ 🌟 -->
             <button class="btn-action" id="summaryImgBtn" onclick="generateSummaryImage()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📸 Download Summary</button>
             
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Main Table</button>
@@ -619,7 +615,7 @@
             </tr>`;
         }
 
-        // 🌟 అద్భుతమైన కలర్ ఫుల్ సమ్మరీ ఇమేజ్ క్రియేట్ చేసే లాజిక్ 🌟
+        // 🌟 ఆటోమేటిక్ గా డిజైన్ అయ్యి ఇమేజ్ లాగా డౌన్‌లోడ్ అయ్యే ఫంక్షన్ 🌟
         function generateSummaryImage() {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -787,13 +783,12 @@
 
             exportDiv.innerHTML = html;
 
-            // ఈ డివిజన్ ని ఇమేజ్ లా మార్చి డౌన్లోడ్ చేస్తాం
             const btn = document.getElementById("summaryImgBtn");
             let originalText = btn.innerHTML;
             btn.innerHTML = "⏳ Generating...";
             btn.disabled = true;
 
-            html2canvas(exportDiv, { scale: 2, backgroundColor: null }).then(canvas => {
+            html2canvas(exportDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
                 let link = document.createElement('a');
                 let typeSelect = document.getElementById("districtType");
                 let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
