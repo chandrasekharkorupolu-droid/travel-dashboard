@@ -71,6 +71,15 @@
         .logs-table th, .logs-table td { font-size: 11px; padding: 10px; }
     }
   </style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
 </head>
 <body>
 
@@ -97,8 +106,9 @@
         <div class="input-col">
           <label>Data Type</label>
           <select id="uploadType" class="custom-input">
-            <option value="Daily Transactions File">Daily Transactions File</option>
-            <option value="New Registrations File">New Registrations File</option>
+            <!-- వాల్యూస్ సరిచేశాను: ఇక్కడ 'Daily Transactions' మాత్రమే పంపుతాం, కానీ యూజర్‌కి 'Daily Transactions File' అని చూపిస్తాం -->
+            <option value="Daily Transactions">Daily Transactions File</option>
+            <option value="New Registrations">New Registrations File</option>
           </select>
         </div>
       </div>
@@ -156,6 +166,7 @@
   <script>
     let selectedFile = null;
     
+    // మీ కరెక్ట్ వెబ్ యాప్ లింక్ 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     window.onload = function() {
@@ -216,10 +227,12 @@
       document.querySelectorAll('.service-box').forEach(box => box.classList.remove('active'));
       element.classList.add('active');
       let typeDropdown = document.getElementById('uploadType');
+      
+      // ఇక్కడ కూడా సర్వర్ కి వెళ్ళే వాల్యూ (value) సరిచేశాను: 'Daily Transactions' అండ్ 'New Registrations'
       if(serviceName === 'IRCTC') {
-        typeDropdown.innerHTML = `<option value="Daily Transactions File">Daily Transactions File</option><option value="New Registrations File">New Registrations File</option>`;
+        typeDropdown.innerHTML = `<option value="Daily Transactions">Daily Transactions File</option><option value="New Registrations">New Registrations File</option>`;
       } else {
-        typeDropdown.innerHTML = `<option value="Daily Transactions File">Daily Transactions File</option>`;
+        typeDropdown.innerHTML = `<option value="Daily Transactions">Daily Transactions File</option>`;
       }
     }
 
@@ -236,8 +249,7 @@
                 var foundCategories = {};
                 var finalLogs = [];
 
-                // 🌟 మీ గూగుల్ షీట్‌లో లేటెస్ట్ డేటా పైనే (Top lo) ఉంటోంది కాబట్టి...
-                // మనం పైనుండి (0 ఇండెక్స్ నుండి) వెతుక్కుంటూ కిందకు రావాలి!
+                // పక్కాగా పైనుండి కిందకు వెతికే లాజిక్
                 for (var i = 0; i < data.logs.length; i++) {
                     var log = data.logs[i];
                     
@@ -247,7 +259,6 @@
                         var fileNameLower = log[2] ? String(log[2]).trim().toLowerCase() : "";
                         var catKey = rawSrv;
 
-                        // పేర్లను పక్కాగా మ్యాచ్ చేయడం
                         if (rawSrv.indexOf("IRCTC") !== -1) {
                             if (fileNameLower.indexOf("reg") !== -1) {
                                 catKey = "IRCTC New Registrations";
@@ -264,10 +275,8 @@
                             catKey = "E-STAMPING";
                         }
 
-                        // పైనుండి వస్తున్నాం కాబట్టి, ఫస్ట్ టైమ్ దొరికిన రికార్డే ఆ కేటగిరీకి లేటెస్ట్!
                         if (catKey !== "" && !foundCategories[catKey]) {
                             foundCategories[catKey] = true;
-                            
                             finalLogs.push({
                                 uploadDate: log[0],
                                 displayCategory: catKey,
@@ -333,9 +342,10 @@
       var dataDate = document.getElementById('uploadDate').value;
       var uploadedBy = localStorage.getItem("userName") || "Admin";
 
+      // ఫైల్ పేరులో 'reg' లేకపోతే వార్నింగ్ ఇవ్వడం
       if (service === "IRCTC") {
           let fileNameLower = selectedFile.name.toLowerCase();
-          if (dataType === "New Registrations File" && fileNameLower.indexOf("reg") === -1) {
+          if (dataType === "New Registrations" && fileNameLower.indexOf("reg") === -1) {
               btn.innerHTML = "🔄 Sync to Google Sheet";
               btn.style.pointerEvents = "auto";
               btn.style.opacity = "1";
