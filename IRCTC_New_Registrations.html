@@ -20,6 +20,7 @@
         .filter-group { display: flex; gap: 12px; align-items: center; }
         .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
         
+        /* 🌟 Custom Multi-Select Dropdown 🌟 */
         .multi-select { position: relative; display: inline-block; width: 150px; }
         .multi-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
         .multi-content { display: none; position: absolute; background-color: #ffffff; min-width: 100%; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 100; border-radius: 4px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; top: 100%; left: 0; margin-top: 2px;}
@@ -193,6 +194,10 @@
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
+            
+            <!-- 🌟 కొత్తగా యాడ్ చేసిన షేర్ సమ్మరీ బటన్ 🌟 -->
+            <button class="btn-action" onclick="shareSummaryToWhatsApp()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📲 Share Summary</button>
+            
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
@@ -615,6 +620,84 @@
                 btnElement.style.boxShadow = 'none';
                 btnElement.style.color = '#ffffff';
             }
+        }
+
+        // 🌟 వాట్సాప్ గ్రూప్ లో ఆఫర్ సమ్మరీ స్టేటస్ పంపడానికి 🌟
+        function shareSummaryToWhatsApp() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUserName = localStorage.getItem("userName") || "";
+
+            let selectedMonths = getSelectedMonths();
+            let isAllMonths = document.querySelector('input[value="All"]').checked || selectedMonths.length === 0;
+
+            const augustFirst2026 = new Date(2026, 7, 1); 
+            const todayDate = new Date();
+
+            let totalEligible = 0;
+            let achieved = 0;
+            let pending = 0;
+            let expired = 0;
+
+            globalNewVles.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown' || dist === '-') return;
+
+                if (userDesignation === "District Manager") {
+                    if (!isRowAllowedForDM(row, distType, loggedInUserName)) return;
+                }
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+
+                let cDateParts = row.creation_date.split('-');
+                let rowDateObj = null;
+                if (cDateParts.length === 3) {
+                    let rowMonth = cDateParts[1];
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
+                    rowDateObj = new Date(cDateParts[2], cDateParts[1] - 1, cDateParts[0]);
+                }
+
+                // 1st Aug 2026 నుండి అర్హులైన VLEలని కౌంట్ చేయడం
+                if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
+                    totalEligible++;
+                    let diffTime = Math.abs(todayDate - rowDateObj);
+                    let daysElapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    let daysLeft = 90 - daysElapsed;
+                    let currentTxns = parseInt(row.txns_26_27) || 0;
+
+                    if (currentTxns >= 30) {
+                        achieved++;
+                    } else if (daysLeft >= 0) {
+                        pending++;
+                    } else {
+                        expired++;
+                    }
+                }
+            });
+
+            if (totalEligible === 0) {
+                alert("ఎంచుకున్న ఫిల్టర్స్ లో ఆఫర్ కి అర్హత ఉన్న VLE లు ఎవరూ లేరు!");
+                return;
+            }
+
+            let reportDist = selectedDist === "All" ? "Andhra Pradesh (All Districts)" : selectedDist;
+            let d = new Date();
+            let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+
+            // మెసేజ్ డిజైన్
+            let waMessage = `📊 *IRCTC ₹2000 REFUND OFFER STATUS* 📊\n`
+                + `🗓 Date: ${dateStr}\n`
+                + `📍 Region: *${reportDist}*\n\n`
+                + `👥 1st Aug '26 నుండి అర్హత ఉన్న VLEలు: *${totalEligible}*\n`
+                + `🏆 టార్గెట్ పూర్తి చేసినవారు (Achieved): *${achieved}*\n`
+                + `⏳ ఇంకా టార్గెట్ లో ఉన్నవారు (Pending): *${pending}*\n`
+                + `❌ ఆఫర్ ఎక్స్పైర్ అయినవారు (Expired): *${expired}*\n\n`
+                + `దయచేసి Pending లో ఉన్న VLE లను ఫాలో అప్ చేయగలరు.\n`
+                + `- *CSC AP Travel Team*`;
+
+            let waLink = `whatsapp://send?text=${encodeURIComponent(waMessage)}`;
+            window.location.href = waLink;
         }
 
         function renderTable() {
