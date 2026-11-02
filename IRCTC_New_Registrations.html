@@ -131,7 +131,7 @@
         #summaryExportArea {
             position: fixed; top: 0; left: 0; width: 850px; 
             z-index: -9999; pointer-events: none;
-            background: #ffffff; /* పర్ఫెక్ట్ వైట్ బ్యాక్ గ్రౌండ్ */
+            background: #ffffff; 
         }
 
     @media (max-width: 768px) {
@@ -615,7 +615,7 @@
             </tr>`;
         }
 
-        // 🌟 ఆటోమేటిక్ గా డిజైన్ అయ్యి ఇమేజ్ లాగా డౌన్‌లోడ్ అయ్యే ఫంక్షన్ (వైట్ బ్యాక్‌గ్రౌండ్, డార్క్ హెడ్డింగ్స్ & కొత్త కాలమ్స్) 🌟
+        // 🌟 రిపోర్ట్ ఇమేజ్ క్రియేషన్ లాజిక్ (VLE Mobile Priority & Updated Header) 🌟
         function generateSummaryImage() {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -659,10 +659,8 @@
                     let daysLeft = 90 - daysElapsed;
                     let currentTxns = parseInt(row.txns_26_27) || 0;
 
-                    let prefMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
-                    if (prefMobile.length < 10 && row.mobile) {
-                        prefMobile = row.mobile.toString().replace(/[^0-9]/g, '');
-                    }
+                    // 🌟 VLE Mobile First Priority for Image Display 🌟
+                    let displayMobile = (row.vlemob && row.vlemob.trim() !== '-' && row.vlemob.trim() !== '') ? row.vlemob : row.mobile;
 
                     if (currentTxns >= 30) {
                         achieved++;
@@ -670,9 +668,8 @@
                     } else if (daysLeft >= 0) {
                         pending++;
                         distStats[dist].pending++;
-                        // 🌟 బుక్ చేసినవి, ఇంకా ఎన్ని చేయాలో లెక్కించి పాస్ చేయడం 🌟
                         let needed = 30 - currentTxns;
-                        pendingVLEs.push({ dist: dist, name: row.vlename, mobile: prefMobile, booked: currentTxns, needed: needed, daysLeft: daysLeft });
+                        pendingVLEs.push({ dist: dist, name: row.vlename, mobile: displayMobile, booked: currentTxns, needed: needed, daysLeft: daysLeft });
                     } else {
                         expired++;
                         distStats[dist].expired++;
@@ -754,10 +751,10 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
                     <thead>
                         <tr style="background: #f1f5f9;">
-                            <!-- 🌟 హెడ్డింగ్ కలర్ కరెక్షన్ (#334155) మరియు కొత్త కాలమ్స్ 🌟 -->
+                            <!-- 🌟 ఇక్కడే హెడ్డింగ్ ని VLE MOBILE NO గా మార్చాను సార్ 🌟 -->
                             <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">DISTRICT</th>
                             <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">VLE NAME</th>
-                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">MOBILE NO</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">VLE MOBILE NO</th>
                             <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">BOOKED</th>
                             <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">NEEDED</th>
                             <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">DAYS LEFT</th>
@@ -909,6 +906,7 @@
                         }
                     }
 
+                    // 🌟 మెయిన్ టేబుల్ వాట్సాప్ బటన్ కోసం కూడా VLE Mobile ని ముందుగా చెక్ చేయడం 🌟
                     let cleanMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length < 10 && row.mobile) {
                         cleanMobile = row.mobile.toString().replace(/[^0-9]/g, '');
