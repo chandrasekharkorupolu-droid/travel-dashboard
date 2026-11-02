@@ -275,7 +275,6 @@
             fetchSheetData(); 
         };
 
-        // క్లిక్ చేసినప్పుడు మంత్ డ్రాప్‌డౌన్ క్లోజ్ అవ్వడానికి
         window.onclick = function(event) {
             if (!event.target.closest('.multi-select')) {
                 let dropdown = document.getElementById('monthOptions');
@@ -285,7 +284,6 @@
             }
         }
 
-        // 🌟 మంత్ ఫిల్టర్ మల్టిపుల్ సెలెక్షన్ లాజిక్ 🌟
         function handleMonthSelect(cb) {
             let allCb = document.querySelector('input[value="All"]');
             let monthCbs = document.querySelectorAll('.month-cb');
@@ -523,7 +521,6 @@
             renderTable(); 
         }
 
-        // 🌟 మంత్ ఫిల్టర్ వాడకం 🌟
         function getSelectedMonths() {
             let selected = [];
             document.querySelectorAll('.month-cb:checked').forEach(cb => selected.push(cb.value));
@@ -597,9 +594,19 @@
             </tr>`;
         }
 
-        function openWhatsApp(mobile, message) {
+        // 🌟 ఈ కొత్త ఫంక్షన్ ద్వారా బటన్ రంగు "Sent" గా మారుతుంది 🌟
+        function openWhatsApp(mobile, message, btnElement) {
             let waLink = `whatsapp://send?phone=${mobile}&text=${encodeURIComponent(message)}`;
             window.location.href = waLink;
+            
+            // బటన్ క్లిక్ చేయగానే డిజైన్ అప్డేట్ అవుతుంది
+            if (btnElement) {
+                btnElement.innerHTML = '<i class="fa-solid fa-check-double"></i> Sent';
+                btnElement.style.backgroundColor = '#64748b'; // స్లేట్ గ్రే కలర్
+                btnElement.style.borderColor = '#475569';
+                btnElement.style.boxShadow = 'none';
+                btnElement.style.color = '#ffffff';
+            }
         }
 
         function renderTable() {
@@ -648,7 +655,6 @@
                     ? `<span class="badge badge-active">ACTIVE</span>` 
                     : `<span class="badge badge-inactive">NOT STARTED</span>`;
 
-                // 🌟 అప్డేట్ చేసిన కస్టమ్ WhatsApp మెసేజ్ (Bold text తో) 🌟
                 let actionBtn = "-";
                 if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
                     let diffTime = Math.abs(todayDate - rowDateObj);
@@ -676,7 +682,8 @@
                     let cleanMobile = row.mobile ? row.mobile.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length >= 10) {
                         if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
-                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`)" class="wa-btn"><i class="fa-brands fa-whatsapp" style="font-size:13px;"></i> Alert</button>`;
+                        // ఇక్కడ "this" పరామీటర్ పాస్ చేసాము, దానివల్ల ఆ క్లిక్ చేసిన బటన్ రంగు మారుతుంది
+                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`, this)" class="wa-btn"><i class="fa-brands fa-whatsapp" style="font-size:13px;"></i> Alert</button>`;
                     }
                 }
 
@@ -734,7 +741,6 @@
             document.getElementById("districtType").value = "old";
             document.getElementById("districtName").value = "All";
             
-            // కస్టమ్ డ్రాప్‌డౌన్ రీసెట్
             document.querySelector('input[value="All"]').checked = true;
             document.querySelectorAll('.month-cb').forEach(c => c.checked = false);
             document.getElementById("monthBtnText").innerText = "All Months";
