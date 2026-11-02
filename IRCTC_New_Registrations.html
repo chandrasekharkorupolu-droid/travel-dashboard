@@ -20,7 +20,6 @@
         .filter-group { display: flex; gap: 12px; align-items: center; }
         .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
         
-        /* 🌟 Custom Multi-Select Dropdown 🌟 */
         .multi-select { position: relative; display: inline-block; width: 150px; }
         .multi-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
         .multi-content { display: none; position: absolute; background-color: #ffffff; min-width: 100%; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 100; border-radius: 4px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; top: 100%; left: 0; margin-top: 2px;}
@@ -101,8 +100,20 @@
         .badge-active { color: #15803d; border-color: #15803d; background-color: #f0fdf4;}
         .badge-inactive { color: #b91c1c; border-color: #b91c1c; background-color: #fef2f2;}
         
-        .wa-btn { display: inline-flex; align-items: center; gap: 5px; background: #25D366; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; box-shadow: 0 2px 5px rgba(37,211,102,0.3); transition: 0.2s; border: 1px solid #1da851; cursor: pointer;}
-        .wa-btn:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,211,102,0.4); color: white;}
+        /* 🌟 WhatsApp Button Dynamic Colors 🌟 */
+        .wa-btn { display: inline-flex; align-items: center; gap: 5px; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; transition: 0.2s; border: 1px solid; cursor: pointer; white-space: nowrap;}
+        
+        /* 1. Normal Alert (Green) */
+        .wa-alert { background: #25D366; border-color: #1da851; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
+        .wa-alert:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,211,102,0.4); }
+        
+        /* 2. Achieved (Blue) */
+        .wa-achieved { background: #3b82f6; border-color: #2563eb; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3); }
+        .wa-achieved:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
+        
+        /* 3. Expired (Red) */
+        .wa-expired { background: #ef4444; border-color: #dc2626; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
+        .wa-expired:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4); }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
@@ -159,7 +170,6 @@
                 <option value="All">All Districts</option>
             </select>
 
-            <!-- 🌟 Custom Multi-Select Month Dropdown 🌟 -->
             <div class="multi-select" id="monthSelectDiv">
                 <div class="multi-btn" onclick="document.getElementById('monthOptions').classList.toggle('show')">
                     <span id="monthBtnText">All Months</span> <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
@@ -594,15 +604,13 @@
             </tr>`;
         }
 
-        // 🌟 ఈ కొత్త ఫంక్షన్ ద్వారా బటన్ రంగు "Sent" గా మారుతుంది 🌟
         function openWhatsApp(mobile, message, btnElement) {
             let waLink = `whatsapp://send?phone=${mobile}&text=${encodeURIComponent(message)}`;
             window.location.href = waLink;
             
-            // బటన్ క్లిక్ చేయగానే డిజైన్ అప్డేట్ అవుతుంది
             if (btnElement) {
                 btnElement.innerHTML = '<i class="fa-solid fa-check-double"></i> Sent';
-                btnElement.style.backgroundColor = '#64748b'; // స్లేట్ గ్రే కలర్
+                btnElement.style.backgroundColor = '#64748b'; 
                 btnElement.style.borderColor = '#475569';
                 btnElement.style.boxShadow = 'none';
                 btnElement.style.color = '#ffffff';
@@ -664,17 +672,30 @@
                     let ticketsNeeded = 30 - currentTxns;
                     
                     let waMessage = "";
+                    let btnClass = "wa-btn wa-alert";
+                    let btnText = "Alert";
+                    let btnIcon = "fa-whatsapp";
                     
                     if (daysLeft >= 0) {
                         if (currentTxns >= 30) {
-                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhar | Travel SPOC*`;
+                            btnClass = "wa-btn wa-achieved";
+                            btnText = "Achieved";
+                            btnIcon = "fa-trophy";
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         } else {
+                            // గ్రీన్ బటన్ డీఫాల్ట్
                             waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు.\n\n🎯 మీ లక్ష్యం: *30 టికెట్లు*\nమీకు ఇంకా *${ticketsNeeded}* టికెట్లు బుక్ చేయాల్సి ఉంది.\n⏳ మిగిలిన సమయం కేవలం *${daysLeft} రోజులు* మాత్రమే!\n\nమీ IRCTC ID క్రియేట్ అయిన 90 రోజులలోపు మిగిలిన *${ticketsNeeded}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేసుకుంటే,\n🎁 మీకు *₹2,000 CASHBACK / REFUND* పొందే అవకాశం ఉంది!\n\nకావున, ఆలస్యం చేయకుండా వెంటనే టికెట్ బుకింగ్స్ ప్రారంభించి మీ టార్గెట్‌ను పూర్తి చేసుకోండి.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         }
                     } else {
                         if (currentTxns >= 30) {
+                            btnClass = "wa-btn wa-achieved";
+                            btnText = "Achieved";
+                            btnIcon = "fa-trophy";
                             waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి.\nమీరు *${currentTxns}* టికెట్లు బుక్ చేసి టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         } else {
+                            btnClass = "wa-btn wa-expired";
+                            btnText = "Expired";
+                            btnIcon = "fa-clock-rotate-left";
                             waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి (Offer Expired).\nమీరు కేవలం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు. టార్గెట్ పూర్తి కాలేదు.\n\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         }
                     }
@@ -682,8 +703,7 @@
                     let cleanMobile = row.mobile ? row.mobile.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length >= 10) {
                         if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
-                        // ఇక్కడ "this" పరామీటర్ పాస్ చేసాము, దానివల్ల ఆ క్లిక్ చేసిన బటన్ రంగు మారుతుంది
-                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`, this)" class="wa-btn"><i class="fa-brands fa-whatsapp" style="font-size:13px;"></i> Alert</button>`;
+                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`, this)" class="${btnClass}"><i class="fa-brands ${btnIcon}" style="font-size:12px;"></i> ${btnText}</button>`;
                     }
                 }
 
