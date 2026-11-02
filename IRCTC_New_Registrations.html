@@ -20,7 +20,6 @@
         .filter-group { display: flex; gap: 12px; align-items: center; }
         .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
         
-        /* 🌟 Custom Multi-Select Dropdown 🌟 */
         .multi-select { position: relative; display: inline-block; width: 150px; }
         .multi-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
         .multi-content { display: none; position: absolute; background-color: #ffffff; min-width: 100%; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 100; border-radius: 4px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; top: 100%; left: 0; margin-top: 2px;}
@@ -101,18 +100,14 @@
         .badge-active { color: #15803d; border-color: #15803d; background-color: #f0fdf4;}
         .badge-inactive { color: #b91c1c; border-color: #b91c1c; background-color: #fef2f2;}
         
-        /* 🌟 WhatsApp Button Dynamic Colors 🌟 */
         .wa-btn { display: inline-flex; align-items: center; gap: 5px; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; transition: 0.2s; border: 1px solid; cursor: pointer; white-space: nowrap;}
         
-        /* 1. Normal Alert (Green) */
         .wa-alert { background: #25D366; border-color: #1da851; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
         .wa-alert:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,211,102,0.4); }
         
-        /* 2. Achieved (Blue) */
         .wa-achieved { background: #3b82f6; border-color: #2563eb; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3); }
         .wa-achieved:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
         
-        /* 3. Expired (Red) */
         .wa-expired { background: #ef4444; border-color: #dc2626; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
         .wa-expired:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4); }
 
@@ -195,7 +190,6 @@
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             
-            <!-- 🌟 వాట్సాప్ గ్రూప్ లో షేర్ చేయడానికి బటన్ 🌟 -->
             <button class="btn-action" onclick="shareSummaryToWhatsApp()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📲 Share Summary</button>
             
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
@@ -609,7 +603,6 @@
             </tr>`;
         }
 
-        // 🌟 ఫాల్ బ్యాక్ కాపీ సిస్టమ్ 🌟
         function copyToClipboardFallback(text) {
             let textArea = document.createElement("textarea");
             textArea.value = text;
@@ -619,15 +612,11 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try {
-                document.execCommand('copy');
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-            }
+            try { document.execCommand('copy'); } catch (err) {}
             document.body.removeChild(textArea);
         }
 
-        // 🌟 వాట్సాప్ గ్రూప్ లో ఆఫర్ సమ్మరీ పంపడానికి 🌟
+        // 🌟 వాట్సాప్ టేబుల్ ఫార్మాట్ కాపీ సిస్టమ్ (Monospace Design) 🌟
         function shareSummaryToWhatsApp() {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -671,7 +660,6 @@
                     let daysLeft = 90 - daysElapsed;
                     let currentTxns = parseInt(row.txns_26_27) || 0;
 
-                    // 🌟 VLE మొబైల్ ముందుగా చెక్ చేయడం 🌟
                     let prefMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
                     if (prefMobile.length < 10 && row.mobile) {
                         prefMobile = row.mobile.toString().replace(/[^0-9]/g, '');
@@ -683,7 +671,7 @@
                     } else if (daysLeft >= 0) {
                         pending++;
                         distStats[dist].pending++;
-                        pendingVLEs.push(`${dist} | ${row.vlename} | ${prefMobile}`);
+                        pendingVLEs.push({ dist: dist, name: row.vlename, mobile: prefMobile });
                     } else {
                         expired++;
                         distStats[dist].expired++;
@@ -700,30 +688,42 @@
             let d = new Date();
             let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
 
-            // 🌟 వాట్సాప్ కాపీ కోసం టెక్స్ట్ డిజైన్ 🌟
+            // 🌟 ఇక్కడ బ్యాక్‌టిక్స్ (```) వాడి పర్ఫెక్ట్ టేబుల్ అలైన్‌మెంట్ సెట్ చేశాను 🌟
             let waMessage = `📊 *IRCTC ₹2000 REFUND OFFER STATUS* 📊\n`;
             waMessage += `🗓 Date: ${dateStr}\n`;
             waMessage += `📍 Region: *${reportDist}*\n\n`;
             
             waMessage += `🏆 *DISTRICT-WISE SUMMARY* 🏆\n`;
-            waMessage += `District | Achieved | Pending | Expired\n`;
-            waMessage += `------------------------------------------------\n`;
+            waMessage += "```\n";
+            waMessage += "DISTRICT       | ACH | PND | EXP\n";
+            waMessage += "--------------------------------\n";
             
             let sortedDists = Object.keys(distStats).sort();
             sortedDists.forEach(d => {
                 let st = distStats[d];
-                waMessage += `${d} | ${st.achieved} | ${st.pending} | ${st.expired}\n`;
+                // 14 క్యారెక్టర్ల గ్యాప్ కరెక్ట్ గా ఉండడానికి ప్యాడింగ్
+                let dName = d.length > 14 ? d.substring(0, 12) + ".." : d.padEnd(14, " ");
+                let ach = st.achieved.toString().padStart(3, " ");
+                let pnd = st.pending.toString().padStart(3, " ");
+                let exp = st.expired.toString().padStart(3, " ");
+                waMessage += `${dName} | ${ach} | ${pnd} | ${exp}\n`;
             });
-            waMessage += `------------------------------------------------\n`;
-            waMessage += `*TOTAL* | *${achieved}* | *${pending}* | *${expired}*\n\n`;
+            waMessage += "--------------------------------\n";
+            waMessage += `TOTAL          | ${achieved.toString().padStart(3, " ")} | ${pending.toString().padStart(3, " ")} | ${expired.toString().padStart(3, " ")}\n`;
+            waMessage += "```\n\n";
 
             if (pendingVLEs.length > 0) {
                 waMessage += `⏳ *ACTION REQUIRED (PENDING VLEs)* ⏳\n`;
-                waMessage += `District | VLE Name | Mobile No\n`;
-                pendingVLEs.forEach((v, idx) => {
-                    waMessage += `${idx + 1}. ${v}\n`;
+                waMessage += "```\n";
+                waMessage += "DISTRICT     | VLE NAME         | MOBILE\n";
+                waMessage += "--------------------------------------------\n";
+                pendingVLEs.forEach(v => {
+                    let dName = v.dist.length > 12 ? v.dist.substring(0, 10) + ".." : v.dist.padEnd(12, " ");
+                    let vName = v.name.length > 16 ? v.name.substring(0, 14) + ".." : v.name.padEnd(16, " ");
+                    let mob = v.mobile.length >= 10 ? v.mobile.substring(v.mobile.length - 10) : v.mobile.padEnd(10, " ");
+                    waMessage += `${dName} | ${vName} | ${mob}\n`;
                 });
-                waMessage += `\n`;
+                waMessage += "```\n";
             }
 
             waMessage += `- *CSC AP Travel Team*`;
@@ -732,6 +732,7 @@
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(waMessage).then(function() {
                     alert("✅ రిపోర్ట్ కాపీ అయింది! ఇప్పుడు వాట్సాప్ ఓపెన్ అవుతుంది, అక్కడ గ్రూప్ లో పేస్ట్ చేయండి.");
+                    // టెక్స్ట్ లేకుండా ఓపెన్ చేస్తాం, మీరే పేస్ట్ చేయాలి (url length error రాకుండా)
                     window.location.href = "whatsapp://send?text=";
                 }).catch(function() {
                     copyToClipboardFallback(waMessage);
@@ -840,7 +841,7 @@
                         }
                     }
 
-                    // 🌟 VLE మొబైల్ ముందుగా చెక్ చేయడం 🌟
+                    // 🌟 ముందుగా VLE మొబైల్ ని చెక్ చేయడం 🌟
                     let cleanMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length < 10 && row.mobile) {
                         cleanMobile = row.mobile.toString().replace(/[^0-9]/g, '');
