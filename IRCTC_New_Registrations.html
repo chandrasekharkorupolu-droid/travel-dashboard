@@ -20,6 +20,15 @@
         .filter-group { display: flex; gap: 12px; align-items: center; }
         .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
         
+        /* 🌟 Custom Multi-Select Dropdown 🌟 */
+        .multi-select { position: relative; display: inline-block; width: 150px; }
+        .multi-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .multi-content { display: none; position: absolute; background-color: #ffffff; min-width: 100%; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 100; border-radius: 4px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; top: 100%; left: 0; margin-top: 2px;}
+        .multi-content.show { display: block; }
+        .multi-content label { display: flex; align-items: center; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f1f5f9; color: #334155;}
+        .multi-content label:hover { background-color: #f1f5f9; color: #0f172a;}
+        .multi-content input { margin-right: 8px; cursor: pointer; }
+
         .btn-action { background-color: #f0f0f0; color: #333; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 0 #ccc; }
         .btn-action:active { transform: translateY(2px); box-shadow: 0 0 0 #ccc; }
         .btn-action:hover { background-color: #e0e0e0; }
@@ -114,7 +123,7 @@
         .top-controls { flex-direction: column; gap: 12px; padding: 12px; }
         .page-heading { font-size: 16px; justify-content: center; }
         .filter-group { flex-wrap: wrap; width: 100%; justify-content: center; }
-        .filter-group select, .filter-group .btn-action { flex: 1 1 calc(50% - 10px); padding: 8px; font-size: 12px; text-align: center; }
+        .filter-group select, .filter-group .btn-action, .multi-select { flex: 1 1 calc(50% - 10px); padding: 8px; font-size: 12px; text-align: center; width: auto;}
         #fullscreenBtn { display: none; } 
         .report-header { margin-top: 10px; }
         .report-header h1 { font-size: 16px; }
@@ -150,24 +159,27 @@
                 <option value="All">All Districts</option>
             </select>
 
-            <select id="filterMonth" onchange="renderTable()">
-                <option value="All">All Months</option>
-                <option value="01">Jan</option>
-                <option value="02">Feb</option>
-                <option value="03">Mar</option>
-                <option value="04">Apr</option>
-                <option value="05">May</option>
-                <option value="06">Jun</option>
-                <option value="07">Jul</option>
-                <option value="08">Aug</option>
-                <option value="09">Sep</option>
-                <option value="10">Oct</option>
-                <option value="11">Nov</option>
-                <option value="12">Dec</option>
-            </select>
-            <select id="filterDay" onchange="renderTable()">
-                <option value="All">All Days</option>
-            </select>
+            <!-- 🌟 Custom Multi-Select Month Dropdown 🌟 -->
+            <div class="multi-select" id="monthSelectDiv">
+                <div class="multi-btn" onclick="document.getElementById('monthOptions').classList.toggle('show')">
+                    <span id="monthBtnText">All Months</span> <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </div>
+                <div class="multi-content" id="monthOptions">
+                    <label><input type="checkbox" value="All" onchange="handleMonthSelect(this)" checked> All Months</label>
+                    <label><input type="checkbox" value="01" class="month-cb" onchange="handleMonthSelect(this)"> January</label>
+                    <label><input type="checkbox" value="02" class="month-cb" onchange="handleMonthSelect(this)"> February</label>
+                    <label><input type="checkbox" value="03" class="month-cb" onchange="handleMonthSelect(this)"> March</label>
+                    <label><input type="checkbox" value="04" class="month-cb" onchange="handleMonthSelect(this)"> April</label>
+                    <label><input type="checkbox" value="05" class="month-cb" onchange="handleMonthSelect(this)"> May</label>
+                    <label><input type="checkbox" value="06" class="month-cb" onchange="handleMonthSelect(this)"> June</label>
+                    <label><input type="checkbox" value="07" class="month-cb" onchange="handleMonthSelect(this)"> July</label>
+                    <label><input type="checkbox" value="08" class="month-cb" onchange="handleMonthSelect(this)"> August</label>
+                    <label><input type="checkbox" value="09" class="month-cb" onchange="handleMonthSelect(this)"> September</label>
+                    <label><input type="checkbox" value="10" class="month-cb" onchange="handleMonthSelect(this)"> October</label>
+                    <label><input type="checkbox" value="11" class="month-cb" onchange="handleMonthSelect(this)"> November</label>
+                    <label><input type="checkbox" value="12" class="month-cb" onchange="handleMonthSelect(this)"> December</label>
+                </div>
+            </div>
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
@@ -260,16 +272,47 @@
         window.onload = function() {
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
-            
-            let daySelect = document.getElementById("filterDay");
-            for(let i=1; i<=31; i++) {
-                let opt = document.createElement("option");
-                opt.value = i; opt.innerText = i;
-                daySelect.appendChild(opt);
-            }
-
             fetchSheetData(); 
         };
+
+        // క్లిక్ చేసినప్పుడు మంత్ డ్రాప్‌డౌన్ క్లోజ్ అవ్వడానికి
+        window.onclick = function(event) {
+            if (!event.target.closest('.multi-select')) {
+                let dropdown = document.getElementById('monthOptions');
+                if (dropdown && dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        }
+
+        // 🌟 మంత్ ఫిల్టర్ మల్టిపుల్ సెలెక్షన్ లాజిక్ 🌟
+        function handleMonthSelect(cb) {
+            let allCb = document.querySelector('input[value="All"]');
+            let monthCbs = document.querySelectorAll('.month-cb');
+
+            if (cb.value === "All" && cb.checked) {
+                monthCbs.forEach(c => c.checked = false);
+            } else if (cb.value !== "All" && cb.checked) {
+                allCb.checked = false;
+            }
+
+            let selectedNames = [];
+            monthCbs.forEach(c => { 
+                if(c.checked) selectedNames.push(c.parentNode.innerText.trim()); 
+            });
+            
+            let btnText = "All Months";
+            if (selectedNames.length > 0) {
+                if(selectedNames.length <= 2) btnText = selectedNames.join(', ');
+                else btnText = selectedNames.length + " Months Selected";
+            } else {
+                allCb.checked = true;
+            }
+            document.getElementById("monthBtnText").innerText = btnText;
+            
+            renderSummaryTable();
+            renderTable();
+        }
 
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
@@ -480,6 +523,13 @@
             renderTable(); 
         }
 
+        // 🌟 మంత్ ఫిల్టర్ వాడకం 🌟
+        function getSelectedMonths() {
+            let selected = [];
+            document.querySelectorAll('.month-cb:checked').forEach(cb => selected.push(cb.value));
+            return selected;
+        }
+
         function renderSummaryTable() {
             let distType = document.getElementById('districtType').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -487,8 +537,8 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUserName = localStorage.getItem("userName") || "";
 
-            let selectedMonth = document.getElementById('filterMonth').value;
-            let selectedDay = document.getElementById('filterDay').value;
+            let selectedMonths = getSelectedMonths();
+            let isAllMonths = document.querySelector('input[value="All"]').checked || selectedMonths.length === 0;
 
             let summaryMap = {};
             let gt = { total: 0, active: 0, notstarted: 0 };
@@ -503,10 +553,8 @@
 
                 let cDateParts = row.creation_date.split('-');
                 if (cDateParts.length === 3) {
-                    let rowDay = parseInt(cDateParts[0], 10);
                     let rowMonth = cDateParts[1];
-                    if (selectedMonth !== "All" && rowMonth !== selectedMonth) return;
-                    if (selectedDay !== "All" && rowDay !== parseInt(selectedDay, 10)) return;
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
                 }
 
                 if (!summaryMap[dist]) {
@@ -561,8 +609,8 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUserName = localStorage.getItem("userName") || "";
 
-            let selectedMonth = document.getElementById('filterMonth').value;
-            let selectedDay = document.getElementById('filterDay').value;
+            let selectedMonths = getSelectedMonths();
+            let isAllMonths = document.querySelector('input[value="All"]').checked || selectedMonths.length === 0;
 
             const augustFirst2026 = new Date(2026, 7, 1); 
             const todayDate = new Date();
@@ -583,10 +631,8 @@
                 let cDateParts = row.creation_date.split('-');
                 let rowDateObj = null;
                 if (cDateParts.length === 3) {
-                    let rowDay = parseInt(cDateParts[0], 10);
                     let rowMonth = cDateParts[1];
-                    if (selectedMonth !== "All" && rowMonth !== selectedMonth) return;
-                    if (selectedDay !== "All" && rowDay !== parseInt(selectedDay, 10)) return;
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
                     
                     rowDateObj = new Date(cDateParts[2], cDateParts[1] - 1, cDateParts[0]);
                 }
@@ -602,7 +648,7 @@
                     ? `<span class="badge badge-active">ACTIVE</span>` 
                     : `<span class="badge badge-inactive">NOT STARTED</span>`;
 
-                // 🌟 WhatsApp Button Logic 🌟
+                // 🌟 అప్డేట్ చేసిన కస్టమ్ WhatsApp మెసేజ్ (Bold text తో) 🌟
                 let actionBtn = "-";
                 if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
                     let diffTime = Math.abs(todayDate - rowDateObj);
@@ -615,23 +661,22 @@
                     
                     if (daysLeft >= 0) {
                         if (currentTxns >= 30) {
-                            waMessage = `Dear VLE ${row.vlename},\n\nCongratulations! మీ IRCTC ఐడీ (${row.irctc}) తీసుకుని ${daysElapsed} రోజులు పూర్తయింది. మీరు 90 రోజులలోపు 30 టికెట్ల టార్గెట్ పూర్తి చేసి ₹2000 రిఫండ్ కి అర్హత సాధించారు!\n\n- CSC AP Travel Team`;
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhar | Travel SPOC*`;
                         } else {
-                            waMessage = `Dear VLE ${row.vlename},\n\nమీరు IRCTC ఐడీ (${row.irctc}) తీసుకుని ${daysElapsed} రోజులు అవుతోంది. ఇప్పటివరకు మీరు కేవలం ${currentTxns} టికెట్లు మాత్రమే బుక్ చేశారు.\n\nమీరు మీ ఐడీ క్రియేట్ అయిన 90 రోజులలోపు (అంటే ఇంకో ${daysLeft} రోజుల్లో) మిగిలిన ${ticketsNeeded} టికెట్లు బుక్ చేస్తే, మీకు ₹2000 రిఫండ్ / క్యాష్ బ్యాక్ వస్తుంది!\n\nదయచేసి మీ టార్గెట్ కంప్లీట్ చేసుకోండి.\n\n- CSC AP Travel Team`;
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు.\n\n🎯 మీ లక్ష్యం: *30 టికెట్లు*\nమీకు ఇంకా *${ticketsNeeded}* టికెట్లు బుక్ చేయాల్సి ఉంది.\n⏳ మిగిలిన సమయం కేవలం *${daysLeft} రోజులు* మాత్రమే!\n\nమీ IRCTC ID క్రియేట్ అయిన 90 రోజులలోపు మిగిలిన *${ticketsNeeded}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేసుకుంటే,\n🎁 మీకు *₹2,000 CASHBACK / REFUND* పొందే అవకాశం ఉంది!\n\nకావున, ఆలస్యం చేయకుండా వెంటనే టికెట్ బుకింగ్స్ ప్రారంభించి మీ టార్గెట్‌ను పూర్తి చేసుకోండి.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         }
                     } else {
                         if (currentTxns >= 30) {
-                            waMessage = `Dear VLE ${row.vlename},\n\nCongratulations! మీరు 90 రోజులలోపు 30 టికెట్ల టార్గెట్ పూర్తి చేసి ₹2000 రిఫండ్ కి అర్హత సాధించారు!\n\n- CSC AP Travel Team`;
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి.\nమీరు *${currentTxns}* టికెట్లు బుక్ చేసి టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         } else {
-                            waMessage = `Dear VLE ${row.vlename},\n\nమీరు IRCTC ఐడీ (${row.irctc}) తీసుకుని 90 రోజులు పూర్తయ్యింది (Offer Expired). ఈ టైంలో మీరు కేవలం ${currentTxns} టికెట్లు మాత్రమే బుక్ చేశారు.\n\n- CSC AP Travel Team`;
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి (Offer Expired).\nమీరు కేవలం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు. టార్గెట్ పూర్తి కాలేదు.\n\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
                         }
                     }
 
                     let cleanMobile = row.mobile ? row.mobile.toString().replace(/[^0-9]/g, '') : '';
                     if (cleanMobile.length >= 10) {
                         if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
-                        // ఇక్కడ whatsapp:// డీప్ లింక్ వాడాము
-                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`)" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Alert</button>`;
+                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`)" class="wa-btn"><i class="fa-brands fa-whatsapp" style="font-size:13px;"></i> Alert</button>`;
                     }
                 }
 
@@ -661,7 +706,7 @@
             document.getElementById("val-active").innerText = counts.active;
             document.getElementById("val-notstarted").innerText = counts.notstarted;
 
-            if(selectedMonth !== "All" || selectedDay !== "All") {
+            if(!isAllMonths) {
                 renderSummaryTable();
             }
         }
@@ -688,8 +733,12 @@
         function resetFilters() {
             document.getElementById("districtType").value = "old";
             document.getElementById("districtName").value = "All";
-            document.getElementById("filterMonth").value = "All";
-            document.getElementById("filterDay").value = "All";
+            
+            // కస్టమ్ డ్రాప్‌డౌన్ రీసెట్
+            document.querySelector('input[value="All"]').checked = true;
+            document.querySelectorAll('.month-cb').forEach(c => c.checked = false);
+            document.getElementById("monthBtnText").innerText = "All Months";
+
             document.getElementById("detailsPanelTitle").innerText = "📋 VLE Detailed List (All Districts)";
             setKpiFilter('all');
             updateDistrictsDropdown(); 
