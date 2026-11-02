@@ -20,6 +20,7 @@
         .filter-group { display: flex; gap: 12px; align-items: center; }
         .filter-group select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; outline: none; background-color: #f9f9f9; font-weight: 600; cursor: pointer; }
         
+        /* 🌟 Custom Multi-Select Dropdown 🌟 */
         .multi-select { position: relative; display: inline-block; width: 150px; }
         .multi-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
         .multi-content { display: none; position: absolute; background-color: #ffffff; min-width: 100%; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 100; border-radius: 4px; max-height: 250px; overflow-y: auto; border: 1px solid #ccc; top: 100%; left: 0; margin-top: 2px;}
@@ -100,6 +101,7 @@
         .badge-active { color: #15803d; border-color: #15803d; background-color: #f0fdf4;}
         .badge-inactive { color: #b91c1c; border-color: #b91c1c; background-color: #fef2f2;}
         
+        /* 🌟 WhatsApp Button Dynamic Colors 🌟 */
         .wa-btn { display: inline-flex; align-items: center; gap: 5px; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; transition: 0.2s; border: 1px solid; cursor: pointer; white-space: nowrap;}
         
         .wa-alert { background: #25D366; border-color: #1da851; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
@@ -125,10 +127,11 @@
         .capture-compact .table-wrap { height: auto !important; overflow: visible !important; }
         .capture-compact .hide-on-capture { display: none !important; }
 
+        /* 🌟 Black Screen Fix: Opacity తీసేసి వెనకవైపు దాచాం 🌟 */
         #summaryExportArea {
             position: fixed; top: 0; left: 0; width: 850px; 
             z-index: -9999; pointer-events: none;
-            background: #ffffff;
+            background: #ffffff; /* పర్ఫెక్ట్ వైట్ బ్యాక్ గ్రౌండ్ */
         }
 
     @media (max-width: 768px) {
@@ -147,9 +150,21 @@
         th, td { white-space: nowrap; font-size: 11px; padding: 10px 8px; }
     }
     </style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
 </head>
 <body>
+
+    <!-- 🌟 Hidden div for generating beautiful summary image 🌟 -->
     <div id="summaryExportArea"></div>
+
     <div class="top-controls">
         <div class="page-heading">🆕 IRCTC New Registrations (FY 26-27)</div>
         <div class="filter-group">
@@ -188,7 +203,6 @@
             <button class="btn-action" onclick="refreshData()" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Refresh Data</button>
             
             <button class="btn-action" id="summaryImgBtn" onclick="generateSummaryImage()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📸 Download Summary</button>
-            <button class="btn-action" onclick="shareSummaryToWhatsApp()" style="color: #ea580c; border-color: #fdba74; background-color: #fff7ed;"><i class="fa-brands fa-whatsapp"></i> Text Summary</button>
             
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Main Table</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -556,3 +570,479 @@
                 }
 
                 let cDateParts = row.creation_date.split('-');
+                if (cDateParts.length === 3) {
+                    let rowMonth = cDateParts[1];
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
+                }
+
+                if (!summaryMap[dist]) {
+                    summaryMap[dist] = { total: 0, active: 0, notstarted: 0 };
+                }
+
+                summaryMap[dist].total++;
+                gt.total++;
+
+                if (row.isActive) {
+                    summaryMap[dist].active++;
+                    gt.active++;
+                } else {
+                    summaryMap[dist].notstarted++;
+                    gt.notstarted++;
+                }
+            });
+
+            let sortedDistricts = Object.keys(summaryMap).sort();
+            let tbody = "";
+
+            sortedDistricts.forEach(dist => {
+                let d = summaryMap[dist];
+                let rowClass = dist === selectedDist ? "col-district active-row" : "col-district";
+                
+                tbody += `<tr class="${rowClass}" onclick="filterByDistrict('${dist}')" title="Click to view detailed list">
+                    <td style="text-align:left; padding-left:15px; font-weight:700;">${dist}</td>
+                    <td style="font-weight: 800; color: #1e3a8a;">${d.total}</td>
+                    <td style="font-weight: 700; color: #10b981;">${d.active}</td>
+                    <td style="font-weight: 700; color: #ef4444;">${d.notstarted}</td>
+                </tr>`;
+            });
+
+            document.getElementById("summaryBody").innerHTML = tbody || "<tr><td colspan='4' style='padding:20px; color:red; font-weight:bold; text-align:center;'>No Data Matches Filter</td></tr>";
+            document.getElementById("summaryFooter").innerHTML = `<tr class="total-row">
+                <td>GRAND TOTAL</td>
+                <td style="color: #1e3a8a;">${gt.total}</td>
+                <td style="color: #10b981;">${gt.active}</td>
+                <td style="color: #ef4444;">${gt.notstarted}</td>
+            </tr>`;
+        }
+
+        // 🌟 ఆటోమేటిక్ గా డిజైన్ అయ్యి ఇమేజ్ లాగా డౌన్‌లోడ్ అయ్యే ఫంక్షన్ (వైట్ బ్యాక్‌గ్రౌండ్, డార్క్ హెడ్డింగ్స్ & కొత్త కాలమ్స్) 🌟
+        function generateSummaryImage() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUserName = localStorage.getItem("userName") || "";
+
+            let selectedMonths = getSelectedMonths();
+            let isAllMonths = document.querySelector('input[value="All"]').checked || selectedMonths.length === 0;
+
+            const augustFirst2026 = new Date(2026, 7, 1); 
+            const todayDate = new Date();
+
+            let distStats = {};
+            let pendingVLEs = [];
+            let totalEligible = 0, achieved = 0, pending = 0, expired = 0;
+
+            globalNewVles.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown' || dist === '-') return;
+
+                if (userDesignation === "District Manager") {
+                    if (!isRowAllowedForDM(row, distType, loggedInUserName)) return;
+                }
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+
+                let cDateParts = row.creation_date.split('-');
+                let rowDateObj = null;
+                if (cDateParts.length === 3) {
+                    let rowMonth = cDateParts[1];
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
+                    rowDateObj = new Date(cDateParts[2], cDateParts[1] - 1, cDateParts[0]);
+                }
+
+                if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
+                    totalEligible++;
+                    if (!distStats[dist]) distStats[dist] = { achieved: 0, pending: 0, expired: 0 };
+                    
+                    let diffTime = Math.abs(todayDate - rowDateObj);
+                    let daysElapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    let daysLeft = 90 - daysElapsed;
+                    let currentTxns = parseInt(row.txns_26_27) || 0;
+
+                    let prefMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
+                    if (prefMobile.length < 10 && row.mobile) {
+                        prefMobile = row.mobile.toString().replace(/[^0-9]/g, '');
+                    }
+
+                    if (currentTxns >= 30) {
+                        achieved++;
+                        distStats[dist].achieved++;
+                    } else if (daysLeft >= 0) {
+                        pending++;
+                        distStats[dist].pending++;
+                        // 🌟 బుక్ చేసినవి, ఇంకా ఎన్ని చేయాలో లెక్కించి పాస్ చేయడం 🌟
+                        let needed = 30 - currentTxns;
+                        pendingVLEs.push({ dist: dist, name: row.vlename, mobile: prefMobile, booked: currentTxns, needed: needed, daysLeft: daysLeft });
+                    } else {
+                        expired++;
+                        distStats[dist].expired++;
+                    }
+                }
+            });
+
+            if (totalEligible === 0) {
+                alert("ఎంచుకున్న ఫిల్టర్స్ లో ఆఫర్ కి అర్హత ఉన్న VLE లు ఎవరూ లేరు!");
+                return;
+            }
+
+            let reportDist = selectedDist === "All" ? "Andhra Pradesh (All Districts)" : selectedDist;
+            let d = new Date();
+            let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+
+            let exportDiv = document.getElementById("summaryExportArea");
+            
+            let html = `
+            <div style="background: #ffffff; padding: 30px; border: 2px solid #e2e8f0; border-radius: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px;">
+                    <h1 style="color: #1e3a8a; font-size: 26px; margin-bottom: 5px;">📊 IRCTC ₹2000 REFUND OFFER STATUS</h1>
+                    <p style="color: #475569; font-size: 14px; margin: 0; font-weight: bold;">Date: ${dateStr} &nbsp;|&nbsp; Region: ${reportDist}</p>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <div style="flex:1; background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #3b82f6;">
+                        <div style="font-size:12px; color:#64748b; font-weight:bold;">ELIGIBLE VLEs</div>
+                        <div style="font-size:24px; color:#1e293b; font-weight:900;">${totalEligible}</div>
+                    </div>
+                    <div style="flex:1; background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #10b981;">
+                        <div style="font-size:12px; color:#15803d; font-weight:bold;">ACHIEVED</div>
+                        <div style="font-size:24px; color:#15803d; font-weight:900;">${achieved}</div>
+                    </div>
+                    <div style="flex:1; background: #fff7ed; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #f59e0b;">
+                        <div style="font-size:12px; color:#b45309; font-weight:bold;">PENDING</div>
+                        <div style="font-size:24px; color:#b45309; font-weight:900;">${pending}</div>
+                    </div>
+                    <div style="flex:1; background: #fef2f2; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #ef4444;">
+                        <div style="font-size:12px; color:#b91c1c; font-weight:bold;">EXPIRED</div>
+                        <div style="font-size:24px; color:#b91c1c; font-weight:900;">${expired}</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #1e3a8a; padding-left: 10px;">🏆 DISTRICT-WISE SUMMARY</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #1e293b; color: white;">
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1; color: white;">DISTRICT</th>
+                            <th style="padding: 10px; text-align: center; border: 1px solid #cbd5e1; background: #047857; color: white;">ACHIEVED</th>
+                            <th style="padding: 10px; text-align: center; border: 1px solid #cbd5e1; background: #d97706; color: white;">PENDING</th>
+                            <th style="padding: 10px; text-align: center; border: 1px solid #cbd5e1; background: #b91c1c; color: white;">EXPIRED</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            let sortedDists = Object.keys(distStats).sort();
+            sortedDists.forEach(d => {
+                let st = distStats[d];
+                html += `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; background:#f8fafc;">${d}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #059669;">${st.achieved}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #d97706;">${st.pending}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #dc2626;">${st.expired}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            if (pendingVLEs.length > 0) {
+                html += `
+                <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #f59e0b; padding-left: 10px;">⏳ ACTION REQUIRED (PENDING VLEs)</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: #f1f5f9;">
+                            <!-- 🌟 హెడ్డింగ్ కలర్ కరెక్షన్ (#334155) మరియు కొత్త కాలమ్స్ 🌟 -->
+                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">DISTRICT</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">VLE NAME</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; color: #334155;">MOBILE NO</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">BOOKED</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">NEEDED</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; color: #334155;">DAYS LEFT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                pendingVLEs.forEach(v => {
+                    html += `
+                    <tr>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: 600;">${v.dist}</td>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1;">${v.name}</td>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: bold; color: #2563eb;">${v.mobile}</td>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: bold; color: #059669; text-align: center;">${v.booked}</td>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: bold; color: #dc2626; text-align: center; background:#fef2f2;">${v.needed}</td>
+                        <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: bold; color: #ea580c; text-align: center; background:#fff7ed;">${v.daysLeft} Days</td>
+                    </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+            }
+
+            html += `
+                <div style="text-align: right; margin-top: 20px; font-weight: bold; color: #475569; font-size: 14px;">
+                    - CSC AP Travel Team
+                </div>
+            </div>
+            `;
+
+            exportDiv.innerHTML = html;
+
+            const btn = document.getElementById("summaryImgBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            html2canvas(exportDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                let typeSelect = document.getElementById("districtType");
+                let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                
+                link.download = `IRCTC_Offer_Summary_${typeText}_${dateStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                btn.innerHTML = "✅ Downloaded";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                
+                exportDiv.innerHTML = "";
+            }).catch(err => {
+                console.error("Error capturing image:", err);
+                btn.innerHTML = "❌ Failed";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+            });
+        }
+
+        function openWhatsApp(mobile, message, btnElement) {
+            let waLink = `whatsapp://send?phone=${mobile}&text=${encodeURIComponent(message)}`;
+            window.location.href = waLink;
+            
+            if (btnElement) {
+                btnElement.innerHTML = '<i class="fa-solid fa-check-double"></i> Sent';
+                btnElement.style.backgroundColor = '#64748b'; 
+                btnElement.style.borderColor = '#475569';
+                btnElement.style.boxShadow = 'none';
+                btnElement.style.color = '#ffffff';
+            }
+        }
+
+        function renderTable() {
+            let distType = document.getElementById('districtType').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let selectedDist = document.getElementById('districtName').value;
+            let userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            let loggedInUserName = localStorage.getItem("userName") || "";
+
+            let selectedMonths = getSelectedMonths();
+            let isAllMonths = document.querySelector('input[value="All"]').checked || selectedMonths.length === 0;
+
+            const augustFirst2026 = new Date(2026, 7, 1); 
+            const todayDate = new Date();
+
+            let tbodyHtml = "";
+            let counts = { total: 0, active: 0, notstarted: 0 };
+
+            globalNewVles.forEach(row => {
+                let dist = row[distKey];
+                if (!dist || dist === 'Unknown' || dist === '-') return;
+
+                if (userDesignation === "District Manager") {
+                    if (!isRowAllowedForDM(row, distType, loggedInUserName)) return;
+                }
+                
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+
+                let cDateParts = row.creation_date.split('-');
+                let rowDateObj = null;
+                if (cDateParts.length === 3) {
+                    let rowMonth = cDateParts[1];
+                    if (!isAllMonths && !selectedMonths.includes(rowMonth)) return;
+                    
+                    rowDateObj = new Date(cDateParts[2], cDateParts[1] - 1, cDateParts[0]);
+                }
+                
+                counts.total++;
+                if(row.isActive) counts.active++;
+                else counts.notstarted++;
+
+                if(currentKpiFilter === 'active' && !row.isActive) return;
+                if(currentKpiFilter === 'notstarted' && row.isActive) return;
+
+                let statusBadge = row.isActive 
+                    ? `<span class="badge badge-active">ACTIVE</span>` 
+                    : `<span class="badge badge-inactive">NOT STARTED</span>`;
+
+                let actionBtn = "-";
+                if (rowDateObj && rowDateObj >= augustFirst2026 && row.irctc !== "-") {
+                    let diffTime = Math.abs(todayDate - rowDateObj);
+                    let daysElapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    let daysLeft = 90 - daysElapsed;
+                    let currentTxns = parseInt(row.txns_26_27) || 0;
+                    let ticketsNeeded = 30 - currentTxns;
+                    
+                    let waMessage = "";
+                    let btnClass = "wa-btn wa-alert";
+                    let btnText = "Alert";
+                    let btnIcon = "fa-whatsapp";
+                    
+                    if (daysLeft >= 0) {
+                        if (currentTxns >= 30) {
+                            btnClass = "wa-btn wa-achieved";
+                            btnText = "Achieved";
+                            btnIcon = "fa-trophy";
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhar | Travel SPOC*`;
+                        } else {
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి ఇప్పటికే *${daysElapsed}* రోజులు పూర్తయ్యాయి.\nఇప్పటివరకు మీరు మొత్తం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు.\n\n🎯 మీ లక్ష్యం: *30 టికెట్లు*\nమీకు ఇంకా *${ticketsNeeded}* టికెట్లు బుక్ చేయాల్సి ఉంది.\n⏳ మిగిలిన సమయం కేవలం *${daysLeft} రోజులు* మాత్రమే!\n\nమీ IRCTC ID క్రియేట్ అయిన 90 రోజులలోపు మిగిలిన *${ticketsNeeded}* టికెట్లు బుక్ చేసి మీ టార్గెట్ పూర్తి చేసుకుంటే,\n🎁 మీకు *₹2,000 CASHBACK / REFUND* పొందే అవకాశం ఉంది!\n\nకావున, ఆలస్యం చేయకుండా వెంటనే టికెట్ బుకింగ్స్ ప్రారంభించి మీ టార్గెట్‌ను పూర్తి చేసుకోండి.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
+                        }
+                    } else {
+                        if (currentTxns >= 30) {
+                            btnClass = "wa-btn wa-achieved";
+                            btnText = "Achieved";
+                            btnIcon = "fa-trophy";
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి.\nమీరు *${currentTxns}* టికెట్లు బుక్ చేసి టార్గెట్ పూర్తి చేశారు!\n\n🎁 మీరు *₹2,000 CASHBACK / REFUND* కి అర్హత సాధించారు.\n\nAll the Best!\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
+                        } else {
+                            btnClass = "wa-btn wa-expired";
+                            btnText = "Expired";
+                            btnIcon = "fa-clock-rotate-left";
+                            waMessage = `Dear VLE *${row.vlename}* Garu,\n\nమీ IRCTC ID *${row.irctc}* క్రియేట్ అయి 90 రోజులు పూర్తయ్యాయి (Offer Expired).\nమీరు కేవలం *${currentTxns}* టికెట్లు మాత్రమే బుక్ చేశారు. టార్గెట్ పూర్తి కాలేదు.\n\n*CSC AP Travel Team*\n*Chandra Sekhara Babu K | Travel SPOC*`;
+                        }
+                    }
+
+                    let cleanMobile = row.vlemob ? row.vlemob.toString().replace(/[^0-9]/g, '') : '';
+                    if (cleanMobile.length < 10 && row.mobile) {
+                        cleanMobile = row.mobile.toString().replace(/[^0-9]/g, '');
+                    }
+
+                    if (cleanMobile.length >= 10) {
+                        if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
+                        actionBtn = `<button onclick="openWhatsApp('${cleanMobile}', \`${waMessage}\`, this)" class="${btnClass}"><i class="fa-brands ${btnIcon}" style="font-size:12px;"></i> ${btnText}</button>`;
+                    }
+                }
+
+                tbodyHtml += `<tr>
+                    <td style="font-weight:700;">${dist}</td>
+                    <td style="text-align:left;">${row.vlename}</td>
+                    <td style="color: #2563eb; font-weight: 700;">${row.cscid}</td>
+                    <td style="color: #8b5cf6; font-weight: 700;">${row.irctc}</td>
+                    <td>${row.mobile}</td>
+                    <td>${row.vlemob}</td>
+                    <td style="color: #0ea5e9; font-weight: 700;">${row.creation_date}</td>
+                    <td style="font-size: 14px; font-weight: 800; color: #10b981;">${row.txns_26_27}</td>
+                    <td>${statusBadge}</td>
+                    <td class="hide-on-capture">${actionBtn}</td>
+                </tr>`;
+            });
+
+            if(counts.total === 0) {
+                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No Records Found for this Filter!</td></tr>`;
+            } else if (tbodyHtml === "") {
+                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No Records match your filter!</td></tr>`;
+            }
+
+            document.getElementById("tableBody").innerHTML = tbodyHtml;
+            
+            document.getElementById("val-total").innerText = counts.total;
+            document.getElementById("val-active").innerText = counts.active;
+            document.getElementById("val-notstarted").innerText = counts.notstarted;
+
+            if(!isAllMonths) {
+                renderSummaryTable();
+            }
+        }
+
+        function filterByDistrict(distName) {
+            document.getElementById("districtName").value = distName;
+            document.getElementById("detailsPanelTitle").innerText = distName === "All" ? "📋 VLE Detailed List (All Districts)" : `📋 VLE Detailed List (${distName})`;
+            
+            renderSummaryTable(); 
+            renderTable(); 
+        }
+
+        function setKpiFilter(status) {
+            currentKpiFilter = status;
+            document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
+            
+            if(status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
+            else if(status === 'active') document.getElementById('kpi-active').classList.add('selected-filter');
+            else if(status === 'notstarted') document.getElementById('kpi-inactive').classList.add('selected-filter');
+            
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById("districtType").value = "old";
+            document.getElementById("districtName").value = "All";
+            
+            document.querySelector('input[value="All"]').checked = true;
+            document.querySelectorAll('.month-cb').forEach(c => c.checked = false);
+            document.getElementById("monthBtnText").innerText = "All Months";
+
+            document.getElementById("detailsPanelTitle").innerText = "📋 VLE Detailed List (All Districts)";
+            setKpiFilter('all');
+            updateDistrictsDropdown(); 
+        }
+
+        function toggleFullScreen() {
+            let btn = document.getElementById("fullscreenBtn");
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = "✖ Exit Full Screen";
+                    btn.style.backgroundColor = "#ea580c"; 
+                    btn.style.color = "white"; 
+                    btn.style.borderColor = "#ea580c";
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            } catch (e) {
+                console.log("Fullscreen not supported");
+            }
+        }
+
+        document.addEventListener('fullscreenchange', (event) => {
+            let btn = document.getElementById("fullscreenBtn");
+            if (!document.fullscreenElement) {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f0f0f0"; 
+                btn.style.color = "#333"; 
+                btn.style.borderColor = "#ccc";
+            }
+        });
+
+        function downloadImage() {
+            const btn = document.getElementById("downloadBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            const captureArea = document.getElementById("captureArea");
+            captureArea.classList.add("capture-compact");
+            
+            html2canvas(captureArea, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                let d = new Date();
+                let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                
+                let typeSelect = document.getElementById("districtType");
+                let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                
+                link.download = `IRCTC_New_Registrations_${typeText}_${dateStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                captureArea.classList.remove("capture-compact");
+                btn.innerHTML = "✅ Downloaded";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+            }).catch(err => {
+                console.error("Error capturing image:", err);
+                captureArea.classList.remove("capture-compact");
+                btn.innerHTML = "❌ Failed";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
