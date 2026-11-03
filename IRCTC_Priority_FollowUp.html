@@ -108,86 +108,22 @@
 
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background-color: #d9534f; color: white; padding: 12px 25px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
+    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
     @media (max-width: 768px) {
-        body { 
-            height: auto; 
-            overflow-y: auto; 
-            padding: 10px; 
-        }
-
-        /* 🌟 Top Controls (హెడర్ & ఫిల్టర్స్) 🌟 */
-        .target-control-panel {
-            flex-direction: column;
-            gap: 12px;
-            padding: 15px;
-            align-items: stretch;
-            position: relative; /* మొబైల్ లో స్టిక్కీ తీసేసి ప్లేస్ ఆదా చేశాం */
-        }
-        .page-heading { 
-            font-size: 16px; 
-            justify-content: center; 
-            text-align: center;
-        }
-        .filter-group { 
-            width: 100%; 
-            flex-direction: column; /* అన్ని ఫిల్టర్స్ ఒకదాని కింద ఒకటి */
-            gap: 10px;
-        }
-        .filter-group select, .filter-group input, .btn-action {
-            width: 100%;
-            text-align: center;
-            justify-content: center;
-            padding: 12px 10px;
-            font-size: 13px;
-            min-width: unset;
-        }
-        #fullscreenBtn { display: none; } /* మొబైల్ కి ఫుల్ స్క్రీన్ అవసరం లేదు */
-
-        /* 🌟 Report Header 🌟 */
-        .report-header h1 { 
-            font-size: 16px; 
-            white-space: normal; 
-            line-height: 1.4; 
-        }
-        
-        /* 🌟 3 KPI Boxes (మొబైల్ లో ఒకదాని కింద ఒకటి) 🌟 */
-        .kpi-grid {
-            flex-direction: column;
-            gap: 10px;
-        }
-        .kpi-card {
-            width: 100%;
-            min-width: unset;
-            padding: 15px 20px;
-        }
-
-        /* 🌟 Table Horizontal Scroll 🌟 */
-        .table-container { 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch; 
-        }
-        th, td { 
-            padding: 10px 8px; 
-            font-size: 11px; 
-            white-space: nowrap; 
-        }
-        th { top: 0 !important; } /* మొబైల్ లో టాప్ స్టిక్కీ గ్యాప్ అవసరం లేదు */
-        
-        /* జిల్లా పేరు స్టిక్కీ అలైన్మెంట్ ఫిక్స్ */
-        .th-dist, .col-district {
-            left: 0 !important; 
-            min-width: 100px;
-        }
-        
-        /* యాక్షన్ బటన్స్ మొబైల్ సైజ్ */
-        .btn-whatsapp, .btn-done {
-            padding: 8px 10px;
-            font-size: 11px;
-            width: 100%;
-            justify-content: center;
-        }
+        body { height: auto; overflow-y: auto; padding: 10px; }
+        .target-control-panel { flex-direction: column; gap: 12px; padding: 15px; align-items: stretch; position: relative; }
+        .page-heading { font-size: 16px; justify-content: center; text-align: center; }
+        .filter-group { width: 100%; flex-direction: column; gap: 10px; }
+        .filter-group select, .filter-group input, .btn-action { width: 100%; text-align: center; justify-content: center; padding: 12px 10px; font-size: 13px; min-width: unset; }
+        #fullscreenBtn { display: none; } 
+        .report-header h1 { font-size: 16px; white-space: normal; line-height: 1.4; }
+        .kpi-grid { flex-direction: column; gap: 10px; }
+        .kpi-card { width: 100%; min-width: unset; padding: 15px 20px; }
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        th, td { padding: 10px 8px; font-size: 11px; white-space: nowrap; }
+        th { top: 0 !important; } 
+        .th-dist, .col-district { left: 0 !important; min-width: 100px; }
+        .btn-whatsapp, .btn-done { padding: 8px 10px; font-size: 11px; width: 100%; justify-content: center; }
     }
     </style>
 
@@ -223,10 +159,15 @@
                 <option value="basic">Basic Priority (1 to 9)</option>
             </select>
 
-            <!-- 🌟 SEARCH BOX 🌟 -->
             <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Search VLE Name, CSC ID, Mobile...">
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
+            
+            <!-- 🌟 District Summary బటన్ 🌟 -->
+            <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📊 District Summary</button>
+            <!-- 🌟 Excel Download బటన్ 🌟 -->
+            <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()" style="color: #1d4ed8; border-color: #93c5fd; background-color: #eff6ff;">📗 Download Excel</button>
+            
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
@@ -237,9 +178,9 @@
         <div class="report-header">
             <h1>CSC AP – IRCTC Priority Follow Up Report (FY 26-27)</h1>
             <p id="reportDate">Report Generated on: </p>
+            <p style="color: #dc2626; font-size: 13px; margin-top: 5px; font-weight: 800;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</p>
         </div>
 
-        <!-- 🌟 KPI CARDS 🌟 -->
         <div class="kpi-grid">
             <div class="kpi-card kpi-total" id="kpi-all" onclick="setKpiFilter('all')">
                 <span class="kpi-title">TOTAL TARGET VLEs</span>
@@ -249,7 +190,6 @@
                 <span class="kpi-title">ACTIVATED</span>
                 <span class="kpi-value" id="val-active">0</span>
             </div>
-            <!-- Default selected filter is PENDING as requested -->
             <div class="kpi-card kpi-inactive selected-filter" id="kpi-inactive" onclick="setKpiFilter('pending')">
                 <span class="kpi-title">STILL PENDING</span>
                 <span class="kpi-value" id="val-pending">0</span>
@@ -288,7 +228,6 @@
         let oldDistrictsSet = new Set();
         let newDistrictsSet = new Set();
 
-        // 🌟 "పెండింగ్" ఉన్నవారి డేటానే రిపోర్ట్ లో డిఫాల్ట్ గా చూపించడానికి 🌟
         let currentKpiFilter = 'pending'; 
 
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -411,13 +350,11 @@
             let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
-            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks')); // HO_Remarks
+            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));
 
-            // 🌟 25-26 Total Column 🌟
             let idx25_total = cleanHeaders.findIndex(h => (h.includes('25') && h.includes('txn') && !h.includes('target')));
             if(idx25_total === -1) idx25_total = cleanHeaders.findIndex(h => h.includes('202526'));
 
-            // 🌟 మీరు పంపిన ఇమేజ్ లోని (Apr-26 to Mar-27) కాలమ్స్ ని మాత్రమే వెతకడానికి 🌟
             const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
             let indices2627 = months2627.map(m => cleanHeaders.findIndex(h => h === m)).filter(i => i > -1);
 
@@ -430,19 +367,17 @@
                 let cscId = idxcscid > -1 ? row[idxcscid] : '';
                 if(!cscId || cscId === '-') continue;
 
-                // 🛑 రూల్ 2: HO వాళ్ళు బ్లాక్ చేసినా, సస్పెండ్ చేసినా వాళ్ళని లిస్ట్ లోంచి పీకేయాలి 🛑
                 let rawStatus = idxstatus > -1 ? (row[idxstatus] || '').toString().toUpperCase().trim() : '';
                 let isBlocked = rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK");
                 
                 if (isBlocked) {
-                    continue; // ⬅️ బ్లాక్ అయిన వాడు ఇక్కడే ఆగిపోతాడు. వాడి డేటా అసలు లిస్ట్ లోకి రాదు!
+                    continue; 
                 }
 
                 let fy26_txns = idx25_total > -1 ? (parseInt(row[idx25_total]) || 0) : 0;
                 
-                if(fy26_txns > 0) { // FY 25-26 లో యాక్టివ్ గా ఉన్నవారు మాత్రమే
+                if(fy26_txns > 0) { 
                     
-                    // 🌟 రూల్ 1: FY 26-27 యాక్టివేషన్ (Apr-26 to Mar-27 కాలమ్స్ ని కూడటం) 🌟
                     let fy27Total = 0;
                     indices2627.forEach(colIdx => {
                         fy27Total += (parseInt(row[colIdx]) || 0);
@@ -492,7 +427,7 @@
                         dmname: dmNameStr,
                         dmmob: finalDmMobile, 
                         txns_25_26: fy26_txns,
-                        txns_26_27: fy27Total, // Apr-26 to Mar-27 Total
+                        txns_26_27: fy27Total, 
                         allowedForOld: allowedForOld,
                         allowedForNew: allowedForNew
                     });
@@ -517,7 +452,6 @@
             }
         }
 
-        // 🌟 KPI FILTER FUNCTION 🌟
         function setKpiFilter(status) {
             currentKpiFilter = status;
             document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
@@ -535,7 +469,6 @@
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
             let priorityLevel = document.getElementById('priorityLevel').value;
             
-            // Get Search Input Value
             let searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
 
             let tbodyHtml = "";
@@ -553,12 +486,8 @@
                 if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
                 if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
 
-                // 🌟 ACTIVE OR PENDING CHECK 🌟
-                // ఈ రిపోర్ట్ లో ఉన్న వారందరూ కచ్చితంగా నాన్-బ్లాక్డ్ (Non-Blocked) మాత్రమే.
-                // కాబట్టి, 26-27 లో కనీసం 1 టికెట్ ఉన్నా సరే వాడు ACTIVATED.
                 let isActivated = (row.txns_26_27 > 0);
 
-                // 1. Update KPI Card Values dynamically
                 counts.total++;
                 if(isActivated) {
                     counts.active++;
@@ -566,14 +495,12 @@
                     counts.pending++;
                 }
 
-                // 2. FILTER TABLE DATA BASED ON KPI CLICK
                 if (currentKpiFilter === 'pending' && isActivated) return;
                 if (currentKpiFilter === 'active' && !isActivated) return;
 
-                // 3. APPLY SEARCH FILTER
                 if (searchValue !== "") {
                     let searchableText = `${row.vlename} ${row.cscid} ${row.mobile} ${row.vlemob} ${dist}`.toLowerCase();
-                    if (!searchableText.includes(searchValue)) return; // Skip if search doesn't match
+                    if (!searchableText.includes(searchValue)) return; 
                 }
 
                 let fy26Color = isActivated ? '#10b981' : '#ef4444'; 
@@ -586,7 +513,7 @@
 
                 let actionBtn = isActivated 
                     ? `<span class="btn-done">✅ Activated</span>` 
-                    : `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${row.cscid}')">💬 WhatsApp</button>`;
+                    : `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${row.cscid}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>`;
 
                 tbodyHtml += `<tr>
                     <td class="col-district" ondblclick="filterByDistrict('${dist}')" style="font-weight:700;">${dist}</td>
@@ -632,7 +559,8 @@
             let dist = distType === "old" ? rowData.district_old : rowData.district_new;
             let vleName = rowData.vlename || '';
             let irctcId = rowData.irctcid || '';
-            let mobileNumber = rowData.vlemob !== '-' ? rowData.vlemob : rowData.mobile; 
+            
+            let mobileNumber = (rowData.vlemob && rowData.vlemob !== '-' && rowData.vlemob !== '') ? rowData.vlemob : rowData.mobile; 
             
             let dmName = rowData.dmname && rowData.dmname !== '-' ? rowData.dmname : 'District Manager';
             let dmMobile = rowData.dmmob && rowData.dmmob !== '-' ? rowData.dmmob : '';
@@ -658,6 +586,7 @@
             let cleanMobile = mobileNumber ? mobileNumber.toString().replace(/\D/g, '') : '';
 
             if(cleanMobile.length >= 10) {
+                if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
                 let message = `Dear *${vleName}* గారు,\n\n` +
                               `మీ IRCTC ID: *${irctcId}*\n` +
                               `మీ జిల్లా: *${dist}*\n\n` +
@@ -669,7 +598,7 @@
                               `*${loggedInUser}*\n` +
                               `${loggedInRole}\n` +
                               `📞 Mobile: ${loggedInMobile}`;
-                let whatsappUrl = `https://wa.me/91${cleanMobile}?text=${encodeURIComponent(message)}`;
+                let whatsappUrl = `whatsapp://send?phone=${cleanMobile}&text=${encodeURIComponent(message)}`;
                 window.open(whatsappUrl, '_blank');
             } else {
                 showToast("❌ VLE Mobile Number is missing or invalid!");
@@ -690,7 +619,7 @@
             document.getElementById("districtName").value = "All";
             document.getElementById("priorityLevel").value = "all";
             document.getElementById("searchInput").value = ""; 
-            setKpiFilter('pending'); // Reset చేస్తే మళ్ళీ పెండింగ్ (Pending) కి వెళుతుంది
+            setKpiFilter('pending'); 
             updateDistrictsDropdown();
         }
 
@@ -715,7 +644,257 @@
             }
         });
 
-        /* 🌟 Image Download 🌟 */
+        function downloadExcel() {
+            let exportData = [];
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let priorityLevel = document.getElementById('priorityLevel').value;
+            let searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            globalFollowUpData.forEach((row) => {
+                if (isDM && distType === 'old' && !row.allowedForOld) return;
+                if (isDM && distType === 'new' && !row.allowedForNew) return;
+                
+                let dist = row[distKey];
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                
+                if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
+                if (priorityLevel === 'high' && (row.txns_25_26 < 50 || row.txns_25_26 >= 100)) return;
+                if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
+                if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
+
+                let isActivated = (row.txns_26_27 > 0);
+                if (currentKpiFilter === 'pending' && isActivated) return;
+                if (currentKpiFilter === 'active' && !isActivated) return;
+
+                if (searchValue !== "") {
+                    let searchableText = `${row.vlename} ${row.cscid} ${row.mobile} ${row.vlemob} ${dist}`.toLowerCase();
+                    if (!searchableText.includes(searchValue)) return;
+                }
+
+                exportData.push({
+                    "District": dist,
+                    "VLE Name": row.vlename,
+                    "CSC ID": row.cscid,
+                    "Mobile": row.mobile,
+                    "VLE Mobile": row.vlemob,
+                    "FY 25-26 Txns": row.txns_25_26,
+                    "FY 26-27 Txns": row.txns_26_27,
+                    "Status": isActivated ? "ACTIVATED" : "PENDING"
+                });
+            });
+
+            if (exportData.length === 0) {
+                alert("No data available to download!");
+                return;
+            }
+
+            let d = new Date();
+            let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+            let colCount = Object.keys(exportData[0]).length;
+
+            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
+            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; width: 100%;">`;
+            
+            tableHtml += `<thead>`;
+            tableHtml += `<tr><th colspan="${colCount}" style="background-color:#ea580c; color:white; font-size:16px; padding:10px; text-align:center;">PRIORITY FOLLOW-UP REPORT (${dateStr})</th></tr>`;
+            tableHtml += `<tr><th colspan="${colCount}" style="background-color:#fef2f2; color:#dc2626; font-size:13px; padding:8px; text-align:center;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</th></tr>`;
+            
+            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold; text-align:center;">`;
+            Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px; border: 1px solid #cbd5e1;">${k}</th>`);
+            tableHtml += `</tr></thead><tbody>`;
+
+            exportData.forEach((row, i) => {
+                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
+                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
+                Object.values(row).forEach(v => tableHtml += `<td style="padding: 8px; border: 1px solid #cbd5e1; mso-number-format:'\\@';">${v}</td>`);
+                tableHtml += `</tr>`;
+            });
+            tableHtml += `</tbody></table></body></html>`;
+
+            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Priority_FollowUp_${dateStr}.xls`;
+            link.click();
+        }
+
+        // 🌟 FUNCTION: Download District Summary Image (With PERFECT Font Colors) 🌟
+        function downloadSummaryImage() {
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let priorityLevel = document.getElementById('priorityLevel').value;
+
+            let distStats = {};
+            let totalTarget = 0, totalActive = 0, totalPending = 0;
+
+            globalFollowUpData.forEach((row) => {
+                if (isDM && distType === 'old' && !row.allowedForOld) return;
+                if (isDM && distType === 'new' && !row.allowedForNew) return;
+                
+                let dist = row[distKey];
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+                
+                if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
+                if (priorityLevel === 'high' && (row.txns_25_26 < 50 || row.txns_25_26 >= 100)) return;
+                if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
+                if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
+
+                let isActivated = (row.txns_26_27 > 0);
+                let txns2526 = row.txns_25_26;
+
+                if (!distStats[dist]) {
+                    distStats[dist] = { target: 0, active: 0, pending: 0, pendSuper: 0, pendHigh: 0, pendMed: 0, pendBasic: 0 };
+                }
+                
+                distStats[dist].target++;
+                totalTarget++;
+                
+                if (isActivated) { 
+                    distStats[dist].active++; 
+                    totalActive++; 
+                } else { 
+                    distStats[dist].pending++; 
+                    totalPending++; 
+                    
+                    if (txns2526 >= 100) distStats[dist].pendSuper++;
+                    else if (txns2526 >= 50) distStats[dist].pendHigh++;
+                    else if (txns2526 >= 10) distStats[dist].pendMed++;
+                    else if (txns2526 >= 1) distStats[dist].pendBasic++;
+                }
+            });
+
+            if (totalTarget === 0) {
+                alert("No data available for the summary!");
+                return;
+            }
+
+            let d = new Date();
+            let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+            let reportTitle = selectedDist === "All" ? "Andhra Pradesh (All Districts)" : selectedDist;
+            
+            let priorityText = "All Targets (>= 1)";
+            let pSelect = document.getElementById("priorityLevel");
+            if(pSelect) priorityText = pSelect.options[pSelect.selectedIndex].text;
+
+            let exportDiv = document.createElement("div");
+            exportDiv.style.position = "fixed"; exportDiv.style.top = "0"; exportDiv.style.left = "0";
+            exportDiv.style.width = "900px"; exportDiv.style.zIndex = "-9999"; exportDiv.style.background = "#ffffff";
+            exportDiv.style.padding = "30px"; exportDiv.style.fontFamily = "'Segoe UI', Tahoma, sans-serif";
+            document.body.appendChild(exportDiv);
+
+            let html = `
+            <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; background: #f8fafc;">
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px;">
+                    <h1 style="color: #ea580c; font-size: 24px; margin-bottom: 5px;">🎯 PRIORITY FOLLOW-UP SUMMARY</h1>
+                    <p style="color: #475569; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">Date: ${dateStr} &nbsp;|&nbsp; Region: ${reportTitle}</p>
+                    <p style="color: #dc2626; font-size: 13px; margin: 0 0 5px 0; font-weight: 800;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</p>
+                    <p style="color: #3b82f6; font-size: 13px; margin: 0; font-weight: bold;">Filter: ${priorityText}</p>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="font-size:12px; color:#64748b; font-weight:bold;">TOTAL TARGET VLEs</div>
+                        <div style="font-size:24px; color:#1e293b; font-weight:900;">${totalTarget}</div>
+                    </div>
+                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="font-size:12px; color:#15803d; font-weight:bold;">ACTIVATED</div>
+                        <div style="font-size:24px; color:#15803d; font-weight:900;">${totalActive}</div>
+                    </div>
+                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #ea580c; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="font-size:12px; color:#c2410c; font-weight:bold;">STILL PENDING</div>
+                        <div style="font-size:24px; color:#c2410c; font-weight:900;">${totalPending}</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #ea580c; padding-left: 10px;">🏆 DISTRICT-WISE TARGET BREAKDOWN</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #1e293b; color: white;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1;">DISTRICT</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #3b82f6;">TOTAL TARGET</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #047857;">ACTIVATED</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #b45309; font-size: 13px;">STILL PENDING</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #7c3aed;" title="Pending >= 100 Txns">PENDING<br>(>=100)</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #db2777;" title="Pending 50-99 Txns">PENDING<br>(50-99)</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #d97706;" title="Pending 10-49 Txns">PENDING<br>(10-49)</th>
+                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #475569;" title="Pending 1-9 Txns">PENDING<br>(1-9)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            let grandTotals = { tar: 0, act: 0, pen: 0, pSup: 0, pHigh: 0, pMed: 0, pBas: 0 };
+            
+            Object.keys(distStats).sort().forEach(dName => {
+                let st = distStats[dName];
+                grandTotals.tar += st.target; grandTotals.act += st.active; grandTotals.pen += st.pending;
+                grandTotals.pSup += st.pendSuper; grandTotals.pHigh += st.pendHigh; grandTotals.pMed += st.pendMed; grandTotals.pBas += st.pendBasic;
+                
+                html += `
+                    <tr>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; background:#ffffff;">${dName}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #1e3a8a; background:#eff6ff;">${st.target}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #059669; background:#ecfdf5;">${st.active}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #ea580c; background:#fff7ed; font-size:14px;">${st.pending}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #6d28d9; background:#f5f3ff;">${st.pendSuper}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #be185d; background:#fdf2f8;">${st.pendHigh}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #b45309; background:#fffbeb;">${st.pendMed}</td>
+                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #334155; background:#f1f5f9;">${st.pendBasic}</td>
+                    </tr>
+                `;
+            });
+            
+            // 🌟 IKKADA CORRECTION CHESANU SIR (Text color #ffffff added explicitly) 🌟
+            html += `
+                    <tr style="background:#0f172a; font-size: 14px;">
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: right; color: #ffffff;">GRAND TOTAL</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.tar}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #4ade80;">${grandTotals.act}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #fbbf24; font-size:16px;">${grandTotals.pen}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pSup}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pHigh}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pMed}</td>
+                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pBas}</td>
+                    </tr>
+                `;
+            
+            html += `
+                    </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 15px; font-weight: bold; color: #475569; font-size: 12px;">
+                    - CSC AP Travel Team
+                </div>
+            </div>
+            `;
+
+            exportDiv.innerHTML = html;
+
+            const btn = document.getElementById("summaryImgBtn");
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+
+            html2canvas(exportDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = `Priority_Summary_Breakdown_${dateStr}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+
+                btn.innerHTML = "✅ Downloaded";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                
+                document.body.removeChild(exportDiv);
+            }).catch(err => {
+                console.error("Error capturing image:", err);
+                btn.innerHTML = "❌ Failed";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+                document.body.removeChild(exportDiv);
+            });
+        }
+
         function downloadImage() {
             const btn = document.getElementById("downloadBtn");
             let originalText = btn.innerHTML;
