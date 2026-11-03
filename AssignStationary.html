@@ -340,6 +340,13 @@
         <div id="alertIconContainer" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px;">✅</div>
         <h4 id="alertTitle" class="fw-bold text-dark mb-2">Success!</h4>
         <p id="alertMessage" class="text-secondary mb-4 fs-6">Message goes here.</p>
+        
+        <!-- 🔥 NEW EXPLICIT WHATSAPP BUTTON (Will be shown if success) 🔥 -->
+        <!-- 🌟 Changed to use whatsapp://send schema by default 🌟 -->
+        <a href="#" id="waAlertBtn" class="btn-action w-100 py-3 mb-2" style="display:none; background:#25D366; color:white; font-size:15px; text-decoration:none; font-weight:900; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);">
+            <i class="fa-brands fa-whatsapp fs-5"></i> వాట్సాప్ ఓపెన్ చేయండి
+        </a>
+
         <button type="button" id="alertBtn" class="btn-action w-100 py-2" data-bs-dismiss="modal">OK, Great!</button>
       </div>
     </div>
@@ -375,6 +382,10 @@
     let activeLastIssueDate = "";
     let activeLastIssueQty = "";
 
+    // 🌟 New Variables to store Request No and Mobile 🌟
+    let activeReqNo = "";
+    let activeMobile = "";
+
     window.onload = function() { checkCacheAndLoadRequests(); };
 
     document.addEventListener("DOMContentLoaded", function(){
@@ -384,21 +395,37 @@
         })
     });
 
-    function customAlert(msg, isSuccess) {
+    // 🌟 100% Guaranteed WhatsApp Open Logic 🌟
+    function customAlert(msg, isSuccess, waUrl = null) {
         let safeMsg = msg ? String(msg) : (isSuccess ? "Action Completed Successfully." : "Action Failed!");
         let iconCont = document.getElementById("alertIconContainer");
         let btn = document.getElementById("alertBtn");
+        let waBtn = document.getElementById("waAlertBtn");
 
         if (isSuccess) {
             iconCont.innerHTML = "✅"; iconCont.style.background = "#f5f3ff"; 
             document.getElementById("alertTitle").innerText = "Success!"; 
-            btn.style.background = "#6d28d9"; btn.style.color = "white"; btn.innerText = "OK, Great!";
+            btn.style.background = "#6d28d9"; btn.style.color = "white"; btn.innerText = "OK";
         } else {
             iconCont.innerHTML = "❌"; iconCont.style.background = "#fee2e2"; 
             document.getElementById("alertTitle").innerText = "Action Failed"; 
             btn.style.background = "#ef4444"; btn.style.color = "white"; btn.innerText = "Try Again";
         }
+        
         document.getElementById("alertMessage").innerHTML = safeMsg.replace(/\n/g, '<br>');
+        
+        // 🌟 WHATSAPP BUTTON DISPLAY LOGIC 🌟
+        if(waUrl) {
+            waBtn.href = waUrl;
+            waBtn.style.display = "inline-block";
+            // Make the OK button look secondary
+            btn.style.background = "#e2e8f0";
+            btn.style.color = "#475569";
+            btn.innerText = "Close";
+        } else {
+            waBtn.style.display = "none";
+        }
+        
         var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
         alertModal.show();
     }
@@ -434,8 +461,10 @@
     function renderRequestsTable(data) {
        const tbody = document.getElementById("pendingTableBody");
        tbody.innerHTML = "";
+       window.pendingRequestsMap = {}; 
        if(data && data.length > 0) {
           data.forEach(req => {
+             window.pendingRequestsMap[req.rowIdx] = req;
              let btnHtml = "";
              let rUpper = loggedInDesig.toUpperCase();
              let isDM = (rUpper === "DM" || rUpper.indexOf("DISTRICT MANAGER") !== -1);
@@ -469,6 +498,16 @@
        activeRowIdx = rowIdx; 
        currentStep = stepType;
        currentAvailableStock = -1;
+       
+       let reqObj = window.pendingRequestsMap ? window.pendingRequestsMap[rowIdx] : null;
+       if (reqObj) {
+           activeReqNo = reqObj['Stock Holding Request No'] || reqObj.stockHoldingRequestNo || reqObj.StockHoldingRequestNo || reqObj.reqNo || reqObj.requestNo || "N/A";
+           // 🌟 BETTER MOBILE NUMBER EXTRACTION 🌟
+           activeMobile = reqObj.mobile || reqObj.Mobile || reqObj.mobileNo || reqObj['Mobile No'] || reqObj.phone || reqObj.Phone || reqObj.contact || reqObj.Contact || reqObj.vleMobile || reqObj['VLE Mobile'] || "";
+       } else {
+           activeReqNo = "N/A";
+           activeMobile = "";
+       }
        
        if (lastIssueDate !== undefined) activeLastIssueDate = lastIssueDate;
        if (lastIssueQty !== undefined) activeLastIssueQty = lastIssueQty;
@@ -729,10 +768,26 @@
              if (currentStep === 3) {
                  let sStart = document.getElementById("previewStart").innerText;
                  let sEnd = document.getElementById("previewEnd").innerText;
-                 let waMsg = `🔔 *CSC AP - E-Stamping Stock Update* 🔔\n\nప్రియమైన *${vName}* గారు (CSC ID: *${vId}*),\n\nమీ E-Stamping స్టాక్ రిక్వెస్ట్ ఆమోదించబడింది. మీకు ఈరోజు ఈ కింది స్టాక్ డిస్పాచ్ చేయబడింది:\n\n📦 *మంజూరైన క్వాంటిటీ:* ${aQtyVal} Papers\n🔢 *సీరియల్ నెంబర్లు:* ${sStart} నుండి ${sEnd} వరకు\n\n📄 *ముఖ్య గమనిక:* దయచేసి మీ పోర్టల్‌లో లాగిన్ అయి, "Track Request" సెక్షన్ నుండి *'Acknowledgement Form'* ప్రింట్ తీసుకుని, దానిపై మీ సంతకం చేసి మా ఆఫీస్‌లో సబ్మిట్ చేసి మీ స్టాక్ ని కలెక్ట్ చేసుకోగలరు.\n\nధన్యవాదాలు,\nCSC Team,\n${dist} District.`;
-                 navigator.clipboard.writeText(waMsg).then(() => {
-                     customAlert(res.message + "\n\n✅ వాట్సాప్ మెసేజ్ మీ క్లిప్‌బోర్డ్ లో కాపీ అయ్యింది! వాట్సాప్ లో పేస్ట్ (Ctrl + V) చేసి పంపించండి.", true);
-                 }).catch(err => { customAlert(res.message, true); });
+                 
+                 let waMsg = `🔔 *CSC AP - E-Stamping Stock Update* 🔔\n\nప్రియమైన *${vName}* గారు (CSC ID: *${vId}*),\n\nమీ E-Stamping స్టాక్ రిక్వెస్ట్ (Request No: *${activeReqNo}*) ఆమోదించబడింది. మీకు ఈరోజు ఈ కింది స్టాక్ డిస్పాచ్ చేయబడింది:\n\n📦 *మంజూరైన క్వాంటిటీ:* ${aQtyVal} Papers\n🔢 *సీరియల్ నెంబర్లు:* ${sStart} నుండి ${sEnd} వరకు\n\n📄 *ముఖ్య గమనిక:* దయచేసి మీ పోర్టల్‌లో లాగిన్ అయి, "Track Request" సెక్షన్ నుండి *'Acknowledgement Form'* ప్రింట్ తీసుకుని, దానిపై మీ సంతకం చేసి మా ఆఫీస్‌లో సబ్మిట్ చేసి మీ స్టాక్ ని కలెక్ట్ చేసుకోగలరు.\n\nధన్యవాదాలు,\nCSC Team,\n${dist} District.`;
+                 
+                 let phoneStr = activeMobile ? activeMobile.toString().replace(/\D/g, '') : "";
+                 if(phoneStr.length === 10) phoneStr = "91" + phoneStr;
+                 
+                 let waUrl = "";
+                 if(phoneStr.length >= 10) {
+                     // 🌟 డైరెక్ట్ గా ఆ VLE నెంబర్ కి వాట్సాప్ ఓపెన్ అవుతుంది 🌟
+                     waUrl = `whatsapp://send?phone=${phoneStr}&text=${encodeURIComponent(waMsg)}`;
+                 } else {
+                     // 🌟 నెంబర్ లేకపోయినా వాట్సాప్ ఓపెన్ అవుతుంది, కాంటాక్ట్ మీరే సెలెక్ట్ చేసుకోవాలి 🌟
+                     waUrl = `whatsapp://send?text=${encodeURIComponent(waMsg)}`;
+                 }
+                 
+                 navigator.clipboard.writeText(waMsg).catch(e => {});
+                 
+                 // 🟢 MAGIC FIX: Show Success Modal WITH GREEN WHATSAPP BUTTON 🟢
+                 customAlert(res.message + "\n\nకింద ఉన్న వాట్సాప్ బటన్ పై క్లిక్ చేయండి 👇", true, waUrl);
+                 
              } else { 
                  customAlert(res.message, true); 
              }
