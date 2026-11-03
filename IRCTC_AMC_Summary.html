@@ -93,8 +93,8 @@
         .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR AMC SUMMARY REPORT (Added by Chandra) 📱 */
+        /* ========================================================================= */
+        /* 📱 MOBILE RESPONSIVENESS FOR AMC SUMMARY REPORT 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
             body { 
@@ -102,12 +102,11 @@
                 gap: 15px; 
             }
 
-            /* 1. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
             .target-control-panel {
                 flex-direction: column;
                 align-items: stretch;
                 padding: 15px;
-                position: relative; /* మొబైల్ లో హెడర్ స్టికీ తీసేసాను */
+                position: relative;
             }
 
             .page-heading {
@@ -136,16 +135,13 @@
                 text-align: center;
             }
 
-            /* 2. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
             .report-header h1 { font-size: 18px; }
             .report-header p { font-size: 11px; }
 
-            .kpi-grid {
-                gap: 10px;
-            }
+            .kpi-grid { gap: 10px; }
 
             .kpi-card {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
+                flex: 1 1 calc(50% - 10px);
                 min-width: 120px;
                 flex-direction: column;
                 text-align: center;
@@ -155,22 +151,15 @@
             .kpi-title { font-size: 9px; margin-bottom: 5px; }
             .kpi-value { font-size: 16px; }
 
-            /* 3. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
             .table-container {
                 max-height: 450px;
                 -webkit-overflow-scrolling: touch;
             }
 
-            table {
-                min-width: 800px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా ఉండేలా కనీస వెడల్పు */
-            }
+            table { min-width: 800px; }
 
-            th, td {
-                font-size: 10px !important;
-                padding: 10px 5px !important;
-            }
+            th, td { font-size: 10px !important; padding: 10px 5px !important; }
 
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
             .col-district, .th-dist, tfoot tr.total-row td:first-child {
                 position: static !important;
                 border-right: 1px solid #e2e8f0 !important;
@@ -226,11 +215,12 @@
                 <span class="kpi-value" id="kpi-tot-elig">0</span>
             </div>
             <div class="kpi-card kpi-premium">
-                <span class="kpi-title">PREMIUM (₹1000)</span>
+                <!-- 🌟 (₹1000) అనే పదాన్ని ఇక్కడ తీసేసాను 🌟 -->
+                <span class="kpi-title">PREMIUM VLEs</span>
                 <span class="kpi-value" id="kpi-tot-prem">0</span>
             </div>
             <div class="kpi-card kpi-maxgain">
-                <span class="kpi-title">MAX GAIN (₹2000)</span>
+                <span class="kpi-title">MAX GAIN VLEs</span>
                 <span class="kpi-value" id="kpi-tot-max">0</span>
             </div>
             <div class="kpi-card kpi-revenue">
@@ -249,8 +239,9 @@
                     <tr>
                         <th class="th-dist">DISTRICT NAME ⇅</th>
                         <th class="th-elig">TOTAL ELIGIBLE</th>
-                        <th class="th-prem">PREMIUM (₹1000)</th>
-                        <th class="th-max">MAX GAIN (₹2000)</th>
+                        <!-- 🌟 హెడ్డింగ్ లో (₹1000) తీసేసాను 🌟 -->
+                        <th class="th-prem">PREMIUM VLEs</th>
+                        <th class="th-max">MAX GAIN VLEs</th>
                         <th class="th-rev">TOTAL REVENUE</th>
                         <th class="th-pend">PENDING ❌</th>
                         <th class="th-comp">COMPLETION %</th>
@@ -277,14 +268,12 @@
         
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 మీ ఒరిజినల్ కోడ్ లో ఉన్న గ్లోబల్ వేరియబుల్స్ 🌟
         let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
         let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
         let loggedInUserName = localStorage.getItem("userName") || ""; 
         let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
         let dmAssignedOldDistrict = "";
 
-        // 🌟 బ్రహ్మాస్త్రం: పేరు మ్యాచింగ్ లాజిక్ 🌟
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
             let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -302,6 +291,28 @@
             fetchSheetData(); 
         };
 
+        function parseCustomDate(dateVal) {
+            if (!dateVal || dateVal === '-' || String(dateVal).trim() === '') return new Date(NaN);
+            if (dateVal instanceof Date) return dateVal;
+            let str = String(dateVal).trim();
+            if (str.includes('T')) {
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) return d;
+            }
+            const monthMap = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+            let parts = str.split(/[-/\s.]+/);
+            if (parts.length >= 3) {
+                let p1 = parseInt(parts[0], 10);
+                let p2Str = parts[1].toLowerCase().slice(0, 3);
+                let p3 = parseInt(parts[2], 10);
+                if (!isNaN(p1) && monthMap[p2Str] !== undefined && !isNaN(p3) && p3 > 1000) return new Date(p3, monthMap[p2Str], p1);
+                let p2 = parseInt(parts[1], 10);
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p3 > 1000) return new Date(p3, p2 - 1, p1);
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p1 > 1000) return new Date(p1, p2 - 1, p3);
+            }
+            return new Date(str.replace(/-/g, ' '));
+        }
+
         async function fetchSheetData() {
             try {
                 let cachedData = sessionStorage.getItem("cscTravelData_IRCTC");
@@ -318,7 +329,6 @@
                     }).catch(() => null));
                 }
                 
-                // 🌟 ఇక్కడ Users షీట్ ని లోడ్ చేసి, DM జిల్లాని ఫైండ్ అవుట్ చేస్తున్నాం 🌟
                 if (!usersData) {
                     promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
                         usersData = d;
@@ -345,9 +355,7 @@
                             }
                         }
                     }
-                } catch(e) {
-                    console.warn("Could not parse Users sheet", e);
-                }
+                } catch(e) { console.warn("Could not parse Users sheet", e); }
 
                 if(rawData) {
                     processSheetData(rawData);
@@ -368,13 +376,13 @@
             let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             
-            // 🌟 STRICT COLUMN FILTER: Pending, DSP, Target లాంటివి రాకుండా పక్కాగా 25-26, 26-27 ని తీసుకుంటుంది 🌟
             let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
             let idx27 = cleanHeaders.findIndex(h => (h.includes('202627') || h.includes('2627') || h.includes('txns26')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
 
             let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));
             let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
             let idxAmcStart = cleanHeaders.findIndex(h => h.includes('amcstartdate') || h.includes('amcstart'));
+            let idxAmcEnd = cleanHeaders.findIndex(h => h.includes('amcenddate') || h.includes('amcend'));
             
             let mIndices = [];
             if (idx26 > -1) {
@@ -384,10 +392,8 @@
             }
 
             globalData = [];
-            oldDistrictsSet.clear();
-            newDistrictsSet.clear();
-            dmMappedOldDistricts.clear();
-            dmMappedNewDistricts.clear();
+            oldDistrictsSet.clear(); newDistrictsSet.clear();
+            dmMappedOldDistricts.clear(); dmMappedNewDistricts.clear();
 
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
@@ -395,7 +401,6 @@
                 if(!cscId || cscId === '-') continue;
 
                 let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0;
-                
                 let fy27Total = 0;
                 if (idx27 > -1) {
                     fy27Total = parseInt(row[idx27]) || 0;
@@ -412,7 +417,6 @@
                 let oldKey = oldDist.toLowerCase();
                 let newKey = newDist.toLowerCase();
 
-                // 🌟 100% పక్కా DM ఫిల్టరింగ్ లాజిక్ 🌟
                 let allowedForOld = true;
                 let allowedForNew = true;
                 
@@ -429,24 +433,22 @@
                     if(allowedForNew && newDist !== 'Unknown' && newDist !== '-') dmMappedNewDistricts.add(newDist);
                 }
 
-                let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString().toLowerCase() : '';
+                let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString() : '';
                 let amcStartStr = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString() : '';
-
-                let isPremium = amcStatus.includes('premium');
-                let isMaxGain = amcStatus.includes('max gain') || amcStatus.includes('maxgain');
-
-                let amcFy = '';
-                if (amcStartStr && amcStartStr !== '-') {
-                    let d = new Date(amcStartStr);
-                    if (!isNaN(d.getTime())) {
-                        let fyStartYear = (d.getMonth() + 1 >= 4) ? d.getFullYear() : d.getFullYear() - 1;
-                        if (fyStartYear === 2025) amcFy = '25-26';
-                        else if (fyStartYear === 2026) amcFy = '26-27';
-                    }
-                }
+                let amcEndStr = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString() : '';
 
                 let rawStatus = idxstatus > -1 ? (row[idxstatus] || '').toString().toUpperCase() : '';
                 if(rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK")) continue;
+
+                let isEligible = (fy26 >= 100 || fy27Total >= 100 || amcStatus.toLowerCase().includes('paid') || amcStatus.toLowerCase().includes('expire') || (amcEndStr && amcEndStr.trim() !== '' && amcEndStr.trim() !== '-'));
+
+                let amcFy = '';
+                let d = parseCustomDate(amcStartStr);
+                if (!isNaN(d.getTime())) {
+                    let fyStartYear = (d.getMonth() + 1 >= 4) ? d.getFullYear() : d.getFullYear() - 1;
+                    if (fyStartYear === 2025) amcFy = '25-26';
+                    else if (fyStartYear === 2026) amcFy = '26-27';
+                }
 
                 globalData.push({
                     cscid: cscId,
@@ -455,11 +457,10 @@
                     dmname: dmNameStr,
                     fy26_txns: fy26,         
                     fy27_txns: fy27Total,    
-                    isPremium: isPremium,
-                    isMaxGain: isMaxGain,
+                    amcStatus: amcStatus,
+                    amcEnd: amcEndStr,
                     amcFy: amcFy,
-                    
-                    // 🌟 ఏ జిల్లాలో ఈ డేటా చూపించాలో లాక్ చేస్తున్నాం 🌟
+                    isEligible: isEligible,
                     allowedForOld: allowedForOld,
                     allowedForNew: allowedForNew
                 });
@@ -489,46 +490,75 @@
             let distType = document.getElementById('districtType').value;
             let selectedDist = document.getElementById('districtName').value;
             let fyFilter = document.getElementById('fyFilter').value;
-            
             let distKey = distType === 'old' ? 'olddist' : 'newdist';
             
             let reportMap = {};
             let gt = { eligible: 0, premium: 0, maxgain: 0, revenue: 0 };
+            let currentDate = new Date();
 
             globalData.forEach(row => {
                 let dist = row[distKey];
                 if (!dist || dist === "Unknown") return;
                 
-                // 🌟 DM అయితే ఆయనకు సంబంధం లేని రోస్ ని సమ్మరీ కౌంట్స్ లో కలపదు 🌟
                 if (isDM && distType === 'old' && !row.allowedForOld) return;
                 if (isDM && distType === 'new' && !row.allowedForNew) return;
                 
                 if (selectedDist !== "All" && dist !== selectedDist) return;
                 
-                let isEligible = (row.fy26_txns >= 100 || row.fy27_txns >= 100 || row.isPremium || row.isMaxGain);
+                if (!row.isEligible) return;
+
+                let statusLower = (row.amcStatus || '').toLowerCase();
+                let isPaid = statusLower.includes('paid');
+                let isSheetExpired = statusLower.includes('expired');
+
+                let isExpired = false;
+                let isActivated = false;
+
+                let endDate = parseCustomDate(row.amcEnd);
+                let hasValidEndDate = !isNaN(endDate.getTime());
+
+                if (isPaid || hasValidEndDate) {
+                    if (hasValidEndDate && endDate < currentDate) isExpired = true;
+                    else if (hasValidEndDate && endDate >= currentDate) isActivated = true;
+                    else if (isPaid) isActivated = true;
+                } else if (isSheetExpired) {
+                    isExpired = true;
+                }
+
                 let isPrem = false;
                 let isMax = false;
+                let rev = 0;
 
-                if (fyFilter === 'All') {
-                    isPrem = row.isPremium;
-                    isMax = row.isMaxGain;
-                } else {
-                    isPrem = (row.isPremium && row.amcFy === fyFilter);
-                    isMax = (row.isMaxGain && row.amcFy === fyFilter);
-                }
-
-                if (isEligible) {
-                    if (!reportMap[dist]) reportMap[dist] = { eligible: 0, premium: 0, maxgain: 0, revenue: 0 };
-                    reportMap[dist].eligible++;
-                    gt.eligible++;
-
-                    if (isPrem) { reportMap[dist].premium++; gt.premium++; }
-                    if (isMax) { reportMap[dist].maxgain++; gt.maxgain++; }
+                // 🌟 DYNAMIC AMOUNT CALCULATION FIX 🌟
+                if (isActivated) {
+                    isPrem = statusLower.includes('premium');
+                    isMax = statusLower.includes('max gain') || statusLower.includes('maxgain');
                     
-                    let rev = (isPrem ? 1000 : 0) + (isMax ? 2000 : 0);
-                    reportMap[dist].revenue += rev;
-                    gt.revenue += rev;
+                    if (isMax) {
+                        rev = 2000;
+                    } else if (isPrem) {
+                        let match = statusLower.match(/premium\s*\(\s*([\d.]+)\s*\)/);
+                        rev = match ? parseFloat(match[1]) : 1000; 
+                    }
                 }
+
+                if (fyFilter !== 'All') {
+                    if (row.amcFy !== fyFilter) {
+                        isPrem = false;
+                        isMax = false;
+                        rev = 0;
+                    }
+                }
+
+                if (!reportMap[dist]) reportMap[dist] = { eligible: 0, premium: 0, maxgain: 0, revenue: 0 };
+                reportMap[dist].eligible++;
+                gt.eligible++;
+
+                if (isPrem) { reportMap[dist].premium++; gt.premium++; }
+                if (isMax) { reportMap[dist].maxgain++; gt.maxgain++; }
+                
+                reportMap[dist].revenue += rev;
+                gt.revenue += rev;
             });
 
             let sortedDistricts = Object.keys(reportMap).sort();
@@ -605,7 +635,6 @@
             updateDistrictsDropdown();
         }
 
-        /* 🌟 Full Screen Fix 🌟 */
         function toggleFullScreen() {
             let btn = document.getElementById("fullscreenBtn");
             try {
@@ -627,7 +656,6 @@
             }
         });
 
-        /* 🌟 Image Download Fix 🌟 */
         function downloadImage() {
             const btn = document.getElementById("downloadBtn");
             let originalText = btn.innerHTML;
@@ -637,11 +665,9 @@
             const captureArea = document.getElementById("captureArea");
             const tableWrapper = document.querySelector(".table-container");
             
-            // Backups
             const origAreaOverflow = captureArea.style.overflow;
             const origWrapperOverflow = tableWrapper.style.overflow;
             
-            // Adjust styles for screenshot
             captureArea.style.overflow = "visible";
             tableWrapper.style.overflow = "visible";
             tableWrapper.style.height = "auto";
