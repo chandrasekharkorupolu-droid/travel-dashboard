@@ -196,6 +196,15 @@
             .modal-content { width: 95%; padding: 20px; }
         }
     </style>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GF2VXY76KN');
+</script>
 </head>
 <body>
 
@@ -314,6 +323,7 @@
         </div>
     </div>
 
+    <!-- 🌟 MODAL FOR AMC ACTIVATION 🌟 -->
     <div class="modal-overlay" id="amcModal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeAMCModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -327,7 +337,8 @@
 
             <div class="form-group">
                 <label>Select Package</label>
-                <select id="amcPackage" class="form-control">
+                <!-- 🌟 ADDED onchange="calculateEndDate()" HERE 🌟 -->
+                <select id="amcPackage" class="form-control" onchange="calculateEndDate()">
                     <option value="Premium (1000)">Premium (1000)</option>
                     <option value="MaxGain (2000)">MaxGain (2000)</option>
                 </select>
@@ -362,7 +373,6 @@
         let loggedInUserName = localStorage.getItem("userName") || ""; 
         let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
         
-        // 🌟 NEW STRONG DM MAPPING LOGIC 🌟
         let dmOldDistricts = new Set();
         let dmNewDistricts = new Set();
 
@@ -431,14 +441,13 @@
 
                 if (promises.length > 0) await Promise.all(promises);
 
-                // 🌟 STRONG USER MAPPING LOGIC 🌟
                 try {
                     if(usersData && Array.isArray(usersData) && usersData.length > 0) {
                         let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user' || h === 'mobile');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
                         let idxNewDist = uHeaders.findIndex(h => h === 'newdistrict');
-                        if(idxNewDist === -1) idxNewDist = idxDist; // Fallback
+                        if(idxNewDist === -1) idxNewDist = idxDist; 
                         
                         if (isDM && loggedInUserId !== "" && idxUid > -1) {
                             for(let i=1; i<usersData.length; i++) {
@@ -512,7 +521,6 @@
                 let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
                 let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
 
-                // 🌟 STRONG DM FILTERING 🌟
                 let allowedForOld = isDM ? dmOldDistricts.has(oldDist.toLowerCase()) : true;
                 let allowedForNew = isDM ? dmNewDistricts.has(newDist.toLowerCase()) : true;
 
@@ -847,13 +855,47 @@
             renderTable();
         }
 
+        // 🌟 ఇక్కడే Premium కి Dynamic Amount క్యాలిక్యులేషన్ యాడ్ చేశాను సార్ 🌟
         function calculateEndDate() {
             let startVal = document.getElementById("amcStartDate").value;
+            let pkgSelect = document.getElementById("amcPackage");
+            let pkg = pkgSelect.value; 
+            
             if(startVal) {
-                let d = new Date(startVal); d.setFullYear(d.getFullYear() + 1); 
-                let day = ("0" + d.getDate()).slice(-2);
+                let d = new Date(startVal);
                 let monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                document.getElementById("amcEndDate").value = `${day}-${monthNames[d.getMonth()]}-${d.getFullYear()}`;
+                
+                let isPremiumSelected = pkg.includes("Premium");
+                
+                if (isPremiumSelected) {
+                    // 1. Expiry Date Calculation (March 31 of Financial Year)
+                    let expiryYear = d.getFullYear();
+                    let month = d.getMonth(); // 0-indexed (Jan = 0, Apr = 3)
+                    
+                    if (month >= 3) { 
+                        expiryYear += 1;
+                    }
+                    document.getElementById("amcEndDate").value = `31-Mar-${expiryYear}`;
+                    
+                    // 2. Dynamic Premium Amount Calculation (Pro-Rata basis)
+                    let remainingMonths = (month >= 3) ? (12 - (month - 3)) : (3 - month);
+                    let calcAmount = (1000 / 12) * remainingMonths;
+                    let displayAmount = calcAmount.toFixed(2); // Example: 416.67
+                    
+                    // 3. Update Dropdown Text dynamically
+                    pkgSelect.options[0].text = `Premium (${displayAmount})`;
+                    pkgSelect.options[0].value = `Premium (${displayAmount})`;
+                    
+                } else {
+                    // MaxGain Calculation (Exact 1 Year)
+                    d.setFullYear(d.getFullYear() + 1); 
+                    let day = ("0" + d.getDate()).slice(-2);
+                    document.getElementById("amcEndDate").value = `${day}-${monthNames[d.getMonth()]}-${d.getFullYear()}`;
+                    
+                    // Reset Premium text back to default if they switch back
+                    pkgSelect.options[0].text = `Premium (1000)`;
+                    pkgSelect.options[0].value = `Premium (1000)`;
+                }
             }
         }
 
@@ -870,6 +912,16 @@
             document.getElementById("modalCscIdDisplay").innerText = cscId;
             document.getElementById("modalCscId").value = cscId;
             document.getElementById("modalVleName").innerText = vleName;
+            
+            // 🌟 పాపప్ ఓపెన్ అయ్యే ప్రతిసారి డీఫాల్ట్ (1000) చూపిస్తుంది 🌟
+            let pkgSelect = document.getElementById("amcPackage");
+            pkgSelect.options[0].text = `Premium (1000)`;
+            pkgSelect.options[0].value = `Premium (1000)`;
+            pkgSelect.selectedIndex = 0; // Default to Premium
+            
+            document.getElementById("amcStartDate").valueAsDate = new Date();
+            calculateEndDate(); // Calculate new dynamic amount based on today's date
+            
             document.getElementById("amcModal").style.display = "flex";
             document.getElementById("saveAmcBtn").innerText = "Save Details";
             document.getElementById("saveAmcBtn").disabled = false;
@@ -884,14 +936,14 @@
 
         function saveAMCData() {
             let cscId = document.getElementById("modalCscId").value;
-            let pkg = document.getElementById("amcPackage").value;
+            let pkg = document.getElementById("amcPackage").value; // This will now pick up "Premium (416.67)" dynamically!
             let start = document.getElementById("amcStartDate").value;
             let end = document.getElementById("amcEndDate").value;
             
             if(!start || !end) { alert("Please select AMC Start Date!"); return; }
 
             let formattedStart = formatDisplayDate(start);
-            let statusText = `Paid (${pkg})`;
+            let statusText = `Paid (${pkg})`; // E.g. "Paid (Premium (416.67))"
 
             let btn = document.getElementById("saveAmcBtn");
             btn.innerHTML = "⏳ Saving..."; btn.disabled = true;
@@ -947,7 +999,6 @@
             return "శుభ సాయంత్రం 🌇";
         }
 
-        // 🌟 ROBUST DM NOTIFICATION WITH FALLBACK PROMPT 🌟
         function notifyDM() {
             let distType = document.getElementById("districtType").value;
             let selectedDist = document.getElementById("districtName").value;
@@ -1097,7 +1148,6 @@
 
             let message = `గౌరవనీయులైన *${dmName}* గారికి,\n${greeting}\n\n🏢 *IRCTC AMC Business Update*\n📌 *District:* ${selectedDist}\n\n📊 *Total Eligible VLEs:* *${total}*\n🟢 *Activated:* *${active}* (Premium: ${prem} | MaxGain: ${max})\n🟠 *Expired:* *${expired}*\n🔴 *Pending:* *${pending}*\n\n⚡ *Action Required:*\nదయచేసి మీ జిల్లాలో ఉన్న పెండింగ్ మరియు గడువు ముగిసిన *${actionReq} VLE లతో* వెంటనే మాట్లాడి, వారందరిచేతా *IRCTC MaxGain Package (₹2000)* మాత్రమే తీసుకునేలా ఫాలో-అప్ చేయగలరు.${vleListText}\n\nThanks & Regards,\n*Chandra Sekhara Babu K*\nSPOC - AP CSC Travel 🚄`;
 
-            // 🌟 STRONG FALLBACK IF NUMBER NOT FOUND 🌟
             if (!dmNumber || dmNumber.length < 10) {
                 let manualNum = prompt(`డేటాబేస్ లో మొబైల్ నంబర్ దొరకలేదు.\nదయచేసి ${dmName} గారి వాట్సాప్ నంబర్ (10 అంకెలు) ఇక్కడ ఎంటర్ చేయండి:`, "");
                 if (manualNum !== null && manualNum.trim().length >= 10) {
