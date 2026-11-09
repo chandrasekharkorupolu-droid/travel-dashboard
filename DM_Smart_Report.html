@@ -353,9 +353,6 @@
     </div>
 </div>
 
-
-
-
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
@@ -377,11 +374,11 @@
     let latestRemarks = {}; 
     let globalCallLogs = []; 
 
-    window.onload = function() {
+    function loadDMReport() {
         let loadingEl = document.getElementById('loadingDiv');
         if(loadingEl) loadingEl.style.display = 'block';
 
-        fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
+        fetch(SCRIPT_URL + "?action=fetchDMReport&t=" + new Date().getTime(), { redirect: "follow", cache: "no-store" })
         .then(response => response.json())
         .then(data => {
             if(data.status === 'error') {
@@ -461,7 +458,14 @@
             }
             console.error(error);
         });
-    };
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(loadDMReport, 1);
+    } else {
+        window.addEventListener('DOMContentLoaded', loadDMReport);
+        window.addEventListener('load', loadDMReport);
+    }
 
     function toggleFullScreen(elementId, btn) {
         let elem = document.getElementById(elementId);
@@ -988,7 +992,6 @@
         });
     }
 
-    // 🌟 100% PERFECT HTML TO XLS EXPORTER WITH STYLES & STRICT TEXT FORMAT 🌟
     function exportToStyledExcel(dataList, fileName, title) {
         if(!dataList || dataList.length === 0) { alert("No data available to download."); return; }
 
@@ -1026,7 +1029,6 @@
         document.body.removeChild(link);
     }
 
-    // 🌟 TRIGGER YTD DROPOUT EXCEL EXPORT (CALLED FROM DISTRICT TABLE BUTTONS) 🌟
     function downloadYTDDropouts(districtFilter) {
         let exportData = [];
         stateLyCscs.forEach(cscid => {
@@ -1058,7 +1060,6 @@
         exportToStyledExcel(exportData, fileName, `YTD Dropouts List - ${distTitle} (${dateStr})`);
     }
 
-    // 🌟 TRIGGER PORTAL CALLING LIST EXCEL EXPORT 🌟
     function downloadCallingList() {
         if (!currentCallingListData || currentCallingListData.length === 0) { 
             alert("No data available to download for this selection."); 
@@ -1082,7 +1083,6 @@
         exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
     }
 
-    // Full HD Image Download
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         if(!reportDiv) return;
