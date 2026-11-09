@@ -1719,6 +1719,78 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
             exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
         }
+
+
+
+// 🌟 100% పర్ఫెక్ట్ ఫుల్ టేబుల్ డౌన్‌లోడ్ ఫంక్షన్ 🌟
+        async function downloadImage(elementId, prefix) {
+            const reportDiv = document.getElementById(elementId);
+            if(!reportDiv) return;
+            
+            // 0. పేజీని పైకి స్క్రోల్ చేయడం (ఇది html2canvas సగం కట్ అవ్వకుండా ఆపుతుంది)
+            const originalWindowScroll = window.scrollY;
+            window.scrollTo(0, 0);
+
+            // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
+            const dlBtns = reportDiv.querySelectorAll('.btn-download, button');
+            const originalBtnDisplays = [];
+            dlBtns.forEach(btn => {
+                originalBtnDisplays.push(btn.style.display);
+                btn.style.display = 'none';
+            });
+
+            // 2. టేబుల్స్ లో స్క్రోల్ బార్స్ పూర్తిగా తీసేసి ఎంత డేటా ఉంటే అంత పొడవుగా సాగేలా చేయడం
+            const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
+            let originalCssTexts = [];
+            tableResponsiveDivs.forEach(div => {
+                originalCssTexts.push(div.style.cssText);
+                // ఇక్కడే మ్యాజిక్: !important వాడి బలవంతంగా టేబుల్‌ను ఎక్స్పాండ్ చేయడం
+                div.style.cssText = "max-height: none !important; overflow: visible !important; height: auto !important;";
+            });
+
+            let originalDivCss = reportDiv.style.cssText;
+            reportDiv.style.cssText += "width: 1200px !important; height: auto !important; position: relative !important; overflow: visible !important;";
+            
+            // టేబుల్ పెద్దది అవ్వడానికి బ్రౌజర్‌కి టైమ్ ఇవ్వాలి
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            try {
+                const canvas = await html2canvas(reportDiv, { 
+                    scale: 2, // క్వాలిటీ కోసం 
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0,
+                    windowWidth: document.documentElement.scrollWidth,
+                    windowHeight: document.documentElement.scrollHeight
+                });
+                
+                const link = document.createElement('a');
+                let d = new Date(); 
+                let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+                link.download = `${prefix}_${dateStr}.png`;
+                link.href = canvas.toDataURL("image/png", 1.0);
+                link.click();
+            } catch(err) {
+                console.error(err);
+                alert("Image capture failed. Please try again.");
+            } finally {
+                // 3. ఫోటో తీసేసాక అన్నీ మళ్ళీ యధావిధిగా స్క్రోల్ బార్ లోకి సెట్ చేయడం
+                tableResponsiveDivs.forEach((div, index) => {
+                    div.style.cssText = originalCssTexts[index];
+                });
+                reportDiv.style.cssText = originalDivCss;
+                
+                dlBtns.forEach((btn, index) => {
+                    btn.style.display = originalBtnDisplays[index];
+                });
+
+                // పాత స్క్రోల్ పొజిషన్ కి వెళ్ళడం
+                window.scrollTo(0, originalWindowScroll);
+            }
+        }
+
 </script>
 </body>
 </html>
