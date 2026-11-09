@@ -496,7 +496,7 @@
 
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     // 🌟 100% AP STRICT DISTRICT LIST (UPDATED WITH 28 DISTRICTS) 🌟
     const VALID_AP_DISTRICTS = [
@@ -659,6 +659,103 @@
 
     function checkScientificNotation(val) { if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true; }
 
+    // 🌟🌟🌟 MISSING FUNCTION ADDED HERE 🌟🌟🌟
+    function generateHTMLReports() {
+        // 1. Dashboard Summary Cards
+        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
+        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
+        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
+        
+        let dropoutsCount = stateLyCscs.size - stateYtdCscs.size; 
+        let dropouts = 0; let dropoutsGsw = 0;
+        stateLyCscs.forEach(id => { if(!stateYtdCscs.has(id)) { dropouts++; if(id.startsWith('9')) dropoutsGsw++; } });
+        document.getElementById('sumZeroTxn').innerText = dropouts.toLocaleString();
+        document.getElementById('sumZeroGsw').innerText = `(GSW: ${dropoutsGsw.toLocaleString()})`;
+        
+        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
+        document.getElementById('sumFtdRev').innerText = '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2});
+        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
+
+        // 2. Service-Wise Report
+        let srvHtml = "";
+        Object.keys(serviceData).sort().forEach(srv => {
+            let d = serviceData[srv];
+            srvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                <td class="text-left" style="color:#1e3a8a;">${srv}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
+                <td style="color:#1d4ed8; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
+                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+            </tr>`;
+        });
+        document.getElementById('serviceBody').innerHTML = srvHtml;
+
+        // 3. Yesterday Service Report
+        let ySrvHtml = "";
+        Object.keys(serviceData).sort((a,b) => serviceData[b].ftd_txn - serviceData[a].ftd_txn).forEach(srv => {
+            let d = serviceData[srv];
+            if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
+                ySrvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                    <td class="text-left" style="color:#1e3a8a;">${srv}</td>
+                    <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
+                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                </tr>`;
+            }
+        });
+        if(ySrvHtml === "") ySrvHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
+        document.getElementById('yesterdayServiceBody').innerHTML = ySrvHtml;
+
+        // 4. District-Wise Report
+        let distHtml = "";
+        Object.keys(districtData).sort().forEach(dist => {
+            let d = districtData[dist];
+            let distDrop = 0; d.ly_cscs.forEach(id => { if(!d.ytd_cscs.has(id)) distDrop++; });
+            distHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                <td class="text-left" style="color:#1e3a8a;">${dist}</td>
+                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
+                <td style="color:#059669; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
+                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
+                <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
+                <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#dc2626; font-weight:900;"><div style="display:flex; justify-content:space-between; align-items:center;"><span>${distDrop.toLocaleString()}</span> <button onclick="downloadYTDDropouts('${dist}')" style="background:#dc2626; color:white; border:none; padding:2px 5px; border-radius:4px; font-size:9px; cursor:pointer;" title="Download District Dropouts"><i class="fa-solid fa-download"></i></button></div></td>
+                <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
+                <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+            </tr>`;
+        });
+        document.getElementById('districtBody').innerHTML = distHtml;
+
+        // 5. Yesterday District Report
+        let yDistHtml = "";
+        Object.keys(districtData).sort((a,b) => districtData[b].ftd_txn - districtData[a].ftd_txn).forEach(dist => {
+            let d = districtData[dist];
+            if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
+                yDistHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                    <td class="text-left" style="color:#1e3a8a;">${dist}</td>
+                    <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
+                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                </tr>`;
+            }
+        });
+        if(yDistHtml === "") yDistHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
+        document.getElementById('yesterdayDistrictBody').innerHTML = yDistHtml;
+    }
+    // 🌟🌟🌟 END OF MISSING FUNCTION 🌟🌟🌟
+
     async function processReports() {
         const fileLastYear = document.getElementById('fileLastYear').files[0]; const fileMaster = document.getElementById('fileMaster').files[0]; const fileDayWise = document.getElementById('fileDayWise').files[0];
         if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్s సెలెక్ట్ చేయండి!"); return; }
@@ -687,6 +784,7 @@
         } finally {
             if(document.getElementById('btnGen')) document.getElementById('btnGen').disabled = false;
             if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'none';
+            sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
         }
     }
 
@@ -1545,7 +1643,7 @@
         const reportDiv = document.getElementById(elementId);
         if(!reportDiv) return;
         
-        const dlBtns = reportDiv.querySelectorAll('.btn-download');
+        const dlBtns = reportDiv.querySelectorAll('.btn-download, .btn-call, button');
         dlBtns.forEach(btn => btn.style.display = 'none');
 
         const dateFilter = reportDiv.querySelector('#leaderboardDateFilter, #empReportDateFilter, #convDateFilter');
