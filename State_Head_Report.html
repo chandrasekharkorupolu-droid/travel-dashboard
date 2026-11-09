@@ -496,1239 +496,1229 @@
 
 
 <script>
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-    // 🌟 100% AP STRICT DISTRICT LIST (UPDATED WITH 28 DISTRICTS) 🌟
-    const VALID_AP_DISTRICTS = [
-        "ALLURI SITHARAMA RAJU", "ANAKAPALLI", "ANANTAPUR", "ANNAMAYYA", "BAPATLA", 
-        "CHITTOOR", "DR B R AMBEDKAR KONASEEMA", "EAST GODAVARI", "ELURU", "GUNTUR", 
-        "KAKINADA", "KRISHNA", "KURNOOL", "MARKAPURAM", "NANDYAL", "NTR", "PALNADU", 
-        "PARVATHIPURAM MANYAM", "POLAVARAM", "PRAK", "SPSR NELLORE", "SRI SATHYA SAI", 
-        "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
-    ];
+        // 🌟 100% AP STRICT DISTRICT LIST (UPDATED WITH 28 DISTRICTS) 🌟
+        const VALID_AP_DISTRICTS = [
+            "ALLURI SITHARAMA RAJU", "ANAKAPALLI", "ANANTAPUR", "ANNAMAYYA", "BAPATLA", 
+            "CHITTOOR", "DR B R AMBEDKAR KONASEEMA", "EAST GODAVARI", "ELURU", "GUNTUR", 
+            "KAKINADA", "KRISHNA", "KURNOOL", "MARKAPURAM", "NANDYAL", "NTR", "PALNADU", 
+            "PARVATHIPURAM MANYAM", "POLAVARAM", "PRAK", "SPSR NELLORE", "SRI SATHYA SAI", 
+            "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
+        ];
 
-    let districtData = {}; let serviceData = {};
-    let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
-    let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
-    let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
-    let file2Cscs = new Set(); 
-    let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
-    let monthlyData = {}; let monthNamesList = []; let vleDb = {}; 
-    let currentCallingListData = []; let hasScientificError = false;
-    let latestRemarks = {}; let globalCallLogs = []; 
+        let districtData = {}; let serviceData = {};
+        let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
+        let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
+        let stateMtdCscs = new Set(); let stateFtdCscs = new Set();
+        let file2Cscs = new Set(); 
+        let stateTotTxn = 0, stateFtdTxn = 0, stateFtdRev = 0, stateTotRev = 0;
+        let monthlyData = {}; let monthNamesList = []; let vleDb = {}; 
+        let currentCallingListData = []; let hasScientificError = false;
+        let latestRemarks = {}; let globalCallLogs = []; 
 
-    function initializeDashboard() {
-        let loadingEl = document.getElementById('loadingDiv');
-        if(loadingEl) loadingEl.style.display = 'block';
+        function initializeDashboard() {
+            let loadingEl = document.getElementById('loadingDiv');
+            if(loadingEl) loadingEl.style.display = 'block';
 
-        let d = new Date(); d.setDate(d.getDate() - 1);
-        let yyyy = d.getFullYear();
-        let mm = ("0" + (d.getMonth() + 1)).slice(-2);
-        let dd = ("0" + d.getDate()).slice(-2);
-        let convFilter = document.getElementById('convDateFilter');
-        if(convFilter) convFilter.value = `${yyyy}-${mm}-${dd}`;
+            let d = new Date(); d.setDate(d.getDate() - 1);
+            let yyyy = d.getFullYear();
+            let mm = ("0" + (d.getMonth() + 1)).slice(-2);
+            let dd = ("0" + d.getDate()).slice(-2);
+            let convFilter = document.getElementById('convDateFilter');
+            if(convFilter) convFilter.value = `${yyyy}-${mm}-${dd}`;
 
-        fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
-        .then(response => response.json())
-        .then(data => {
-            if(data.status === 'error') {
-                if(loadingEl) loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.message} <br><br><span style="font-size:14px; color:#64748b;">(దయచేసి State Head ప్యానెల్ నుండి "Publish" చేయండి)</span>`;
-                return;
-            }
-            if(loadingEl) loadingEl.style.display = 'none';
-
-            if(document.getElementById('uploadSectionDiv')) document.getElementById('uploadSectionDiv').style.display = 'none';
-            if(document.getElementById('btnGen')) document.getElementById('btnGen').style.display = 'none';
-            if(document.getElementById('btnClear')) document.getElementById('btnClear').style.display = 'block';
-
-            if(document.getElementById('lastUpdatedText')) {
-                document.getElementById('lastUpdatedText').style.display = 'inline-block';
-                document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
-            }
-
-            if(data.html_summary && document.getElementById('summaryArea')) document.getElementById('summaryArea').innerHTML = data.html_summary;
-            if(data.html_service && document.getElementById('serviceBody')) document.getElementById('serviceBody').innerHTML = data.html_service;
-            if(data.html_y_service && document.getElementById('yesterdayServiceBody')) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
-            if(data.html_district && document.getElementById('districtBody')) document.getElementById('districtBody').innerHTML = data.html_district;
-            if(data.html_y_district && document.getElementById('yesterdayDistrictBody')) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
-
-            vleDb = data.vleDb || {};
-            stateLyCscs = new Set(data.stateLyCscs || []); stateYtdCscs = new Set(data.stateYtdCscs || []);
-            stateMtdCscs = new Set(data.stateMtdCscs || []); stateFtdCscs = new Set(data.stateFtdCscs || []); 
-            file2Cscs = new Set(data.file2Cscs || []); 
-            stateYtdGswCscs.clear();
-            stateYtdCscs.forEach(id => { if(id && id.toString().startsWith('9')) stateYtdGswCscs.add(id); });
-
-            if (data.monthlyData) {
-                for(let m in data.monthlyData) {
-                    monthlyData[m] = { all: new Set(data.monthlyData[m].all || []), gsw: new Set(data.monthlyData[m].gsw || []) };
-                }
-            }
-            monthlyData["YTD (FY 26-27)"] = { all: new Set(stateYtdCscs), gsw: new Set(stateYtdGswCscs) };
-
-            try { populateDistrictDropdown(); populateMonthDropdowns(data.bnStr, data.tnStr); renderMomReport(); } catch(e) { console.error("Initial render error:", e); }
-
-            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
-            sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
-            if(document.getElementById('btnPublish')) document.getElementById('btnPublish').style.display = 'block';
-
-            setTimeout(() => { fetchCallingReport(true); }, 500);
-        })
-        .catch(error => {
-            if(loadingEl) loadingEl.style.display = 'none'; console.error("Server fetch failed:", error);
-        });
-    }
-
-    if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(initializeDashboard, 1); } 
-    else { window.addEventListener('DOMContentLoaded', initializeDashboard); window.addEventListener('load', initializeDashboard); }
-
-    function toggleFullScreen(elementId, btn) {
-        let elem = document.getElementById(elementId);
-        if(!elem) return;
-        if (elem.classList.contains('pseudo-fullscreen')) {
-            elem.classList.remove('pseudo-fullscreen'); btn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen'; document.body.style.overflow = '';
-        } else {
-            elem.classList.add('pseudo-fullscreen'); btn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen'; document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function toggleRow(tr) {
-        let tbody = tr.closest('tbody'); let isFiltered = tbody.getAttribute('data-filtered') === 'true';
-        if (!isFiltered) {
-            let rows = tbody.querySelectorAll('.data-row');
-            rows.forEach(r => { if (r !== tr) r.style.display = 'none'; });
-            tbody.setAttribute('data-filtered', 'true'); tr.style.outline = '3px solid #3b82f6'; 
-            if(!tr.style.backgroundColor || tr.style.backgroundColor !== 'rgb(254, 242, 242)') { tr.style.background = '#e0f2fe'; }
-        } else {
-            let rows = tbody.querySelectorAll('.data-row');
-            rows.forEach(r => { 
-                r.style.display = ''; r.style.outline = 'none'; 
-                if(r.style.backgroundColor !== 'rgb(254, 242, 242)' && r.style.backgroundColor !== '#fef2f2') { r.style.background = ''; }
-            });
-            tbody.setAttribute('data-filtered', 'false');
-        }
-    }
-
-    function clearLocalData() {
-        if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
-            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
-            sections.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
-            if(document.getElementById('btnPublish')) document.getElementById('btnPublish').style.display = 'none';
-            if(document.getElementById('btnClear')) document.getElementById('btnClear').style.display = 'none';
-            if(document.getElementById('lastUpdatedText')) document.getElementById('lastUpdatedText').style.display = 'none';
-            if(document.getElementById('fileLastYear')) document.getElementById('fileLastYear').value = "";
-            if(document.getElementById('fileMaster')) document.getElementById('fileMaster').value = "";
-            if(document.getElementById('fileDayWise')) document.getElementById('fileDayWise').value = "";
-            if(document.getElementById('uploadSectionDiv')) document.getElementById('uploadSectionDiv').style.display = 'flex';
-            if(document.getElementById('btnGen')) document.getElementById('btnGen').style.display = 'block';
-        }
-    }
-
-    function createDistObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 }; }
-    function createSrvObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 }; }
-
-    function getVal(row, searchTerms) {
-        let keys = Object.keys(row);
-        let key = keys.find(k => {
-            if(!k) return false;
-            let cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-            return searchTerms.some(term => cleanKey.includes(term));
-        });
-        return key ? row[key] : undefined;
-    }
-
-    function safeParseFloat(val) {
-        if (!val) return 0;
-        if (typeof val === 'string') val = val.replace(/,/g, '').trim();
-        return parseFloat(val) || 0;
-    }
-
-    function normalizeDistrict(d) {
-        if(!d) return "INVALID";
-        d = d.toString().toUpperCase().replace(/[\s\uFEFF\xA0]+/g, ' ').trim(); d = d.replace(/\./g, '');
-        if (d === "ASR") d = "ALLURI SITHARAMA RAJU"; if (d === "ANAKAPALLE") d = "ANAKAPALLI";
-        if (d === "ANANTHAPUR" || d === "ANANTHAPURAM" || d === "ANANTHAPURAMU") d = "ANANTAPUR";
-        if (d === "VISAKHAPTNAM" || d === "VISAKHAPATANAM" || d === "VIZAG") d = "VISAKHAPATNAM";
-        if (d === "YSR" || d === "KADAPA" || d === "YSR KADAPA") d = "YSR KADAPA";
-        if (d === "NELLORE" || d === "SPSR NELLORE" || d === "SRI POTTI SRIRAMULU NELLORE") d = "SPSR NELLORE";
-        if (d === "KONASEEMA" || d === "DR BR AMBEDKAR KONASEEMA") d = "DR B R AMBEDKAR KONASEEMA";
-        if (d === "TIRUPATHI") d = "TIRUPATI";
-        if (VALID_AP_DISTRICTS.includes(d)) return d;
-        return "INVALID"; 
-    }
-
-    function checkScientificNotation(val) { if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true; }
-
-    // 🌟🌟🌟 MISSING FUNCTION ADDED HERE 🌟🌟🌟
-    function generateHTMLReports() {
-        // 1. Dashboard Summary Cards
-        document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
-        document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
-        document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
-        document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
-        document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
-        
-        let dropoutsCount = stateLyCscs.size - stateYtdCscs.size; 
-        let dropouts = 0; let dropoutsGsw = 0;
-        stateLyCscs.forEach(id => { if(!stateYtdCscs.has(id)) { dropouts++; if(id.startsWith('9')) dropoutsGsw++; } });
-        document.getElementById('sumZeroTxn').innerText = dropouts.toLocaleString();
-        document.getElementById('sumZeroGsw').innerText = `(GSW: ${dropoutsGsw.toLocaleString()})`;
-        
-        document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
-        document.getElementById('sumFtdRev').innerText = '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2});
-        document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
-
-        // 2. Service-Wise Report
-        let srvHtml = "";
-        Object.keys(serviceData).sort().forEach(srv => {
-            let d = serviceData[srv];
-            srvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
-                <td class="text-left" style="color:#1e3a8a;">${srv}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
-                <td style="color:#1d4ed8; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
-                <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
-                <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-            </tr>`;
-        });
-        document.getElementById('serviceBody').innerHTML = srvHtml;
-
-        // 3. Yesterday Service Report
-        let ySrvHtml = "";
-        Object.keys(serviceData).sort((a,b) => serviceData[b].ftd_txn - serviceData[a].ftd_txn).forEach(srv => {
-            let d = serviceData[srv];
-            if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
-                ySrvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
-                    <td class="text-left" style="color:#1e3a8a;">${srv}</td>
-                    <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
-                    <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
-                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                    <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                </tr>`;
-            }
-        });
-        if(ySrvHtml === "") ySrvHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
-        document.getElementById('yesterdayServiceBody').innerHTML = ySrvHtml;
-
-        // 4. District-Wise Report
-        let distHtml = "";
-        Object.keys(districtData).sort().forEach(dist => {
-            let d = districtData[dist];
-            let distDrop = 0; d.ly_cscs.forEach(id => { if(!d.ytd_cscs.has(id)) distDrop++; });
-            distHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
-                <td class="text-left" style="color:#1e3a8a;">${dist}</td>
-                <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
-                <td style="color:#059669; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
-                <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
-                <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
-                <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
-                <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#dc2626; font-weight:900;"><div style="display:flex; justify-content:space-between; align-items:center;"><span>${distDrop.toLocaleString()}</span> <button onclick="downloadYTDDropouts('${dist}')" style="background:#dc2626; color:white; border:none; padding:2px 5px; border-radius:4px; font-size:9px; cursor:pointer;" title="Download District Dropouts"><i class="fa-solid fa-download"></i></button></div></td>
-                <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
-                <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-            </tr>`;
-        });
-        document.getElementById('districtBody').innerHTML = distHtml;
-
-        // 5. Yesterday District Report
-        let yDistHtml = "";
-        Object.keys(districtData).sort((a,b) => districtData[b].ftd_txn - districtData[a].ftd_txn).forEach(dist => {
-            let d = districtData[dist];
-            if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
-                yDistHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
-                    <td class="text-left" style="color:#1e3a8a;">${dist}</td>
-                    <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
-                    <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
-                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                    <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-                </tr>`;
-            }
-        });
-        if(yDistHtml === "") yDistHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
-        document.getElementById('yesterdayDistrictBody').innerHTML = yDistHtml;
-    }
-    // 🌟🌟🌟 END OF MISSING FUNCTION 🌟🌟🌟
-
-    async function processReports() {
-        const fileLastYear = document.getElementById('fileLastYear').files[0]; const fileMaster = document.getElementById('fileMaster').files[0]; const fileDayWise = document.getElementById('fileDayWise').files[0];
-        if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్s సెలెక్ట్ చేయండి!"); return; }
-
-        if(document.getElementById('btnGen')) document.getElementById('btnGen').disabled = true;
-        if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'block';
-        
-        let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
-        sections.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
-
-        districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
-        stateLyCscs.clear(); stateLyGswCscs.clear(); stateYtdCscs.clear(); stateYtdGswCscs.clear(); stateMtdCscs.clear(); stateFtdCscs.clear(); file2Cscs.clear();
-        stateTotTxn = 0; stateFtdTxn = 0; stateFtdRev = 0; stateTotRev = 0; hasScientificError = false;
-        monthlyData["FY 25-26"] = { all: new Set(), gsw: new Set() }; monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
-
-        try {
-            if (fileLastYear) { await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } })); }
-            await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]); processMasterData(res.data, headers); r(); } }));
-            await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
-
-            monthlyData["YTD (FY 26-27)"] = { all: new Set(stateYtdCscs), gsw: new Set(stateYtdGswCscs) };
-            populateMonthDropdowns(); generateHTMLReports(); populateDistrictDropdown(); renderMomReport(); fetchCallingReport(true);
-            if (hasScientificError) { setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్స్ లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500); }
-        } catch (error) {
-            alert("ఎర్రర్ వచ్చింది: " + error.message);
-        } finally {
-            if(document.getElementById('btnGen')) document.getElementById('btnGen').disabled = false;
-            if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'none';
-            sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
-        }
-    }
-
-    function processLastYearData(data) {
-        data.forEach(row => {
-            let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString()); if(dist === "INVALID") return; 
-            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
-            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
-            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
-            if(!cscid) return;
-            let isGSW = cscid.startsWith('9');
-            stateLyCscs.add(cscid); if(isGSW) stateLyGswCscs.add(cscid);
-            monthlyData["FY 25-26"].all.add(cscid); if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
-
-            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
-            else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
-            if(!districtData[dist]) districtData[dist] = createDistObj();
-            districtData[dist].ly_cscs.add(cscid); if(isGSW) districtData[dist].ly_gsw.add(cscid);
-            if(!serviceData[srv]) serviceData[srv] = createSrvObj();
-            serviceData[srv].ly_cscs.add(cscid); if(isGSW) serviceData[srv].ly_gsw.add(cscid);
-        });
-    }
-
-    function processMasterData(data, headers) {
-        let monthCols = [];
-        headers.forEach(h => {
-            if(h) {
-                let lowerH = h.toLowerCase();
-                if(lowerH.endsWith(' txn') && !lowerH.includes('total') && !lowerH.includes('ytd')) {
-                    let mName = h.replace(/txn/i, '').trim();
-                    if(mName !== "") { monthCols.push({ col: h, name: mName }); if(!monthlyData[mName]) monthlyData[mName] = { all: new Set(), gsw: new Set() }; }
-                }
-            }
-        });
-        data.forEach(row => {
-            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
-            let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
-            let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
-            if(dist === "INVALID") return; 
-            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
-            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
-            if(!cscid) return;
-            let isGSW = cscid.startsWith('9');
-            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
-            else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
-
-            if(!districtData[dist]) districtData[dist] = createDistObj(); if(!serviceData[srv]) serviceData[srv] = createSrvObj();
-            let ytdTxn = 0, ytdAmt = 0, ytdRev = 0;
-            
-            monthCols.forEach(mInfo => {
-                let val = safeParseFloat(row[mInfo.col]);
-                if(val > 0) { monthlyData[mInfo.name].all.add(cscid); if(isGSW) monthlyData[mInfo.name].gsw.add(cscid); }
-            });
-            for (let key in row) {
-                if(!key) continue; let k = key.toLowerCase();
-                if (k.endsWith(' txn')) ytdTxn += safeParseFloat(row[key]);
-                if (k.endsWith(' amt')) ytdAmt += safeParseFloat(row[key]);
-                if (k.endsWith(' rev')) ytdRev += safeParseFloat(row[key]);
-            }
-            if(ytdTxn > 0) {
-                stateYtdCscs.add(cscid); file2Cscs.add(cscid); districtData[dist].ytd_cscs.add(cscid); serviceData[srv].ytd_cscs.add(cscid);
-                if(isGSW) { stateYtdGswCscs.add(cscid); districtData[dist].ytd_gsw.add(cscid); serviceData[srv].ytd_gsw.add(cscid); }
-            }
-            districtData[dist].total_txn += ytdTxn; districtData[dist].total_amt += ytdAmt; districtData[dist].total_rev += ytdRev;
-            serviceData[srv].total_txn += ytdTxn; serviceData[srv].total_amt += ytdAmt; serviceData[srv].total_rev += ytdRev;
-            stateTotTxn += ytdTxn; stateTotRev += ytdRev;
-        });
-    }
-
-    function processDayWiseData(data, headers) {
-        let txnCols = headers.filter(h => h && h.toLowerCase().endsWith(' txn'));
-        let amtCols = headers.filter(h => h && h.toLowerCase().endsWith(' amt'));
-        let revCols = headers.filter(h => h && h.toLowerCase().endsWith(' rev'));
-        
-        let lastTxnCol = txnCols.length > 0 ? txnCols[txnCols.length - 1] : null; let prevTxnCol = txnCols.length > 1 ? txnCols[txnCols.length - 2] : null;
-        let lastAmtCol = amtCols.length > 0 ? amtCols[amtCols.length - 1] : null; let prevAmtCol = amtCols.length > 1 ? amtCols[amtCols.length - 2] : null;
-        let lastRevCol = revCols.length > 0 ? revCols[revCols.length - 1] : null; let prevRevCol = revCols.length > 1 ? revCols[revCols.length - 2] : null;
-
-        if (lastTxnCol && prevTxnCol) {
-            let sumLast = 0, sumPrev = 0;
-            data.forEach(row => { sumLast += safeParseFloat(row[lastTxnCol]); sumPrev += safeParseFloat(row[prevTxnCol]); });
-            if (sumPrev > 0 && sumLast < (sumPrev * 0.3)) { lastTxnCol = prevTxnCol; lastAmtCol = prevAmtCol || lastAmtCol; lastRevCol = prevRevCol || lastRevCol; }
-        }
-        let datePattern = /^(\d{1,2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i;
-        data.forEach(row => {
-            let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
-            let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
-            let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
-            if(dist === "INVALID") return; 
-            let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-            let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
-            let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
-            if(!cscid) return;
-            let isGSW = cscid.startsWith('9');
-            if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
-            else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
-
-            let lastDateStr = null;
-            for(let i=0; i<txnCols.length; i++) {
-                if(safeParseFloat(row[txnCols[i]]) > 0) {
-                    let match = txnCols[i].match(datePattern);
-                    if(match) {
-                        let d = parseInt(match[1]); let mStr = match[2].toLowerCase();
-                        let mIndex = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(mStr) + 1;
-                        let yyyy = new Date().getFullYear();
-                        let mFormat = mIndex < 10 ? '0' + mIndex : mIndex; let dFormat = d < 10 ? '0' + d : d;
-                        let currentDateStr = `${yyyy}-${mFormat}-${dFormat}`;
-                        if (!lastDateStr || currentDateStr > lastDateStr) { lastDateStr = currentDateStr; }
-                    }
-                }
-            }
-            if(lastDateStr) { vleDb[cscid].lastTxnDate = lastDateStr; }
-            if(!districtData[dist]) districtData[dist] = createDistObj();
-            if(!serviceData[srv]) serviceData[srv] = createSrvObj();
-
-            let mtdTxn = 0, mtdAmt = 0, mtdRev = 0;
-            txnCols.forEach(col => { mtdTxn += safeParseFloat(row[col]); }); amtCols.forEach(col => { mtdAmt += safeParseFloat(row[col]); }); revCols.forEach(col => { mtdRev += safeParseFloat(row[col]); });
-            let ftdTxn = lastTxnCol ? safeParseFloat(row[lastTxnCol]) : 0; let ftdAmt = lastAmtCol ? safeParseFloat(row[lastAmtCol]) : 0; let ftdRev = lastRevCol ? safeParseFloat(row[lastRevCol]) : 0;
-
-            if(mtdTxn > 0) {
-                stateMtdCscs.add(cscid); districtData[dist].mtd_cscs.add(cscid); serviceData[srv].mtd_cscs.add(cscid);
-                monthlyData["MTD (Current Month)"].all.add(cscid); if(isGSW) monthlyData["MTD (Current Month)"].gsw.add(cscid);
-            }
-            if(ftdTxn > 0) { stateFtdCscs.add(cscid); districtData[dist].ftd_cscs.add(cscid); serviceData[srv].ftd_cscs.add(cscid); serviceData[srv].ftd_rows++; }
-            districtData[dist].total_txn += mtdTxn; districtData[dist].total_amt += mtdAmt; districtData[dist].total_rev += mtdRev;
-            districtData[dist].ftd_txn += ftdTxn; districtData[dist].ftd_amt += ftdAmt; districtData[dist].ftd_rev += ftdRev;
-            serviceData[srv].total_txn += mtdTxn; serviceData[srv].mtd_txn += mtdTxn; serviceData[srv].total_amt += mtdAmt; serviceData[srv].total_rev += mtdRev;
-            serviceData[srv].ftd_txn += ftdTxn; serviceData[srv].ftd_amt += ftdAmt; serviceData[srv].ftd_rev += ftdRev;
-            stateTotTxn += mtdTxn; stateTotRev += mtdRev; stateFtdTxn += ftdTxn; stateFtdRev += ftdRev;
-        });
-    }
-
-    function populateMonthDropdowns(defBase, defTarget) {
-        let baseSel = document.getElementById('momBaseSelect'); let tarSel = document.getElementById('momTargetSelect');
-        if(!baseSel || !tarSel) return;
-        baseSel.innerHTML = ""; tarSel.innerHTML = "";
-        let keys = Object.keys(monthlyData).filter(k => k && k.trim() !== ""); 
-        if(keys.length === 0) { baseSel.innerHTML = '<option value="">No Data</option>'; tarSel.innerHTML = '<option value="">No Data</option>'; return; }
-
-        keys.forEach(k => { baseSel.innerHTML += `<option value="${k}">${k}</option>`; tarSel.innerHTML += `<option value="${k}">${k}</option>`; });
-        
-        if (defBase && keys.includes(defBase)) baseSel.value = defBase; else if(keys.includes("FY 25-26")) baseSel.value = "FY 25-26"; else baseSel.selectedIndex = 0;
-        if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget; else if(keys.includes("YTD (FY 26-27)")) tarSel.value = "YTD (FY 26-27)"; else tarSel.selectedIndex = keys.length - 1;
-    }
-
-    function renderMomReport() {
-        try {
-            let baseSel = document.getElementById('momBaseSelect'); let tarSel = document.getElementById('momTargetSelect');
-            if(!baseSel || !tarSel) return;
-            let bName = baseSel.value; let tName = tarSel.value;
-            
-            if(!bName || !tName) {
-                if(baseSel.options.length > 0) bName = baseSel.options[0].value;
-                if(tarSel.options.length > 0) tName = tarSel.options[0].value;
-                if(!bName || !tName) {
-                    let mb = document.getElementById('momBody');
-                    if(mb) mb.innerHTML = `<tr><td colspan="6" style="color:#dc2626;">No data available to generate MoM report.</td></tr>`;
-                    return;
-                }
-            }
-
-            if(document.getElementById('th-mom-base')) document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
-            if(document.getElementById('th-mom-target')) document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
-            
-            let momOpt = document.getElementById('momOptionText');
-            if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
-
-            let bSet = monthlyData[bName]?.all || new Set(); let bGsw = monthlyData[bName]?.gsw || new Set();
-            let tSet = monthlyData[tName]?.all || new Set(); let tGsw = monthlyData[tName]?.gsw || new Set();
-
-            let validDists = new Set();
-            Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") validDists.add(v.dist); });
-            
-            let distStats = {};
-            Array.from(validDists).sort().forEach(d => { distStats[d] = { base:0, baseGsw:0, target:0, targetGsw:0, retained:0, retainedGsw:0, drop:0, dropGsw:0, new:0, newGsw:0 }; });
-
-            bSet.forEach(cscid => {
-                let dist = vleDb[cscid]?.dist;
-                if(dist && dist !== "UNKNOWN" && distStats[dist]) {
-                    distStats[dist].base++; let isG = bGsw.has(cscid); if(isG) distStats[dist].baseGsw++;
-                    if(tSet.has(cscid)) { distStats[dist].retained++; if(isG) distStats[dist].retainedGsw++; } 
-                    else { distStats[dist].drop++; if(isG) distStats[dist].dropGsw++; }
-                }
-            });
-
-            tSet.forEach(cscid => {
-                let dist = vleDb[cscid]?.dist;
-                if(dist && dist !== "UNKNOWN" && distStats[dist]) {
-                    distStats[dist].target++; let isG = tGsw.has(cscid); if(isG) distStats[dist].targetGsw++;
-                    if(!bSet.has(cscid)) { distStats[dist].new++; if(isG) distStats[dist].newGsw++; }
-                }
-            });
-
-            let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
-            let momHtml = ""; let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
-
-            sortedDists.forEach(dName => {
-                let s = distStats[dName]; if (s.base === 0 && s.target === 0) return; 
-                totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
-                totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
-                totTar+=s.target; totTarGsw+=s.targetGsw;
-
-                let bRetained = s.retained > 0 ? `<span class="badge badge-green">${s.retained.toLocaleString()}</span>` : `0`;
-                let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
-                let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
-
-                momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                    <td class="text-left" style="color:#1e3a8a;">${dName}</td>
-                    <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
-                    <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
-                    <td>${bDropout}<br><span style="font-size:9px; color:#e11d48;">(GSW: ${s.dropGsw})</span></td>
-                    <td>${bNew}<br><span style="font-size:9px; color:#d97706;">(GSW: ${s.newGsw})</span></td>
-                    <td style="color:#2563eb;">${s.target.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.targetGsw})</span></td>
-                </tr>`;
-            });
-
-            let momTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
-                <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
-                <td style="color:#ffffff; font-weight:900;">${totBase.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totBaseGsw.toLocaleString()})</span></td>
-                <td style="color:#ffffff; font-weight:900;">${totRet.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totRetGsw.toLocaleString()})</span></td>
-                <td style="color:#ffffff; font-weight:900;">${totDrop.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span></td>
-                <td style="color:#ffffff; font-weight:900;">${totNew.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totNewGsw.toLocaleString()})</span></td>
-                <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
-            </tr>`;
-            
-            let mb = document.getElementById('momBody'); if(mb) mb.innerHTML = momTotalHtml + momHtml;
-            let fc = document.getElementById('filterCategory'); if(fc && fc.value === 'MOM') { renderCallingList(); }
-        } catch(e) { console.error("renderMomReport Error:", e); }
-    }
-
-    function populateDistrictDropdown() {
-        let distSelect = document.getElementById('filterDistrict'); if(!distSelect) return;
-        distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        let dists = new Set();
-        Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") dists.add(v.dist); });
-        Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
-    }
-
-    function fetchCallingReport(forceLive = false) {
-        try {
-            let tbody = document.getElementById('dmCallingBody');
-            if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
-            
-            let dateEl = document.getElementById('leaderboardDateFilter');
-            let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
-            let isOverall = (filterVal === "OVERALL");
-            
-            let targetDate = new Date(); if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
-            let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
-            let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
-
-            let thTitle = isOverall ? "TOTAL CALLS (ALL TIME)" : (filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)");
-            if(document.getElementById('thTotalCalls')) document.getElementById('thTotalCalls').innerText = thTitle;
-            
-            let headingText = isOverall ? "VII. DM CALLING PERFORMANCE (OVERALL)" : (filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)");
-            if(document.getElementById('callingReportHeading')) document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
-
-            fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "getCallingReport" }), redirect: "follow", cache: "no-store" })
+            fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
             .then(response => response.json())
             .then(data => {
-                try {
-                    if(data.success) {
-                        globalCallLogs = data.data || [];
-                        let dmStats = {}; latestRemarks = {}; 
-                        
-                        const ALL_DMS = [
-                            "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
-                            "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
-                            "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
-                            "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
-                            "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
-                            "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan",
-                            "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
-                            "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
-                        ];
+                if(data.status === 'error') {
+                    if(loadingEl) loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.message} <br><br><span style="font-size:14px; color:#64748b;">(దయచేసి State Head ప్యానెల్ నుండి "Publish" చేయండి)</span>`;
+                    return;
+                }
+                if(loadingEl) loadingEl.style.display = 'none';
 
-                        ALL_DMS.forEach(dm => {
-                            dmStats[dm.toLowerCase().trim()] = { originalName: dm, ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() };
-                        });
-                        
-                        globalCallLogs.forEach(log => {
-                            if(!log) return;
-                            let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM";
-                            let matchKey = rawDm.toLowerCase();
-                            let cat = log.category ? String(log.category).toUpperCase() : "";
-                            let cscId = log.cscId ? String(log.cscId).toUpperCase() : "";
-                            let logDateRaw = log.date ? String(log.date) : "";
-                            let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
-                            
-                            if (cscId) { latestRemarks[cscId] = { remark: log.remark ? String(log.remark) : "", dmName: rawDm, date: logDateOnly }; }
-                            
-                            if (matchKey === "state head" || matchKey === "unknown dm") return;
+                if(document.getElementById('uploadSectionDiv')) document.getElementById('uploadSectionDiv').style.display = 'none';
+                if(document.getElementById('btnGen')) document.getElementById('btnGen').style.display = 'none';
+                if(document.getElementById('btnClear')) document.getElementById('btnClear').style.display = 'block';
 
-                            if (isOverall || (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2)))) {
-                                if(dmStats[matchKey]) {
-                                    if (cscId && dmStats[matchKey].calledVles.has(cscId)) return;
-                                    if (cscId) dmStats[matchKey].calledVles.add(cscId);
-                                    
-                                    if(cat.includes("YTD")) dmStats[matchKey].ytd++; else if(cat.includes("MTD")) dmStats[matchKey].mtd++; else if(cat.includes("FTD")) dmStats[matchKey].ftd++; else if(cat.includes("MOM")) dmStats[matchKey].mom++;
-                                    dmStats[matchKey].total++;
-                                }
-                            }
-                        });
-                        
-                        let sortedDMs = Object.values(dmStats).sort((a,b) => {
-                            if (b.total !== a.total) return b.total - a.total; return a.originalName.localeCompare(b.originalName);
-                        });
-                        
-                        let html = ""; let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+                if(document.getElementById('lastUpdatedText')) {
+                    document.getElementById('lastUpdatedText').style.display = 'inline-block';
+                    document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
+                }
 
-                        if(sortedDMs.length === 0) {
-                            html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made yet!</td></tr>`;
-                        } else {
-                            sortedDMs.forEach((stat, idx) => {
-                                grandTotal.ytd += stat.ytd; grandTotal.mtd += stat.mtd; grandTotal.ftd += stat.ftd; grandTotal.mom += stat.mom; grandTotal.total += stat.total;
-                                let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
-                                
-                                html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                                    <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
-                                    <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td><td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
-                                    <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td><td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
-                                    <td style="color:${displayTotalColor}; font-size:16px; font-weight:900;">${stat.total}</td>
-                                </tr>`;
-                            });
-                            
-                            let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
-                                <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
-                                <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
-                                <td style="color:#ffffff; font-weight:900;">${grandTotal.mom}</td><td style="color:#10b981; font-size:16px; font-weight:900;">${grandTotal.total}</td>
-                            </tr>`;
-                            html = totalHtml + html;
-                        }
-                        if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = html;
-                        
-                        try { renderCallingList(); } catch(e) { console.error(e); }
-                        try { renderConversionReport(); } catch(e) { console.error(e); }
-                        try { renderEmployeeReport(); } catch(e) { console.error(e); }
-                    } else {
-                        if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
+                if(data.html_summary && document.getElementById('summaryArea')) document.getElementById('summaryArea').innerHTML = data.html_summary;
+                if(data.html_service && document.getElementById('serviceBody')) document.getElementById('serviceBody').innerHTML = data.html_service;
+                if(data.html_y_service && document.getElementById('yesterdayServiceBody')) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
+                if(data.html_district && document.getElementById('districtBody')) document.getElementById('districtBody').innerHTML = data.html_district;
+                if(data.html_y_district && document.getElementById('yesterdayDistrictBody')) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
+
+                vleDb = data.vleDb || {};
+                stateLyCscs = new Set(data.stateLyCscs || []); stateYtdCscs = new Set(data.stateYtdCscs || []);
+                stateMtdCscs = new Set(data.stateMtdCscs || []); stateFtdCscs = new Set(data.stateFtdCscs || []); 
+                file2Cscs = new Set(data.file2Cscs || []); 
+                stateYtdGswCscs.clear();
+                stateYtdCscs.forEach(id => { if(id && id.toString().startsWith('9')) stateYtdGswCscs.add(id); });
+
+                if (data.monthlyData) {
+                    for(let m in data.monthlyData) {
+                        monthlyData[m] = { all: new Set(data.monthlyData[m].all || []), gsw: new Set(data.monthlyData[m].gsw || []) };
                     }
-                } catch(e) {
-                    if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">JS Output Error: ${e.message}</td></tr>`;
+                }
+                monthlyData["YTD (FY 26-27)"] = { all: new Set(stateYtdCscs), gsw: new Set(stateYtdGswCscs) };
+
+                try { populateDistrictDropdown(); populateMonthDropdowns(data.bnStr, data.tnStr); renderMomReport(); } catch(e) { console.error("Initial render error:", e); }
+
+                let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+                sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+                if(document.getElementById('btnPublish')) document.getElementById('btnPublish').style.display = 'block';
+
+                setTimeout(() => { fetchCallingReport(true); }, 500);
+            })
+            .catch(error => {
+                if(loadingEl) loadingEl.style.display = 'none'; console.error("Server fetch failed:", error);
+            });
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(initializeDashboard, 1); } 
+        else { window.addEventListener('DOMContentLoaded', initializeDashboard); window.addEventListener('load', initializeDashboard); }
+
+        function toggleFullScreen(elementId, btn) {
+            let elem = document.getElementById(elementId);
+            if(!elem) return;
+            if (elem.classList.contains('pseudo-fullscreen')) {
+                elem.classList.remove('pseudo-fullscreen'); btn.innerHTML = '<i class="fa-solid fa-expand"></i> Full Screen'; document.body.style.overflow = '';
+            } else {
+                elem.classList.add('pseudo-fullscreen'); btn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Full Screen'; document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function toggleRow(tr) {
+            let tbody = tr.closest('tbody'); let isFiltered = tbody.getAttribute('data-filtered') === 'true';
+            if (!isFiltered) {
+                let rows = tbody.querySelectorAll('.data-row');
+                rows.forEach(r => { if (r !== tr) r.style.display = 'none'; });
+                tbody.setAttribute('data-filtered', 'true'); tr.style.outline = '3px solid #3b82f6'; 
+                if(!tr.style.backgroundColor || tr.style.backgroundColor !== 'rgb(254, 242, 242)') { tr.style.background = '#e0f2fe'; }
+            } else {
+                let rows = tbody.querySelectorAll('.data-row');
+                rows.forEach(r => { 
+                    r.style.display = ''; r.style.outline = 'none'; 
+                    if(r.style.backgroundColor !== 'rgb(254, 242, 242)' && r.style.backgroundColor !== '#fef2f2') { r.style.background = ''; }
+                });
+                tbody.setAttribute('data-filtered', 'false');
+            }
+        }
+
+        function clearLocalData() {
+            if(confirm("Are you sure you want to clear the server loaded data and upload new files?")) {
+                let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+                sections.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
+                if(document.getElementById('btnPublish')) document.getElementById('btnPublish').style.display = 'none';
+                if(document.getElementById('btnClear')) document.getElementById('btnClear').style.display = 'none';
+                if(document.getElementById('lastUpdatedText')) document.getElementById('lastUpdatedText').style.display = 'none';
+                if(document.getElementById('fileLastYear')) document.getElementById('fileLastYear').value = "";
+                if(document.getElementById('fileMaster')) document.getElementById('fileMaster').value = "";
+                if(document.getElementById('fileDayWise')) document.getElementById('fileDayWise').value = "";
+                if(document.getElementById('uploadSectionDiv')) document.getElementById('uploadSectionDiv').style.display = 'flex';
+                if(document.getElementById('btnGen')) document.getElementById('btnGen').style.display = 'block';
+            }
+        }
+
+        function createDistObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), total_txn: 0, total_amt: 0, total_rev: 0, ftd_txn: 0, ftd_amt: 0, ftd_rev: 0 }; }
+        function createSrvObj() { return { ly_cscs: new Set(), ly_gsw: new Set(), ytd_cscs: new Set(), ytd_gsw: new Set(), mtd_cscs: new Set(), ftd_cscs: new Set(), ftd_rows: 0, total_txn: 0, mtd_txn: 0, ftd_txn: 0, total_amt: 0, total_rev: 0, ftd_amt: 0, ftd_rev: 0 }; }
+
+        function getVal(row, searchTerms) {
+            let keys = Object.keys(row);
+            let key = keys.find(k => {
+                if(!k) return false;
+                let cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                return searchTerms.some(term => cleanKey.includes(term));
+            });
+            return key ? row[key] : undefined;
+        }
+
+        function safeParseFloat(val) {
+            if (!val) return 0;
+            if (typeof val === 'string') val = val.replace(/,/g, '').trim();
+            return parseFloat(val) || 0;
+        }
+
+        function normalizeDistrict(d) {
+            if(!d) return "INVALID";
+            d = d.toString().toUpperCase().replace(/[\s\uFEFF\xA0]+/g, ' ').trim(); d = d.replace(/\./g, '');
+            if (d === "ASR") d = "ALLURI SITHARAMA RAJU"; if (d === "ANAKAPALLE") d = "ANAKAPALLI";
+            if (d === "ANANTHAPUR" || d === "ANANTHAPURAM" || d === "ANANTHAPURAMU") d = "ANANTAPUR";
+            if (d === "VISAKHAPTNAM" || d === "VISAKHAPATANAM" || d === "VIZAG") d = "VISAKHAPATNAM";
+            if (d === "YSR" || d === "KADAPA" || d === "YSR KADAPA") d = "YSR KADAPA";
+            if (d === "NELLORE" || d === "SPSR NELLORE" || d === "SRI POTTI SRIRAMULU NELLORE") d = "SPSR NELLORE";
+            if (d === "KONASEEMA" || d === "DR BR AMBEDKAR KONASEEMA") d = "DR B R AMBEDKAR KONASEEMA";
+            if (d === "TIRUPATHI") d = "TIRUPATI";
+            if (VALID_AP_DISTRICTS.includes(d)) return d;
+            return "INVALID"; 
+        }
+
+        function checkScientificNotation(val) { if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true; }
+
+        function generateHTMLReports() {
+            // 1. Dashboard Summary Cards
+            document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
+            document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
+            document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
+            document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+            document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
+            
+            let dropoutsCount = stateLyCscs.size - stateYtdCscs.size; 
+            let dropouts = 0; let dropoutsGsw = 0;
+            stateLyCscs.forEach(id => { if(!stateYtdCscs.has(id)) { dropouts++; if(id.startsWith('9')) dropoutsGsw++; } });
+            document.getElementById('sumZeroTxn').innerText = dropouts.toLocaleString();
+            document.getElementById('sumZeroGsw').innerText = `(GSW: ${dropoutsGsw.toLocaleString()})`;
+            
+            document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
+            document.getElementById('sumFtdRev').innerText = '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2});
+            document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
+
+            // 2. Service-Wise Report
+            let srvHtml = "";
+            Object.keys(serviceData).sort().forEach(srv => {
+                let d = serviceData[srv];
+                srvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                    <td class="text-left" style="color:#1e3a8a;">${srv}</td>
+                    <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
+                    <td style="color:#1d4ed8; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
+                    <td style="color:#3b82f6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
+                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
+                    <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                </tr>`;
+            });
+            document.getElementById('serviceBody').innerHTML = srvHtml;
+
+            // 3. Yesterday Service Report
+            let ySrvHtml = "";
+            Object.keys(serviceData).sort((a,b) => serviceData[b].ftd_txn - serviceData[a].ftd_txn).forEach(srv => {
+                let d = serviceData[srv];
+                if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
+                    ySrvHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                        <td class="text-left" style="color:#1e3a8a;">${srv}</td>
+                        <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
+                        <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
+                        <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                        <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    </tr>`;
+                }
+            });
+            if(ySrvHtml === "") ySrvHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
+            document.getElementById('yesterdayServiceBody').innerHTML = ySrvHtml;
+
+            // 4. District-Wise Report
+            let distHtml = "";
+            Object.keys(districtData).sort().forEach(dist => {
+                let d = districtData[dist];
+                let distDrop = 0; d.ly_cscs.forEach(id => { if(!d.ytd_cscs.has(id)) distDrop++; });
+                distHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                    <td class="text-left" style="color:#1e3a8a;">${dist}</td>
+                    <td style="color:#475569;">${d.ly_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ly_gsw.size.toLocaleString()})</span></td>
+                    <td style="color:#059669; font-weight:900;">${d.ytd_cscs.size.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${d.ytd_gsw.size.toLocaleString()})</span></td>
+                    <td style="color:#8b5cf6;">${d.mtd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#d946ef; font-weight:900;">${d.ftd_cscs.size.toLocaleString()}</td>
+                    <td style="color:#c026d3; font-weight:900;">${d.ftd_txn.toLocaleString()}</td>
+                    <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#b91c1c; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#dc2626; font-weight:900;"><div style="display:flex; justify-content:space-between; align-items:center;"><span>${distDrop.toLocaleString()}</span> <button onclick="downloadYTDDropouts('${dist}')" style="background:#dc2626; color:white; border:none; padding:2px 5px; border-radius:4px; font-size:9px; cursor:pointer;" title="Download District Dropouts"><i class="fa-solid fa-download"></i></button></div></td>
+                    <td style="color:#047857; font-weight:900; font-size:15px;">${d.total_txn.toLocaleString()}</td>
+                    <td style="color:#0f766e;">${d.total_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                </tr>`;
+            });
+            document.getElementById('districtBody').innerHTML = distHtml;
+
+            // 5. Yesterday District Report
+            let yDistHtml = "";
+            Object.keys(districtData).sort((a,b) => districtData[b].ftd_txn - districtData[a].ftd_txn).forEach(dist => {
+                let d = districtData[dist];
+                if(d.ftd_txn > 0 || d.ftd_cscs.size > 0) {
+                    yDistHtml += `<tr class="data-row" ondblclick="toggleRow(this)">
+                        <td class="text-left" style="color:#1e3a8a;">${dist}</td>
+                        <td style="color:#2563eb; font-weight:900; font-size:15px;">${d.ftd_cscs.size.toLocaleString()}</td>
+                        <td style="color:#c026d3; font-weight:900; font-size:15px;">${d.ftd_txn.toLocaleString()}</td>
+                        <td style="color:#a21caf;">${d.ftd_amt.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                        <td style="color:#059669; font-weight:900;">${d.ftd_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    </tr>`;
+                }
+            });
+            if(yDistHtml === "") yDistHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
+            document.getElementById('yesterdayDistrictBody').innerHTML = yDistHtml;
+        }
+
+        async function processReports() {
+            const fileLastYear = document.getElementById('fileLastYear').files[0]; const fileMaster = document.getElementById('fileMaster').files[0]; const fileDayWise = document.getElementById('fileDayWise').files[0];
+            if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్s సెలెక్ట్ చేయండి!"); return; }
+
+            if(document.getElementById('btnGen')) document.getElementById('btnGen').disabled = true;
+            if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'block';
+            
+            let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
+            sections.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
+
+            districtData = {}; serviceData = {}; vleDb = {}; monthlyData = {}; monthNamesList = [];
+            stateLyCscs.clear(); stateLyGswCscs.clear(); stateYtdCscs.clear(); stateYtdGswCscs.clear(); stateMtdCscs.clear(); stateFtdCscs.clear(); file2Cscs.clear();
+            stateTotTxn = 0; stateFtdTxn = 0; stateFtdRev = 0; stateTotRev = 0; hasScientificError = false;
+            monthlyData["FY 25-26"] = { all: new Set(), gsw: new Set() }; monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
+
+            try {
+                if (fileLastYear) { await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } })); }
+                await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]); processMasterData(res.data, headers); r(); } }));
+                await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
+
+                monthlyData["YTD (FY 26-27)"] = { all: new Set(stateYtdCscs), gsw: new Set(stateYtdGswCscs) };
+                populateMonthDropdowns(); generateHTMLReports(); populateDistrictDropdown(); renderMomReport(); fetchCallingReport(true);
+                
+                if (hasScientificError) { setTimeout(() => { alert("🚨 ముఖ్యాంశం: మీ ఫైల్s లో కొన్ని CSC ID లు '1.22E+11' (Scientific Format) లోకి మారిపోయాయి. వాటిని నంబర్ లోకి మార్చి మళ్లీ అప్‌లోడ్ చేయండి."); }, 500); }
+            } catch (error) {
+                alert("ఎర్రర్ వచ్చింది: " + error.message);
+            } finally {
+                // 🌟 FIX: Show Buttons correctly after local generation 🌟
+                if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'none';
+                
+                sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+                
+                if(document.getElementById('btnPublish')) document.getElementById('btnPublish').style.display = 'block';
+                if(document.getElementById('btnClear')) document.getElementById('btnClear').style.display = 'block';
+                if(document.getElementById('uploadSectionDiv')) document.getElementById('uploadSectionDiv').style.display = 'none';
+                if(document.getElementById('btnGen')) document.getElementById('btnGen').style.display = 'none';
+            }
+        }
+
+       // 🌟 BULLETPROOF PUBLISH FUNCTION 🌟
+        function publishToDMs() {
+            if(!confirm("Are you sure you want to publish these reports to all District Managers?")) return;
+            
+            let btn = document.getElementById('btnPublish');
+            let origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PUBLISHING...';
+            btn.disabled = true;
+
+            let payload = {
+                action: "publishDashboard",
+                html_summary: document.getElementById('summaryArea').innerHTML,
+                html_service: document.getElementById('serviceBody').innerHTML,
+                html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
+                html_district: document.getElementById('districtBody').innerHTML,
+                html_y_district: document.getElementById('yesterdayDistrictBody').innerHTML,
+                
+                vleDb: vleDb,
+                stateLyCscs: Array.from(stateLyCscs),
+                stateYtdCscs: Array.from(stateYtdCscs),
+                stateMtdCscs: Array.from(stateMtdCscs),
+                stateFtdCscs: Array.from(stateFtdCscs),
+                file2Cscs: Array.from(file2Cscs),
+                
+                bnStr: document.getElementById('momBaseSelect') ? document.getElementById('momBaseSelect').value : "",
+                tnStr: document.getElementById('momTargetSelect') ? document.getElementById('momTargetSelect').value : "",
+                
+                monthlyData: {} 
+            };
+            
+            for (let m in monthlyData) {
+                payload.monthlyData[m] = {
+                    all: Array.from(monthlyData[m].all),
+                    gsw: Array.from(monthlyData[m].gsw)
+                };
+            }
+
+            // 1st Attempt: Standard Fetch
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload) 
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Server returned " + res.status);
+                return res.json();
+            })
+            .then(res => {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+                if(res.success || res.status === 'success') {
+                    alert("✅ Reports Published Successfully to DMs Dashboard!");
+                } else {
+                    alert("❌ Failed to publish: " + (res.message || "Unknown Error"));
                 }
             })
             .catch(err => {
-                if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
-                console.error("fetchCallingReport Network/JS Error:", err);
+                console.warn("Standard fetch failed, trying no-cors fallback...", err);
+                
+                // 2nd Attempt: Fallback Fetch (No-CORS for large payloads)
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                    alert("✅ Data Published Successfully! (Using Fast-Track Mode).\nదయచేసి ఒక్కసారి పేజీని రిఫ్రెష్ చేసి చెక్ చేసుకోండి.");
+                }).catch(e => {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                    alert("❌ Network Error. The data size (approx 5MB to 8MB) might be too large for your current internet speed. Please check your connection.");
+                });
             });
-        } catch(e) { console.error("fetchCallingReport Initial Error:", e); }
-    }
+        }        
 
-    function renderCallingList() {
-        try {
-            let fc = document.getElementById('filterCategory'); let fd = document.getElementById('filterDistrict');
-            if(!fc || !fd) return;
-            let category = fc.value; let distFilter = fd.value;
-            let baseSet, activeSet;
-            if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
-            else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
-            else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
-            else if(category === 'MOM') { 
-                let bName = document.getElementById('momBaseSelect')?.value; let tName = document.getElementById('momTargetSelect')?.value;
-                baseSet = monthlyData[bName]?.all || new Set(); activeSet = monthlyData[tName]?.all || new Set(); 
-            }
+        function processLastYearData(data) {
+            data.forEach(row => {
+                let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString()); if(dist === "INVALID") return; 
+                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
+                if(!cscid) return;
+                let isGSW = cscid.startsWith('9');
+                stateLyCscs.add(cscid); if(isGSW) stateLyGswCscs.add(cscid);
+                monthlyData["FY 25-26"].all.add(cscid); if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
 
-            currentCallingListData = [];
+                if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+                else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
+                if(!districtData[dist]) districtData[dist] = createDistObj();
+                districtData[dist].ly_cscs.add(cscid); if(isGSW) districtData[dist].ly_gsw.add(cscid);
+                if(!serviceData[srv]) serviceData[srv] = createSrvObj();
+                serviceData[srv].ly_cscs.add(cscid); if(isGSW) serviceData[srv].ly_gsw.add(cscid);
+            });
+        }
+
+        function processMasterData(data, headers) {
+            let monthCols = [];
+            headers.forEach(h => {
+                if(h) {
+                    let lowerH = h.toLowerCase();
+                    if(lowerH.endsWith(' txn') && !lowerH.includes('total') && !lowerH.includes('ytd')) {
+                        let mName = h.replace(/txn/i, '').trim();
+                        if(mName !== "") { monthCols.push({ col: h, name: mName }); if(!monthlyData[mName]) monthlyData[mName] = { all: new Set(), gsw: new Set() }; }
+                    }
+                }
+            });
+            data.forEach(row => {
+                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
+                let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
+                let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
+                if(dist === "INVALID") return; 
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
+                if(!cscid) return;
+                let isGSW = cscid.startsWith('9');
+                if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+                else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
+
+                if(!districtData[dist]) districtData[dist] = createDistObj(); if(!serviceData[srv]) serviceData[srv] = createSrvObj();
+                let ytdTxn = 0, ytdAmt = 0, ytdRev = 0;
+                
+                monthCols.forEach(mInfo => {
+                    let val = safeParseFloat(row[mInfo.col]);
+                    if(val > 0) { monthlyData[mInfo.name].all.add(cscid); if(isGSW) monthlyData[mInfo.name].gsw.add(cscid); }
+                });
+                for (let key in row) {
+                    if(!key) continue; let k = key.toLowerCase();
+                    if (k.endsWith(' txn')) ytdTxn += safeParseFloat(row[key]);
+                    if (k.endsWith(' amt')) ytdAmt += safeParseFloat(row[key]);
+                    if (k.endsWith(' rev')) ytdRev += safeParseFloat(row[key]);
+                }
+                if(ytdTxn > 0) {
+                    stateYtdCscs.add(cscid); file2Cscs.add(cscid); districtData[dist].ytd_cscs.add(cscid); serviceData[srv].ytd_cscs.add(cscid);
+                    if(isGSW) { stateYtdGswCscs.add(cscid); districtData[dist].ytd_gsw.add(cscid); serviceData[srv].ytd_gsw.add(cscid); }
+                }
+                districtData[dist].total_txn += ytdTxn; districtData[dist].total_amt += ytdAmt; districtData[dist].total_rev += ytdRev;
+                serviceData[srv].total_txn += ytdTxn; serviceData[srv].total_amt += ytdAmt; serviceData[srv].total_rev += ytdRev;
+                stateTotTxn += ytdTxn; stateTotRev += ytdRev;
+            });
+        }
+
+        function processDayWiseData(data, headers) {
+            let txnCols = headers.filter(h => h && h.toLowerCase().endsWith(' txn'));
+            let amtCols = headers.filter(h => h && h.toLowerCase().endsWith(' amt'));
+            let revCols = headers.filter(h => h && h.toLowerCase().endsWith(' rev'));
             
-            if(baseSet && activeSet) {
-                baseSet.forEach(cscid => {
-                    if(!activeSet.has(cscid)) {
-                        let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
-                        if(details.dist === "INVALID") return; 
-                        
-                        if(distFilter === "ALL" || distFilter === details.dist) {
-                            currentCallingListData.push({ "District": details.dist || "", "CSC_ID": cscid || "", "Name": details.name || "Unknown VLE", "Mobile": details.mobile || "Not Available" });
+            let lastTxnCol = txnCols.length > 0 ? txnCols[txnCols.length - 1] : null; let prevTxnCol = txnCols.length > 1 ? txnCols[txnCols.length - 2] : null;
+            let lastAmtCol = amtCols.length > 0 ? amtCols[amtCols.length - 1] : null; let prevAmtCol = amtCols.length > 1 ? amtCols[amtCols.length - 2] : null;
+            let lastRevCol = revCols.length > 0 ? revCols[revCols.length - 1] : null; let prevRevCol = revCols.length > 1 ? revCols[revCols.length - 2] : null;
+
+            if (lastTxnCol && prevTxnCol) {
+                let sumLast = 0, sumPrev = 0;
+                data.forEach(row => { sumLast += safeParseFloat(row[lastTxnCol]); sumPrev += safeParseFloat(row[prevTxnCol]); });
+                if (sumPrev > 0 && sumLast < (sumPrev * 0.3)) { lastTxnCol = prevTxnCol; lastAmtCol = prevAmtCol || lastAmtCol; lastRevCol = prevRevCol || lastRevCol; }
+            }
+            let datePattern = /^(\d{1,2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i;
+            data.forEach(row => {
+                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
+                let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
+                let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
+                if(dist === "INVALID") return; 
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
+                if(!cscid) return;
+                let isGSW = cscid.startsWith('9');
+                if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
+                else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
+
+                let lastDateStr = null;
+                for(let i=0; i<txnCols.length; i++) {
+                    if(safeParseFloat(row[txnCols[i]]) > 0) {
+                        let match = txnCols[i].match(datePattern);
+                        if(match) {
+                            let d = parseInt(match[1]); let mStr = match[2].toLowerCase();
+                            let mIndex = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(mStr) + 1;
+                            let yyyy = new Date().getFullYear();
+                            let mFormat = mIndex < 10 ? '0' + mIndex : mIndex; let dFormat = d < 10 ? '0' + d : d;
+                            let currentDateStr = `${yyyy}-${mFormat}-${dFormat}`;
+                            if (!lastDateStr || currentDateStr > lastDateStr) { lastDateStr = currentDateStr; }
                         }
                     }
-                });
-            }
+                }
+                if(lastDateStr) { vleDb[cscid].lastTxnDate = lastDateStr; }
+                if(!districtData[dist]) districtData[dist] = createDistObj();
+                if(!serviceData[srv]) serviceData[srv] = createSrvObj();
 
-            let callsDone = 0;
-            currentCallingListData.forEach(v => { if(v.CSC_ID && latestRemarks[v.CSC_ID]) callsDone++; });
-            let callsPending = currentCallingListData.length - callsDone;
+                let mtdTxn = 0, mtdAmt = 0, mtdRev = 0;
+                txnCols.forEach(col => { mtdTxn += safeParseFloat(row[col]); }); amtCols.forEach(col => { mtdAmt += safeParseFloat(row[col]); }); revCols.forEach(col => { mtdRev += safeParseFloat(row[col]); });
+                let ftdTxn = lastTxnCol ? safeParseFloat(row[lastTxnCol]) : 0; let ftdAmt = lastAmtCol ? safeParseFloat(row[lastAmtCol]) : 0; let ftdRev = lastRevCol ? safeParseFloat(row[lastRevCol]) : 0;
 
-            if(document.getElementById('dropoutCount')) document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
-            if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
-            if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
+                if(mtdTxn > 0) {
+                    stateMtdCscs.add(cscid); districtData[dist].mtd_cscs.add(cscid); serviceData[srv].mtd_cscs.add(cscid);
+                    monthlyData["MTD (Current Month)"].all.add(cscid); if(isGSW) monthlyData["MTD (Current Month)"].gsw.add(cscid);
+                }
+                if(ftdTxn > 0) { stateFtdCscs.add(cscid); districtData[dist].ftd_cscs.add(cscid); serviceData[srv].ftd_cscs.add(cscid); serviceData[srv].ftd_rows++; }
+                districtData[dist].total_txn += mtdTxn; districtData[dist].total_amt += mtdAmt; districtData[dist].total_rev += mtdRev;
+                districtData[dist].ftd_txn += ftdTxn; districtData[dist].ftd_amt += ftdAmt; districtData[dist].ftd_rev += ftdRev;
+                serviceData[srv].total_txn += mtdTxn; serviceData[srv].mtd_txn += mtdTxn; serviceData[srv].total_amt += mtdAmt; serviceData[srv].total_rev += mtdRev;
+                serviceData[srv].ftd_txn += ftdTxn; serviceData[srv].ftd_amt += ftdAmt; serviceData[srv].ftd_rev += ftdRev;
+                stateTotTxn += mtdTxn; stateTotRev += mtdRev; stateFtdTxn += ftdTxn; stateFtdRev += ftdRev;
+            });
+        }
 
-            let tbody = "";
-            if(currentCallingListData.length === 0) {
-                tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
-            } else {
-                currentCallingListData.sort((a, b) => {
-                    let aHasRemark = (a.CSC_ID && latestRemarks[a.CSC_ID]) ? 1 : 0;
-                    let bHasRemark = (b.CSC_ID && latestRemarks[b.CSC_ID]) ? 1 : 0;
-                    if (aHasRemark !== bHasRemark) { return aHasRemark - bHasRemark; }
-                    let distA = a.District || ""; let distB = b.District || "";
-                    let cscA = a.CSC_ID || ""; let cscB = b.CSC_ID || "";
-                    return distA.localeCompare(distB) || cscA.localeCompare(cscB);
-                });
+        function populateMonthDropdowns(defBase, defTarget) {
+            let baseSel = document.getElementById('momBaseSelect'); let tarSel = document.getElementById('momTargetSelect');
+            if(!baseSel || !tarSel) return;
+            baseSel.innerHTML = ""; tarSel.innerHTML = "";
+            let keys = Object.keys(monthlyData).filter(k => k && k.trim() !== ""); 
+            if(keys.length === 0) { baseSel.innerHTML = '<option value="">No Data</option>'; tarSel.innerHTML = '<option value="">No Data</option>'; return; }
 
-                let displayList = currentCallingListData.slice(0, 500);
-                displayList.forEach((vle, idx) => {
-                    let callBtn = vle.Mobile !== "Not Available" ? `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
-                    let cscDisplay = vle.CSC_ID || ""; if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
-                    
-                    let lastRemHtml = "";
-                    if (vle.CSC_ID && latestRemarks[vle.CSC_ID]) {
-                        let lr = latestRemarks[vle.CSC_ID];
-                        lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
+            keys.forEach(k => { baseSel.innerHTML += `<option value="${k}">${k}</option>`; tarSel.innerHTML += `<option value="${k}">${k}</option>`; });
+            
+            if (defBase && keys.includes(defBase)) baseSel.value = defBase; else if(keys.includes("FY 25-26")) baseSel.value = "FY 25-26"; else baseSel.selectedIndex = 0;
+            if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget; else if(keys.includes("YTD (FY 26-27)")) tarSel.value = "YTD (FY 26-27)"; else tarSel.selectedIndex = keys.length - 1;
+        }
+
+        function renderMomReport() {
+            try {
+                let baseSel = document.getElementById('momBaseSelect'); let tarSel = document.getElementById('momTargetSelect');
+                if(!baseSel || !tarSel) return;
+                let bName = baseSel.value; let tName = tarSel.value;
+                
+                if(!bName || !tName) {
+                    if(baseSel.options.length > 0) bName = baseSel.options[0].value;
+                    if(tarSel.options.length > 0) tName = tarSel.options[0].value;
+                    if(!bName || !tName) {
+                        let mb = document.getElementById('momBody');
+                        if(mb) mb.innerHTML = `<tr><td colspan="6" style="color:#dc2626;">No data available to generate MoM report.</td></tr>`;
+                        return;
                     }
-                    
-                    let remarkSelect = `
-                        <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
-                            <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
-                                <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;" onchange="if(this.value==='Others'){document.getElementById('other_${vle.CSC_ID}').style.display='block';}else{document.getElementById('other_${vle.CSC_ID}').style.display='none';}">
-                                    <option value="">Select...</option><option value="Not answering/ Busy">Not answering/ Busy</option><option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
-                                    <option value="Intrested/will active">Intrested/will active</option><option value="Not interested/ Person not available">Not interested/ Person not available</option><option value="Others">Others</option>
-                                </select>
-                                <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
-                                <button onclick="saveRemark('${vle.CSC_ID}', this)" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; min-width:70px; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1);" title="Save Remark"><i class="fa-solid fa-save"></i> Save</button>
-                            </div>
-                            ${lastRemHtml}
-                        </div>
-                    `;
-                    
-                    tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                        <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a;">${vle.District}</td><td style="color:#0f172a;">${cscDisplay}</td>
-                        <td style="color:#475569; font-weight:600;">${vle.Name}</td><td style="color:#475569;">${vle.Mobile}</td><td>${callBtn}</td><td>${remarkSelect}</td>
+                }
+
+                if(document.getElementById('th-mom-base')) document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
+                if(document.getElementById('th-mom-target')) document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
+                
+                let momOpt = document.getElementById('momOptionText');
+                if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
+
+                let bSet = monthlyData[bName]?.all || new Set(); let bGsw = monthlyData[bName]?.gsw || new Set();
+                let tSet = monthlyData[tName]?.all || new Set(); let tGsw = monthlyData[tName]?.gsw || new Set();
+
+                let validDists = new Set();
+                Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") validDists.add(v.dist); });
+                
+                let distStats = {};
+                Array.from(validDists).sort().forEach(d => { distStats[d] = { base:0, baseGsw:0, target:0, targetGsw:0, retained:0, retainedGsw:0, drop:0, dropGsw:0, new:0, newGsw:0 }; });
+
+                bSet.forEach(cscid => {
+                    let dist = vleDb[cscid]?.dist;
+                    if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                        distStats[dist].base++; let isG = bGsw.has(cscid); if(isG) distStats[dist].baseGsw++;
+                        if(tSet.has(cscid)) { distStats[dist].retained++; if(isG) distStats[dist].retainedGsw++; } 
+                        else { distStats[dist].drop++; if(isG) distStats[dist].dropGsw++; }
+                    }
+                });
+
+                tSet.forEach(cscid => {
+                    let dist = vleDb[cscid]?.dist;
+                    if(dist && dist !== "UNKNOWN" && distStats[dist]) {
+                        distStats[dist].target++; let isG = tGsw.has(cscid); if(isG) distStats[dist].targetGsw++;
+                        if(!bSet.has(cscid)) { distStats[dist].new++; if(isG) distStats[dist].newGsw++; }
+                    }
+                });
+
+                let sortedDists = Object.keys(distStats).sort((a, b) => distStats[b].base - distStats[a].base);
+                let momHtml = ""; let totBase=0, totBaseGsw=0, totRet=0, totRetGsw=0, totDrop=0, totDropGsw=0, totNew=0, totNewGsw=0, totTar=0, totTarGsw=0;
+
+                sortedDists.forEach(dName => {
+                    let s = distStats[dName]; if (s.base === 0 && s.target === 0) return; 
+                    totBase+=s.base; totBaseGsw+=s.baseGsw; totRet+=s.retained; totRetGsw+=s.retainedGsw;
+                    totDrop+=s.drop; totDropGsw+=s.dropGsw; totNew+=s.new; totNewGsw+=s.newGsw;
+                    totTar+=s.target; totTarGsw+=s.targetGsw;
+
+                    let bRetained = s.retained > 0 ? `<span class="badge badge-green">${s.retained.toLocaleString()}</span>` : `0`;
+                    let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+                    let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
+
+                    momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
+                        <td class="text-left" style="color:#1e3a8a;">${dName}</td>
+                        <td style="color:#475569;">${s.base.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.baseGsw})</span></td>
+                        <td>${bRetained}<br><span style="font-size:9px; color:#0d9488;">(GSW: ${s.retainedGsw})</span></td>
+                        <td>${bDropout}<br><span style="font-size:9px; color:#e11d48;">(GSW: ${s.dropGsw})</span></td>
+                        <td>${bNew}<br><span style="font-size:9px; color:#d97706;">(GSW: ${s.newGsw})</span></td>
+                        <td style="color:#2563eb;">${s.target.toLocaleString()}<br><span style="font-size:9px;">(GSW: ${s.targetGsw})</span></td>
                     </tr>`;
                 });
-                if(currentCallingListData.length > 500) { tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`; }
-            }
-            let cb = document.getElementById('callingBody'); if(cb) cb.innerHTML = tbody;
-        } catch(e) { console.error("renderCallingList Error:", e); }
-    }
 
-    function checkIsActive(id, callDateStr, cat) {
-        if (cat && cat.includes("YTD") && file2Cscs.has(id)) { return false; }
-        let isMtdActive = stateMtdCscs.has(id);
-        if (!isMtdActive) return false; 
-        
-        let actvDateStr = vleDb[id] ? vleDb[id].lastTxnDate : null;
-        if (actvDateStr && callDateStr) {
-            let callVal = parseCustomDate(callDateStr);
-            let actvVal = parseCustomDate(actvDateStr);
-            if (callVal > 0 && actvVal > 0) { return actvVal >= callVal; }
-        }
-        return isMtdActive; 
-    }
-
-    function renderConversionReport() {
-        try {
-            let tbody = document.getElementById('conversionBody'); 
-            let dateEl = document.getElementById('convDateFilter');
-            let filterVal = dateEl ? (dateEl.value || "").trim() : "";
-            
-            if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) { 
-                if(tbody) tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
-                return; 
-            }
-            
-            let dParts = filterVal.includes('-') ? filterVal.split('-') : filterVal.split('/');
-            let targetStr1 = filterVal; let targetStr2 = filterVal;
-            
-            if(dParts.length === 3) {
-                if (dParts[0].length === 4) { targetStr1 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; } 
-                else { targetStr2 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; }
-            }
-            
-            let dmConvStats = {};
-            const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
-            ALL_DMS.forEach(dm => { dmConvStats[dm.toLowerCase().trim()] = { originalName: dm, ytdCalled: new Map(), mtdCalled: new Map(), totalCalled: new Map() }; });
-            
-            globalCallLogs.forEach(log => {
-                if(!log) return;
-                let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM"; let matchKey = rawDm.toLowerCase(); 
-                let cscId = log.cscId ? String(log.cscId).toUpperCase() : ""; 
-                let cat = log.category ? String(log.category).toUpperCase() : "";
-                let logDateRaw = log.date ? String(log.date) : "";
-                let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
-                
-                if (matchKey === "state head" || matchKey === "unknown dm") return;
-                if (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2))) {
-                    if(dmConvStats[matchKey] && cscId) {
-                        dmConvStats[matchKey].totalCalled.set(cscId, { date: logDateOnly, cat: cat });
-                        if(cat.includes("YTD")) dmConvStats[matchKey].ytdCalled.set(cscId, { date: logDateOnly, cat: cat });
-                        if(cat.includes("MTD")) dmConvStats[matchKey].mtdCalled.set(cscId, { date: logDateOnly, cat: cat });
-                    }
-                }
-            });
-            
-            let sortedDMs = Object.values(dmConvStats).sort((a,b) => { if (b.totalCalled.size !== a.totalCalled.size) return b.totalCalled.size - a.totalCalled.size; return a.originalName.localeCompare(b.originalName); });
-            let html = ""; let grandTotals = { ytdC:0, ytdA:0, mtdC:0, mtdA:0, totC:0, totA:0 };
-
-            sortedDMs.forEach((stat, idx) => {
-                let ytdActive = 0, mtdActive = 0, totalActive = 0;
-                stat.ytdCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) ytdActive++; });
-                stat.mtdCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) mtdActive++; });
-                stat.totalCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) totalActive++; });
-                
-                let yC = stat.ytdCalled.size; let yA = ytdActive; let mC = stat.mtdCalled.size; let mA = mtdActive; let tC = stat.totalCalled.size; let tA = totalActive;
-                grandTotals.ytdC += yC; grandTotals.ytdA += yA; grandTotals.mtdC += mC; grandTotals.mtdA += mA; grandTotals.totC += tC; grandTotals.totA += tA;
-
-                let rate = tC > 0 ? Math.round((tA / tC) * 100) : 0;
-                let displayYC = yC > 0 ? yC : '-'; let displayYA = yA > 0 ? `<span style="color:#16a34a; font-weight:900;">${yA}</span>` : '-'; let displayMC = mC > 0 ? mC : '-'; let displayMA = mA > 0 ? `<span style="color:#16a34a; font-weight:900;">${mA}</span>` : '-'; let displayTC = tC > 0 ? tC : '-'; let displayTA = tA > 0 ? `<span class="badge badge-green" style="font-size:14px;">${tA}</span>` : '-';
-                let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626'); let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
-                
-                html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
-                    <td>${idx + 1}</td><td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
-                    <td style="color:#d97706; font-weight:bold;">${displayYC}</td><td style="background:#fef3c7;">${displayYA}</td>
-                    <td style="color:#8b5cf6; font-weight:bold;">${displayMC}</td><td style="background:#f3e8ff;">${displayMA}</td>
-                    <td style="color:#1e3a8a; font-weight:bold; font-size:15px;">${displayTC}</td><td style="background:#dcfce7;">${displayTA}</td><td>${displayRate}</td>
+                let momTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
+                    <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
+                    <td style="color:#ffffff; font-weight:900;">${totBase.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totBaseGsw.toLocaleString()})</span></td>
+                    <td style="color:#ffffff; font-weight:900;">${totRet.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totRetGsw.toLocaleString()})</span></td>
+                    <td style="color:#ffffff; font-weight:900;">${totDrop.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span></td>
+                    <td style="color:#ffffff; font-weight:900;">${totNew.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totNewGsw.toLocaleString()})</span></td>
+                    <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
                 </tr>`;
-            });
-
-            let totRate = grandTotals.totC > 0 ? Math.round((grandTotals.totA / grandTotals.totC) * 100) : 0;
-            let totalHtml = `<tr style="background:#2e1065; border-bottom: 3px solid #c4b5fd;">
-                <td colspan="2" class="text-left" style="color:#ddd6fe; font-weight:900; font-size:14px;">OVERALL ACTIVATION (STATE)</td><td style="color:#fbbf24; font-size:15px; font-weight:900;">${grandTotals.ytdC}</td>
-                <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.ytdA}</td><td style="color:#c084fc; font-size:15px; font-weight:900;">${grandTotals.mtdC}</td>
-                <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td><td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
-                <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td><td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
-            </tr>`;
-            if(tbody) tbody.innerHTML = totalHtml + html;
-        } catch(e) { console.error("renderConversionReport Error:", e); }
-    }
-
-    function renderEmployeeReport() {
-        try {
-            let tbody = document.getElementById('empReportBody'); 
-            let dateEl = document.getElementById('empReportDateFilter');
-            let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
-            
-            if(!globalCallLogs || globalCallLogs.length === 0) { 
-                if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
-                return; 
-            }
-
-            let isOverall = (filterVal === "OVERALL"); 
-            let targetDate = new Date(); 
-            if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
-            let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
-            let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
-
-            let totalWorkingDays = 1;
-            if (isOverall) {
-                let uniqueDates = new Set();
-                globalCallLogs.forEach(log => {
-                    let logD = log.date ? String(log.date) : "";
-                    if (logD) { uniqueDates.add(logD.split(" ")[0]); }
-                });
-                totalWorkingDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
-            }
-
-            const STATE_EMPLOYEES = ["Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti", "Chandra Sekhara Babu K"].map(name => name.toLowerCase().trim());
-            const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
-
-            let empStats = {};
-            ALL_DMS.forEach(emp => {
-                let key = emp.toLowerCase().trim();
-                let dailyBaseTarget = STATE_EMPLOYEES.includes(key) ? 20 : 40;
-                empStats[key] = { 
-                    originalName: emp, target: dailyBaseTarget * totalWorkingDays, 
-                    callsMade: 0, ytdActivated: 0, mtdActivated: 0, calledIds: new Map(), 
-                    willActivate: 0, notAnswering: 0, switchOff: 0, notInterested: 0, others: 0 
-                };
-            });
-
-            globalCallLogs.forEach(log => {
-                if(!log) return;
-                let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM"; 
-                let matchKey = rawDm.toLowerCase(); 
-                let cscId = log.cscId ? String(log.cscId).toUpperCase() : ""; 
-                let remark = log.remark ? String(log.remark).toLowerCase() : "";
-                let cat = log.category ? String(log.category).toUpperCase() : "";
-                let logDateRaw = log.date ? String(log.date) : "";
-                let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
                 
-                if (matchKey === "state head" || matchKey === "unknown dm" || !empStats[matchKey]) return;
+                let mb = document.getElementById('momBody'); if(mb) mb.innerHTML = momTotalHtml + momHtml;
+                let fc = document.getElementById('filterCategory'); if(fc && fc.value === 'MOM') { renderCallingList(); }
+            } catch(e) { console.error("renderMomReport Error:", e); }
+        }
+
+        function populateDistrictDropdown() {
+            let distSelect = document.getElementById('filterDistrict'); if(!distSelect) return;
+            distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
+            let dists = new Set();
+            Object.values(vleDb).forEach(v => { if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") dists.add(v.dist); });
+            Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+        }
+
+        function fetchCallingReport(forceLive = false) {
+            try {
+                let tbody = document.getElementById('dmCallingBody');
+                if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
                 
-                if (isOverall || (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2)))) {
-                    if (cscId) {
-                        if(!empStats[matchKey].calledIds.has(cscId)) {
-                            empStats[matchKey].calledIds.set(cscId, { cat: cat, remark: remark, date: logDateOnly });
+                let dateEl = document.getElementById('leaderboardDateFilter');
+                let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
+                let isOverall = (filterVal === "OVERALL");
+                
+                let targetDate = new Date(); if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
+                let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
+                let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
+
+                let thTitle = isOverall ? "TOTAL CALLS (ALL TIME)" : (filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)");
+                if(document.getElementById('thTotalCalls')) document.getElementById('thTotalCalls').innerText = thTitle;
+                
+                let headingText = isOverall ? "VII. DM CALLING PERFORMANCE (OVERALL)" : (filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)");
+                if(document.getElementById('callingReportHeading')) document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
+
+                fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "getCallingReport" }), redirect: "follow", cache: "no-store" })
+                .then(response => response.json())
+                .then(data => {
+                    try {
+                        if(data.success) {
+                            globalCallLogs = data.data || [];
+                            let dmStats = {}; latestRemarks = {}; 
+                            
+                            const ALL_DMS = [
+                                "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
+                                "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
+                                "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
+                                "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
+                                "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
+                                "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan",
+                                "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
+                                "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
+                            ];
+
+                            ALL_DMS.forEach(dm => {
+                                dmStats[dm.toLowerCase().trim()] = { originalName: dm, ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() };
+                            });
+                            
+                            globalCallLogs.forEach(log => {
+                                if(!log) return;
+                                let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM";
+                                let matchKey = rawDm.toLowerCase();
+                                let cat = log.category ? String(log.category).toUpperCase() : "";
+                                let cscId = log.cscId ? String(log.cscId).toUpperCase() : "";
+                                let logDateRaw = log.date ? String(log.date) : "";
+                                let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
+                                
+                                if (cscId) { latestRemarks[cscId] = { remark: log.remark ? String(log.remark) : "", dmName: rawDm, date: logDateOnly }; }
+                                
+                                if (matchKey === "state head" || matchKey === "unknown dm") return;
+
+                                if (isOverall || (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2)))) {
+                                    if(dmStats[matchKey]) {
+                                        if (cscId && dmStats[matchKey].calledVles.has(cscId)) return;
+                                        if (cscId) dmStats[matchKey].calledVles.add(cscId);
+                                        
+                                        if(cat.includes("YTD")) dmStats[matchKey].ytd++; else if(cat.includes("MTD")) dmStats[matchKey].mtd++; else if(cat.includes("FTD")) dmStats[matchKey].ftd++; else if(cat.includes("MOM")) dmStats[matchKey].mom++;
+                                        dmStats[matchKey].total++;
+                                    }
+                                }
+                            });
+                            
+                            let sortedDMs = Object.values(dmStats).sort((a,b) => {
+                                if (b.total !== a.total) return b.total - a.total; return a.originalName.localeCompare(b.originalName);
+                            });
+                            
+                            let html = ""; let grandTotal = { ytd:0, mtd:0, ftd:0, mom:0, total:0 };
+
+                            if(sortedDMs.length === 0) {
+                                html = `<tr><td colspan="7" style="color:#dc2626; font-weight:bold;">No calls made yet!</td></tr>`;
+                            } else {
+                                sortedDMs.forEach((stat, idx) => {
+                                    grandTotal.ytd += stat.ytd; grandTotal.mtd += stat.mtd; grandTotal.ftd += stat.ftd; grandTotal.mom += stat.mom; grandTotal.total += stat.total;
+                                    let displayTotalColor = stat.total > 0 ? '#16a34a' : '#dc2626';
+                                    
+                                    html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
+                                        <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a; font-weight:bold; font-size:14px;">${stat.originalName}</td>
+                                        <td style="color:#d97706; font-weight:bold;">${stat.ytd > 0 ? stat.ytd : '-'}</td><td style="color:#8b5cf6; font-weight:bold;">${stat.mtd > 0 ? stat.mtd : '-'}</td>
+                                        <td style="color:#d946ef; font-weight:bold;">${stat.ftd > 0 ? stat.ftd : '-'}</td><td style="color:#3b82f6; font-weight:bold;">${stat.mom > 0 ? stat.mom : '-'}</td>
+                                        <td style="color:${displayTotalColor}; font-size:16px; font-weight:900;">${stat.total}</td>
+                                    </tr>`;
+                                });
+                                
+                                let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #fbbf24;">
+                                    <td colspan="2" class="text-left" style="color:#fbbf24; font-weight:900; font-size:14px;">TOTAL CALLS (${filterVal})</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ytd}</td>
+                                    <td style="color:#ffffff; font-weight:900;">${grandTotal.mtd}</td><td style="color:#ffffff; font-weight:900;">${grandTotal.ftd}</td>
+                                    <td style="color:#ffffff; font-weight:900;">${grandTotal.mom}</td><td style="color:#10b981; font-size:16px; font-weight:900;">${grandTotal.total}</td>
+                                </tr>`;
+                                html = totalHtml + html;
+                            }
+                            if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = html;
+                            
+                            try { renderCallingList(); } catch(e) { console.error(e); }
+                            try { renderConversionReport(); } catch(e) { console.error(e); }
+                            try { renderEmployeeReport(); } catch(e) { console.error(e); }
                         } else {
-                            empStats[matchKey].calledIds.get(cscId).remark = remark;
+                            if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
+                        }
+                    } catch(e) {
+                        if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">JS Output Error: ${e.message}</td></tr>`;
+                    }
+                })
+                .catch(err => {
+                    if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
+                    console.error("fetchCallingReport Network/JS Error:", err);
+                });
+            } catch(e) { console.error("fetchCallingReport Initial Error:", e); }
+        }
+
+        function renderCallingList() {
+            try {
+                let fc = document.getElementById('filterCategory'); let fd = document.getElementById('filterDistrict');
+                if(!fc || !fd) return;
+                let category = fc.value; let distFilter = fd.value;
+                let baseSet, activeSet;
+                if(category === 'YTD') { baseSet = stateLyCscs; activeSet = stateYtdCscs; }
+                else if(category === 'MTD') { baseSet = stateYtdCscs; activeSet = stateMtdCscs; }
+                else if(category === 'FTD') { baseSet = stateMtdCscs; activeSet = stateFtdCscs; }
+                else if(category === 'MOM') { 
+                    let bName = document.getElementById('momBaseSelect')?.value; let tName = document.getElementById('momTargetSelect')?.value;
+                    baseSet = monthlyData[bName]?.all || new Set(); activeSet = monthlyData[tName]?.all || new Set(); 
+                }
+
+                currentCallingListData = [];
+                
+                if(baseSet && activeSet) {
+                    baseSet.forEach(cscid => {
+                        if(!activeSet.has(cscid)) {
+                            let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
+                            if(details.dist === "INVALID") return; 
+                            
+                            if(distFilter === "ALL" || distFilter === details.dist) {
+                                currentCallingListData.push({ "District": details.dist || "", "CSC_ID": cscid || "", "Name": details.name || "Unknown VLE", "Mobile": details.mobile || "Not Available" });
+                            }
+                        }
+                    });
+                }
+
+                let callsDone = 0;
+                currentCallingListData.forEach(v => { if(v.CSC_ID && latestRemarks[v.CSC_ID]) callsDone++; });
+                let callsPending = currentCallingListData.length - callsDone;
+
+                if(document.getElementById('dropoutCount')) document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
+                if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
+                if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
+
+                let tbody = "";
+                if(currentCallingListData.length === 0) {
+                    tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
+                } else {
+                    currentCallingListData.sort((a, b) => {
+                        let aHasRemark = (a.CSC_ID && latestRemarks[a.CSC_ID]) ? 1 : 0;
+                        let bHasRemark = (b.CSC_ID && latestRemarks[b.CSC_ID]) ? 1 : 0;
+                        if (aHasRemark !== bHasRemark) { return aHasRemark - bHasRemark; }
+                        let distA = a.District || ""; let distB = b.District || "";
+                        let cscA = a.CSC_ID || ""; let cscB = b.CSC_ID || "";
+                        return distA.localeCompare(distB) || cscA.localeCompare(cscB);
+                    });
+
+                    let displayList = currentCallingListData.slice(0, 500);
+                    displayList.forEach((vle, idx) => {
+                        let callBtn = vle.Mobile !== "Not Available" ? `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                        let cscDisplay = vle.CSC_ID || ""; if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
+                        
+                        let lastRemHtml = "";
+                        if (vle.CSC_ID && latestRemarks[vle.CSC_ID]) {
+                            let lr = latestRemarks[vle.CSC_ID];
+                            lastRemHtml = `<div style="margin-top:6px; font-size:10px; color:#d97706; background:#fef3c7; padding:3px 6px; border-radius:4px; border:1px solid #fcd34d; font-weight:bold; line-height:1.4;"><i class="fa-solid fa-user-check"></i> ${lr.dmName}: <span style="color:#0f172a;">${lr.remark}</span> <br><span style="color:#92400e;">(${lr.date})</span></div>`;
+                        }
+                        
+                        let remarkSelect = `
+                            <div style="display:flex; flex-direction:column; gap:5px; justify-content:center; align-items:center;">
+                                <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center;">
+                                    <select id="rem_${vle.CSC_ID}" style="font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; max-width:130px;" onchange="if(this.value==='Others'){document.getElementById('other_${vle.CSC_ID}').style.display='block';}else{document.getElementById('other_${vle.CSC_ID}').style.display='none';}">
+                                        <option value="">Select...</option><option value="Not answering/ Busy">Not answering/ Busy</option><option value="Switch off/ Wrong number">Switch off/ Wrong number</option>
+                                        <option value="Intrested/will active">Intrested/will active</option><option value="Not interested/ Person not available">Not interested/ Person not available</option><option value="Others">Others</option>
+                                    </select>
+                                    <input type="text" id="other_${vle.CSC_ID}" placeholder="Type reason..." style="display:none; font-size:11px; padding:4px; border-radius:4px; border:1px solid #cbd5e1; width:100px;">
+                                    <button onclick="saveRemark('${vle.CSC_ID}', this)" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; min-width:70px; transition:0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1);" title="Save Remark"><i class="fa-solid fa-save"></i> Save</button>
+                                </div>
+                                ${lastRemHtml}
+                            </div>
+                        `;
+                        
+                        tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
+                            <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a;">${vle.District}</td><td style="color:#0f172a;">${cscDisplay}</td>
+                            <td style="color:#475569; font-weight:600;">${vle.Name}</td><td style="color:#475569;">${vle.Mobile}</td><td>${callBtn}</td><td>${remarkSelect}</td>
+                        </tr>`;
+                    });
+                    if(currentCallingListData.length > 500) { tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`; }
+                }
+                let cb = document.getElementById('callingBody'); if(cb) cb.innerHTML = tbody;
+            } catch(e) { console.error("renderCallingList Error:", e); }
+        }
+
+        function checkIsActive(id, callDateStr, cat) {
+            if (cat && cat.includes("YTD") && file2Cscs.has(id)) { return false; }
+            let isMtdActive = stateMtdCscs.has(id);
+            if (!isMtdActive) return false; 
+            
+            let actvDateStr = vleDb[id] ? vleDb[id].lastTxnDate : null;
+            if (actvDateStr && callDateStr) {
+                let callVal = parseCustomDate(callDateStr);
+                let actvVal = parseCustomDate(actvDateStr);
+                if (callVal > 0 && actvVal > 0) { return actvVal >= callVal; }
+            }
+            return isMtdActive; 
+        }
+
+        function renderConversionReport() {
+            try {
+                let tbody = document.getElementById('conversionBody'); 
+                let dateEl = document.getElementById('convDateFilter');
+                let filterVal = dateEl ? (dateEl.value || "").trim() : "";
+                
+                if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) { 
+                    if(tbody) tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
+                    return; 
+                }
+                
+                let dParts = filterVal.includes('-') ? filterVal.split('-') : filterVal.split('/');
+                let targetStr1 = filterVal; let targetStr2 = filterVal;
+                
+                if(dParts.length === 3) {
+                    if (dParts[0].length === 4) { targetStr1 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; } 
+                    else { targetStr2 = `${dParts[2]}-${dParts[1]}-${dParts[0]}`; }
+                }
+                
+                let dmConvStats = {};
+                const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
+                ALL_DMS.forEach(dm => { dmConvStats[dm.toLowerCase().trim()] = { originalName: dm, ytdCalled: new Map(), mtdCalled: new Map(), totalCalled: new Map() }; });
+                
+                globalCallLogs.forEach(log => {
+                    if(!log) return;
+                    let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM"; let matchKey = rawDm.toLowerCase(); 
+                    let cscId = log.cscId ? String(log.cscId).toUpperCase() : ""; 
+                    let cat = log.category ? String(log.category).toUpperCase() : "";
+                    let logDateRaw = log.date ? String(log.date) : "";
+                    let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
+                    
+                    if (matchKey === "state head" || matchKey === "unknown dm") return;
+                    if (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2))) {
+                        if(dmConvStats[matchKey] && cscId) {
+                            dmConvStats[matchKey].totalCalled.set(cscId, { date: logDateOnly, cat: cat });
+                            if(cat.includes("YTD")) dmConvStats[matchKey].ytdCalled.set(cscId, { date: logDateOnly, cat: cat });
+                            if(cat.includes("MTD")) dmConvStats[matchKey].mtdCalled.set(cscId, { date: logDateOnly, cat: cat });
                         }
                     }
-                }
-            });
-
-            Object.keys(empStats).forEach(key => {
-                let stat = empStats[key];
-                stat.callsMade = stat.calledIds.size;
-                
-                stat.calledIds.forEach((data, id) => {
-                    if (checkIsActive(id, data.date, data.cat)) {
-                        if (data.cat && data.cat.includes("YTD")) stat.ytdActivated++;
-                        else stat.mtdActivated++;
-                    }
-                    
-                    let rem = data.remark || "";
-                    if (rem.includes('will active') || rem.includes('intrested')) { stat.willActivate++; } 
-                    else if (rem.includes('not answering') || rem.includes('busy')) { stat.notAnswering++; } 
-                    else if (rem.includes('switch off') || rem.includes('wrong number')) { stat.switchOff++; } 
-                    else if (rem.includes('not interested') || rem.includes('not available')) { stat.notInterested++; } 
-                    else { stat.others++; }
                 });
-            });
-
-            let sortedEmps = Object.values(empStats).sort((a,b) => { 
-                let aIsState = (a.target / totalWorkingDays) === 20 ? 1 : 0;
-                let bIsState = (b.target / totalWorkingDays) === 20 ? 1 : 0;
-                if (aIsState !== bIsState) return aIsState - bIsState;
-                if (b.callsMade !== a.callsMade) return b.callsMade - a.callsMade; 
-                return a.originalName.localeCompare(b.originalName); 
-            });
-
-            let html = ""; let grandTotals = { target:0, calls:0, ytdAct:0, mtdAct:0, will:0, noAns:0, swOff:0, noInt:0, oth:0 };
-
-            sortedEmps.forEach((stat, idx) => {
-                grandTotals.target += stat.target; grandTotals.calls += stat.callsMade; 
-                grandTotals.ytdAct += stat.ytdActivated; grandTotals.mtdAct += stat.mtdActivated; 
-                grandTotals.will += stat.willActivate; grandTotals.noAns += stat.notAnswering; 
-                grandTotals.swOff += stat.switchOff; grandTotals.noInt += stat.notInterested; grandTotals.oth += stat.others;
                 
-                let isStateBadge = (stat.target / totalWorkingDays) === 20 ? `<span style="font-size:9px; background:#e2e8f0; color:#475569; padding:2px 4px; border-radius:4px; margin-left:5px; border:1px solid #cbd5e1;">STATE</span>` : '';
-                
-                let pct = stat.target > 0 ? Math.round((stat.callsMade / stat.target) * 100) : 0; 
-                let pctColor = pct >= 100 ? '#16a34a' : (pct >= 50 ? '#d97706' : '#dc2626');
-                let displayPct = `<span style="color:${pctColor}; font-weight:900;">${pct}%</span>`;
+                let sortedDMs = Object.values(dmConvStats).sort((a,b) => { if (b.totalCalled.size !== a.totalCalled.size) return b.totalCalled.size - a.totalCalled.size; return a.originalName.localeCompare(b.originalName); });
+                let html = ""; let grandTotals = { ytdC:0, ytdA:0, mtdC:0, mtdA:0, totC:0, totA:0 };
 
-                let rowStyle = pct < 50 ? 'background-color: #fef2f2;' : '';
-                let nameColor = pct < 50 ? '#b91c1c' : '#0f172a';
+                sortedDMs.forEach((stat, idx) => {
+                    let ytdActive = 0, mtdActive = 0, totalActive = 0;
+                    stat.ytdCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) ytdActive++; });
+                    stat.mtdCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) mtdActive++; });
+                    stat.totalCalled.forEach((data, id) => { if (checkIsActive(id, data.date, data.cat)) totalActive++; });
+                    
+                    let yC = stat.ytdCalled.size; let yA = ytdActive; let mC = stat.mtdCalled.size; let mA = mtdActive; let tC = stat.totalCalled.size; let tA = totalActive;
+                    grandTotals.ytdC += yC; grandTotals.ytdA += yA; grandTotals.mtdC += mC; grandTotals.mtdA += mA; grandTotals.totC += tC; grandTotals.totA += tA;
 
-                let displayYtdAct = stat.ytdActivated > 0 ? stat.ytdActivated : '-';
-                let displayMtdAct = stat.mtdActivated > 0 ? stat.mtdActivated : '-';
+                    let rate = tC > 0 ? Math.round((tA / tC) * 100) : 0;
+                    let displayYC = yC > 0 ? yC : '-'; let displayYA = yA > 0 ? `<span style="color:#16a34a; font-weight:900;">${yA}</span>` : '-'; let displayMC = mC > 0 ? mC : '-'; let displayMA = mA > 0 ? `<span style="color:#16a34a; font-weight:900;">${mA}</span>` : '-'; let displayTC = tC > 0 ? tC : '-'; let displayTA = tA > 0 ? `<span class="badge badge-green" style="font-size:14px;">${tA}</span>` : '-';
+                    let rateColor = rate >= 50 ? '#16a34a' : (rate > 0 ? '#d97706' : '#dc2626'); let displayRate = tC > 0 ? `<span style="color:${rateColor}; font-weight:900;">${rate}%</span>` : '-';
+                    
+                    html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
+                        <td>${idx + 1}</td><td class="text-left" style="color:#4c1d95; font-weight:bold; font-size:14px;">${stat.originalName}</td>
+                        <td style="color:#d97706; font-weight:bold;">${displayYC}</td><td style="background:#fef3c7;">${displayYA}</td>
+                        <td style="color:#8b5cf6; font-weight:bold;">${displayMC}</td><td style="background:#f3e8ff;">${displayMA}</td>
+                        <td style="color:#1e3a8a; font-weight:bold; font-size:15px;">${displayTC}</td><td style="background:#dcfce7;">${displayTA}</td><td>${displayRate}</td>
+                    </tr>`;
+                });
 
-                html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row" style="${rowStyle}">
-                    <td>${idx + 1}</td>
-                    <td class="text-left" style="color:${nameColor}; font-weight:bold; font-size:13px;">${stat.originalName} ${isStateBadge}</td>
-                    <td style="color:#475569; font-weight:bold;">${stat.target}</td>
-                    <td style="color:#2563eb; font-weight:900; font-size:15px;">${stat.callsMade > 0 ? stat.callsMade : '-'}</td>
-                    <td>${displayPct}</td>
-                    <td style="color:#047857; font-weight:900;">${displayYtdAct}</td>
-                    <td style="color:#10b981; font-weight:900;">${displayMtdAct}</td>
-                    <td style="color:#d97706; font-weight:bold;">${stat.willActivate > 0 ? stat.willActivate : '-'}</td>
-                    <td style="color:#dc2626; font-weight:bold;">${stat.notAnswering > 0 ? stat.notAnswering : '-'}</td>
-                    <td style="color:#991b1b; font-weight:bold;">${stat.switchOff > 0 ? stat.switchOff : '-'}</td>
-                    <td style="color:#be123c; font-weight:bold;">${stat.notInterested > 0 ? stat.notInterested : '-'}</td>
-                    <td style="color:#64748b; font-weight:bold;">${stat.others > 0 ? stat.others : '-'}</td>
+                let totRate = grandTotals.totC > 0 ? Math.round((grandTotals.totA / grandTotals.totC) * 100) : 0;
+                let totalHtml = `<tr style="background:#2e1065; border-bottom: 3px solid #c4b5fd;">
+                    <td colspan="2" class="text-left" style="color:#ddd6fe; font-weight:900; font-size:14px;">OVERALL ACTIVATION (STATE)</td><td style="color:#fbbf24; font-size:15px; font-weight:900;">${grandTotals.ytdC}</td>
+                    <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.ytdA}</td><td style="color:#c084fc; font-size:15px; font-weight:900;">${grandTotals.mtdC}</td>
+                    <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td><td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
+                    <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td><td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
                 </tr>`;
-            });
+                if(tbody) tbody.innerHTML = totalHtml + html;
+            } catch(e) { console.error("renderConversionReport Error:", e); }
+        }
 
-            let ovPct = grandTotals.target > 0 ? Math.round((grandTotals.calls / grandTotals.target) * 100) : 0;
-
-            let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #0ea5e9;">
-                <td colspan="2" class="text-left" style="color:#38bdf8; font-weight:900; font-size:14px;">OVERALL PERFORMANCE</td>
-                <td style="color:#ffffff; font-weight:900;">${grandTotals.target}</td>
-                <td style="color:#ffffff; font-weight:900; font-size:16px;">${grandTotals.calls}</td><td style="color:#38bdf8; font-weight:900;">${ovPct}%</td>
-                <td style="color:#a7f3d0; font-weight:900;">${grandTotals.ytdAct}</td>
-                <td style="color:#6ee7b7; font-weight:900;">${grandTotals.mtdAct}</td>
-                <td style="color:#fbbf24; font-weight:900;">${grandTotals.will}</td>
-                <td style="color:#f87171; font-weight:900;">${grandTotals.noAns}</td><td style="color:#fca5a5; font-weight:900;">${grandTotals.swOff}</td>
-                <td style="color:#fda4af; font-weight:900;">${grandTotals.noInt}</td><td style="color:#cbd5e1; font-weight:900;">${grandTotals.oth}</td>
-            </tr>`;
-
-            if(tbody) tbody.innerHTML = totalHtml + html;
-            
-            let hText = isOverall ? "IX. EMPLOYEE REPORT CARD (OVERALL)" : (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
-            let h2 = document.querySelector('#empReportCardArea h2');
-            if(h2) h2.innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
-            
-            let footerEl = document.getElementById('empReportFooter');
-            if (footerEl) {
-                if (isOverall) {
-                    footerEl.innerHTML = `Target: State Team = ${20 * totalWorkingDays} Calls | Regular DMs = ${40 * totalWorkingDays} Calls <b>(Calculated for ${totalWorkingDays} Working Days)</b>`;
-                } else {
-                    footerEl.innerText = `Target: State Team = 20 Calls | Regular DMs = 40 Calls (Daily Target)`;
+        function renderEmployeeReport() {
+            try {
+                let tbody = document.getElementById('empReportBody'); 
+                let dateEl = document.getElementById('empReportDateFilter');
+                let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
+                
+                if(!globalCallLogs || globalCallLogs.length === 0) { 
+                    if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
+                    return; 
                 }
-            }
-        } catch(e) { console.error("renderEmployeeReport Error:", e); }
-    }
 
-    function saveRemark(cscId, btn) {
-        let selectEl = document.getElementById("rem_" + cscId);
-        let remark = selectEl.value;
-        
-        if (remark === "Others") {
-            let otherInput = document.getElementById("other_" + cscId).value.trim();
-            if (otherInput === "") {
-                alert("Please type the reason in the text box!");
+                let isOverall = (filterVal === "OVERALL"); 
+                let targetDate = new Date(); 
+                if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
+                let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
+                let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
+
+                let totalWorkingDays = 1;
+                if (isOverall) {
+                    let uniqueDates = new Set();
+                    globalCallLogs.forEach(log => {
+                        let logD = log.date ? String(log.date) : "";
+                        if (logD) { uniqueDates.add(logD.split(" ")[0]); }
+                    });
+                    totalWorkingDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
+                }
+
+                const STATE_EMPLOYEES = ["Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti", "Chandra Sekhara Babu K"].map(name => name.toLowerCase().trim());
+                const ALL_DMS = ["Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi", "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer", "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam", "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh", "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam", "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan", "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali", "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"];
+
+                let empStats = {};
+                ALL_DMS.forEach(emp => {
+                    let key = emp.toLowerCase().trim();
+                    let dailyBaseTarget = STATE_EMPLOYEES.includes(key) ? 20 : 40;
+                    empStats[key] = { 
+                        originalName: emp, target: dailyBaseTarget * totalWorkingDays, 
+                        callsMade: 0, ytdActivated: 0, mtdActivated: 0, calledIds: new Map(), 
+                        willActivate: 0, notAnswering: 0, switchOff: 0, notInterested: 0, others: 0 
+                    };
+                });
+
+                globalCallLogs.forEach(log => {
+                    if(!log) return;
+                    let rawDm = log.dmName ? String(log.dmName).trim() : "Unknown DM"; 
+                    let matchKey = rawDm.toLowerCase(); 
+                    let cscId = log.cscId ? String(log.cscId).toUpperCase() : ""; 
+                    let remark = log.remark ? String(log.remark).toLowerCase() : "";
+                    let cat = log.category ? String(log.category).toUpperCase() : "";
+                    let logDateRaw = log.date ? String(log.date) : "";
+                    let logDateOnly = logDateRaw ? logDateRaw.split(" ")[0] : "";
+                    
+                    if (matchKey === "state head" || matchKey === "unknown dm" || !empStats[matchKey]) return;
+                    
+                    if (isOverall || (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2)))) {
+                        if (cscId) {
+                            if(!empStats[matchKey].calledIds.has(cscId)) {
+                                empStats[matchKey].calledIds.set(cscId, { cat: cat, remark: remark, date: logDateOnly });
+                            } else {
+                                empStats[matchKey].calledIds.get(cscId).remark = remark;
+                            }
+                        }
+                    }
+                });
+
+                Object.keys(empStats).forEach(key => {
+                    let stat = empStats[key];
+                    stat.callsMade = stat.calledIds.size;
+                    
+                    stat.calledIds.forEach((data, id) => {
+                        if (checkIsActive(id, data.date, data.cat)) {
+                            if (data.cat && data.cat.includes("YTD")) stat.ytdActivated++;
+                            else stat.mtdActivated++;
+                        }
+                        
+                        let rem = data.remark || "";
+                        if (rem.includes('will active') || rem.includes('intrested')) { stat.willActivate++; } 
+                        else if (rem.includes('not answering') || rem.includes('busy')) { stat.notAnswering++; } 
+                        else if (rem.includes('switch off') || rem.includes('wrong number')) { stat.switchOff++; } 
+                        else if (rem.includes('not interested') || rem.includes('not available')) { stat.notInterested++; } 
+                        else { stat.others++; }
+                    });
+                });
+
+                let sortedEmps = Object.values(empStats).sort((a,b) => { 
+                    let aIsState = (a.target / totalWorkingDays) === 20 ? 1 : 0;
+                    let bIsState = (b.target / totalWorkingDays) === 20 ? 1 : 0;
+                    if (aIsState !== bIsState) return aIsState - bIsState;
+                    if (b.callsMade !== a.callsMade) return b.callsMade - a.callsMade; 
+                    return a.originalName.localeCompare(b.originalName); 
+                });
+
+                let html = ""; let grandTotals = { target:0, calls:0, ytdAct:0, mtdAct:0, will:0, noAns:0, swOff:0, noInt:0, oth:0 };
+
+                sortedEmps.forEach((stat, idx) => {
+                    grandTotals.target += stat.target; grandTotals.calls += stat.callsMade; 
+                    grandTotals.ytdAct += stat.ytdActivated; grandTotals.mtdAct += stat.mtdActivated; 
+                    grandTotals.will += stat.willActivate; grandTotals.noAns += stat.notAnswering; 
+                    grandTotals.swOff += stat.switchOff; grandTotals.noInt += stat.notInterested; grandTotals.oth += stat.others;
+                    
+                    let isStateBadge = (stat.target / totalWorkingDays) === 20 ? `<span style="font-size:9px; background:#e2e8f0; color:#475569; padding:2px 4px; border-radius:4px; margin-left:5px; border:1px solid #cbd5e1;">STATE</span>` : '';
+                    
+                    let pct = stat.target > 0 ? Math.round((stat.callsMade / stat.target) * 100) : 0; 
+                    let pctColor = pct >= 100 ? '#16a34a' : (pct >= 50 ? '#d97706' : '#dc2626');
+                    let displayPct = `<span style="color:${pctColor}; font-weight:900;">${pct}%</span>`;
+
+                    let rowStyle = pct < 50 ? 'background-color: #fef2f2;' : '';
+                    let nameColor = pct < 50 ? '#b91c1c' : '#0f172a';
+
+                    let displayYtdAct = stat.ytdActivated > 0 ? stat.ytdActivated : '-';
+                    let displayMtdAct = stat.mtdActivated > 0 ? stat.mtdActivated : '-';
+
+                    html += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row" style="${rowStyle}">
+                        <td>${idx + 1}</td>
+                        <td class="text-left" style="color:${nameColor}; font-weight:bold; font-size:13px;">${stat.originalName} ${isStateBadge}</td>
+                        <td style="color:#475569; font-weight:bold;">${stat.target}</td>
+                        <td style="color:#2563eb; font-weight:900; font-size:15px;">${stat.callsMade > 0 ? stat.callsMade : '-'}</td>
+                        <td>${displayPct}</td>
+                        <td style="color:#047857; font-weight:900;">${displayYtdAct}</td>
+                        <td style="color:#10b981; font-weight:900;">${displayMtdAct}</td>
+                        <td style="color:#d97706; font-weight:bold;">${stat.willActivate > 0 ? stat.willActivate : '-'}</td>
+                        <td style="color:#dc2626; font-weight:bold;">${stat.notAnswering > 0 ? stat.notAnswering : '-'}</td>
+                        <td style="color:#991b1b; font-weight:bold;">${stat.switchOff > 0 ? stat.switchOff : '-'}</td>
+                        <td style="color:#be123c; font-weight:bold;">${stat.notInterested > 0 ? stat.notInterested : '-'}</td>
+                        <td style="color:#64748b; font-weight:bold;">${stat.others > 0 ? stat.others : '-'}</td>
+                    </tr>`;
+                });
+
+                let ovPct = grandTotals.target > 0 ? Math.round((grandTotals.calls / grandTotals.target) * 100) : 0;
+
+                let totalHtml = `<tr style="background:#0f172a; border-bottom: 3px solid #0ea5e9;">
+                    <td colspan="2" class="text-left" style="color:#38bdf8; font-weight:900; font-size:14px;">OVERALL PERFORMANCE</td>
+                    <td style="color:#ffffff; font-weight:900;">${grandTotals.target}</td>
+                    <td style="color:#ffffff; font-weight:900; font-size:16px;">${grandTotals.calls}</td><td style="color:#38bdf8; font-weight:900;">${ovPct}%</td>
+                    <td style="color:#a7f3d0; font-weight:900;">${grandTotals.ytdAct}</td>
+                    <td style="color:#6ee7b7; font-weight:900;">${grandTotals.mtdAct}</td>
+                    <td style="color:#fbbf24; font-weight:900;">${grandTotals.will}</td>
+                    <td style="color:#f87171; font-weight:900;">${grandTotals.noAns}</td><td style="color:#fca5a5; font-weight:900;">${grandTotals.swOff}</td>
+                    <td style="color:#fda4af; font-weight:900;">${grandTotals.noInt}</td><td style="color:#cbd5e1; font-weight:900;">${grandTotals.oth}</td>
+                </tr>`;
+
+                if(tbody) tbody.innerHTML = totalHtml + html;
+                
+                let hText = isOverall ? "IX. EMPLOYEE REPORT CARD (OVERALL)" : (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
+                let h2 = document.querySelector('#empReportCardArea h2');
+                if(h2) h2.innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
+                
+                let footerEl = document.getElementById('empReportFooter');
+                if (footerEl) {
+                    if (isOverall) {
+                        footerEl.innerHTML = `Target: State Team = ${20 * totalWorkingDays} Calls | Regular DMs = ${40 * totalWorkingDays} Calls <b>(Calculated for ${totalWorkingDays} Working Days)</b>`;
+                    } else {
+                        footerEl.innerText = `Target: State Team = 20 Calls | Regular DMs = 40 Calls (Daily Target)`;
+                    }
+                }
+            } catch(e) { console.error("renderEmployeeReport Error:", e); }
+        }
+
+        function saveRemark(cscId, btn) {
+            let selectEl = document.getElementById("rem_" + cscId);
+            let remark = selectEl.value;
+            
+            if (remark === "Others") {
+                let otherInput = document.getElementById("other_" + cscId).value.trim();
+                if (otherInput === "") {
+                    alert("Please type the reason in the text box!");
+                    return;
+                }
+                remark = "Others - " + otherInput; 
+            } else if (!remark) {
+                alert("Please select a remark first!");
                 return;
             }
-            remark = "Others - " + otherInput; 
-        } else if (!remark) {
-            alert("Please select a remark first!");
-            return;
-        }
-        
-        let originalHtml = btn.innerHTML;
-        let originalBg = btn.style.background;
+            
+            let originalHtml = btn.innerHTML;
+            let originalBg = btn.style.background;
 
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
-        btn.style.background = '#d97706'; 
-        btn.disabled = true;
-        btn.style.cursor = 'not-allowed';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wait..';
+            btn.style.background = '#d97706'; 
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
 
-        let dmNameStr = "STATE HEAD"; if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
-        let catEl = document.getElementById('filterCategory');
-        let categoryType = catEl ? (catEl.value || "DROPOUT") : "DROPOUT";
+            let dmNameStr = "STATE HEAD"; if (localStorage.getItem("userName")) dmNameStr = localStorage.getItem("userName");
+            let catEl = document.getElementById('filterCategory');
+            let categoryType = catEl ? (catEl.value || "DROPOUT") : "DROPOUT";
 
-        let payload = {
-            action: "saveFollowUp",
-            cscId: cscId,
-            service: categoryType + " DROPOUT",
-            dmName: dmNameStr,
-            remark: remark,
-            location: "State Head Portal"
-        };
+            let payload = {
+                action: "saveFollowUp",
+                cscId: cscId,
+                service: categoryType + " DROPOUT",
+                dmName: dmNameStr,
+                remark: remark,
+                location: "State Head Portal"
+            };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload),
-            redirect: "follow"
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
-                btn.style.background = "#16a34a"; 
-                selectEl.style.borderColor = "#16a34a";
-                
-                let d = new Date();
-                let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
-                latestRemarks[cscId] = { remark: remark, dmName: dmNameStr, date: dateStr };
-                
-                setTimeout(() => { 
-                    renderCallingList(); 
-                    fetchCallingReport(true); 
-                }, 1000); 
-            } else {
-                alert("Error: " + data.message);
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload),
+                redirect: "follow"
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved!';
+                    btn.style.background = "#16a34a"; 
+                    selectEl.style.borderColor = "#16a34a";
+                    
+                    let d = new Date();
+                    let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
+                    latestRemarks[cscId] = { remark: remark, dmName: dmNameStr, date: dateStr };
+                    
+                    setTimeout(() => { 
+                        renderCallingList(); 
+                        fetchCallingReport(true); 
+                    }, 1000); 
+                } else {
+                    alert("Error: " + data.message);
+                    btn.innerHTML = originalHtml;
+                    btn.style.background = originalBg;
+                    btn.disabled = false;
+                    btn.style.cursor = 'pointer';
+                }
+            })
+            .catch(err => {
+                alert("Network Error while saving remark!");
                 btn.innerHTML = originalHtml;
                 btn.style.background = originalBg;
                 btn.disabled = false;
                 btn.style.cursor = 'pointer';
-            }
-        })
-        .catch(err => {
-            alert("Network Error while saving remark!");
-            btn.innerHTML = originalHtml;
-            btn.style.background = originalBg;
-            btn.disabled = false;
-            btn.style.cursor = 'pointer';
-        });
-    }
+            });
+        }
 
-    function exportToStyledExcel(dataList, fileName, title) {
-        if(!dataList || dataList.length === 0) { alert("No data available to download."); return; }
+        function exportToStyledExcel(dataList, fileName, title) {
+            if(!dataList || dataList.length === 0) { alert("No data available to download."); return; }
 
-        let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head><meta charset="utf-8"></head><body>`;
-        
-        tableHtml += `<h2 style="text-align:center; color:#1e3a8a; font-family: Arial, sans-serif;">${title}</h2>`;
-        tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; width: 100%;">`;
-        tableHtml += `<thead><tr style="background-color: #0f172a; color: #ffffff; font-weight: bold; text-align: center;">`;
-        
-        let headers = Object.keys(dataList[0]);
-        headers.forEach(h => {
-            tableHtml += `<th style="padding: 10px; border: 1px solid #cbd5e1;">${h}</th>`;
-        });
-        tableHtml += `</tr></thead><tbody>`;
-
-        dataList.forEach((row, i) => {
-            let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-            tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
+            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8"></head><body>`;
+            
+            tableHtml += `<h2 style="text-align:center; color:#1e3a8a; font-family: Arial, sans-serif;">${title}</h2>`;
+            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; width: 100%;">`;
+            tableHtml += `<thead><tr style="background-color: #0f172a; color: #ffffff; font-weight: bold; text-align: center;">`;
+            
+            let headers = Object.keys(dataList[0]);
             headers.forEach(h => {
-                let val = row[h] !== undefined && row[h] !== null ? row[h] : "";
-                tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
+                tableHtml += `<th style="padding: 10px; border: 1px solid #cbd5e1;">${h}</th>`;
             });
-            tableHtml += `</tr>`;
-        });
-        tableHtml += `</tbody></table></body></html>`;
+            tableHtml += `</tr></thead><tbody>`;
 
-        let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-        let link = document.createElement("a");
-        let url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = fileName + ".xls";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+            dataList.forEach((row, i) => {
+                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
+                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
+                headers.forEach(h => {
+                    let val = row[h] !== undefined && row[h] !== null ? row[h] : "";
+                    tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
+                });
+                tableHtml += `</tr>`;
+            });
+            tableHtml += `</tbody></table></body></html>`;
 
-    function downloadYTDDropouts(districtFilter) {
-        let exportData = [];
-        stateLyCscs.forEach(cscid => {
-            if(!stateYtdCscs.has(cscid)) {
-                let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
-                if (details.dist === "INVALID") return; 
-                if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
-                    exportData.push({
-                        "District Name": details.dist,
-                        "CSC ID": cscid,
-                        "VLE Name": details.name || "Unknown VLE",
-                        "Mobile Number": details.mobile || "Not Available",
-                        "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE"
-                    });
+            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+            let link = document.createElement("a");
+            let url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = fileName + ".xls";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadYTDDropouts(districtFilter) {
+            let exportData = [];
+            stateLyCscs.forEach(cscid => {
+                if(!stateYtdCscs.has(cscid)) {
+                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
+                    if (details.dist === "INVALID") return; 
+                    if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
+                        exportData.push({
+                            "District Name": details.dist,
+                            "CSC ID": cscid,
+                            "VLE Name": details.name || "Unknown VLE",
+                            "Mobile Number": details.mobile || "Not Available",
+                            "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE"
+                        });
+                    }
                 }
-            }
-        });
-
-        if(exportData.length === 0) { 
-            alert("No YTD Dropouts found to download for " + (districtFilter || 'ALL')); 
-            return; 
-        }
-        
-        let d = new Date();
-        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-        let distTitle = (!districtFilter || districtFilter === 'ALL') ? "ANDHRA PRADESH STATE" : districtFilter;
-        let fileName = (!districtFilter || districtFilter === 'ALL') ? `YTD_Dropouts_STATE_${dateStr}` : `YTD_Dropouts_${districtFilter}_${dateStr}`;
-        
-        exportToStyledExcel(exportData, fileName, `YTD Dropouts List - ${distTitle} (${dateStr})`);
-    }
-
-    function downloadCallingList() {
-        if (!currentCallingListData || currentCallingListData.length === 0) { 
-            alert("No data available to download for this selection."); 
-            return; 
-        }
-        
-        let catEl = document.getElementById('filterCategory');
-        let distEl = document.getElementById('filterDistrict');
-        let category = catEl ? (catEl.value || "YTD") : "YTD";
-        let dist = distEl ? (distEl.value || "DM_DATA") : "DM_DATA";
-        
-        let exportData = currentCallingListData.map(v => ({
-            "District Name": v.District, 
-            "CSC ID": v.CSC_ID, 
-            "VLE Name": v.Name, 
-            "Mobile Number": v.Mobile, 
-            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
-        }));
-
-        let d = new Date(); 
-        let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-        exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
-    }
-
-    async function downloadImage(elementId, prefix) {
-        const reportDiv = document.getElementById(elementId);
-        if(!reportDiv) return;
-        
-        const dlBtns = reportDiv.querySelectorAll('.btn-download, .btn-call, button');
-        dlBtns.forEach(btn => btn.style.display = 'none');
-
-        const dateFilter = reportDiv.querySelector('#leaderboardDateFilter, #empReportDateFilter, #convDateFilter');
-        if(dateFilter) dateFilter.style.display = 'none';
-        
-        const inputsAndSelects = reportDiv.querySelectorAll('.filter-bar select, .filter-bar input[type="date"], .report-header-flex input[type="date"], .report-header-flex select'); 
-        const tempElements = [];
-
-        inputsAndSelects.forEach(el => {
-            let span = document.createElement('span'); 
-            span.style.cssText = `font-weight:bold; color:#1e3a8a; font-size:14px; padding:6px 10px; background:#f1f5f9; border-radius:4px; display:inline-block; border:1px solid #cbd5e1;`;
-            if (el.tagName === 'SELECT') { span.innerText = el.options[el.selectedIndex].text; } 
-            else if (el.tagName === 'INPUT' && el.type === 'date') {
-                if(el.value) { let parts = el.value.split('-'); span.innerText = `${parts[2]}-${parts[1]}-${parts[0]}`; } else { span.innerText = "Date Not Selected"; }
-            }
-            el.style.display = 'none'; 
-            el.parentNode.insertBefore(span, el); 
-            tempElements.push({ original: el, temp: span });
-        });
-
-        const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
-        let originalStyles = [];
-        tableResponsiveDivs.forEach(div => {
-            originalStyles.push({
-                maxHeight: div.style.maxHeight,
-                overflow: div.style.overflow,
-                overflowY: div.style.overflowY,
-                height: div.style.height
             });
-            div.style.setProperty('max-height', 'none', 'important');
-            div.style.setProperty('overflow', 'visible', 'important');
-            div.style.setProperty('overflow-y', 'visible', 'important');
-            div.style.setProperty('height', 'auto', 'important');
-        });
 
-        let originalDivWidth = reportDiv.style.width;
-        let originalDivPadding = reportDiv.style.padding;
-        let originalHeight = reportDiv.style.height;
-        let originalPosition = reportDiv.style.position;
-        
-        reportDiv.style.width = '1200px'; 
-        reportDiv.style.padding = '20px'; 
-        reportDiv.style.height = 'auto'; 
-        reportDiv.style.position = 'relative';
-        
-        await new Promise(r => setTimeout(r, 500));
+            if(exportData.length === 0) { 
+                alert("No YTD Dropouts found to download for " + (districtFilter || 'ALL')); 
+                return; 
+            }
+            
+            let d = new Date();
+            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            let distTitle = (!districtFilter || districtFilter === 'ALL') ? "ANDHRA PRADESH STATE" : districtFilter;
+            let fileName = (!districtFilter || districtFilter === 'ALL') ? `YTD_Dropouts_STATE_${dateStr}` : `YTD_Dropouts_${districtFilter}_${dateStr}`;
+            
+            exportToStyledExcel(exportData, fileName, `YTD Dropouts List - ${distTitle} (${dateStr})`);
+        }
 
-        try {
-            const canvas = await html2canvas(reportDiv, { 
-                scale: 2, 
-                backgroundColor: "#ffffff", 
-                useCORS: true,
-                windowWidth: reportDiv.scrollWidth,
-                windowHeight: reportDiv.scrollHeight,
-                height: reportDiv.scrollHeight,
-                width: reportDiv.scrollWidth,
-                scrollY: 0,
-                scrollX: 0
-            });
-            const link = document.createElement('a');
+        function downloadCallingList() {
+            if (!currentCallingListData || currentCallingListData.length === 0) { 
+                alert("No data available to download for this selection."); 
+                return; 
+            }
+            
+            let catEl = document.getElementById('filterCategory');
+            let distEl = document.getElementById('filterDistrict');
+            let category = catEl ? (catEl.value || "YTD") : "YTD";
+            let dist = distEl ? (distEl.value || "DM_DATA") : "DM_DATA";
+            
+            let exportData = currentCallingListData.map(v => ({
+                "District Name": v.District, 
+                "CSC ID": v.CSC_ID, 
+                "VLE Name": v.Name, 
+                "Mobile Number": v.Mobile, 
+                "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+                "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
+            }));
+
             let d = new Date(); 
             let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
-            link.download = `${prefix}_${dateStr}.png`;
-            link.href = canvas.toDataURL("image/png", 1.0);
-            link.click();
-        } catch(err) {
-            alert("Image capture failed. Please try again.");
-        } finally {
-            tableResponsiveDivs.forEach((div, index) => {
-                div.style.maxHeight = originalStyles[index].maxHeight;
-                div.style.overflow = originalStyles[index].overflow;
-                div.style.overflowY = originalStyles[index].overflowY;
-                div.style.height = originalStyles[index].height;
-            });
-
-            reportDiv.style.width = originalDivWidth; 
-            reportDiv.style.padding = originalDivPadding;
-            reportDiv.style.height = originalHeight;
-            reportDiv.style.position = originalPosition;
-            
-            dlBtns.forEach(btn => btn.style.display = 'inline-block');
-            if(dateFilter) dateFilter.style.display = 'inline-block';
-            tempElements.forEach(item => { item.original.style.display = 'inline-block'; item.temp.remove(); });
+            exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
         }
-    }
 </script>
 </body>
 </html>
