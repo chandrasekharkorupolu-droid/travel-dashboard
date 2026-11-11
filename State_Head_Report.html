@@ -1106,6 +1106,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
         }
 
+        
+
+let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయడానికి కొత్త వేరియబుల్
+
         function fetchCallingReport(forceLive = false) {
             try {
                 let tbody = document.getElementById('dmCallingBody');
@@ -1131,8 +1135,13 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     try {
                         if(data.success) {
                             globalCallLogs = data.data || [];
-                            let dmStats = {}; latestRemarks = {}; 
                             
+                            // 🌟 సర్వర్ నుండి వచ్చిన GP VLE లను సేవ్ చేసుకోవడం 🌟
+                            if (data.gpVles) { 
+                                gpMappedVles = new Set(data.gpVles); 
+                            }
+                            
+                            let dmStats = {}; latestRemarks = {}; 
                             const ALL_DMS = [
                                 "Chandra Sekhara Babu K", "Golla Pandu Rangaiah", "D Sathish Kumar", "Vinjam Keerthi", "Chandrasekhar Satya Aditya Ivaturi",
                                 "Dangeti Vijaya Krishna", "Kothapalli Phani Sai Deepak", "Kakumanu Raviteja", "Shaik Roshan Zameer",
@@ -1203,8 +1212,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                             if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = html;
                             
                             try { renderCallingList(); } catch(e) { console.error(e); }
-                            try { renderConversionReport(); } catch(e) { console.error(e); }
-                            try { renderEmployeeReport(); } catch(e) { console.error(e); }
                         } else {
                             if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
                         }
@@ -1260,10 +1267,17 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 if(currentCallingListData.length === 0) {
                     tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
                 } else {
+                    // 🔥 NEW SORTING LOGIC: GP VLEs First, No Remarks Top 🔥
                     currentCallingListData.sort((a, b) => {
-                        let aHasRemark = (a.CSC_ID && latestRemarks[a.CSC_ID]) ? 1 : 0;
-                        let bHasRemark = (b.CSC_ID && latestRemarks[b.CSC_ID]) ? 1 : 0;
+                        let aHasRemark = latestRemarks[a.CSC_ID] ? 1 : 0;
+                        let bHasRemark = latestRemarks[b.CSC_ID] ? 1 : 0;
                         if (aHasRemark !== bHasRemark) { return aHasRemark - bHasRemark; }
+                        
+                        // 🌟 GP మ్యాప్ అయిన వాళ్ళు లిస్ట్ లో పైన వచ్చేలా లాజిక్ 🌟
+                        let aIsGP = gpMappedVles.has(a.CSC_ID) ? 0 : 1;
+                        let bIsGP = gpMappedVles.has(b.CSC_ID) ? 0 : 1;
+                        if (aIsGP !== bIsGP) { return aIsGP - bIsGP; }
+
                         let distA = a.District || ""; let distB = b.District || "";
                         let cscA = a.CSC_ID || ""; let cscB = b.CSC_ID || "";
                         return distA.localeCompare(distB) || cscA.localeCompare(cscB);
@@ -1272,7 +1286,14 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     let displayList = currentCallingListData.slice(0, 500);
                     displayList.forEach((vle, idx) => {
                         let callBtn = vle.Mobile !== "Not Available" ? `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
-                        let cscDisplay = vle.CSC_ID || ""; if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
+                        
+                        let cscDisplay = vle.CSC_ID || ""; 
+                        if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
+                        
+                        // 🌟 GP VLE Badge 🌟
+                        if(gpMappedVles.has(vle.CSC_ID)) {
+                            cscDisplay += `<br><span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:4px;"><i class="fa-solid fa-star"></i> GP PRIORITY</span>`;
+                        }
                         
                         let lastRemHtml = "";
                         if (vle.CSC_ID && latestRemarks[vle.CSC_ID]) {
