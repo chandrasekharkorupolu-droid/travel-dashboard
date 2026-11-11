@@ -305,17 +305,20 @@
             <div class="filter-stats-box">
                 <div class="stat-item">
                     <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Total Dropouts</span><br>
-                    <span id="dropoutCount" style="color:#0f172a; font-size:22px; font-weight:900;">0</span>
+                    <span id="dropoutCount" style="color:#0f172a; font-size:22px; font-weight:900;">0</span><br>
+                    <span style="font-size:10px; color:#f59e0b; font-weight:bold;"><i class="fa-solid fa-star"></i> GP: <span id="gpDropoutCount">0</span></span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
                     <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Calls Done</span><br>
-                    <span id="callsDoneCount" style="color:#16a34a; font-size:22px; font-weight:900;">0</span>
+                    <span id="callsDoneCount" style="color:#16a34a; font-size:22px; font-weight:900;">0</span><br>
+                    <span style="font-size:10px; color:#16a34a; font-weight:bold;"><i class="fa-solid fa-check"></i> GP: <span id="gpCallsDoneCount">0</span></span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
                     <span style="font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Pending</span><br>
-                    <span id="callsPendingCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span>
+                    <span id="callsPendingCount" style="color:#dc2626; font-size:22px; font-weight:900;">0</span><br>
+                    <span style="font-size:10px; color:#dc2626; font-weight:bold;"><i class="fa-solid fa-hourglass-half"></i> GP: <span id="gpPendingCount">0</span></span>
                 </div>
             </div>
         </div>
@@ -1256,12 +1259,30 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                 }
 
                 let callsDone = 0;
-                currentCallingListData.forEach(v => { if(v.CSC_ID && latestRemarks[v.CSC_ID]) callsDone++; });
+                let gpTotal = 0;
+                let gpCallsDone = 0;
+
+                currentCallingListData.forEach(v => { 
+                    let isGP = gpMappedVles.has(v.CSC_ID);
+                    if(isGP) gpTotal++;
+
+                    if(v.CSC_ID && latestRemarks[v.CSC_ID]) {
+                        callsDone++;
+                        if(isGP) gpCallsDone++;
+                    }
+                });
+                
                 let callsPending = currentCallingListData.length - callsDone;
+                let gpPending = gpTotal - gpCallsDone;
 
                 if(document.getElementById('dropoutCount')) document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
                 if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
                 if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
+                
+                // 🌟 GP Counts UI Update 🌟
+                if(document.getElementById('gpDropoutCount')) document.getElementById('gpDropoutCount').innerText = gpTotal.toLocaleString();
+                if(document.getElementById('gpCallsDoneCount')) document.getElementById('gpCallsDoneCount').innerText = gpCallsDone.toLocaleString();
+                if(document.getElementById('gpPendingCount')) document.getElementById('gpPendingCount').innerText = gpPending.toLocaleString();
 
                 let tbody = "";
                 if(currentCallingListData.length === 0) {
