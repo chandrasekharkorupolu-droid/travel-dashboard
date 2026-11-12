@@ -493,11 +493,6 @@
     </div>
 </div>
 
-
-
-
-
-
 <script>
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -520,6 +515,8 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         let monthlyData = {}; let monthNamesList = []; let vleDb = {}; 
         let currentCallingListData = []; let hasScientificError = false;
         let latestRemarks = {}; let globalCallLogs = []; 
+        let gpMappedVles = new Set(); 
+        let gpMobilesData = {}; // 👈 కొత్త వేరియబుల్
 
         function initializeDashboard() {
             let loadingEl = document.getElementById('loadingDiv');
@@ -664,7 +661,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         function checkScientificNotation(val) { if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true; }
 
         function generateHTMLReports() {
-            // 1. Dashboard Summary Cards
             document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
             document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
             document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
@@ -681,7 +677,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             document.getElementById('sumFtdRev').innerText = '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2});
             document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
 
-            // 2. Service-Wise Report
             let srvHtml = "";
             Object.keys(serviceData).sort().forEach(srv => {
                 let d = serviceData[srv];
@@ -701,7 +696,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             });
             document.getElementById('serviceBody').innerHTML = srvHtml;
 
-            // 3. Yesterday Service Report
             let ySrvHtml = "";
             Object.keys(serviceData).sort((a,b) => serviceData[b].ftd_txn - serviceData[a].ftd_txn).forEach(srv => {
                 let d = serviceData[srv];
@@ -718,7 +712,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             if(ySrvHtml === "") ySrvHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
             document.getElementById('yesterdayServiceBody').innerHTML = ySrvHtml;
 
-            // 4. District-Wise Report
             let distHtml = "";
             Object.keys(districtData).sort().forEach(dist => {
                 let d = districtData[dist];
@@ -740,7 +733,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             });
             document.getElementById('districtBody').innerHTML = distHtml;
 
-            // 5. Yesterday District Report
             let yDistHtml = "";
             Object.keys(districtData).sort((a,b) => districtData[b].ftd_txn - districtData[a].ftd_txn).forEach(dist => {
                 let d = districtData[dist];
@@ -785,7 +777,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             } catch (error) {
                 alert("ఎర్రర్ వచ్చింది: " + error.message);
             } finally {
-                // 🌟 FIX: Show Buttons correctly after local generation 🌟
                 if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'none';
                 
                 sections.forEach(id => { if (document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
@@ -797,7 +788,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             }
         }
 
-       // 🌟 BULLETPROOF PUBLISH FUNCTION 🌟
         function publishToDMs() {
             if(!confirm("Are you sure you want to publish these reports to all District Managers?")) return;
             
@@ -807,7 +797,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             btn.disabled = true;
 
             let payload = {
-                action: "publishDashboard", // 🌟 ఇది కరెక్ట్ Action Name
+                action: "publishDashboard", 
                 html_summary: document.getElementById('summaryArea').innerHTML,
                 html_service: document.getElementById('serviceBody').innerHTML,
                 html_y_service: document.getElementById('yesterdayServiceBody').innerHTML,
@@ -834,7 +824,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 };
             }
 
-            // 1st Attempt: Standard Fetch
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload) 
@@ -855,7 +844,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             .catch(err => {
                 console.warn("Standard fetch failed, trying no-cors fallback...", err);
                 
-                // 2nd Attempt: Fallback Fetch (No-CORS for large payloads)
                 fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1109,10 +1097,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
         }
 
-        
-
-let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయడానికి కొత్త వేరియబుల్
-
         function fetchCallingReport(forceLive = false) {
             try {
                 let tbody = document.getElementById('dmCallingBody');
@@ -1139,10 +1123,9 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                         if(data.success) {
                             globalCallLogs = data.data || [];
                             
-                            // 🌟 సర్వర్ నుండి వచ్చిన GP VLE లను సేవ్ చేసుకోవడం 🌟
-                            if (data.gpVles) { 
-                                gpMappedVles = new Set(data.gpVles); 
-                            }
+                            // 🌟 సర్వర్ నుండి వచ్చిన డేటా సేవ్ 🌟
+                            if (data.gpVles) { gpMappedVles = new Set(data.gpVles); }
+                            if (data.gpMobiles) { gpMobilesData = data.gpMobiles; }
                             
                             let dmStats = {}; latestRemarks = {}; 
                             const ALL_DMS = [
@@ -1214,7 +1197,11 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                             }
                             if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = html;
                             
+                            // 🌟 FIX: Auto-load tables 8 & 9 when data is ready 🌟
                             try { renderCallingList(); } catch(e) { console.error(e); }
+                            try { renderConversionReport(); } catch(e) { console.error(e); }
+                            try { renderEmployeeReport(); } catch(e) { console.error(e); }
+                            
                         } else {
                             if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
                         }
@@ -1288,13 +1275,11 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                 if(currentCallingListData.length === 0) {
                     tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
                 } else {
-                    // 🔥 NEW SORTING LOGIC: GP VLEs First, No Remarks Top 🔥
                     currentCallingListData.sort((a, b) => {
                         let aHasRemark = latestRemarks[a.CSC_ID] ? 1 : 0;
                         let bHasRemark = latestRemarks[b.CSC_ID] ? 1 : 0;
                         if (aHasRemark !== bHasRemark) { return aHasRemark - bHasRemark; }
                         
-                        // 🌟 GP మ్యాప్ అయిన వాళ్ళు లిస్ట్ లో పైన వచ్చేలా లాజిక్ 🌟
                         let aIsGP = gpMappedVles.has(a.CSC_ID) ? 0 : 1;
                         let bIsGP = gpMappedVles.has(b.CSC_ID) ? 0 : 1;
                         if (aIsGP !== bIsGP) { return aIsGP - bIsGP; }
@@ -1306,12 +1291,20 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
 
                     let displayList = currentCallingListData.slice(0, 500);
                     displayList.forEach((vle, idx) => {
-                        let callBtn = vle.Mobile !== "Not Available" ? `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                        // 🌟 మొబైల్ ఫాల్‌బ్యాక్ లాజిక్ 🌟
+                        let finalMobile = vle.Mobile;
+                        if (!finalMobile || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                            if (gpMobilesData[vle.CSC_ID]) {
+                                finalMobile = gpMobilesData[vle.CSC_ID];
+                                vle.Mobile = finalMobile; 
+                            }
+                        }
+                        
+                        let callBtn = (finalMobile !== "Not Available" && finalMobile !== "") ? `<a href="tel:${finalMobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
                         
                         let cscDisplay = vle.CSC_ID || ""; 
                         if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
                         
-                        // 🌟 GP VLE Badge 🌟
                         if(gpMappedVles.has(vle.CSC_ID)) {
                             cscDisplay += `<br><span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:4px;"><i class="fa-solid fa-star"></i> GP PRIORITY</span>`;
                         }
@@ -1762,18 +1755,13 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
             exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
         }
 
-
-
-// 🌟 100% పర్ఫెక్ట్ ఫుల్ టేబుల్ డౌన్‌లోడ్ ఫంక్షన్ 🌟
         async function downloadImage(elementId, prefix) {
             const reportDiv = document.getElementById(elementId);
             if(!reportDiv) return;
             
-            // 0. పేజీని పైకి స్క్రోల్ చేయడం (ఇది html2canvas సగం కట్ అవ్వకుండా ఆపుతుంది)
             const originalWindowScroll = window.scrollY;
             window.scrollTo(0, 0);
 
-            // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
             const dlBtns = reportDiv.querySelectorAll('.btn-download, button');
             const originalBtnDisplays = [];
             dlBtns.forEach(btn => {
@@ -1781,24 +1769,21 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                 btn.style.display = 'none';
             });
 
-            // 2. టేబుల్స్ లో స్క్రోల్ బార్స్ పూర్తిగా తీసేసి ఎంత డేటా ఉంటే అంత పొడవుగా సాగేలా చేయడం
             const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
             let originalCssTexts = [];
             tableResponsiveDivs.forEach(div => {
                 originalCssTexts.push(div.style.cssText);
-                // ఇక్కడే మ్యాజిక్: !important వాడి బలవంతంగా టేబుల్‌ను ఎక్స్పాండ్ చేయడం
                 div.style.cssText = "max-height: none !important; overflow: visible !important; height: auto !important;";
             });
 
             let originalDivCss = reportDiv.style.cssText;
             reportDiv.style.cssText += "width: 1200px !important; height: auto !important; position: relative !important; overflow: visible !important;";
             
-            // టేబుల్ పెద్దది అవ్వడానికి బ్రౌజర్‌కి టైమ్ ఇవ్వాలి
             await new Promise(resolve => setTimeout(resolve, 500));
             
             try {
                 const canvas = await html2canvas(reportDiv, { 
-                    scale: 2, // క్వాలిటీ కోసం 
+                    scale: 2, 
                     backgroundColor: "#ffffff",
                     useCORS: true,
                     logging: false,
@@ -1818,17 +1803,10 @@ let gpMappedVles = new Set(); // GP VLE లను స్టోర్ చేయ�
                 console.error(err);
                 alert("Image capture failed. Please try again.");
             } finally {
-                // 3. ఫోటో తీసేసాక అన్నీ మళ్ళీ యధావిధిగా స్క్రోల్ బార్ లోకి సెట్ చేయడం
-                tableResponsiveDivs.forEach((div, index) => {
-                    div.style.cssText = originalCssTexts[index];
-                });
+                tableResponsiveDivs.forEach((div, index) => { div.style.cssText = originalCssTexts[index]; });
                 reportDiv.style.cssText = originalDivCss;
                 
-                dlBtns.forEach((btn, index) => {
-                    btn.style.display = originalBtnDisplays[index];
-                });
-
-                // పాత స్క్రోల్ పొజిషన్ కి వెళ్ళడం
+                dlBtns.forEach((btn, index) => { btn.style.display = originalBtnDisplays[index]; });
                 window.scrollTo(0, originalWindowScroll);
             }
         }
