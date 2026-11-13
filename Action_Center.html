@@ -234,6 +234,18 @@
         let rawSpocTargets = [];
         let rawSpocUsers = [];
 
+        // 🌟 Helper Functions for Masking 🌟
+        function maskMobileNumber(mobileStr) {
+            if (!mobileStr) return "N/A";
+            let cleanMob = mobileStr.replace(/\D/g, '');
+            if (cleanMob.length >= 10) {
+                // Return format: 98*****210 (First 2, 5 stars, Last 3)
+                let base = cleanMob.slice(-10); // get last 10 digits if it has 91 prefix
+                return base.substring(0, 2) + "*****" + base.substring(7);
+            }
+            return cleanMob; // Return as is if it's too short
+        }
+
         // Dynamic Colors for any service generated on the fly
         const dynamicColors = [
             { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" }, // Blue
@@ -536,21 +548,25 @@
                 
                 let titleText = isTravel ? (v.taskName === "BOTH" ? "IRCTC & REDBUS COMBINED" : `${v.taskName} FOLLOW-UP`) : `${v.taskName} FOLLOW-UP`;
                 
+                // 🌟 UPDATED WHATSAPP MESSAGE TEXT 🌟
                 let txnBoxHtml = ""; let msg = "";
                 if (isTravel) {
                     if (v.taskName === "BOTH") {
                         txnBoxHtml = `<div class="txn-badge"><span>🚆 IRCTC Last Year:</span> <span>${v.iTxn}</span></div><div class="txn-badge" style="margin-top:-10px;"><span>🚌 REDBUS Last Year:</span> <span>${v.rTxn}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత ఫైనాన్షియల్ ఇయర్‌ లో మీరు *IRCTC* & *REDBUS* ద్వారా అద్భుతమైన ప్రదర్శన కనబరిచారు. కానీ ఈ ఏడాది మీరు ఇంకా యాక్టివేట్ కాలేదు. దయచేసి వెంటనే ఒక టికెట్ బుక్ చేసి మీ ID ను యాక్టివ్‌గా ఉంచుకోండి.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *IRCTC* మరియు *REDBUS* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు ఈ సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా ఈ సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                     } else {
                         txnBoxHtml = `<div class="txn-badge"><span>📊 Last Year Txns:</span> <span>${v.extraData}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత ఏడాది మీరు *${v.taskName}* లో మంచి పెర్ఫార్మన్స్ ఇచ్చారు. కానీ ఈ ఏడాది ఇంకా సర్వీస్ వాడలేదు. దయచేసి వెంటనే పని మొదలుపెట్టగలరు.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                     }
                 } else {
                     txnBoxHtml = `<div class="txn-badge"><span>📌 Target Data:</span> <span style="color:#b91c1c;">${v.extraData}</span></div>`;
-                    msg = `Dear ${v.name} గారు,\n\nThis is regarding the task: *${v.taskName}*. దయచేసి దీనికి సంబందించిన పెండింగ్ వర్క్ పూర్తి చేయగలరు.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                    msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                 }
                 
                 let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+                
+                // 🌟 MASKED MOBILE NUMBER 🌟
+                let maskedMobile = maskMobileNumber(v.mobile);
                 
                 html += `
                 <div class="vle-card" id="card-${i}">
@@ -559,9 +575,16 @@
                         <div class="vle-details">
                             <h2>${v.name}</h2>
                             <p>CSC ID: ${v.cscId}</p>
+                            
+                            <!-- Display Masked Number Here -->
+                            <div style="margin-bottom:15px; font-weight:800; color:#3b82f6; font-size:16px;">
+                                <i class="fa-solid fa-phone"></i> ${maskedMobile}
+                            </div>
+                            
                             ${txnBoxHtml}
                             <div class="action-btn-group">
-                                <a href="tel:${v.mobile}" class="call-btn" onclick="unlockActions(${i}, 'Call')">📞 Call</a>
+                                <!-- Real number remains hidden inside the href attribute -->
+                                <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call')">📞 Call</a>
                                 <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp')" target="_blank">💬 WhatsApp</a>
                             </div>
                         </div>
