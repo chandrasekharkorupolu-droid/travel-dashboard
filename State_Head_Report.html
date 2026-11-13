@@ -63,7 +63,6 @@
         .badge-amber { background: #fef3c7; color: #d97706; }
         .badge-gsw { background: #f59e0b; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 5px;}
 
-        /* CSS Fix for Portal Dropdown & Stats alignment */
         .filter-bar { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-wrap: nowrap; gap: 15px; align-items: center; border: 1px solid #cbd5e1; justify-content: space-between; }
         .filter-left-controls { display: flex; gap: 15px; flex: 1; flex-wrap: nowrap;}
         .filter-control { flex: 1; min-width: 250px; }
@@ -73,7 +72,6 @@
         .stat-divider { width: 2px; height: 30px; background: #e2e8f0; display: inline-block; }
 
         .report-footer { margin-top: 20px; text-align: right; font-size: 12px; color: #64748b; font-weight: bold; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
-
         .data-row { cursor: pointer; }
 
         @media (max-width: 1200px) {
@@ -150,7 +148,11 @@
         </div>
         <div class="cards-grid">
             <div class="card" style="border-left-color: #475569;"><h4>FY 25-26 Active VLEs</h4><h2 id="sumLastYearCsc">0</h2><p id="sumLyGsw" style="font-size:11px; color:#475569;"></p></div>
-            <div class="card" style="border-left-color: #2563eb;"><h4>FY 26-27 YTD Active</h4><h2 id="sumYtdCsc" style="color: #2563eb;">0</h2><p id="sumYtdGsw" style="font-size:11px; color:#2563eb;"></p></div>
+            <div class="card" style="border-left-color: #2563eb;">
+                <h4>FY 26-27 YTD Active</h4>
+                <h2 id="sumYtdCsc" style="color: #2563eb;">0</h2>
+                <div id="sumYtdBreakdown" style="font-size:11px; color:#2563eb; font-weight:bold; margin-top:4px; line-height:1.4;"></div>
+            </div>
             <div class="card" style="border-left-color: #d946ef;"><h4>Yesterday Active (FTD)</h4><h2 id="sumFtdCsc" style="color: #d946ef;">0</h2></div>
             <div class="card" style="border-left-color: #dc2626; position: relative;">
                 <h4>State Zero Txns (YTD Dropouts)</h4>
@@ -236,9 +238,22 @@
     <!-- IX. EMPLOYEE REPORT CARD -->
     <div class="report-section" id="empReportCardArea" style="border: 2px solid #0284c7; background: #f0f9ff;">
         <div class="report-header-flex">
-            <h2 style="color: #0369a1;"><i class="fa-solid fa-id-card-clip"></i> IX. EMPLOYEE REPORT CARD (TODAY)</h2>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <select id="empReportDateFilter" onchange="renderEmployeeReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; background:#e0f2fe; cursor:pointer;">
+            <h2 id="empReportHeading" style="color: #0369a1;"><i class="fa-solid fa-id-card-clip"></i> IX. EMPLOYEE REPORT CARD (TODAY)</h2>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                
+                <!-- 🌟 CUSTOM DATE FILTER IMPLEMENTATION 🌟 -->
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <label style="font-size:12px; font-weight:bold; color:#0369a1;">From:</label>
+                    <input type="date" id="empDateFrom" onchange="renderEmployeeReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; cursor:pointer;">
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <label style="font-size:12px; font-weight:bold; color:#0369a1;">To:</label>
+                    <input type="date" id="empDateTo" onchange="renderEmployeeReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; cursor:pointer;">
+                </div>
+                
+                <span style="font-weight:bold; color:#0369a1;">OR</span>
+                
+                <select id="empReportDateFilter" onchange="resetCustomDatesAndRender()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; background:#e0f2fe; cursor:pointer;">
                     <option value="TODAY">📅 Today's Calls</option>
                     <option value="YESTERDAY">📆 Yesterday's Calls</option>
                     <option value="OVERALL">📊 Overall (All Time)</option>
@@ -497,7 +512,7 @@
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 100% AP STRICT DISTRICT LIST (UPDATED WITH 28 DISTRICTS) 🌟
+        // 🌟 100% AP STRICT DISTRICT LIST 🌟
         const VALID_AP_DISTRICTS = [
             "ALLURI SITHARAMA RAJU", "ANAKAPALLI", "ANANTAPUR", "ANNAMAYYA", "BAPATLA", 
             "CHITTOOR", "DR B R AMBEDKAR KONASEEMA", "EAST GODAVARI", "ELURU", "GUNTUR", 
@@ -516,7 +531,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         let currentCallingListData = []; let hasScientificError = false;
         let latestRemarks = {}; let globalCallLogs = []; 
         let gpMappedVles = new Set(); 
-        let gpMobilesData = {}; // 👈 కొత్త వేరియబుల్
+        let gpMobilesData = {};
 
         function initializeDashboard() {
             let loadingEl = document.getElementById('loadingDiv');
@@ -528,6 +543,17 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             let dd = ("0" + d.getDate()).slice(-2);
             let convFilter = document.getElementById('convDateFilter');
             if(convFilter) convFilter.value = `${yyyy}-${mm}-${dd}`;
+            
+            // Set Default Dates for Employee Custom Filter (Last 7 Days to Today)
+            let empDateTo = new Date();
+            let empDateFrom = new Date();
+            empDateFrom.setDate(empDateTo.getDate() - 6); // default to 7 days
+            
+            let eToY = empDateTo.getFullYear(); let eToM = ("0" + (empDateTo.getMonth() + 1)).slice(-2); let eToD = ("0" + empDateTo.getDate()).slice(-2);
+            let eFromY = empDateFrom.getFullYear(); let eFromM = ("0" + (empDateFrom.getMonth() + 1)).slice(-2); let eFromD = ("0" + empDateFrom.getDate()).slice(-2);
+            
+            if(document.getElementById('empDateTo')) document.getElementById('empDateTo').value = `${eToY}-${eToM}-${eToD}`;
+            if(document.getElementById('empDateFrom')) document.getElementById('empDateFrom').value = `${eFromY}-${eFromM}-${eFromD}`;
 
             fetch(SCRIPT_URL + "?action=fetchDMReport", { redirect: "follow", cache: "no-store" })
             .then(response => response.json())
@@ -661,10 +687,21 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         function checkScientificNotation(val) { if(val && (val.includes('E+') || val.includes('e+'))) hasScientificError = true; }
 
         function generateHTMLReports() {
+            let retainedCount = 0;
+            let newAdditionCount = 0;
+            stateYtdCscs.forEach(id => {
+                if (stateLyCscs.has(id)) {
+                    retainedCount++;
+                } else {
+                    newAdditionCount++;
+                }
+            });
+            
             document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
             document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
             document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
-            document.getElementById('sumYtdGsw').innerText = `(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+            document.getElementById('sumYtdBreakdown').innerHTML = `Old (Retained): ${retainedCount.toLocaleString()}<br>New Additions: ${newAdditionCount.toLocaleString()}<br>(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+            
             document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
             
             let dropoutsCount = stateLyCscs.size - stateYtdCscs.size; 
@@ -1430,30 +1467,73 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             } catch(e) { console.error("renderConversionReport Error:", e); }
         }
 
+        function resetCustomDatesAndRender() {
+            document.getElementById('empDateFrom').value = '';
+            document.getElementById('empDateTo').value = '';
+            renderEmployeeReport();
+        }
+
         function renderEmployeeReport() {
             try {
                 let tbody = document.getElementById('empReportBody'); 
-                let dateEl = document.getElementById('empReportDateFilter');
-                let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
                 
                 if(!globalCallLogs || globalCallLogs.length === 0) { 
                     if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
                     return; 
                 }
 
-                let isOverall = (filterVal === "OVERALL"); 
-                let targetDate = new Date(); 
-                if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
-                let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
-                let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
+                let isOverall = false;
+                let isCustomDate = false;
+                let startDate = "";
+                let endDate = "";
+                
+                let fromVal = document.getElementById('empDateFrom').value;
+                let toVal = document.getElementById('empDateTo').value;
+                
+                if (fromVal || toVal) {
+                    isCustomDate = true;
+                    startDate = fromVal ? new Date(fromVal) : new Date("2020-01-01");
+                    endDate = toVal ? new Date(toVal) : new Date();
+                    document.getElementById('empReportDateFilter').value = "OVERALL"; // Visual Reset
+                } else {
+                    let filterVal = document.getElementById('empReportDateFilter') ? document.getElementById('empReportDateFilter').value : "TODAY";
+                    isOverall = (filterVal === "OVERALL");
+                    
+                    let targetDate = new Date(); 
+                    if(filterVal === "YESTERDAY") { targetDate.setDate(targetDate.getDate() - 1); }
+                    let dd = ("0"+targetDate.getDate()).slice(-2); let mm = ("0"+(targetDate.getMonth()+1)).slice(-2); let yyyy = targetDate.getFullYear();
+                    
+                    startDate = new Date(`${yyyy}-${mm}-${dd}`);
+                    endDate = new Date(`${yyyy}-${mm}-${dd}`);
+                }
+
+                // Normalizing Dates for Comparison
+                startDate.setHours(0,0,0,0);
+                endDate.setHours(23,59,59,999);
 
                 let totalWorkingDays = 1;
-                if (isOverall) {
-                    let uniqueDates = new Set();
-                    globalCallLogs.forEach(log => {
-                        let logD = log.date ? String(log.date) : "";
-                        if (logD) { uniqueDates.add(logD.split(" ")[0]); }
-                    });
+                let uniqueDates = new Set();
+                
+                globalCallLogs.forEach(log => {
+                    let logDateRaw = log.date ? String(log.date) : "";
+                    if (!logDateRaw) return;
+                    
+                    // Parse log date assuming format DD-MM-YYYY or YYYY-MM-DD
+                    let logParts = logDateRaw.split(" ")[0].split(/-|\//);
+                    let logD = new Date();
+                    
+                    if(logParts.length === 3) {
+                        if (logParts[0].length === 4) { logD = new Date(`${logParts[0]}-${logParts[1]}-${logParts[2]}`); } 
+                        else { logD = new Date(`${logParts[2]}-${logParts[1]}-${logParts[0]}`); }
+                    }
+                    logD.setHours(12,0,0,0); // Midday for safe comparison
+                    
+                    if (isOverall || (logD >= startDate && logD <= endDate)) {
+                        uniqueDates.add(logDateRaw.split(" ")[0]);
+                    }
+                });
+                
+                if (isOverall || isCustomDate) {
                     totalWorkingDays = uniqueDates.size > 0 ? uniqueDates.size : 1;
                 }
 
@@ -1483,7 +1563,18 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     
                     if (matchKey === "state head" || matchKey === "unknown dm" || !empStats[matchKey]) return;
                     
-                    if (isOverall || (logDateRaw && (logDateRaw.startsWith(targetStr1) || logDateRaw.startsWith(targetStr2)))) {
+                    if (!logDateRaw) return;
+                    
+                    let logParts = logDateOnly.split(/-|\//);
+                    let logD = new Date();
+                    
+                    if(logParts.length === 3) {
+                        if (logParts[0].length === 4) { logD = new Date(`${logParts[0]}-${logParts[1]}-${logParts[2]}`); } 
+                        else { logD = new Date(`${logParts[2]}-${logParts[1]}-${logParts[0]}`); }
+                    }
+                    logD.setHours(12,0,0,0);
+                    
+                    if (isOverall || (logD >= startDate && logD <= endDate)) {
                         if (cscId) {
                             if(!empStats[matchKey].calledIds.has(cscId)) {
                                 empStats[matchKey].calledIds.set(cscId, { cat: cat, remark: remark, date: logDateOnly });
@@ -1572,13 +1663,25 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
                 if(tbody) tbody.innerHTML = totalHtml + html;
                 
-                let hText = isOverall ? "IX. EMPLOYEE REPORT CARD (OVERALL)" : (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
+                let hText = "";
+                let filterVal = document.getElementById('empReportDateFilter') ? document.getElementById('empReportDateFilter').value : "TODAY";
+                
+                if (isCustomDate) {
+                    let displayFrom = startDate.toLocaleDateString('en-GB');
+                    let displayTo = endDate.toLocaleDateString('en-GB');
+                    hText = `IX. EMPLOYEE REPORT CARD (${displayFrom} - ${displayTo})`;
+                } else if (isOverall) {
+                    hText = "IX. EMPLOYEE REPORT CARD (OVERALL)";
+                } else {
+                    hText = (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
+                }
+                
                 let h2 = document.querySelector('#empReportCardArea h2');
                 if(h2) h2.innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
                 
                 let footerEl = document.getElementById('empReportFooter');
                 if (footerEl) {
-                    if (isOverall) {
+                    if (isOverall || isCustomDate) {
                         footerEl.innerHTML = `Target: State Team = ${20 * totalWorkingDays} Calls | Regular DMs = ${40 * totalWorkingDays} Calls <b>(Calculated for ${totalWorkingDays} Working Days)</b>`;
                     } else {
                         footerEl.innerText = `Target: State Team = 20 Calls | Regular DMs = 40 Calls (Daily Target)`;
@@ -1762,11 +1865,13 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             const originalWindowScroll = window.scrollY;
             window.scrollTo(0, 0);
 
-            const dlBtns = reportDiv.querySelectorAll('.btn-download, button');
+            const dlBtns = reportDiv.querySelectorAll('.btn-download, button, input[type="date"], select');
             const originalBtnDisplays = [];
             dlBtns.forEach(btn => {
                 originalBtnDisplays.push(btn.style.display);
-                btn.style.display = 'none';
+                if (!btn.id.includes('empDate')) {
+                    btn.style.display = 'none';
+                }
             });
 
             const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
@@ -1810,7 +1915,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 window.scrollTo(0, originalWindowScroll);
             }
         }
-
 </script>
 </body>
 </html>
