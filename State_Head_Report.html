@@ -521,6 +521,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
         ];
 
+        // Helper functions to prevent innerHTML crashes completely
+        const setElemText = (id, val) => { let el = document.getElementById(id); if(el) el.innerText = val; };
+        const setElemHTML = (id, val) => { let el = document.getElementById(id); if(el) el.innerHTML = val; };
+
         let districtData = {}; let serviceData = {};
         let stateLyCscs = new Set(); let stateLyGswCscs = new Set(); 
         let stateYtdCscs = new Set(); let stateYtdGswCscs = new Set(); 
@@ -531,7 +535,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         let currentCallingListData = []; let hasScientificError = false;
         let latestRemarks = {}; let globalCallLogs = []; 
         let gpMappedVles = new Set(); 
-        let gpMobilesData = {};
+        let gpMobilesData = {}; 
 
         function initializeDashboard() {
             let loadingEl = document.getElementById('loadingDiv');
@@ -547,7 +551,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             // Set Default Dates for Employee Custom Filter (Last 7 Days to Today)
             let empDateTo = new Date();
             let empDateFrom = new Date();
-            empDateFrom.setDate(empDateTo.getDate() - 6); // default to 7 days
+            empDateFrom.setDate(empDateTo.getDate() - 6); 
             
             let eToY = empDateTo.getFullYear(); let eToM = ("0" + (empDateTo.getMonth() + 1)).slice(-2); let eToD = ("0" + empDateTo.getDate()).slice(-2);
             let eFromY = empDateFrom.getFullYear(); let eFromM = ("0" + (empDateFrom.getMonth() + 1)).slice(-2); let eFromD = ("0" + empDateFrom.getDate()).slice(-2);
@@ -570,14 +574,14 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
                 if(document.getElementById('lastUpdatedText')) {
                     document.getElementById('lastUpdatedText').style.display = 'inline-block';
-                    document.getElementById('lastUpdatedText').innerHTML = `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`;
+                    setElemHTML('lastUpdatedText', `<i class="fa-solid fa-clock"></i> Server Data as of: ${data.updateTime || new Date().toLocaleString()}`);
                 }
 
-                if(data.html_summary && document.getElementById('summaryArea')) document.getElementById('summaryArea').innerHTML = data.html_summary;
-                if(data.html_service && document.getElementById('serviceBody')) document.getElementById('serviceBody').innerHTML = data.html_service;
-                if(data.html_y_service && document.getElementById('yesterdayServiceBody')) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
-                if(data.html_district && document.getElementById('districtBody')) document.getElementById('districtBody').innerHTML = data.html_district;
-                if(data.html_y_district && document.getElementById('yesterdayDistrictBody')) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
+                if(data.html_summary) setElemHTML('summaryArea', data.html_summary);
+                if(data.html_service) setElemHTML('serviceBody', data.html_service);
+                if(data.html_y_service) setElemHTML('yesterdayServiceBody', data.html_y_service);
+                if(data.html_district) setElemHTML('districtBody', data.html_district);
+                if(data.html_y_district) setElemHTML('yesterdayDistrictBody', data.html_y_district);
 
                 vleDb = data.vleDb || {};
                 stateLyCscs = new Set(data.stateLyCscs || []); stateYtdCscs = new Set(data.stateYtdCscs || []);
@@ -697,22 +701,22 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 }
             });
             
-            document.getElementById('sumLastYearCsc').innerText = stateLyCscs.size.toLocaleString();
-            document.getElementById('sumLyGsw').innerText = `(GSW: ${stateLyGswCscs.size.toLocaleString()})`;
-            document.getElementById('sumYtdCsc').innerText = stateYtdCscs.size.toLocaleString();
-            document.getElementById('sumYtdBreakdown').innerHTML = `Old (Retained): ${retainedCount.toLocaleString()}<br>New Additions: ${newAdditionCount.toLocaleString()}<br>(GSW: ${stateYtdGswCscs.size.toLocaleString()})`;
+            setElemText('sumLastYearCsc', stateLyCscs.size.toLocaleString());
+            setElemText('sumLyGsw', `(GSW: ${stateLyGswCscs.size.toLocaleString()})`);
+            setElemText('sumYtdCsc', stateYtdCscs.size.toLocaleString());
+            setElemHTML('sumYtdBreakdown', `Old (Retained): ${retainedCount.toLocaleString()}<br>New Additions: ${newAdditionCount.toLocaleString()}<br>(GSW: ${stateYtdGswCscs.size.toLocaleString()})`);
             
-            document.getElementById('sumFtdCsc').innerText = stateFtdCscs.size.toLocaleString();
+            setElemText('sumFtdCsc', stateFtdCscs.size.toLocaleString());
             
             let dropoutsCount = stateLyCscs.size - stateYtdCscs.size; 
             let dropouts = 0; let dropoutsGsw = 0;
             stateLyCscs.forEach(id => { if(!stateYtdCscs.has(id)) { dropouts++; if(id.startsWith('9')) dropoutsGsw++; } });
-            document.getElementById('sumZeroTxn').innerText = dropouts.toLocaleString();
-            document.getElementById('sumZeroGsw').innerText = `(GSW: ${dropoutsGsw.toLocaleString()})`;
+            setElemText('sumZeroTxn', dropouts.toLocaleString());
+            setElemText('sumZeroGsw', `(GSW: ${dropoutsGsw.toLocaleString()})`);
             
-            document.getElementById('sumFtdTxn').innerText = stateFtdTxn.toLocaleString();
-            document.getElementById('sumFtdRev').innerText = '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2});
-            document.getElementById('sumTotTxn').innerText = stateTotTxn.toLocaleString();
+            setElemText('sumFtdTxn', stateFtdTxn.toLocaleString());
+            setElemText('sumFtdRev', '₹ ' + stateFtdRev.toLocaleString('en-IN', {maximumFractionDigits: 2}));
+            setElemText('sumTotTxn', stateTotTxn.toLocaleString());
 
             let srvHtml = "";
             Object.keys(serviceData).sort().forEach(srv => {
@@ -731,7 +735,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
                 </tr>`;
             });
-            document.getElementById('serviceBody').innerHTML = srvHtml;
+            setElemHTML('serviceBody', srvHtml);
 
             let ySrvHtml = "";
             Object.keys(serviceData).sort((a,b) => serviceData[b].ftd_txn - serviceData[a].ftd_txn).forEach(srv => {
@@ -747,7 +751,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 }
             });
             if(ySrvHtml === "") ySrvHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
-            document.getElementById('yesterdayServiceBody').innerHTML = ySrvHtml;
+            setElemHTML('yesterdayServiceBody', ySrvHtml);
 
             let distHtml = "";
             Object.keys(districtData).sort().forEach(dist => {
@@ -768,7 +772,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     <td style="color:#059669; font-weight:900;">${d.total_rev.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
                 </tr>`;
             });
-            document.getElementById('districtBody').innerHTML = distHtml;
+            setElemHTML('districtBody', distHtml);
 
             let yDistHtml = "";
             Object.keys(districtData).sort((a,b) => districtData[b].ftd_txn - districtData[a].ftd_txn).forEach(dist => {
@@ -784,7 +788,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 }
             });
             if(yDistHtml === "") yDistHtml = "<tr><td colspan='5' style='color:#dc2626;'>No transactions yesterday.</td></tr>";
-            document.getElementById('yesterdayDistrictBody').innerHTML = yDistHtml;
+            setElemHTML('yesterdayDistrictBody', yDistHtml);
         }
 
         async function processReports() {
@@ -1033,7 +1037,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             if(!baseSel || !tarSel) return;
             baseSel.innerHTML = ""; tarSel.innerHTML = "";
             let keys = Object.keys(monthlyData).filter(k => k && k.trim() !== ""); 
-            if(keys.length === 0) { baseSel.innerHTML = '<option value="">No Data</option>'; tarSel.innerHTML = '<option value="">No Data</option>'; return; }
+            if(keys.length === 0) { setElemHTML('momBaseSelect', '<option value="">No Data</option>'); setElemHTML('momTargetSelect', '<option value="">No Data</option>'); return; }
 
             keys.forEach(k => { baseSel.innerHTML += `<option value="${k}">${k}</option>`; tarSel.innerHTML += `<option value="${k}">${k}</option>`; });
             
@@ -1051,17 +1055,14 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     if(baseSel.options.length > 0) bName = baseSel.options[0].value;
                     if(tarSel.options.length > 0) tName = tarSel.options[0].value;
                     if(!bName || !tName) {
-                        let mb = document.getElementById('momBody');
-                        if(mb) mb.innerHTML = `<tr><td colspan="6" style="color:#dc2626;">No data available to generate MoM report.</td></tr>`;
+                        setElemHTML('momBody', `<tr><td colspan="6" style="color:#dc2626;">No data available to generate MoM report.</td></tr>`);
                         return;
                     }
                 }
 
-                if(document.getElementById('th-mom-base')) document.getElementById('th-mom-base').innerText = `${bName.toUpperCase()} ACTIVE`;
-                if(document.getElementById('th-mom-target')) document.getElementById('th-mom-target').innerText = `${tName.toUpperCase()} TOTAL`;
-                
-                let momOpt = document.getElementById('momOptionText');
-                if(momOpt) momOpt.innerText = `📅 MoM DROPOUTS (${bName} vs ${tName})`;
+                setElemText('th-mom-base', `${bName.toUpperCase()} ACTIVE`);
+                setElemText('th-mom-target', `${tName.toUpperCase()} TOTAL`);
+                setElemText('momOptionText', `📅 MoM DROPOUTS (${bName} vs ${tName})`);
 
                 let bSet = monthlyData[bName]?.all || new Set(); let bGsw = monthlyData[bName]?.gsw || new Set();
                 let tSet = monthlyData[tName]?.all || new Set(); let tGsw = monthlyData[tName]?.gsw || new Set();
@@ -1121,7 +1122,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
                 </tr>`;
                 
-                let mb = document.getElementById('momBody'); if(mb) mb.innerHTML = momTotalHtml + momHtml;
+                setElemHTML('momBody', momTotalHtml + momHtml);
                 let fc = document.getElementById('filterCategory'); if(fc && fc.value === 'MOM') { renderCallingList(); }
             } catch(e) { console.error("renderMomReport Error:", e); }
         }
@@ -1136,8 +1137,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
         function fetchCallingReport(forceLive = false) {
             try {
-                let tbody = document.getElementById('dmCallingBody');
-                if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>';
+                setElemHTML('dmCallingBody', '<tr><td colspan="7" style="color:#2563eb; font-weight:bold; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Calling Leaderboard...</td></tr>');
                 
                 let dateEl = document.getElementById('leaderboardDateFilter');
                 let filterVal = dateEl ? (dateEl.value || "").trim() : "TODAY";
@@ -1148,10 +1148,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 let targetStr1 = `${dd}-${mm}-${yyyy}`; let targetStr2 = `${yyyy}-${mm}-${dd}`; 
 
                 let thTitle = isOverall ? "TOTAL CALLS (ALL TIME)" : (filterVal === "YESTERDAY" ? "TOTAL CALLS (YESTERDAY)" : "TOTAL CALLS (TODAY)");
-                if(document.getElementById('thTotalCalls')) document.getElementById('thTotalCalls').innerText = thTitle;
+                setElemText('thTotalCalls', thTitle);
                 
                 let headingText = isOverall ? "VII. DM CALLING PERFORMANCE (OVERALL)" : (filterVal === "YESTERDAY" ? "VII. DM CALLING PERFORMANCE (YESTERDAY)" : "VII. DM CALLING PERFORMANCE (TODAY)");
-                if(document.getElementById('callingReportHeading')) document.getElementById('callingReportHeading').innerHTML = `<i class="fa-solid fa-chart-line"></i> ${headingText}`;
+                setElemHTML('callingReportHeading', `<i class="fa-solid fa-chart-line"></i> ${headingText}`);
 
                 fetch(SCRIPT_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "getCallingReport" }), redirect: "follow", cache: "no-store" })
                 .then(response => response.json())
@@ -1160,7 +1160,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                         if(data.success) {
                             globalCallLogs = data.data || [];
                             
-                            // 🌟 సర్వర్ నుండి వచ్చిన డేటా సేవ్ 🌟
                             if (data.gpVles) { gpMappedVles = new Set(data.gpVles); }
                             if (data.gpMobiles) { gpMobilesData = data.gpMobiles; }
                             
@@ -1232,22 +1231,21 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                                 </tr>`;
                                 html = totalHtml + html;
                             }
-                            if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = html;
+                            setElemHTML('dmCallingBody', html);
                             
-                            // 🌟 FIX: Auto-load tables 8 & 9 when data is ready 🌟
                             try { renderCallingList(); } catch(e) { console.error(e); }
                             try { renderConversionReport(); } catch(e) { console.error(e); }
                             try { renderEmployeeReport(); } catch(e) { console.error(e); }
                             
                         } else {
-                            if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`;
+                            setElemHTML('dmCallingBody', `<tr><td colspan="7" style="color:#dc2626;">Error: ${data.message}</td></tr>`);
                         }
                     } catch(e) {
-                        if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = `<tr><td colspan="7" style="color:#dc2626;">JS Output Error: ${e.message}</td></tr>`;
+                        setElemHTML('dmCallingBody', `<tr><td colspan="7" style="color:#dc2626;">JS Output Error: ${e.message}</td></tr>`);
                     }
                 })
                 .catch(err => {
-                    if(document.getElementById('dmCallingBody')) document.getElementById('dmCallingBody').innerHTML = '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>';
+                    setElemHTML('dmCallingBody', '<tr><td colspan="7" style="color:#dc2626;">Network Error! Please try again.</td></tr>');
                     console.error("fetchCallingReport Network/JS Error:", err);
                 });
             } catch(e) { console.error("fetchCallingReport Initial Error:", e); }
@@ -1299,14 +1297,13 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 let callsPending = currentCallingListData.length - callsDone;
                 let gpPending = gpTotal - gpCallsDone;
 
-                if(document.getElementById('dropoutCount')) document.getElementById('dropoutCount').innerText = currentCallingListData.length.toLocaleString();
-                if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
-                if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
+                setElemText('dropoutCount', currentCallingListData.length.toLocaleString());
+                setElemText('callsDoneCount', callsDone.toLocaleString());
+                setElemText('callsPendingCount', callsPending.toLocaleString());
                 
-                // 🌟 GP Counts UI Update 🌟
-                if(document.getElementById('gpDropoutCount')) document.getElementById('gpDropoutCount').innerText = gpTotal.toLocaleString();
-                if(document.getElementById('gpCallsDoneCount')) document.getElementById('gpCallsDoneCount').innerText = gpCallsDone.toLocaleString();
-                if(document.getElementById('gpPendingCount')) document.getElementById('gpPendingCount').innerText = gpPending.toLocaleString();
+                setElemText('gpDropoutCount', gpTotal.toLocaleString());
+                setElemText('gpCallsDoneCount', gpCallsDone.toLocaleString());
+                setElemText('gpPendingCount', gpPending.toLocaleString());
 
                 let tbody = "";
                 if(currentCallingListData.length === 0) {
@@ -1328,7 +1325,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
                     let displayList = currentCallingListData.slice(0, 500);
                     displayList.forEach((vle, idx) => {
-                        // 🌟 మొబైల్ ఫాల్‌బ్యాక్ లాజిక్ 🌟
                         let finalMobile = vle.Mobile;
                         if (!finalMobile || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
                             if (gpMobilesData[vle.CSC_ID]) {
@@ -1373,7 +1369,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     });
                     if(currentCallingListData.length > 500) { tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`; }
                 }
-                let cb = document.getElementById('callingBody'); if(cb) cb.innerHTML = tbody;
+                setElemHTML('callingBody', tbody);
             } catch(e) { console.error("renderCallingList Error:", e); }
         }
 
@@ -1393,12 +1389,11 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
         function renderConversionReport() {
             try {
-                let tbody = document.getElementById('conversionBody'); 
                 let dateEl = document.getElementById('convDateFilter');
                 let filterVal = dateEl ? (dateEl.value || "").trim() : "";
                 
                 if(!filterVal || !globalCallLogs || globalCallLogs.length === 0) { 
-                    if(tbody) tbody.innerHTML = '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
+                    setElemHTML('conversionBody', '<tr><td colspan="9" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'); 
                     return; 
                 }
                 
@@ -1463,7 +1458,8 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     <td style="color:#4ade80; font-size:15px; font-weight:900;">${grandTotals.mtdA}</td><td style="color:#ffffff; font-size:16px; font-weight:900;">${grandTotals.totC}</td>
                     <td style="color:#4ade80; font-size:16px; font-weight:900;">${grandTotals.totA}</td><td style="color:#fbbf24; font-size:16px; font-weight:900;">${totRate}%</td>
                 </tr>`;
-                if(tbody) tbody.innerHTML = totalHtml + html;
+                
+                setElemHTML('conversionBody', totalHtml + html);
             } catch(e) { console.error("renderConversionReport Error:", e); }
         }
 
@@ -1475,10 +1471,8 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
         function renderEmployeeReport() {
             try {
-                let tbody = document.getElementById('empReportBody'); 
-                
                 if(!globalCallLogs || globalCallLogs.length === 0) { 
-                    if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'; 
+                    setElemHTML('empReportBody', '<tr><td colspan="12" style="color:#64748b;">No data available to generate report. Please fetch logs first.</td></tr>'); 
                     return; 
                 }
 
@@ -1661,7 +1655,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     <td style="color:#fda4af; font-weight:900;">${grandTotals.noInt}</td><td style="color:#cbd5e1; font-weight:900;">${grandTotals.oth}</td>
                 </tr>`;
 
-                if(tbody) tbody.innerHTML = totalHtml + html;
+                setElemHTML('empReportBody', totalHtml + html);
                 
                 let hText = "";
                 let filterVal = document.getElementById('empReportDateFilter') ? document.getElementById('empReportDateFilter').value : "TODAY";
@@ -1676,8 +1670,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     hText = (filterVal === "YESTERDAY" ? "IX. EMPLOYEE REPORT CARD (YESTERDAY)" : "IX. EMPLOYEE REPORT CARD (TODAY)");
                 }
                 
-                let h2 = document.querySelector('#empReportCardArea h2');
-                if(h2) h2.innerHTML = `<i class="fa-solid fa-id-card-clip"></i> ${hText}`;
+                setElemHTML('empReportHeading', `<i class="fa-solid fa-id-card-clip"></i> ${hText}`);
                 
                 let footerEl = document.getElementById('empReportFooter');
                 if (footerEl) {
