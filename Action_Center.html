@@ -151,7 +151,6 @@
             <option value="spoc-followup">🚀 DM Follow-Up Center</option>
         </select>
 
-        <!-- 🌟 KOTHA DATE PICKER 🌟 -->
         <div style="text-align: center; margin-bottom: 25px;">
             <label style="font-weight: 800; color: #0f172a; margin-right: 10px; font-size:15px;">📅 Select Report Date:</label>
             <input type="date" id="spocDatePicker" onchange="reloadSpocData()" style="padding: 8px 15px; border-radius: 8px; border: 2px solid #10b981; font-weight: 800; color: #0f172a; outline: none; cursor: pointer; background: #fff; font-family:'Outfit'; font-size:14px;">
@@ -205,7 +204,7 @@
             <div class="task-title">🎯 My Action Center</div>
             
             <div class="dm-overall-stats" id="dmOverallStats" style="display:none;">
-                <span>Total Inactive: <b id="dmTotalInactive">0</b></span>
+                <span>Total Targets: <b id="dmTotalInactive">0</b></span>
                 <span class="stat-divider">|</span>
                 <span style="color:#0284c7;">IRCTC: <b id="dmTotalIrctc">0</b></span>
                 <span class="stat-divider">|</span>
@@ -254,17 +253,25 @@
         let activeCallStartTime = null; 
         let serverCalledIds = new Set(); 
         
-        // 🌟 CACHED DB VARIABLES FOR DATE FILTERING 🌟
         let rawSpocLogs = [];
         let rawSpocTargets = [];
         let rawSpocUsers = [];
+
+        function isNameMatch(sheetName, loginName) {
+            if (!sheetName || !loginName) return false;
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+            if (sClean === lClean) return true;
+            if (lClean.length > 4 && sClean.includes(lClean)) return true;
+            if (sClean.length > 4 && lClean.includes(sClean)) return true;
+            return false;
+        }
 
         window.onload = async () => {
             if (isSpoc) {
                 document.getElementById("spocScreen").style.display = "block";
                 document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
                 
-                // Set default date to today
                 let today = new Date();
                 let tzoffset = (new Date()).getTimezoneOffset() * 60000;
                 let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
@@ -327,58 +334,34 @@
         }
 
         // ==========================================
-        // 🌟 1. DM VIEW LOGIC 🌟
+        // 🌟 1. DM VIEW LOGIC (GPMAPPING REMOVED) 🌟
         // ==========================================
         async function fetchDMData() {
             try {
-                // 🔥 1. ఇక్కడ App_Targets, Logs తో పాటు GPMAPPING ని కూడా ఒకేసారి చదువుతున్నాము 🔥
-                let [targetRes, logsRes, gpRes] = await Promise.all([
+                let [targetRes, logsRes] = await Promise.all([
                     fetch(SCRIPT_URL + "?sheet=App_Targets"),
-                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs"),
-                    fetch(SCRIPT_URL + "?sheet=GPMAPPING")
+                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
                 ]);
                 
                 let targetRaw = await targetRes.json();
                 let logsRaw = await logsRes.json();
-                let gpRaw = await gpRes.json();
                 
-                // 🔥 2. GPMAPPING లో యాక్టివ్ అయిన VLE ల లిస్ట్ ని రెడీ చేయడం 🔥
-                let activeCscIds = new Set();
-                if(gpRaw.length > 0) {
-                    let headers = gpRaw[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                    let idxCscId = headers.findIndex(h => h.includes('cscid'));
-                    let idxTxn2627 = headers.findIndex(h => h === 'txn2627' || (h.includes('26-27') && h.includes('txn')));
-                    
-                    if(idxCscId > -1 && idxTxn2627 > -1) {
-                        for(let i = 1; i < gpRaw.length; i++) {
-                            let cid = (gpRaw[i][idxCscId] || "").toString().trim();
-                            let txn = Number(gpRaw[i][idxTxn2627]) || 0;
-                            // ఒకవేళ CSC ID ఉండి, లావాదేవీలు 0 కంటే ఎక్కువ ఉంటే... ఆ ID ని రికార్డ్ చేసుకో!
-                            if(cid !== "" && txn > 0) {
-                                activeCscIds.add(cid); 
-                            }
-                        }
-                    }
-                }
-
                 let today = new Date();
                 let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
                 let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
                 let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
 
-                // 🌟 RECONSTRUCT CALLED LIST FROM SERVER LOGS (PERMANENT HIDE FIX) 🌟
                 serverCalledIds.clear();
                 todayCalledVLEs = [];
                 for(let i=1; i<logsRaw.length; i++) {
                     let logDate = logsRaw[i][0];
-                    let logDmName = (logsRaw[i][3] || "").toString().toLowerCase().trim();
+                    let logDmName = (logsRaw[i][3] || "").toString().trim();
                     
-                    if (logDmName === dmName) {
+                    if (isNameMatch(logDmName, dmName)) {
                         let logCscId = (logsRaw[i][1] || "").toString().trim();
                         let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
                         let logRemark = logsRaw[i][4] || "";
                         
-                        // నిన్న లేదా మొన్న కాల్ చేసినా మళ్ళీ కనపడకుండా లిస్ట్ లో దాచేయడం
                         serverCalledIds.add(logCscId + "_" + logService);
                         
                         if (isToday(logDate)) {
@@ -390,19 +373,13 @@
                 let rawDMTargets = [];
                 let totalDmIrctc = 0; let totalDmRedbus = 0;
 
-                // 🌟 BUILD TARGET LIST (EXCLUDING NEWLY ACTIVATED VLEs) 🌟
                 for(let i=1; i<targetRaw.length; i++) {
-                    let rDmName = (targetRaw[i][3]||"").toString().toLowerCase().trim();
+                    let rDmName = (targetRaw[i][3]||"").toString().trim();
                     let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
                     let cscId = (targetRaw[i][0]||"").toString().trim();
                     let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
                     
-                    // 🔥 ఇక్కడే మ్యాజిక్ జరుగుతుంది: GPMAPPING లో యాక్టివేట్ అయిన వాళ్ళని క్యూలోంచి తీసేస్తుంది 🔥
-                    if(activeCscIds.has(cscId)) {
-                        continue; // వీళ్ళు యాక్టివేట్ అయిపోయారు, కాబట్టి DMs కి కనపడకుండా కిందనున్న కోడ్ కి వెళ్లకుండా Skip చేస్తోంది
-                    }
-
-                    if(rDmName === dmName && status === "PENDING") {
+                    if(isNameMatch(rDmName, dmName) && status === "PENDING") {
                         rawDMTargets.push({
                             cscId: cscId, name: targetRaw[i][1], mobile: targetRaw[i][2],
                             taskName: taskNameStr, extraData: targetRaw[i][5] || "0"
@@ -466,7 +443,6 @@
             }
         }
 
-
         window.unlockActions = function(idx, method) {
             document.getElementById(`lock-msg-${idx}`).style.display = "none";
             document.getElementById(`action-area-${idx}`).style.display = "block";
@@ -508,7 +484,7 @@
         function renderCards() {
             let html = ""; let myName = localStorage.getItem("userName") || "State Office";
             filteredQueue.forEach((v, i) => {
-                let cleanMob = v.mobile.replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+                let cleanMob = (v.mobile || "").replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
                 let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
                 let headerClass = isTravel ? (v.taskName === "BOTH" ? "bg-both" : (v.taskName === "IRCTC" ? "bg-irctc" : "bg-redbus")) : "bg-special";
                 let emoji = isTravel ? (v.taskName === "BOTH" ? "🤝" : (v.taskName === "IRCTC" ? "🚆" : "🚌")) : "⚡";
@@ -660,7 +636,6 @@
         function processSpocData() {
             let logs = rawSpocLogs; let targets = rawSpocTargets; let users = rawSpocUsers;
             
-            // 🌟 READ THE SELECTED DATE 🌟
             let dateVal = document.getElementById("spocDatePicker").value;
             let selDate = dateVal ? new Date(dateVal) : new Date();
             
@@ -696,17 +671,28 @@
             for(let i=1; i<targets.length; i++) {
                 let rDmName = (targets[i][3]||"").trim(); let srv = (targets[i][4]||"").trim().toUpperCase(); let cscId = targets[i][0];
                 let isReallyActivated = activatedVLEs.has(cscId);
-                if(uniqueDMs[rDmName] && (srv === "IRCTC" || srv === "REDBUS")) {
-                    if(srv === "IRCTC") { uniqueDMs[rDmName].irctcTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].irctcPending++; spocIrctc++; } else { uniqueDMs[rDmName].irctcAct++; } }
-                    if(srv === "REDBUS") { uniqueDMs[rDmName].redbusTotal++; if(!isReallyActivated) { uniqueDMs[rDmName].redbusPending++; spocRedbus++; } else { uniqueDMs[rDmName].redbusAct++; } }
+                
+                let matchedDmName = null;
+                Object.keys(uniqueDMs).forEach(key => {
+                    if (isNameMatch(rDmName, key)) matchedDmName = key;
+                });
+
+                if(matchedDmName && (srv === "IRCTC" || srv === "REDBUS")) {
+                    if(srv === "IRCTC") { uniqueDMs[matchedDmName].irctcTotal++; if(!isReallyActivated) { uniqueDMs[matchedDmName].irctcPending++; spocIrctc++; } else { uniqueDMs[matchedDmName].irctcAct++; } }
+                    if(srv === "REDBUS") { uniqueDMs[matchedDmName].redbusTotal++; if(!isReallyActivated) { uniqueDMs[matchedDmName].redbusPending++; spocRedbus++; } else { uniqueDMs[matchedDmName].redbusAct++; } }
                 }
             }
 
-            // 🌟 FILTER LOGS BASED ON SELECTED DATE 🌟
             for(let i = logs.length - 1; i >= 1; i--) {
                 if(isSelectedDate(logs[i][0])) {
                     totalCallsToday++;
                     let logDmName = (logs[i][3]||"").trim();
+                    
+                    let matchedDmName = null;
+                    Object.keys(uniqueDMs).forEach(key => {
+                        if (isNameMatch(logDmName, key)) matchedDmName = key;
+                    });
+
                     let timeStr = String(logs[i][0]).split(" ")[1] || "Just now";
                     let isActivated = logs[i][4].includes("Activated");
                     let isRed = logs[i][4].includes("Not Reachable") || logs[i][4].includes("lift") || logs[i][4].includes("Closed") || logs[i][4].includes("Problem") || logs[i][4].includes("Pending") || logs[i][4].includes("Issue") || logs[i][4].includes("change");
@@ -714,18 +700,18 @@
                     
                     let durationSec = parseInt(logs[i][5] || 0);
 
-                    if(uniqueDMs[logDmName]) {
-                        uniqueDMs[logDmName].calledToday++;
-                        uniqueDMs[logDmName].totalDuration += durationSec; 
-                        if(!activeDMsMap[logDmName]) {
-                            activeDMsMap[logDmName] = { name: logDmName, calls: 0, time: timeStr, iT: uniqueDMs[logDmName].irctcTotal, rT: uniqueDMs[logDmName].redbusTotal, iP: uniqueDMs[logDmName].irctcPending, rP: uniqueDMs[logDmName].redbusPending };
+                    if(matchedDmName) {
+                        uniqueDMs[matchedDmName].calledToday++;
+                        uniqueDMs[matchedDmName].totalDuration += durationSec; 
+                        if(!activeDMsMap[matchedDmName]) {
+                            activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, iT: uniqueDMs[matchedDmName].irctcTotal, rT: uniqueDMs[matchedDmName].redbusTotal, iP: uniqueDMs[matchedDmName].irctcPending, rP: uniqueDMs[matchedDmName].redbusPending };
                         }
-                        activeDMsMap[logDmName].calls++;
+                        activeDMsMap[matchedDmName].calls++;
                     }
                     let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
                     
                     globalSpocLogs.push({
-                        dmName: logDmName, vleName: logs[i][1], service: logs[i][2],
+                        dmName: matchedDmName || logDmName, vleName: logs[i][1], service: logs[i][2],
                         time: timeStr, rmkBadge: rmkBadge, rmk: logs[i][4], actionBtns: actionBtns,
                         durationText: formatTalkTime(durationSec) 
                     });
