@@ -531,7 +531,7 @@
         function renderCards() {
             let html = ""; let myName = localStorage.getItem("userName") || "State Office";
             filteredQueue.forEach((v, i) => {
-                let cleanMob = (v.mobile || "").replace(/\D/g,''); if(cleanMob.length === 10) cleanMob = "91" + cleanMob;
+                let cleanMob = (v.mobile || "").replace(/\D/g,''); 
                 
                 let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
                 
@@ -563,7 +563,11 @@
                     msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                 }
                 
-                let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${cleanMob}&text=${encodedMsg}`;
+                // WhatsApp needs country code for direct message
+                let waMob = cleanMob;
+                if(waMob.length === 10) waMob = "91" + waMob;
+                
+                let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${waMob}&text=${encodedMsg}`;
                 
                 // 🌟 MASKED MOBILE NUMBER 🌟
                 let maskedMobile = maskMobileNumber(v.mobile);
@@ -583,7 +587,7 @@
                             
                             ${txnBoxHtml}
                             <div class="action-btn-group">
-                                <!-- Real number remains hidden inside the href attribute -->
+                                <!-- Real number remains hidden inside the href attribute. Calling href uses raw 10 digit number -->
                                 <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call')">📞 Call</a>
                                 <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp')" target="_blank">💬 WhatsApp</a>
                             </div>
