@@ -241,7 +241,6 @@
             <h2 id="empReportHeading" style="color: #0369a1;"><i class="fa-solid fa-id-card-clip"></i> IX. EMPLOYEE REPORT CARD (TODAY)</h2>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
                 
-                <!-- 🌟 CUSTOM DATE FILTER IMPLEMENTATION 🌟 -->
                 <div style="display:flex; align-items:center; gap:5px;">
                     <label style="font-size:12px; font-weight:bold; color:#0369a1;">From:</label>
                     <input type="date" id="empDateFrom" onchange="renderEmployeeReport()" style="padding:6px; border-radius:4px; font-weight:bold; border:1px solid #0284c7; color:#0f172a; outline:none; cursor:pointer;">
@@ -520,8 +519,29 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             "PARVATHIPURAM MANYAM", "POLAVARAM", "PRAKASAM", "SPSR NELLORE", "SRI SATHYA SAI", 
             "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
         ];
+        
+        // 🌟 MASK MOBILE NUMBER HELPER (UPDATED) 🌟
+        function maskMobileNumber(mobileStr) {
+            if (!mobileStr || mobileStr === "Not Available") return "N/A";
+            
+            let mobileText = mobileStr.toString().trim();
+            if (mobileText.includes('E+') || mobileText.includes('e+')) {
+                mobileText = Number(mobileText).toLocaleString('fullwide', {useGrouping:false});
+            }
 
-        // Helper functions to prevent innerHTML crashes completely
+            let cleanMob = mobileText.replace(/\D/g, ''); 
+            
+            if (cleanMob.length > 10 && cleanMob.startsWith('91')) {
+                cleanMob = cleanMob.substring(2);
+            }
+
+            if (cleanMob.length >= 10) {
+                let base = cleanMob.slice(-10);
+                return base.substring(0, 2) + "*****" + base.substring(7);
+            }
+            return cleanMob; 
+        }
+
         const setElemText = (id, val) => { let el = document.getElementById(id); if(el) el.innerText = val; };
         const setElemHTML = (id, val) => { let el = document.getElementById(id); if(el) el.innerHTML = val; };
 
@@ -537,6 +557,25 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         let gpMappedVles = new Set(); 
         let gpMobilesData = {}; 
 
+
+        // 🌟 NEW FUNCTION TO LOAD GP MOBILES FIRST 🌟
+        async function loadGPMobilesDirectly() {
+            try {
+                let res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" }, // 🌟 FIX: ఈ లైన్ మిస్ అయ్యింది
+                    body: JSON.stringify({ action: "getGPMobilesOnly" }),
+                    redirect: "follow" // 🌟 FIX: ఈ లైన్ మిస్ అయ్యింది
+                });
+                let out = await res.json();
+                if (out.success && out.data) {
+                    gpMobilesData = out.data;
+                    console.log("GP Mobiles Loaded Successfully: " + Object.keys(gpMobilesData).length);
+                }
+            } catch(e) { console.error("Mobiles Error:", e); }
+        }
+
+
         function initializeDashboard() {
             let loadingEl = document.getElementById('loadingDiv');
             if(loadingEl) loadingEl.style.display = 'block';
@@ -548,7 +587,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             let convFilter = document.getElementById('convDateFilter');
             if(convFilter) convFilter.value = `${yyyy}-${mm}-${dd}`;
             
-            // Set Default Dates for Employee Custom Filter (Last 7 Days to Today)
             let empDateTo = new Date();
             let empDateFrom = new Date();
             empDateFrom.setDate(empDateTo.getDate() - 6); 
@@ -792,12 +830,15 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
         }
 
         async function processReports() {
-            const fileLastYear = document.getElementById('fileLastYear').files[0]; const fileMaster = document.getElementById('fileMaster').files[0]; const fileDayWise = document.getElementById('fileDayWise').files[0];
+            const fileLastYear = document.getElementById('fileLastYear').files[0]; 
+            const fileMaster = document.getElementById('fileMaster').files[0]; 
+            const fileDayWise = document.getElementById('fileDayWise').files[0];
+            
             if (!fileMaster || !fileDayWise) { alert("దయచేసి Master (YTD) మరియు Day-wise ఫైల్s సెలెక్ట్ చేయండి!"); return; }
 
             if(document.getElementById('btnGen')) document.getElementById('btnGen').disabled = true;
             if(document.getElementById('loadingDiv')) document.getElementById('loadingDiv').style.display = 'block';
-            
+
             let sections = ['summaryArea', 'dmCallingReportArea', 'conversionReportArea', 'empReportCardArea', 'callingPortalArea', 'serviceReportArea', 'yesterdayServiceReportArea', 'districtReportArea', 'yesterdayDistrictReportArea', 'momReportArea'];
             sections.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'none'; });
 
@@ -807,6 +848,9 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             monthlyData["FY 25-26"] = { all: new Set(), gsw: new Set() }; monthlyData["MTD (Current Month)"] = { all: new Set(), gsw: new Set() };
 
             try {
+                // 🌟 ముందుగా మొబైల్స్ లాగే లాజిక్ ఇక్కడ యాడ్ చేశాను 🌟
+                await loadGPMobilesDirectly();
+                
                 if (fileLastYear) { await new Promise(r => Papa.parse(fileLastYear, { header: true, skipEmptyLines: true, complete: res => { processLastYearData(res.data); r(); } })); }
                 await new Promise(r => Papa.parse(fileMaster, { header: true, skipEmptyLines: true, complete: res => { let headers = res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[]); processMasterData(res.data, headers); r(); } }));
                 await new Promise(r => Papa.parse(fileDayWise, { header: true, skipEmptyLines: true, complete: res => { processDayWiseData(res.data, res.meta.fields || (res.data[0]?Object.keys(res.data[0]):[])); r(); } }));
@@ -829,7 +873,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             }
         }
 
-        function publishToDMs() {
+function publishToDMs() {
             if(!confirm("Are you sure you want to publish these reports to all District Managers?")) return;
             
             let btn = document.getElementById('btnPublish');
@@ -906,9 +950,11 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString()); if(dist === "INVALID") return; 
                 let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
                 let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                
+                let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
-                if(!cscid) return;
+                
+                if (!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 stateLyCscs.add(cscid); if(isGSW) stateLyGswCscs.add(cscid);
                 monthlyData["FY 25-26"].all.add(cscid); if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
@@ -939,8 +985,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
                 if(dist === "INVALID") return; 
                 let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                
+                let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
+                
                 if(!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
@@ -990,8 +1038,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
                 if(dist === "INVALID") return; 
                 let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
-                let mob = (getVal(row, ['mobile', 'phone', 'contact']) || "").toString().trim();
+                
+                let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
+
                 if(!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
@@ -1161,7 +1211,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                             globalCallLogs = data.data || [];
                             
                             if (data.gpVles) { gpMappedVles = new Set(data.gpVles); }
-                            if (data.gpMobiles) { gpMobilesData = data.gpMobiles; }
+                            if (data.gpMobiles) { gpMobilesData = data.gpMobiles; } // 🌟 FIX: నా అసలు తప్పు ఇక్కడే సార్, ఇది మర్చిపోయాను 🌟
                             
                             let dmStats = {}; latestRemarks = {}; 
                             const ALL_DMS = [
@@ -1325,15 +1375,26 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
 
                     let displayList = currentCallingListData.slice(0, 500);
                     displayList.forEach((vle, idx) => {
-                        let finalMobile = vle.Mobile;
-                        if (!finalMobile || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
-                            if (gpMobilesData[vle.CSC_ID]) {
+                        
+                        let finalMobile = (vle.Mobile || "").toString().trim();
+                        
+                        // 🌟 GPMAPPING పక్కా క్రాస్-చెక్ లాజిక్ 🌟
+                        if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                            if (gpMobilesData && gpMobilesData[vle.CSC_ID]) {
                                 finalMobile = gpMobilesData[vle.CSC_ID];
-                                vle.Mobile = finalMobile; 
                             }
                         }
                         
-                        let callBtn = (finalMobile !== "Not Available" && finalMobile !== "") ? `<a href="tel:${finalMobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                        // 🌟 UI MASKING LOGIC (UPDATED WITH E+ FIX) 🌟
+                        let mobileText = finalMobile.toString().trim();
+                        if (mobileText.includes('E+') || mobileText.includes('e+')) {
+                            mobileText = Number(mobileText).toLocaleString('fullwide', {useGrouping:false});
+                        }
+                        let displayMobile = maskMobileNumber(mobileText);
+                        let cleanMob = mobileText.replace(/\D/g, '');
+                        if(cleanMob.length > 10 && cleanMob.startsWith('91')) cleanMob = cleanMob.substring(2);
+                        
+                        let callBtn = (cleanMob !== "") ? `<a href="tel:${cleanMob}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
                         
                         let cscDisplay = vle.CSC_ID || ""; 
                         if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
@@ -1364,7 +1425,9 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                         
                         tbody += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
                             <td>${idx + 1}</td><td class="text-left" style="color:#1e3a8a;">${vle.District}</td><td style="color:#0f172a;">${cscDisplay}</td>
-                            <td style="color:#475569; font-weight:600;">${vle.Name}</td><td style="color:#475569;">${vle.Mobile}</td><td>${callBtn}</td><td>${remarkSelect}</td>
+                            <td style="color:#475569; font-weight:600;">${vle.Name}</td>
+                            <td style="color:#3b82f6; font-weight:800;">${displayMobile !== "N/A" ? `<i class="fa-solid fa-phone"></i> ${displayMobile}` : `<i class="fa-solid fa-phone-slash" style="color:#94a3b8;"></i>`}</td>
+                            <td>${callBtn}</td><td>${remarkSelect}</td>
                         </tr>`;
                     });
                     if(currentCallingListData.length > 500) { tbody += `<tr><td colspan="7" style="color:#2563eb; font-weight:bold;">Showing first 500 records. Click 'Download Excel' to see all.</td></tr>`; }
@@ -1372,6 +1435,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 setElemHTML('callingBody', tbody);
             } catch(e) { console.error("renderCallingList Error:", e); }
         }
+
 
         function checkIsActive(id, callDateStr, cat) {
             if (cat && cat.includes("YTD") && file2Cscs.has(id)) { return false; }
@@ -1501,7 +1565,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     endDate = new Date(`${yyyy}-${mm}-${dd}`);
                 }
 
-                // Normalizing Dates for Comparison
                 startDate.setHours(0,0,0,0);
                 endDate.setHours(23,59,59,999);
 
@@ -1512,7 +1575,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                     let logDateRaw = log.date ? String(log.date) : "";
                     if (!logDateRaw) return;
                     
-                    // Parse log date assuming format DD-MM-YYYY or YYYY-MM-DD
                     let logParts = logDateRaw.split(" ")[0].split(/-|\//);
                     let logD = new Date();
                     
@@ -1520,7 +1582,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                         if (logParts[0].length === 4) { logD = new Date(`${logParts[0]}-${logParts[1]}-${logParts[2]}`); } 
                         else { logD = new Date(`${logParts[2]}-${logParts[1]}-${logParts[0]}`); }
                     }
-                    logD.setHours(12,0,0,0); // Midday for safe comparison
+                    logD.setHours(12,0,0,0);
                     
                     if (isOverall || (logD >= startDate && logD <= endDate)) {
                         uniqueDates.add(logDateRaw.split(" ")[0]);
@@ -1779,6 +1841,11 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
                 headers.forEach(h => {
                     let val = row[h] !== undefined && row[h] !== null ? row[h] : "";
+                    
+                    if (h.toLowerCase().includes('mobile')) {
+                        val = maskMobileNumber(String(val));
+                    }
+                    
                     tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
                 });
                 tableHtml += `</tr>`;
@@ -1801,12 +1868,22 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
                 if(!stateYtdCscs.has(cscid)) {
                     let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
                     if (details.dist === "INVALID") return; 
+                    
+                    let finalMobile = (details.mobile || "").toString().trim();
+                    if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                        if (gpMobilesData && gpMobilesData[cscid]) {
+                            finalMobile = gpMobilesData[cscid];
+                        } else {
+                            finalMobile = "Not Available";
+                        }
+                    }
+
                     if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
                         exportData.push({
                             "District Name": details.dist,
                             "CSC ID": cscid,
                             "VLE Name": details.name || "Unknown VLE",
-                            "Mobile Number": details.mobile || "Not Available",
+                            "Mobile Number": maskMobileNumber(finalMobile),
                             "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE"
                         });
                     }
@@ -1837,14 +1914,21 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             let category = catEl ? (catEl.value || "YTD") : "YTD";
             let dist = distEl ? (distEl.value || "DM_DATA") : "DM_DATA";
             
-            let exportData = currentCallingListData.map(v => ({
-                "District Name": v.District, 
-                "CSC ID": v.CSC_ID, 
-                "VLE Name": v.Name, 
-                "Mobile Number": v.Mobile, 
-                "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-                "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
-            }));
+            let exportData = currentCallingListData.map(v => {
+                let finalMobile = (v.Mobile || "").toString().trim();
+                if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "Not Available" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                    if (gpMobilesData && gpMobilesData[v.CSC_ID]) finalMobile = gpMobilesData[v.CSC_ID];
+                }
+                
+                return {
+                    "District Name": v.District, 
+                    "CSC ID": v.CSC_ID, 
+                    "VLE Name": v.Name, 
+                    "Mobile Number": maskMobileNumber(finalMobile), 
+                    "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+                    "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
+                };
+            });
 
             let d = new Date(); 
             let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
