@@ -356,7 +356,9 @@
     </div>
 </div>
 
+
 <script>
+    // 🌟 మీ కొత్త SCRIPT_URL ఇక్కడ పెట్టండి 🌟
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
     // 🌟 100% AP STRICT DISTRICT LIST (28 DISTRICTS) 🌟
@@ -368,6 +370,28 @@
         "SRIKAKULAM", "TIRUPATI", "VISAKHAPATNAM", "VIZIANAGARAM", "WEST GODAVARI", "YSR KADAPA"
     ];
 
+    // 🌟 MASK MOBILE NUMBER HELPER (UPDATED) 🌟
+    function maskMobileNumber(mobileStr) {
+        if (!mobileStr || mobileStr === "Not Available" || mobileStr === "NA") return "N/A";
+        
+        let mobileText = mobileStr.toString().trim();
+        if (mobileText.includes('E+') || mobileText.includes('e+')) {
+            mobileText = Number(mobileText).toLocaleString('fullwide', {useGrouping:false});
+        }
+
+        let cleanMob = mobileText.replace(/\D/g, ''); 
+        
+        if (cleanMob.length > 10 && cleanMob.startsWith('91')) {
+            cleanMob = cleanMob.substring(2);
+        }
+
+        if (cleanMob.length >= 10) {
+            let base = cleanMob.slice(-10);
+            return base.substring(0, 2) + "*****" + base.substring(7);
+        }
+        return cleanMob; 
+    }
+
     let vleDb = {}; 
     let stateLyCscs = new Set(), stateYtdCscs = new Set(), stateMtdCscs = new Set(), stateFtdCscs = new Set();
     let stateYtdGswCscs = new Set();
@@ -376,7 +400,8 @@
     let currentCallingListData = [];
     let latestRemarks = {}; 
     let globalCallLogs = []; 
-    let gpMappedVles = new Set(); // 👈 కొత్త వేరియబుల్
+    let gpMappedVles = new Set(); 
+    let gpMobilesData = {};
 
     function loadDMReport() {
         let loadingEl = document.getElementById('loadingDiv');
@@ -394,24 +419,12 @@
 
             if(loadingEl) loadingEl.style.display = 'none';
 
-            // Inject static HTML parts safely
-            if(document.getElementById('summaryArea') && data.html_summary) {
-                document.getElementById('summaryArea').innerHTML = data.html_summary;
-            }
-            if(document.getElementById('serviceBody') && data.html_service) {
-                document.getElementById('serviceBody').innerHTML = data.html_service;
-            }
-            if(document.getElementById('yesterdayServiceBody') && data.html_y_service) {
-                document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
-            }
-            if(document.getElementById('districtBody') && data.html_district) {
-                document.getElementById('districtBody').innerHTML = data.html_district;
-            }
-            if(document.getElementById('yesterdayDistrictBody') && data.html_y_district) {
-                document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
-            }
+            if(document.getElementById('summaryArea') && data.html_summary) document.getElementById('summaryArea').innerHTML = data.html_summary;
+            if(document.getElementById('serviceBody') && data.html_service) document.getElementById('serviceBody').innerHTML = data.html_service;
+            if(document.getElementById('yesterdayServiceBody') && data.html_y_service) document.getElementById('yesterdayServiceBody').innerHTML = data.html_y_service;
+            if(document.getElementById('districtBody') && data.html_district) document.getElementById('districtBody').innerHTML = data.html_district;
+            if(document.getElementById('yesterdayDistrictBody') && data.html_y_district) document.getElementById('yesterdayDistrictBody').innerHTML = data.html_y_district;
 
-            // Load sets safely
             vleDb = data.vleDb || {};
             stateLyCscs = new Set(data.stateLyCscs || []);
             stateYtdCscs = new Set(data.stateYtdCscs || []);
@@ -457,19 +470,13 @@
             fetchCallingReport(true);
         })
         .catch(error => {
-            if(loadingEl) {
-                loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
-            }
+            if(loadingEl) loadingEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> నెట్‌వర్క్ ఎర్రర్. దయచేసి పేజీని రీఫ్రెష్ చేయండి.`;
             console.error(error);
         });
     }
 
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(loadDMReport, 1);
-    } else {
-        window.addEventListener('DOMContentLoaded', loadDMReport);
-        window.addEventListener('load', loadDMReport);
-    }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(loadDMReport, 1); } 
+    else { window.addEventListener('DOMContentLoaded', loadDMReport); window.addEventListener('load', loadDMReport); }
 
     function toggleFullScreen(elementId, btn) {
         let elem = document.getElementById(elementId);
@@ -514,15 +521,11 @@
         let distSelect = document.getElementById('filterDistrict');
         if(!distSelect) return;
         distSelect.innerHTML = '<option value="ALL">ALL DISTRICTS</option>';
-        
         let dists = new Set();
         Object.values(vleDb).forEach(v => {
             if(v.dist && v.dist !== "UNKNOWN" && v.dist !== "INVALID") dists.add(v.dist);
         });
-        
-        Array.from(dists).sort().forEach(d => {
-            distSelect.innerHTML += `<option value="${d}">${d}</option>`;
-        });
+        Array.from(dists).sort().forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
     }
 
     function parseCustomDate(dStr) {
@@ -545,9 +548,7 @@
         if (actvDateStr && callDateStr) {
             let callVal = parseCustomDate(callDateStr);
             let actvVal = parseCustomDate(actvDateStr);
-            if (callVal > 0 && actvVal > 0) {
-                return actvVal >= callVal;
-            }
+            if (callVal > 0 && actvVal > 0) return actvVal >= callVal;
         }
         return isMtdActive; 
     }
@@ -586,10 +587,10 @@
         .then(data => {
             if(data.success) {
                 globalCallLogs = data.data || [];
-                // 🌟 సర్వర్ నుండి వచ్చిన GP VLE లను సేవ్ చేసుకోవడం 🌟
-                if (data.gpVles) { 
-                    gpMappedVles = new Set(data.gpVles); 
-                }
+                if (data.gpVles) { gpMappedVles = new Set(data.gpVles); }
+                
+                // 🌟 GPMAPPING డేటాని ఇక్కడ రిసీవ్ చేసుకుంటుంది 🌟
+                if (data.gpMobiles) { gpMobilesData = data.gpMobiles; }
 
                 let dmStats = {};
                 latestRemarks = {}; 
@@ -600,16 +601,14 @@
                     "Mohammed Baji Shaheed", "Premavathi Penumacha", "Vaduguru Keshava", "Maddu Vandanam",
                     "Nelapati Pramod Kumar", "Sai Teja Suri", "Venkatesh Gotta", "B Santosh Kumar", "Allu Jagadeesh",
                     "Kada Siva", "Chukka Koteeswara Rao", "Rajiv Garikipudi", "Eerla Hema Sekhar", "Siga Subramanyam",
-                    "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "Kasam V Siva Bhaskar", "Dundi Rajeev ratan",
+                    "Raja Chekkala", "Gopavaram Yaswanth Bharadwaja", "K V Siva Bhaskar", "Dundi Rajeev ratan",
                     "Srikakolapu Bharath", "T Ashok Babu", "Tadala Hima Bindu", "Vissarapu Gopi", "Syed Saida Vali",
                     "Kagitha Chandra Sekhar", "Janne Anil Kumar", "K P Krishna Sagar", "Bhanu Prakash Vannekuti"
                 ];
 
                 ALL_DMS.forEach(dm => {
                     dmStats[dm.toLowerCase().trim()] = { 
-                        originalName: dm,
-                        ytd:0, mtd:0, ftd:0, mom:0, total:0, 
-                        calledVles: new Set() 
+                        originalName: dm, ytd:0, mtd:0, ftd:0, mom:0, total:0, calledVles: new Set() 
                     };
                 });
                 
@@ -620,10 +619,7 @@
                     let cscId = log.cscId || "";
                     let logDate = log.date ? log.date.split(" ")[0] : "";
                     
-                    if (cscId) {
-                        latestRemarks[cscId] = { remark: log.remark, dmName: rawDm, date: logDate };
-                    }
-                    
+                    if (cscId) { latestRemarks[cscId] = { remark: log.remark, dmName: rawDm, date: logDate }; }
                     if (matchKey === "state head" || matchKey === "unknown dm") return;
 
                     if (isOverall || (log.date && (log.date.startsWith(targetStr1) || log.date.startsWith(targetStr2)))) {
@@ -848,7 +844,6 @@
             });
         }
 
-        // 🌟 కొత్తగా యాడ్ చేసిన GP లెక్కల కౌంటింగ్ 🌟
         let callsDone = 0;
         let gpTotal = 0;
         let gpCallsDone = 0;
@@ -870,7 +865,6 @@
         if(document.getElementById('callsDoneCount')) document.getElementById('callsDoneCount').innerText = callsDone.toLocaleString();
         if(document.getElementById('callsPendingCount')) document.getElementById('callsPendingCount').innerText = callsPending.toLocaleString();
         
-        // 🌟 GP Counts UI Update 🌟
         if(document.getElementById('gpDropoutCount')) document.getElementById('gpDropoutCount').innerText = gpTotal.toLocaleString();
         if(document.getElementById('gpCallsDoneCount')) document.getElementById('gpCallsDoneCount').innerText = gpCallsDone.toLocaleString();
         if(document.getElementById('gpPendingCount')) document.getElementById('gpPendingCount').innerText = gpPending.toLocaleString();
@@ -879,7 +873,6 @@
         if(currentCallingListData.length === 0) {
             tbody = `<tr><td colspan="7" style="color:#16a34a; font-weight:bold;">Excellent! No dropouts found for this selection.</td></tr>`;
         } else {
-            // 🔥 NEW SORTING LOGIC: GP VLEs First, No Remarks Top 🔥
             currentCallingListData.sort((a, b) => {
                 let aHasRemark = latestRemarks[a.CSC_ID] ? 1 : 0;
                 let bHasRemark = latestRemarks[b.CSC_ID] ? 1 : 0;
@@ -899,16 +892,31 @@
             let displayList = currentCallingListData.slice(0, 500);
             
             displayList.forEach((vle, idx) => {
-                let callBtn = vle.Mobile !== "Not Available" ? 
-                    `<a href="tel:${vle.Mobile}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : 
-                    `<button class="btn-call btn-disabled" disabled>N/A</button>`;
                 
-                let cscDisplay = vle.CSC_ID;
-                if(vle.CSC_ID.startsWith('9')) {
-                    cscDisplay += ` <span class="badge badge-gsw">GSW</span>`;
+                let finalMobile = (vle.Mobile || "").toString().trim();
+                
+                // 🌟 GPMAPPING క్రాస్-చెక్ లాజిక్ 🌟
+                if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "NOT AVAILABLE" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                    if (gpMobilesData && gpMobilesData[vle.CSC_ID]) {
+                        finalMobile = gpMobilesData[vle.CSC_ID];
+                    }
                 }
                 
-                // 🌟 GP VLE Badge 🌟
+                // 🌟 UI MASKING LOGIC 🌟
+                let mobileText = finalMobile.toString().trim();
+                if (mobileText.includes('E+') || mobileText.includes('e+')) {
+                    mobileText = Number(mobileText).toLocaleString('fullwide', {useGrouping:false});
+                }
+                
+                let displayMobile = maskMobileNumber(mobileText);
+                let cleanMob = mobileText.replace(/\D/g, '');
+                if(cleanMob.length > 10 && cleanMob.startsWith('91')) cleanMob = cleanMob.substring(2);
+                
+                let callBtn = (cleanMob !== "") ? `<a href="tel:${cleanMob}" class="btn-call"><i class="fa-solid fa-phone"></i> Call</a>` : `<button class="btn-call btn-disabled" disabled>N/A</button>`;
+                
+                let cscDisplay = vle.CSC_ID || ""; 
+                if(cscDisplay.startsWith('9')) { cscDisplay += ` <span class="badge badge-gsw">GSW</span>`; }
+                
                 if(gpMappedVles.has(vle.CSC_ID)) {
                     cscDisplay += `<br><span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; display:inline-block; margin-top:4px;"><i class="fa-solid fa-star"></i> GP PRIORITY</span>`;
                 }
@@ -942,7 +950,7 @@
                     <td class="text-left" style="color:#1e3a8a;">${vle.District}</td>
                     <td style="color:#0f172a;">${cscDisplay}</td>
                     <td style="color:#475569; font-weight:600;">${vle.Name}</td>
-                    <td style="color:#475569;">${vle.Mobile}</td>
+                    <td style="color:#3b82f6; font-weight:800;">${displayMobile !== "N/A" ? `<i class="fa-solid fa-phone"></i> ${displayMobile}` : `<i class="fa-solid fa-phone-slash" style="color:#94a3b8;"></i>`}</td>
                     <td>${callBtn}</td>
                     <td>${remarkSelect}</td>
                 </tr>`;
@@ -1050,6 +1058,11 @@
             tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
             headers.forEach(h => {
                 let val = row[h] !== undefined && row[h] !== null ? row[h] : "";
+                
+                if (h.toLowerCase().includes('mobile')) {
+                    val = maskMobileNumber(String(val));
+                }
+                
                 tableHtml += `<td style='padding: 8px; border: 1px solid #cbd5e1; mso-number-format:"\\@";'>${val}</td>`;
             });
             tableHtml += `</tr>`;
@@ -1073,11 +1086,21 @@
                 let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
                 if (details.dist === "INVALID") return;
                 if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
+                    
+                    let finalMobile = (details.mobile || "").toString().trim();
+                    if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "NOT AVAILABLE" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                        if (gpMobilesData && gpMobilesData[cscid]) {
+                            finalMobile = gpMobilesData[cscid];
+                        } else {
+                            finalMobile = "Not Available";
+                        }
+                    }
+                    
                     exportData.push({
                         "District Name": details.dist,
                         "CSC ID": cscid,
                         "VLE Name": details.name || "Unknown VLE",
-                        "Mobile Number": details.mobile || "Not Available",
+                        "Mobile Number": maskMobileNumber(finalMobile),
                         "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE"
                     });
                 }
@@ -1106,30 +1129,34 @@
         let category = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : "YTD";
         let dist = document.getElementById('filterDistrict') ? document.getElementById('filterDistrict').value : "DM_DATA";
         
-        let exportData = currentCallingListData.map(v => ({
-            "District Name": v.District, 
-            "CSC ID": v.CSC_ID, 
-            "VLE Name": v.Name, 
-            "Mobile Number": v.Mobile, 
-            "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
-            "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
-        }));
+        let exportData = currentCallingListData.map(v => {
+            let finalMobile = (v.Mobile || "").toString().trim();
+            if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "NOT AVAILABLE" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                if (gpMobilesData && gpMobilesData[v.CSC_ID]) finalMobile = gpMobilesData[v.CSC_ID];
+            }
+            
+            return {
+                "District Name": v.District, 
+                "CSC ID": v.CSC_ID, 
+                "VLE Name": v.Name, 
+                "Mobile Number": maskMobileNumber(finalMobile), 
+                "VLE Type": v.CSC_ID.startsWith('9') ? "GSW VLE" : "Regular VLE",
+                "Last Remark": latestRemarks[v.CSC_ID] ? `${latestRemarks[v.CSC_ID].remark} (By ${latestRemarks[v.CSC_ID].dmName} on ${latestRemarks[v.CSC_ID].date})` : "No Remark"
+            }
+        });
 
         let d = new Date(); 
         let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
         exportToStyledExcel(exportData, `Dropouts_List_${category}_${dist}_${dateStr}`, `${category} Dropouts Calling List - ${dist} (${dateStr})`);
     }
 
-    // 🌟 100% పర్ఫెక్ట్ ఫుల్ టేబుల్ డౌన్‌లోడ్ ఫంక్షన్ 🌟
     async function downloadImage(elementId, prefix) {
         const reportDiv = document.getElementById(elementId);
         if(!reportDiv) return;
         
-        // 0. పేజీని పైకి స్క్రోల్ చేయడం (ఇది html2canvas సగం కట్ అవ్వకుండా ఆపుతుంది)
         const originalWindowScroll = window.scrollY;
         window.scrollTo(0, 0);
 
-        // 1. డౌన్‌లోడ్ బటన్స్ దాచడం
         const dlBtns = reportDiv.querySelectorAll('.btn-download, button');
         const originalBtnDisplays = [];
         dlBtns.forEach(btn => {
@@ -1137,24 +1164,21 @@
             btn.style.display = 'none';
         });
 
-        // 2. టేబుల్స్ లో స్క్రోల్ బార్స్ పూర్తిగా తీసేసి ఎంత డేటా ఉంటే అంత పొడవుగా సాగేలా చేయడం
         const tableResponsiveDivs = reportDiv.querySelectorAll('.table-responsive');
         let originalCssTexts = [];
         tableResponsiveDivs.forEach(div => {
             originalCssTexts.push(div.style.cssText);
-            // ఇక్కడే మ్యాజిక్: !important వాడి బలవంతంగా టేబుల్‌ను ఎక్స్పాండ్ చేయడం
             div.style.cssText = "max-height: none !important; overflow: visible !important; height: auto !important;";
         });
 
         let originalDivCss = reportDiv.style.cssText;
         reportDiv.style.cssText += "width: 1200px !important; height: auto !important; position: relative !important; overflow: visible !important;";
         
-        // టేబుల్ పెద్దది అవ్వడానికి బ్రౌజర్‌కి టైమ్ ఇవ్వాలి
         await new Promise(resolve => setTimeout(resolve, 500));
         
         try {
             const canvas = await html2canvas(reportDiv, { 
-                scale: 2, // క్వాలిటీ కోసం 
+                scale: 2, 
                 backgroundColor: "#ffffff",
                 useCORS: true,
                 logging: false,
@@ -1174,17 +1198,9 @@
             console.error(err);
             alert("Image capture failed. Please try again.");
         } finally {
-            // 3. ఫోటో తీసేసాక అన్నీ మళ్ళీ యధావిధిగా స్క్రోల్ బార్ లోకి సెట్ చేయడం
-            tableResponsiveDivs.forEach((div, index) => {
-                div.style.cssText = originalCssTexts[index];
-            });
+            tableResponsiveDivs.forEach((div, index) => { div.style.cssText = originalCssTexts[index]; });
             reportDiv.style.cssText = originalDivCss;
-            
-            dlBtns.forEach((btn, index) => {
-                btn.style.display = originalBtnDisplays[index];
-            });
-
-            // పాత స్క్రోల్ పొజిషన్ కి వెళ్ళడం
+            dlBtns.forEach((btn, index) => { btn.style.display = originalBtnDisplays[index]; });
             window.scrollTo(0, originalWindowScroll);
         }
     }
