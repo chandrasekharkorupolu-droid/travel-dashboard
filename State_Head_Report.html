@@ -706,10 +706,13 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17U
             return key ? row[key] : undefined;
         }
 
+        // 🌟 అల్టిమేట్ సేఫ్ నంబర్ పార్సర్ 🌟
         function safeParseFloat(val) {
             if (!val) return 0;
-            if (typeof val === 'string') val = val.replace(/,/g, '').trim();
-            return parseFloat(val) || 0;
+            // కేవలం అంకెలు మాత్రమే ఉంచి మిగతా చెత్త (Rs, ₹, కామాలు) తీసేస్తుంది
+            let str = val.toString().replace(/[^0-9.-]/g, ''); 
+            let num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
         }
 
         function normalizeDistrict(d) {
@@ -945,16 +948,22 @@ function publishToDMs() {
             });
         }        
 
-        function processLastYearData(data) {
+       function processLastYearData(data) {
             data.forEach(row => {
-                let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString()); if(dist === "INVALID") return; 
-                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
-                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
+                let dist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString()); 
+                if(dist === "INVALID") return; 
                 
+                let cscidStr = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+                if (cscidStr.includes('E+') || cscidStr.includes('e+')) cscidStr = Number(cscidStr).toLocaleString('fullwide', {useGrouping:false});
+                
+                // 🌟 అల్టిమేట్ ID క్లీనప్ (స్పేస్‌లు, సింబల్స్ ఉంటే ఆటోమేటిక్ గా తీసేస్తుంది) 🌟
+                let cscid = cscidStr.replace(/[^A-Z0-9]/g, ''); 
+                if (!cscid) return;
+                
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
                 let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
                 
-                if (!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 stateLyCscs.add(cscid); if(isGSW) stateLyGswCscs.add(cscid);
                 monthlyData["FY 25-26"].all.add(cscid); if(isGSW) monthlyData["FY 25-26"].gsw.add(cscid);
@@ -968,46 +977,75 @@ function publishToDMs() {
             });
         }
 
-        function processMasterData(data, headers) {
+        
+
+
+function processMasterData(data, headers) {
+            // 🌟 1. నెలల పేర్లు (Month names) పసిగట్టే లాజిక్ మళ్ళీ యాడ్ చేశాను 🌟
             let monthCols = [];
             headers.forEach(h => {
                 if(h) {
-                    let lowerH = h.toLowerCase();
-                    if(lowerH.endsWith(' txn') && !lowerH.includes('total') && !lowerH.includes('ytd')) {
-                        let mName = h.replace(/txn/i, '').trim();
-                        if(mName !== "") { monthCols.push({ col: h, name: mName }); if(!monthlyData[mName]) monthlyData[mName] = { all: new Set(), gsw: new Set() }; }
+                    let lowerH = h.toLowerCase().trim();
+                    // Txn తో ఎండ్ అయ్యే నెలల కాలమ్స్ ని తీసుకుంటుంది
+                    if((lowerH.endsWith(' txn') || lowerH.endsWith(' txns')) && !lowerH.includes('total') && !lowerH.includes('ytd')) {
+                        let mName = h.replace(/txns?/i, '').trim();
+                        if(mName !== "") { 
+                            monthCols.push({ col: h, name: mName }); 
+                            if(!monthlyData[mName]) monthlyData[mName] = { all: new Set(), gsw: new Set() }; 
+                        }
                     }
                 }
             });
+
             data.forEach(row => {
-                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
+                let cscidStr = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+                let cscid = cscidStr.replace(/[^A-Z0-9]/g, ''); 
+                if(!cscid) return;
+
                 let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
                 let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
                 if(dist === "INVALID") return; 
-                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
                 
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
                 let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
                 
-                if(!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
-                else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
 
-                if(!districtData[dist]) districtData[dist] = createDistObj(); if(!serviceData[srv]) serviceData[srv] = createSrvObj();
-                let ytdTxn = 0, ytdAmt = 0, ytdRev = 0;
+                if(!districtData[dist]) districtData[dist] = createDistObj(); 
+                if(!serviceData[srv]) serviceData[srv] = createSrvObj();
                 
+                let ytdTxn = 0, ytdAmt = 0, ytdRev = 0;
+                let isActiveYTD = false;
+
+                // 🌟 2. నెలల వారీగా ట్రాన్సాక్షన్స్ ని సెపరేట్ గా సేవ్ చేయడం 🌟
                 monthCols.forEach(mInfo => {
                     let val = safeParseFloat(row[mInfo.col]);
-                    if(val > 0) { monthlyData[mInfo.name].all.add(cscid); if(isGSW) monthlyData[mInfo.name].gsw.add(cscid); }
+                    if(val > 0) { 
+                        monthlyData[mInfo.name].all.add(cscid); 
+                        if(isGSW) monthlyData[mInfo.name].gsw.add(cscid); 
+                    }
                 });
+                
+                // 🌟 3. బ్లైండ్ కౌంటింగ్ లాజిక్: హెడ్డింగ్స్ తో సంబంధం లేకుండా టోటల్స్ ని లాగుతుంది 🌟
                 for (let key in row) {
-                    if(!key) continue; let k = key.toLowerCase();
-                    if (k.endsWith(' txn')) ytdTxn += safeParseFloat(row[key]);
-                    if (k.endsWith(' amt')) ytdAmt += safeParseFloat(row[key]);
-                    if (k.endsWith(' rev')) ytdRev += safeParseFloat(row[key]);
+                    if(!key) continue; 
+                    let k = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    
+                    // పేర్లు, ఐడీలు ఉండే కాలమ్స్ ని వదిలేస్తుంది
+                    if (k.includes('csc') || k.includes('vle') || k.includes('name') || k.includes('dist') || k.includes('state') || k.includes('kiosk') || k.includes('gender') || k.includes('gp') || k.includes('village') || k.includes('group') || k.includes('locality') || k.includes('service') || k.includes('product') || k.includes('merchant') || k.includes('tenure') || k.includes('mobile') || k.includes('phone') || k.includes('code')) continue;
+                    
+                    let val = safeParseFloat(row[key]);
+                    if (val > 0) {
+                        isActiveYTD = true;
+                        if (k.includes('amt') || k.includes('amount')) ytdAmt += val;
+                        else if (k.includes('rev') || k.includes('revenue')) ytdRev += val;
+                        else ytdTxn += val;
+                    }
                 }
-                if(ytdTxn > 0) {
+                
+                if(isActiveYTD) {
                     stateYtdCscs.add(cscid); file2Cscs.add(cscid); districtData[dist].ytd_cscs.add(cscid); serviceData[srv].ytd_cscs.add(cscid);
                     if(isGSW) { stateYtdGswCscs.add(cscid); districtData[dist].ytd_gsw.add(cscid); serviceData[srv].ytd_gsw.add(cscid); }
                 }
@@ -1017,68 +1055,106 @@ function publishToDMs() {
             });
         }
 
-        function processDayWiseData(data, headers) {
-            let txnCols = headers.filter(h => h && h.toLowerCase().endsWith(' txn'));
-            let amtCols = headers.filter(h => h && h.toLowerCase().endsWith(' amt'));
-            let revCols = headers.filter(h => h && h.toLowerCase().endsWith(' rev'));
-            
-            let lastTxnCol = txnCols.length > 0 ? txnCols[txnCols.length - 1] : null; let prevTxnCol = txnCols.length > 1 ? txnCols[txnCols.length - 2] : null;
-            let lastAmtCol = amtCols.length > 0 ? amtCols[amtCols.length - 1] : null; let prevAmtCol = amtCols.length > 1 ? amtCols[amtCols.length - 2] : null;
-            let lastRevCol = revCols.length > 0 ? revCols[revCols.length - 1] : null; let prevRevCol = revCols.length > 1 ? revCols[revCols.length - 2] : null;
 
-            if (lastTxnCol && prevTxnCol) {
-                let sumLast = 0, sumPrev = 0;
-                data.forEach(row => { sumLast += safeParseFloat(row[lastTxnCol]); sumPrev += safeParseFloat(row[prevTxnCol]); });
-                if (sumPrev > 0 && sumLast < (sumPrev * 0.3)) { lastTxnCol = prevTxnCol; lastAmtCol = prevAmtCol || lastAmtCol; lastRevCol = prevRevCol || lastRevCol; }
-            }
-            let datePattern = /^(\d{1,2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i;
+function processDayWiseData(data, headers) {
+            // 🌟 1. FTD (నిన్నటి రోజు) కాలమ్స్ ని పసిగట్టే లాజిక్ 🌟
+            let txnCols = []; let amtCols = []; let revCols = [];
+            headers.forEach(h => {
+                if (!h) return;
+                let lh = h.toLowerCase().trim();
+                
+                // అనవసరమైన కాలమ్స్ ని వదిలేస్తుంది
+                if (lh.includes('csc') || lh.includes('vle') || lh.includes('name') || lh.includes('dist') || lh.includes('state') || lh.includes('kiosk') || lh.includes('gender') || lh.includes('gp') || lh.includes('village') || lh.includes('group') || lh.includes('locality') || lh.includes('service') || lh.includes('product') || lh.includes('merchant') || lh.includes('tenure') || lh.includes('mobile') || lh.includes('phone') || lh.includes('code')) return;
+                
+                if (lh.includes('amt') || lh.includes('amount')) { amtCols.push(h); return; }
+                if (lh.includes('rev') || lh.includes('revenue') || lh.includes('comm')) { revCols.push(h); return; }
+                
+                // మిగిలినవి లావాదేవీలు (Txn) కాలమ్స్
+                txnCols.push(h); 
+            });
+
+            // 🌟 ఎక్సెల్ ఫైల్ లో చివరగా (కుడివైపున) ఉన్న కాలాన్ని 'నిన్నటి రోజు' (FTD) గా తీసుకుంటుంది 🌟
+            let lastTxnCol = txnCols.length > 0 ? txnCols[txnCols.length - 1] : null; 
+            let lastAmtCol = amtCols.length > 0 ? amtCols[amtCols.length - 1] : null; 
+            let lastRevCol = revCols.length > 0 ? revCols[revCols.length - 1] : null;
+
             data.forEach(row => {
-                let cscid = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase(); checkScientificNotation(cscid);
+                let cscidStr = (getVal(row, ['cscid', 'vleid']) || "").toString().trim().toUpperCase();
+                let cscid = cscidStr.replace(/[^A-Z0-9]/g, ''); 
+                if(!cscid) return;
+
                 let rawDist = normalizeDistrict((getVal(row, ['district', 'dist']) || "").toString());
                 let dist = (vleDb[cscid] && vleDb[cscid].dist !== "UNKNOWN" && vleDb[cscid].dist !== "INVALID") ? vleDb[cscid].dist : rawDist;
                 if(dist === "INVALID") return; 
-                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
                 
+                let srv = (getVal(row, ['service', 'srvc']) || "UNKNOWN").toString().trim().toUpperCase();
                 let mob = (getVal(row, ['mobile', 'phone', 'contact', 'phno', 'vlemob']) || "").toString().trim();
                 let vleName = (getVal(row, ['vlename', 'name']) || "").toString().trim();
 
-                if(!cscid) return;
                 let isGSW = cscid.startsWith('9');
                 if (!vleDb[cscid]) vleDb[cscid] = { dist: dist, mobile: mob, name: vleName };
-                else { if (mob && !vleDb[cscid].mobile) vleDb[cscid].mobile = mob; if (vleName && !vleDb[cscid].name) vleDb[cscid].name = vleName; }
-
-                let lastDateStr = null;
-                for(let i=0; i<txnCols.length; i++) {
-                    if(safeParseFloat(row[txnCols[i]]) > 0) {
-                        let match = txnCols[i].match(datePattern);
-                        if(match) {
-                            let d = parseInt(match[1]); let mStr = match[2].toLowerCase();
-                            let mIndex = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(mStr) + 1;
-                            let yyyy = new Date().getFullYear();
-                            let mFormat = mIndex < 10 ? '0' + mIndex : mIndex; let dFormat = d < 10 ? '0' + d : d;
-                            let currentDateStr = `${yyyy}-${mFormat}-${dFormat}`;
-                            if (!lastDateStr || currentDateStr > lastDateStr) { lastDateStr = currentDateStr; }
-                        }
-                    }
-                }
-                if(lastDateStr) { vleDb[cscid].lastTxnDate = lastDateStr; }
+                
                 if(!districtData[dist]) districtData[dist] = createDistObj();
                 if(!serviceData[srv]) serviceData[srv] = createSrvObj();
 
                 let mtdTxn = 0, mtdAmt = 0, mtdRev = 0;
-                txnCols.forEach(col => { mtdTxn += safeParseFloat(row[col]); }); amtCols.forEach(col => { mtdAmt += safeParseFloat(row[col]); }); revCols.forEach(col => { mtdRev += safeParseFloat(row[col]); });
-                let ftdTxn = lastTxnCol ? safeParseFloat(row[lastTxnCol]) : 0; let ftdAmt = lastAmtCol ? safeParseFloat(row[lastAmtCol]) : 0; let ftdRev = lastRevCol ? safeParseFloat(row[lastRevCol]) : 0;
-
-                if(mtdTxn > 0) {
-                    stateMtdCscs.add(cscid); districtData[dist].mtd_cscs.add(cscid); serviceData[srv].mtd_cscs.add(cscid);
-                    monthlyData["MTD (Current Month)"].all.add(cscid); if(isGSW) monthlyData["MTD (Current Month)"].gsw.add(cscid);
+                let ftdTxn = 0, ftdAmt = 0, ftdRev = 0;
+                let isActiveMTD = false; 
+                
+                for (let key in row) {
+                    if(!key) continue; 
+                    let k = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    
+                    if (k.includes('csc') || k.includes('vle') || k.includes('name') || k.includes('dist') || k.includes('state') || k.includes('kiosk') || k.includes('gender') || k.includes('gp') || k.includes('village') || k.includes('group') || k.includes('locality') || k.includes('service') || k.includes('product') || k.includes('merchant') || k.includes('tenure') || k.includes('mobile') || k.includes('phone') || k.includes('code')) continue;
+                    
+                    let val = safeParseFloat(row[key]);
+                    if (val > 0) {
+                        isActiveMTD = true; 
+                        if (k.includes('amt') || k.includes('amount')) mtdAmt += val;
+                        else if (k.includes('rev') || k.includes('revenue')) mtdRev += val;
+                        else mtdTxn += val;
+                    }
                 }
-                if(ftdTxn > 0) { stateFtdCscs.add(cscid); districtData[dist].ftd_cscs.add(cscid); serviceData[srv].ftd_cscs.add(cscid); serviceData[srv].ftd_rows++; }
+                
+                // 🌟 FTD (నిన్నటి డేటా) లాగే లాజిక్ 🌟
+                if (lastTxnCol && safeParseFloat(row[lastTxnCol]) > 0) ftdTxn = safeParseFloat(row[lastTxnCol]);
+                if (lastAmtCol && safeParseFloat(row[lastAmtCol]) > 0) ftdAmt = safeParseFloat(row[lastAmtCol]);
+                if (lastRevCol && safeParseFloat(row[lastRevCol]) > 0) ftdRev = safeParseFloat(row[lastRevCol]);
+
+                if(isActiveMTD) {
+                    stateMtdCscs.add(cscid); 
+                    districtData[dist].mtd_cscs.add(cscid); 
+                    serviceData[srv].mtd_cscs.add(cscid);
+                    monthlyData["MTD (Current Month)"].all.add(cscid); 
+                    
+                    stateYtdCscs.add(cscid);
+                    file2Cscs.add(cscid);
+                    districtData[dist].ytd_cscs.add(cscid);
+                    serviceData[srv].ytd_cscs.add(cscid);
+                    
+                    if(isGSW) { 
+                        monthlyData["MTD (Current Month)"].gsw.add(cscid); 
+                        stateYtdGswCscs.add(cscid);
+                        districtData[dist].ytd_gsw.add(cscid);
+                        serviceData[srv].ytd_gsw.add(cscid);
+                    }
+                }
+                
+                if(ftdTxn > 0 || ftdAmt > 0) { 
+                    stateFtdCscs.add(cscid); 
+                    districtData[dist].ftd_cscs.add(cscid); 
+                    serviceData[srv].ftd_cscs.add(cscid); 
+                    serviceData[srv].ftd_rows++; 
+                }
+                
                 districtData[dist].total_txn += mtdTxn; districtData[dist].total_amt += mtdAmt; districtData[dist].total_rev += mtdRev;
                 districtData[dist].ftd_txn += ftdTxn; districtData[dist].ftd_amt += ftdAmt; districtData[dist].ftd_rev += ftdRev;
+                
                 serviceData[srv].total_txn += mtdTxn; serviceData[srv].mtd_txn += mtdTxn; serviceData[srv].total_amt += mtdAmt; serviceData[srv].total_rev += mtdRev;
                 serviceData[srv].ftd_txn += ftdTxn; serviceData[srv].ftd_amt += ftdAmt; serviceData[srv].ftd_rev += ftdRev;
-                stateTotTxn += mtdTxn; stateTotRev += mtdRev; stateFtdTxn += ftdTxn; stateFtdRev += ftdRev;
+                
+                stateTotTxn += mtdTxn; stateTotRev += mtdRev; 
+                stateFtdTxn += ftdTxn; stateFtdRev += ftdRev; 
             });
         }
 
@@ -1095,7 +1171,9 @@ function publishToDMs() {
             if (defTarget && keys.includes(defTarget)) tarSel.value = defTarget; else if(keys.includes("YTD (FY 26-27)")) tarSel.value = "YTD (FY 26-27)"; else tarSel.selectedIndex = keys.length - 1;
         }
 
-        function renderMomReport() {
+
+
+function renderMomReport() {
             try {
                 let baseSel = document.getElementById('momBaseSelect'); let tarSel = document.getElementById('momTargetSelect');
                 if(!baseSel || !tarSel) return;
@@ -1150,7 +1228,10 @@ function publishToDMs() {
                     totTar+=s.target; totTarGsw+=s.targetGsw;
 
                     let bRetained = s.retained > 0 ? `<span class="badge badge-green">${s.retained.toLocaleString()}</span>` : `0`;
-                    let bDropout = s.drop > 0 ? `<span class="badge badge-red">${s.drop.toLocaleString()}</span>` : `<span class="badge badge-green">0</span>`;
+                    
+                    // 🌟 FIX: Added Download Button for Dropouts column 🌟
+                    let bDropout = s.drop > 0 ? `<div style="display:flex; justify-content:space-between; align-items:center;"><span class="badge badge-red">${s.drop.toLocaleString()}</span> <button onclick="downloadMoMDropouts('${dName}')" style="background:#e11d48; color:white; border:none; padding:2px 5px; border-radius:4px; font-size:9px; cursor:pointer;" title="Download Dropouts"><i class="fa-solid fa-download"></i></button></div>` : `<span class="badge badge-green">0</span>`;
+                    
                     let bNew = s.new > 0 ? `<span class="badge badge-amber">${s.new.toLocaleString()}</span>` : `0`;
 
                     momHtml += `<tr class="data-row" ondblclick="toggleRow(this)" title="Double click to isolate/restore row">
@@ -1163,11 +1244,18 @@ function publishToDMs() {
                     </tr>`;
                 });
 
+                // 🌟 FIX: Added Download Button for State Total Dropouts 🌟
                 let momTotalHtml = `<tr style="background:#0f172a; font-size:15px; border-bottom: 3px solid #fbbf24;">
                     <td class="text-left" style="color:#fbbf24; font-weight:900;">TOTAL (AP STATE)</td>
                     <td style="color:#ffffff; font-weight:900;">${totBase.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totBaseGsw.toLocaleString()})</span></td>
                     <td style="color:#ffffff; font-weight:900;">${totRet.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totRetGsw.toLocaleString()})</span></td>
-                    <td style="color:#ffffff; font-weight:900;">${totDrop.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span></td>
+                    <td style="color:#ffffff; font-weight:900;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>${totDrop.toLocaleString()}</span>
+                            ${totDrop > 0 ? `<button onclick="downloadMoMDropouts('ALL')" style="background:#e11d48; color:white; border:none; padding:2px 5px; border-radius:4px; font-size:9px; cursor:pointer;" title="Download State Dropouts"><i class="fa-solid fa-download"></i></button>` : ''}
+                        </div>
+                        <span style="font-size:10px; color:#fbbf24;">(GSW: ${totDropGsw.toLocaleString()})</span>
+                    </td>
                     <td style="color:#ffffff; font-weight:900;">${totNew.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totNewGsw.toLocaleString()})</span></td>
                     <td style="color:#ffffff; font-weight:900;">${totTar.toLocaleString()}<br><span style="font-size:10px; color:#fbbf24;">(GSW: ${totTarGsw.toLocaleString()})</span></td>
                 </tr>`;
@@ -1176,6 +1264,64 @@ function publishToDMs() {
                 let fc = document.getElementById('filterCategory'); if(fc && fc.value === 'MOM') { renderCallingList(); }
             } catch(e) { console.error("renderMomReport Error:", e); }
         }
+
+        // 🌟 NEW FUNCTION: Download MoM Dropouts to Excel 🌟
+        function downloadMoMDropouts(districtFilter) {
+            let bName = document.getElementById('momBaseSelect')?.value;
+            let tName = document.getElementById('momTargetSelect')?.value;
+            
+            if(!bName || !tName) {
+                alert("Please select Base and Target months first.");
+                return;
+            }
+
+            let bSet = monthlyData[bName]?.all || new Set();
+            let tSet = monthlyData[tName]?.all || new Set();
+            
+            let exportData = [];
+            
+            bSet.forEach(cscid => {
+                if(!tSet.has(cscid)) {
+                    let details = vleDb[cscid] || { dist: 'UNKNOWN', mobile: '', name: 'Unknown VLE' };
+                    if (details.dist === "INVALID") return;
+                    
+                    if (!districtFilter || districtFilter === 'ALL' || details.dist === districtFilter) {
+                        let finalMobile = (details.mobile || "").toString().trim();
+                        if (!finalMobile || finalMobile.toUpperCase() === "NA" || finalMobile === "NOT AVAILABLE" || finalMobile === "" || finalMobile === "0" || finalMobile === "-") {
+                            if (typeof gpMobilesData !== 'undefined' && gpMobilesData[cscid]) {
+                                finalMobile = gpMobilesData[cscid];
+                            } else {
+                                finalMobile = "Not Available";
+                            }
+                        }
+                        
+                        exportData.push({
+                            "District Name": details.dist,
+                            "CSC ID": cscid,
+                            "VLE Name": details.name || "Unknown VLE",
+                            "Mobile Number": maskMobileNumber(finalMobile),
+                            "VLE Type": cscid.startsWith('9') ? "GSW VLE" : "Regular VLE",
+                            "Base Month": bName,
+                            "Target Month": tName,
+                            "Status": "Dropped Out"
+                        });
+                    }
+                }
+            });
+
+            if(exportData.length === 0) { 
+                alert(`No Dropouts found to download for ${districtFilter === 'ALL' ? 'AP State' : districtFilter} between ${bName} and ${tName}.`); 
+                return; 
+            }
+            
+            let d = new Date();
+            let dateStr = `${("0"+d.getDate()).slice(-2)}-${("0"+(d.getMonth()+1)).slice(-2)}-${d.getFullYear()}`;
+            let distTitle = (!districtFilter || districtFilter === 'ALL') ? "ANDHRA PRADESH STATE" : districtFilter;
+            let fileName = `MoM_Dropouts_${districtFilter === 'ALL' ? 'STATE' : districtFilter}_${dateStr}`;
+            
+            exportToStyledExcel(exportData, fileName, `MoM Dropouts List - ${distTitle} (${bName} vs ${tName})`);
+        }
+
 
         function populateDistrictDropdown() {
             let distSelect = document.getElementById('filterDistrict'); if(!distSelect) return;
