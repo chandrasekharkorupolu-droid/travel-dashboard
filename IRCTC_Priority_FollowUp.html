@@ -79,6 +79,7 @@
         .th-dist { background-color: #0b1120; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;} 
         .th-vle { background-color: #1e3a8a; } 
         .th-csc { background-color: #2563eb; } 
+        .th-irctc { background-color: #7c3aed; } 
         .th-mob1 { background-color: #475569; } 
         .th-mob2 { background-color: #64748b; } 
         .th-fy25 { background-color: #ea580c; } 
@@ -108,23 +109,85 @@
 
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background-color: #d9534f; color: white; padding: 12px 25px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
-    @media (max-width: 768px) {
-        body { height: auto; overflow-y: auto; padding: 10px; }
-        .target-control-panel { flex-direction: column; gap: 12px; padding: 15px; align-items: stretch; position: relative; }
-        .page-heading { font-size: 16px; justify-content: center; text-align: center; }
-        .filter-group { width: 100%; flex-direction: column; gap: 10px; }
-        .filter-group select, .filter-group input, .btn-action { width: 100%; text-align: center; justify-content: center; padding: 12px 10px; font-size: 13px; min-width: unset; }
-        #fullscreenBtn { display: none; } 
-        .report-header h1 { font-size: 16px; white-space: normal; line-height: 1.4; }
-        .kpi-grid { flex-direction: column; gap: 10px; }
-        .kpi-card { width: 100%; min-width: unset; padding: 15px 20px; }
-        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        th, td { padding: 10px 8px; font-size: 11px; white-space: nowrap; }
-        th { top: 0 !important; } 
-        .th-dist, .col-district { left: 0 !important; min-width: 100px; }
-        .btn-whatsapp, .btn-done { padding: 8px 10px; font-size: 11px; width: 100%; justify-content: center; }
-    }
+        /* 🌟 BEAUTIFUL REPORT CARD MODAL STYLES 🌟 */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content {
+            background: transparent; border-radius: 12px; width: 500px; max-width: 95vw; 
+            display: flex; flex-direction: column; animation: popIn 0.3s ease-out; position: absolute;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-drag-handle {
+            background: #0f172a; display: flex; justify-content: space-between; align-items: center; 
+            padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0;
+        }
+        .modal-drag-handle:active { cursor: grabbing; }
+        .modal-drag-handle span { color: #94a3b8; font-size: 11px; font-weight: bold; letter-spacing: 1px; user-select: none;}
+        .modal-close { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; transition: 0.2s; line-height: 1; }
+        .modal-close:hover { color: #fca5a5; }
+
+        #reportCardCaptureArea {
+            background: #ffffff; border-radius: 0 0 0 0; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .vle-info-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+            border-bottom: 5px solid #ea580c; color: white;
+        }
+        .info-item { display: flex; flex-direction: column; text-align: left; }
+        .info-item span { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px;}
+        .info-item h3 { font-size: 15px; margin: 0; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .highlight-text { color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2); }
+
+        .modal-body { padding: 0 15px 15px 15px; background: #ffffff; }
+        
+        .modal-table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 10px;}
+        .modal-table th, .modal-table td { white-space: nowrap; } 
+        .modal-table th { background: #f8fafc; color: #475569; padding: 8px 10px; font-size: 11px; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; position: sticky; top: 0; z-index: 10;}
+        .modal-table td { padding: 6px 10px; font-size: 13px; color: #1e293b; border-bottom: 1px dashed #e2e8f0; font-weight: 700;}
+        
+        .modal-table tr:hover td { background-color: #f8fafc; }
+        .modal-table .th-dist { text-align: left; padding-left: 15px;}
+        .modal-table .td-dist { text-align: left; font-weight: 800; color: #334155; padding-left: 15px;}
+        
+        /* 🌟 BADGE STYLES FOR GROWTH (+/-) 🌟 */
+        .growth-pos { background-color: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px; }
+        .growth-neg { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px;}
+        .growth-neu { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px;}
+
+        .modal-footer {
+            background: #f1f5f9; padding: 12px; text-align: center; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px;
+        }
+        .btn-download-card {
+            background-color: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; 
+            font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(37,99,235,0.3); transition: 0.2s;
+        }
+        .btn-download-card:hover { background-color: #1d4ed8; }
+
+        /* 📱 MOBILE RESPONSIVE STYLES 📱 */
+        @media (max-width: 768px) {
+            body { height: auto; overflow-y: auto; padding: 10px; }
+            .target-control-panel { flex-direction: column; gap: 12px; padding: 15px; align-items: stretch; position: relative; }
+            .page-heading { font-size: 16px; justify-content: center; text-align: center; }
+            .filter-group { width: 100%; flex-direction: column; gap: 10px; }
+            .filter-group select, .filter-group input, .btn-action { width: 100%; text-align: center; justify-content: center; padding: 12px 10px; font-size: 13px; min-width: unset; }
+            #fullscreenBtn { display: none; } 
+            .report-header h1 { font-size: 16px; white-space: normal; line-height: 1.4; }
+            .kpi-grid { flex-direction: column; gap: 10px; }
+            .kpi-card { width: 100%; min-width: unset; padding: 15px 20px; }
+            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            th, td { padding: 10px 8px; font-size: 11px; white-space: nowrap; }
+            th { top: 0 !important; } 
+            .th-dist, .col-district { left: 0 !important; min-width: 100px; }
+            .btn-whatsapp, .btn-done { padding: 8px 10px; font-size: 11px; width: 100%; justify-content: center; }
+            
+            .vle-info-card { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+        }
     </style>
 
 <!-- Google tag (gtag.js) -->
@@ -162,19 +225,14 @@
             <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Search VLE Name, CSC ID, Mobile...">
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
-            
-            <!-- 🌟 District Summary బటన్ 🌟 -->
             <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📊 District Summary</button>
-            <!-- 🌟 Excel Download బటన్ 🌟 -->
             <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()" style="color: #1d4ed8; border-color: #93c5fd; background-color: #eff6ff;">📗 Download Excel</button>
-            
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
     </div>
 
     <div id="captureArea">
-        
         <div class="report-header">
             <h1>CSC AP – IRCTC Priority Follow Up Report (FY 26-27)</h1>
             <p id="reportDate">Report Generated on: </p>
@@ -203,6 +261,7 @@
                         <th class="th-dist">DISTRICT</th>
                         <th class="th-vle">VLE NAME</th>
                         <th class="th-csc">CSC ID</th>
+                        <th class="th-irctc">IRCTC ID</th>
                         <th class="th-mob1">MOBILE NO</th>
                         <th class="th-mob2">VLE MOBILE NO</th>
                         <th class="th-fy25" title="Transactions done in FY 25-26">FY 25-26 TXNS</th>
@@ -212,13 +271,59 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="9">
+                    <tr><td colspan="10">
                         <div class="loader"><div class="spinner"></div> Loading Target Data & DM Details... Please wait.</div>
                     </td></tr>
                 </tbody>
             </table>
         </div>
+    </div>
 
+    <!-- 🌟 NEW: BEAUTIFUL REPORT CARD MODAL 🌟 -->
+    <div class="modal-overlay" id="momModal">
+        <div class="modal-content" id="momModalContent">
+            <!-- Drag Handle (Not visible in downloaded image) -->
+            <div class="modal-drag-handle" id="momModalHeader" onmousedown="dragStart(event)">
+                <span>:: DRAG TO MOVE</span>
+                <button class="modal-close" onclick="closeModalClick()">✖</button>
+            </div>
+            
+            <!-- Exact Area that gets Downloaded as Report Card -->
+            <div id="reportCardCaptureArea">
+                <div class="vle-info-card">
+                    <div class="info-item"><span>VLE Name</span><h3 id="mc-name">-</h3></div>
+                    <div class="info-item"><span>District</span><h3 id="mc-dist">-</h3></div>
+                    <div class="info-item"><span>CSC ID & IRCTC ID</span><h3 id="mc-ids">-</h3></div>
+                    <div class="info-item"><span>Mobile No</span><h3 id="mc-mob">-</h3></div>
+                </div>
+                
+                <div class="modal-body">
+                    <table class="modal-table">
+                        <thead>
+                            <tr>
+                                <th class="th-dist">MONTH</th>
+                                <th>FY 25-26</th>
+                                <th>FY 26-27</th>
+                                <th>GROWTH (+/-)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalBody">
+                        </tbody>
+                        <tfoot id="modalFooter">
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div style="background: #ffffff; padding: 5px 15px 10px 15px; text-align: right; font-size: 9px; color: #94a3b8; font-weight: bold;">
+                    Generated by CSC AP TravelCloud Analytics
+                </div>
+            </div>
+
+            <!-- Footer Action (Not visible in downloaded image) -->
+            <div class="modal-footer">
+                <button class="btn-download-card" id="dlCardBtn" onclick="downloadReportCard()">📸 Download as Report Card</button>
+            </div>
+        </div>
     </div>
 
     <div id="toast"></div>
@@ -237,6 +342,8 @@
         let loggedInUserName = localStorage.getItem("userName") || ""; 
         let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
         let dmAssignedOldDistrict = "";
+
+        const monthNamesArrFull = ['APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JANUARY', 'FEBRUARY', 'MARCH'];
 
         const fallbackDmMap = {
             "ravi kumar yepuri": "9581013300", "chandra sekhara babu k": "9440115828", "golla pandu rangaiah": "7989690495",
@@ -267,8 +374,9 @@
 
         async function fetchSheetData() {
             try {
-                let cachedData = sessionStorage.getItem("cscTravelData");
-                let cachedUsers = sessionStorage.getItem("cscUsersData");
+                // Changed cache keys slightly to force fresh load and avoid corrupt data
+                let cachedData = sessionStorage.getItem("cscTravelData_YTD_v1");
+                let cachedUsers = sessionStorage.getItem("cscUsersData_YTD_v1");
                 
                 let rawData = cachedData ? JSON.parse(cachedData) : null;
                 let usersData = cachedUsers ? JSON.parse(cachedUsers) : null;
@@ -277,14 +385,14 @@
                 if (!rawData) {
                     promises.push(fetch(apiURL).then(r => r.json()).then(d => {
                         rawData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData_YTD_v1", JSON.stringify(d));
                     }).catch(() => null));
                 }
                 
                 if (!usersData) {
                     promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
                         usersData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData", JSON.stringify(d));
+                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData_YTD_v1", JSON.stringify(d));
                     }).catch(() => null));
                 }
 
@@ -294,7 +402,7 @@
 
                 try {
                     if(usersData && usersData.length > 0) {
-                        let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                        let uHeaders = usersData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
 
@@ -328,19 +436,19 @@
                     console.warn("Could not parse Users sheet", e);
                 }
 
-                if(rawData) {
+                if(rawData && rawData.length > 0) {
                     processFollowUpData(rawData, dmMobileMap);
                 } else {
                     throw new Error("No data found");
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='9' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Data.</td></tr>";
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='10' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Data.</td></tr>";
             }
         }
 
         function processFollowUpData(rawData, dmMobileMap) {
-            let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let cleanHeaders = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
             
             let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
             let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
@@ -356,7 +464,16 @@
             if(idx25_total === -1) idx25_total = cleanHeaders.findIndex(h => h.includes('202526'));
 
             const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
-            let indices2627 = months2627.map(m => cleanHeaders.findIndex(h => h === m)).filter(i => i > -1);
+            let indices2627 = months2627.map(m => cleanHeaders.findIndex(h => h === m));
+
+            // Fetch FY 25-26 Months for Popup Comparison
+            let fallback25 = [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48];
+            let indices2526 = [];
+            let months2526 = ['apr25', 'may25', 'jun25', 'jul25', 'aug25', 'sep25', 'oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26'];
+            months2526.forEach((mSearch, i) => {
+                let foundIdx = cleanHeaders.findIndex(h => h === mSearch || h.replace(/[^a-z0-9]/g, '') === mSearch);
+                indices2526.push(foundIdx > -1 ? foundIdx : fallback25[i]);
+            });
 
             globalFollowUpData = [];
             oldDistrictsSet.clear();
@@ -364,7 +481,9 @@
 
             for(let i=1; i<rawData.length; i++) {
                 let row = rawData[i];
-                let cscId = idxcscid > -1 ? row[idxcscid] : '';
+                if (!row || !Array.isArray(row)) continue;
+
+                let cscId = idxcscid > -1 ? (row[idxcscid] || '') : '';
                 if(!cscId || cscId === '-') continue;
 
                 let rawStatus = idxstatus > -1 ? (row[idxstatus] || '').toString().toUpperCase().trim() : '';
@@ -379,12 +498,24 @@
                 if(fy26_txns > 0) { 
                     
                     let fy27Total = 0;
-                    indices2627.forEach(colIdx => {
-                        fy27Total += (parseInt(row[colIdx]) || 0);
-                    });
+                    let monthsData25 = [];
+                    let monthsData26 = [];
 
-                    let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
-                    let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').trim() : 'Unknown';
+                    for (let m = 0; m < 12; m++) {
+                        let val26 = 0, val25 = 0;
+                        let col26 = indices2627[m];
+                        if (col26 !== undefined && col26 > -1) val26 = parseInt(row[col26]) || 0;
+                        
+                        let col25 = indices2526[m];
+                        if (col25 !== undefined && col25 > -1) val25 = parseInt(row[col25]) || 0;
+
+                        monthsData26.push(val26);
+                        monthsData25.push(val25);
+                        fy27Total += val26;
+                    }
+
+                    let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').toString().trim() : 'Unknown';
+                    let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').toString().trim() : 'Unknown';
                     let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
 
                     let oldKey = oldDist.toLowerCase();
@@ -419,17 +550,19 @@
                     globalFollowUpData.push({
                         district_old: oldDist,
                         district_new: newDist,
-                        vlename: idxvlename > -1 ? row[idxvlename] : '-',
+                        vlename: idxvlename > -1 ? (row[idxvlename] || '-') : '-',
                         cscid: cscId,
-                        irctcid: idxirctc > -1 ? row[idxirctc] : '-',
-                        mobile: idxmob > -1 ? row[idxmob] : '-',
-                        vlemob: idxvlemob > -1 ? row[idxvlemob] : '-',
+                        irctcid: idxirctc > -1 ? (row[idxirctc] || '-') : '-',
+                        mobile: idxmob > -1 ? (row[idxmob] || '-') : '-',
+                        vlemob: idxvlemob > -1 ? (row[idxvlemob] || '-') : '-',
                         dmname: dmNameStr,
                         dmmob: finalDmMobile, 
                         txns_25_26: fy26_txns,
                         txns_26_27: fy27Total, 
                         allowedForOld: allowedForOld,
-                        allowedForNew: allowedForNew
+                        allowedForNew: allowedForNew,
+                        monthsData25: monthsData25,
+                        monthsData26: monthsData26
                     });
                 }
             }
@@ -519,6 +652,7 @@
                     <td class="col-district" ondblclick="filterByDistrict('${dist}')" style="font-weight:700;">${dist}</td>
                     <td style="text-align:left; color: #1e3a8a; font-weight:700;">${row.vlename}</td>
                     <td style="color: #2563eb; font-weight: 700;">${row.cscid}</td>
+                    <td style="color: #7c3aed; font-weight: 700; cursor: pointer; text-decoration: underline;" onclick="openMomModal('${row.cscid}')" title="Click to view Report Card">${row.irctcid}</td>
                     <td style="color: #475569;">${row.mobile}</td>
                     <td style="color: #64748b;">${row.vlemob}</td>
                     <td style="font-size: 14px; font-weight: 800; color: #ea580c;">${row.txns_25_26}</td>
@@ -529,9 +663,9 @@
             });
 
             if(counts.total === 0) {
-                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No VLEs Found matching the current criteria!</td></tr>`;
+                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No VLEs Found matching the current criteria!</td></tr>`;
             } else if (tbodyHtml === "") {
-                 tbodyHtml = `<tr><td colspan="9" style="padding: 40px; color: #10b981; font-weight: bold; font-size: 16px;">No Records Found for the selected KPI filter! 🎉</td></tr>`;
+                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #10b981; font-weight: bold; font-size: 16px;">No Records Found for the selected KPI filter! 🎉</td></tr>`;
             }
 
             document.getElementById("tableBody").innerHTML = tbodyHtml;
@@ -548,8 +682,187 @@
             renderTable();
         }
 
+        // 🌟 NEW: YTD COMPARISON LOGIC FOR REPORT CARD 🌟
+        function openMomModal(cscId) {
+            let rowData = globalFollowUpData.find(r => r.cscid.toString().trim() === cscId.toString().trim());
+            if (!rowData) return;
+
+            let distType = document.getElementById("districtType").value;
+            let dist = distType === "old" ? rowData.district_old : rowData.district_new;
+
+            // Update VLE Info Header
+            document.getElementById("mc-name").innerText = rowData.vlename || '-';
+            document.getElementById("mc-dist").innerText = dist || '-';
+            document.getElementById("mc-ids").innerHTML = `<span style="color:#e2e8f0;">${rowData.cscid}</span> <span style="color:#64748b; margin:0 5px;">|</span> <span class="highlight-text">${rowData.irctcid}</span>`;
+            let mobile = (rowData.vlemob && rowData.vlemob !== '-') ? rowData.vlemob : rowData.mobile;
+            document.getElementById("mc-mob").innerText = mobile || '-';
+            
+            let modalBody = "";
+            let ytd25 = 0; // Year To Date Total for FY25
+            let ytd26 = 0; // Year To Date Total for FY26
+            let fullYear25 = 0; // Complete 12-month total for FY25
+            let fullYear26 = 0; // Complete 12-month total for FY26
+            
+            let currentMonthLimit = 7; // November (0-indexed)
+            
+            for(let i=0; i<12; i++) {
+                let v25 = rowData.monthsData25[i] || 0;
+                let v26 = rowData.monthsData26[i] || 0;
+                fullYear25 += v25;
+                fullYear26 += v26;
+                
+                let growthDisplay = "-";
+
+                if (i <= currentMonthLimit) {
+                    ytd25 += v25;
+                    ytd26 += v26;
+                    
+                    let mGrowthPct = v25 > 0 ? (((v26 - v25) / v25) * 100).toFixed(1) : (v26 > 0 ? 100 : (v25 > 0 ? -100 : 0));
+                    let gClass = mGrowthPct > 0 ? "growth-pos" : (mGrowthPct < 0 ? "growth-neg" : "growth-neu");
+                    let gSign = mGrowthPct > 0 ? "+" : "";
+                    
+                    growthDisplay = (v25 === 0 && v26 === 0) ? "-" : `<span class="${gClass}">${gSign}${mGrowthPct}%</span>`;
+                }
+
+                modalBody += `<tr>
+                    <td class="td-dist" style="text-align:left; font-weight:bold; color:#334155; padding-left:25px;">${monthNamesArrFull[i]}</td>
+                    <td style="color:#64748b; font-weight:700;">${v25}</td>
+                    <td style="color:#0284c7; font-weight:800; font-size:15px;">${v26}</td>
+                    <td style="text-align:center;">${growthDisplay}</td>
+                </tr>`;
+            }
+            
+            // 🌟 Full Year Growth Calculation 🌟
+            let fyGrowthPct = fullYear25 > 0 ? (((fullYear26 - fullYear25) / fullYear25) * 100).toFixed(1) : (fullYear26 > 0 ? 100 : (fullYear25 > 0 ? -100 : 0));
+            let fyClass = fyGrowthPct > 0 ? "growth-pos" : (fyGrowthPct < 0 ? "growth-neg" : "growth-neu");
+            let fySign = fyGrowthPct > 0 ? "+" : "";
+            let fyDisplay = (fullYear25 === 0 && fullYear26 === 0) ? "-" : `<span class="${fyClass}" style="font-size:12px; padding: 2px 8px;">${fySign}${fyGrowthPct}%</span>`;
+
+            // 🌟 YTD Grand Total for Modal 🌟
+            let gtGrowthPct = ytd25 > 0 ? (((ytd26 - ytd25) / ytd25) * 100).toFixed(1) : (ytd26 > 0 ? 100 : (ytd25 > 0 ? -100 : 0));
+            let gtClass = gtGrowthPct > 0 ? "growth-pos" : (gtGrowthPct < 0 ? "growth-neg" : "growth-neu");
+            let gtSign = gtGrowthPct > 0 ? "+" : "";
+            let gtDisplay = (ytd25 === 0 && ytd26 === 0) ? "-" : `<span class="${gtClass}" style="font-size:14px;">${gtSign}${gtGrowthPct}%</span>`;
+
+            document.getElementById("modalBody").innerHTML = modalBody;
+            
+            // 🌟 Add Two Footer Rows (Full Year Reference and YTD) 🌟
+            document.getElementById("modalFooter").innerHTML = `
+                <tr style="background: #f8fafc; border-top: 1px dashed #cbd5e1;">
+                    <td class="td-dist" style="text-align:left; font-weight:800; color:#64748b; padding-left:25px; font-size: 11px;">FULL YEAR TOTAL</td>
+                    <td style="color:#64748b; font-weight:800; font-size:13px;">${fullYear25}</td>
+                    <td style="color:#0ea5e9; font-weight:800; font-size:14px;">${fullYear26}</td>
+                    <td style="text-align:center;">${fyDisplay}</td>
+                </tr>
+                <tr style="background: #e2e8f0; border-top: 2px solid #cbd5e1;">
+                    <td style="text-align:left; padding-left:20px; color:#1e293b; font-size: 13px; font-weight: 900; padding-top: 15px; padding-bottom: 15px;">YTD TOTAL (APR-NOV)</td>
+                    <td style="color:#1e293b; font-size: 15px; font-weight: 900;">${ytd25}</td>
+                    <td style="color:#0ea5e9; font-size: 16px; font-weight: 900;">${ytd26}</td>
+                    <td style="text-align:center;">${gtDisplay}</td>
+                </tr>
+            `;
+
+            // Reset position to center of screen when opening
+            const modalContent = document.getElementById("momModalContent");
+            modalContent.style.top = "50%";
+            modalContent.style.left = "50%";
+            modalContent.style.transform = "translate(-50%, -50%)";
+
+            document.getElementById("momModal").style.display = "flex"; 
+        }
+
+        // 🌟 DOWNLOAD REPORT CARD AS IMAGE 🌟
+        function downloadReportCard() {
+            const captureDiv = document.getElementById("reportCardCaptureArea");
+            const btn = document.getElementById("dlCardBtn");
+            let origText = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating Card..."; 
+            btn.disabled = true;
+            
+            html2canvas(captureDiv, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement('a');
+                let vleName = document.getElementById("mc-name").innerText.replace(/[^a-zA-Z0-9]/g, '_');
+                link.download = `VLE_Performance_Card_${vleName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                btn.innerHTML = "✅ Downloaded!";
+                setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+            }).catch(err => {
+                console.error(err);
+                btn.innerHTML = "❌ Failed";
+                setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+            });
+        }
+
+        // Safe Close Logic
+        let overlayMouseDown = false;
+        document.getElementById("momModal").addEventListener('mousedown', function(e) {
+            if (e.target === this) overlayMouseDown = true;
+            else overlayMouseDown = false;
+        });
+        
+        document.getElementById("momModal").addEventListener('mouseup', function(e) {
+            if (overlayMouseDown && e.target === this) {
+                closeModalClick();
+            }
+            overlayMouseDown = false;
+        });
+
+        function closeModalClick() {
+            document.getElementById("momModal").style.display = "none";
+        }
+        
+        // ESC key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") closeModalClick();
+        });
+
+        // 🌟 DRAGGABLE MODAL LOGIC 🌟
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        function dragStart(e) {
+            if (e.target.classList.contains('modal-close')) return;
+            
+            isDragging = true;
+            const modalContent = document.getElementById("momModalContent");
+            
+            const rect = modalContent.getBoundingClientRect();
+            
+            modalContent.style.transform = 'none';
+            modalContent.style.left = rect.left + 'px';
+            modalContent.style.top = rect.top + 'px';
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const modalContent = document.getElementById("momModalContent");
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+            
+            modalContent.style.left = (initialLeft + dx) + 'px';
+            modalContent.style.top = (initialTop + dy) + 'px';
+        }
+
+        function dragEnd() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', dragEnd);
+        }
+
         function sendFollowUpWhatsApp(cscId) {
-            let rowData = globalFollowUpData.find(r => r.cscid.toString() === cscId.toString());
+            let rowData = globalFollowUpData.find(r => r.cscid.toString().trim() === cscId.toString().trim());
             if(!rowData) {
                 console.error("VLE data not found");
                 return;
@@ -677,6 +990,7 @@
                     "District": dist,
                     "VLE Name": row.vlename,
                     "CSC ID": row.cscid,
+                    "IRCTC ID": row.irctcid,
                     "Mobile": row.mobile,
                     "VLE Mobile": row.vlemob,
                     "FY 25-26 Txns": row.txns_25_26,
@@ -720,7 +1034,7 @@
             link.click();
         }
 
-        // 🌟 FUNCTION: Download District Summary Image (With PERFECT Font Colors) 🌟
+        // 🌟 FUNCTION: Download District Summary Image 🌟
         function downloadSummaryImage() {
             let distType = document.getElementById('districtType').value;
             let selectedDist = document.getElementById('districtName').value;
@@ -789,7 +1103,7 @@
             <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; background: #f8fafc;">
                 <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px;">
                     <h1 style="color: #ea580c; font-size: 24px; margin-bottom: 5px;">🎯 PRIORITY FOLLOW-UP SUMMARY</h1>
-                    <p style="color: #475569; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">Date: ${dateStr} &nbsp;|&nbsp; Region: ${reportTitle}</p>
+                    <p style="color: #475569; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">Date: ${dateStr}  |  Region: ${reportTitle}</p>
                     <p style="color: #dc2626; font-size: 13px; margin: 0 0 5px 0; font-weight: 800;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</p>
                     <p style="color: #3b82f6; font-size: 13px; margin: 0; font-weight: bold;">Filter: ${priorityText}</p>
                 </div>
@@ -847,7 +1161,6 @@
                 `;
             });
             
-            // 🌟 IKKADA CORRECTION CHESANU SIR (Text color #ffffff added explicitly) 🌟
             html += `
                     <tr style="background:#0f172a; font-size: 14px;">
                         <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: right; color: #ffffff;">GRAND TOTAL</td>
