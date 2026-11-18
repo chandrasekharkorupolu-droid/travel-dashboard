@@ -103,26 +103,19 @@
         .report-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; margin-top: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
         .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
         
-        /* 🌟 MOBILE RESPONSIVE TABLE CONTAINER 🌟 */
-        .report-table-container { width: 100%; padding-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; } 
-        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 900px; } 
+        .report-table-container { width: 100%; padding-bottom: 20px; } 
+        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
         
-        .report-table th { position: -webkit-sticky; position: sticky; top: 0; background: #e0e7ff; color: #312e81; padding: 14px 10px; font-weight: 900; border-bottom: 3px solid #a5b4fc; white-space: nowrap; z-index: 100; }
-        .report-table td { padding: 14px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 800; white-space: nowrap; background: #fff;} 
+        .report-table th { position: -webkit-sticky; position: sticky; top: 0; background: #e0e7ff; color: #312e81; padding: 16px 12px; font-weight: 900; border-bottom: 3px solid #a5b4fc; white-space: nowrap; z-index: 100; }
+        .report-table td { padding: 16px 12px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 800; white-space: nowrap; background: #fff;} 
         .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; }
         .sub-stat { display: block; font-size: 10px; color: #64748b; font-weight: 700; margin-top: 3px;}
         
-        .dl-btn { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
+        .dl-btn { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display:flex; align-items:center; gap:6px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
         .dl-btn:hover { transform: translateY(-2px);}
         .dl-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        @media (max-width: 768px) { 
-            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px;} 
-            .grid-container { grid-template-columns: 1fr; } 
-            .vle-card { max-width: 100%; } 
-            .report-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-            .dl-btn { width: 100%; justify-content: center; }
-        }
+        @media (max-width: 768px) { .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px;} .grid-container { grid-template-columns: 1fr; } .vle-card { max-width: 100%; } }
     </style>
 </head>
 <body>
@@ -164,29 +157,15 @@
                         <h3 style="font-size:20px; font-family:'Outfit'; color:#2563eb;">📊 Followup Report</h3>
                         <p style="font-size:12px; color:#64748b; font-weight:700; margin-top:4px;" id="reportDateText">(Date)</p>
                     </div>
-                    <div style="display:flex; gap:10px; width:100%; max-width: 300px;">
-                        <button class="dl-btn" style="background: linear-gradient(135deg, #10b981, #059669); flex:1;" onclick="downloadStateHeadExcel()">📗 Save Excel</button>
-                        <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport()" style="flex:1;">📸 Save Image</button>
-                    </div>
+                    <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport()">📸 Save Report</button>
                 </div>
                 <div class="report-table-container">
                     <table class="report-table">
                         <thead>
-                            <tr>
-                                <th>S.No</th>
-                                <th>Employee Name</th>
-                                <th>🎯 Total Target</th>
-                                <th>✅ Act. (Total)</th>
-                                <th style="background:#fef2f2; color:#b91c1c;">🔴 Unattempted<br><span style="font-size:10px;font-weight:600;">(Not Called)</span></th>
-                                <th>⏳ Pending<br><span style="font-size:10px;font-weight:600;">(Not Activated)</span></th>
-                                <th style="background:#f0f9ff; color:#0369a1;">📞 Total Called<br><span style="font-size:10px;font-weight:600;">(All Time)</span></th>
-                                <th>📞 Calls Made<br><span style="font-size:10px;font-weight:600;">(Selected Date)</span></th>
-                                <th style="background:#f0fdf4; color:#166534;">📊 Call Breakdown<br><span style="font-size:10px;font-weight:600;">(Vertical Wise)</span></th>
-                                <th>⏱️ Avg Talk Time</th>
-                            </tr>
+                            <tr><th>S.No</th><th>Employee Name</th><th>Total Target</th><th>✅ Act. (Total)</th><th>⏳ Pending</th><th>🎯 Assigned (On Date)</th><th>📞 Attempted</th><th>⏱️ Avg Time</th></tr>
                         </thead>
                         <tbody id="reportTableBody">
-                            <tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>
+                            <tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -206,13 +185,7 @@
             <div class="task-title">🎯 My Action Center</div>
             
             <div class="dm-overall-stats" id="dmOverallStats" style="display:none;">
-                <!-- DYNAMIC DM STATS WILL BE INJECTED HERE -->
-            </div>
-
-            <div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; background:#f1f5f9; padding:10px; border-radius:12px; margin: 0 auto 15px auto; width:100%; max-width:500px; border:1px dashed #cbd5e1;">
-                <label style="font-size:12px; font-weight:800; color:#475569;">My Logs:</label>
-                <input type="date" id="dmLogDate" style="padding:6px 12px; border-radius:8px; border:1px solid #94a3b8; outline:none; font-family:'Outfit'; font-size:13px; font-weight:700; color:#0f172a;">
-                <button onclick="downloadDMLogsExcel()" style="background:#2563eb; color:white; border:none; padding:8px 15px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 2px 4px rgba(37,99,235,0.2);">📥 Download Excel</button>
+                <!-- 🌟 DYNAMIC DM STATS WILL BE INJECTED HERE 🌟 -->
             </div>
 
             <select id="taskSelector" class="task-selector" onchange="filterCardsByTask()">
@@ -255,42 +228,35 @@
         let dmName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toLowerCase().trim();
         let allTaskGroups = {}; let filteredQueue = []; let currentIndex = 0; let todayCalledVLEs = []; let globalSpocLogs = [];
         let activeCallStartTime = null; 
+        let serverCalledIds = new Set(); 
         
         let rawSpocLogs = [];
         let rawSpocTargets = [];
         let rawSpocUsers = [];
-        
-        window.globalLogsRaw = []; 
 
-        function formatTalkTime(sec) {
-            if(!sec || sec == 0 || isNaN(sec)) return "0s";
-            sec = parseInt(sec);
-            if(sec < 60) return sec + "s";
-            let m = Math.floor(sec / 60); let s = sec % 60;
-            return s > 0 ? `${m}m ${s}s` : `${m}m`;
-        }
-
+        // 🌟 Helper Functions for Masking 🌟
         function maskMobileNumber(mobileStr) {
             if (!mobileStr) return "N/A";
-            let cleanMob = mobileStr.toString().replace(/\D/g, '');
+            let cleanMob = mobileStr.replace(/\D/g, '');
             if (cleanMob.length >= 10) {
-                let base = cleanMob.slice(-10); 
+                // Return format: 98*****210 (First 2, 5 stars, Last 3)
+                let base = cleanMob.slice(-10); // get last 10 digits if it has 91 prefix
                 return base.substring(0, 2) + "*****" + base.substring(7);
             }
-            return cleanMob; 
+            return cleanMob; // Return as is if it's too short
         }
 
+        // Dynamic Colors for any service generated on the fly
         const dynamicColors = [
-            { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" }, 
-            { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" }, 
-            { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" }, 
-            { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" }, 
-            { bg: "#ffedd5", text: "#c2410c", border: "#fed7aa" }, 
-            { bg: "#fce7f3", text: "#be185d", border: "#fbcfe8" }  
+            { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" }, // Blue
+            { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" }, // Red
+            { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" }, // Purple
+            { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" }, // Green
+            { bg: "#ffedd5", text: "#c2410c", border: "#fed7aa" }, // Orange
+            { bg: "#fce7f3", text: "#be185d", border: "#fbcfe8" }  // Pink
         ];
 
         function getColorForService(serviceName) {
-            if(!serviceName) return dynamicColors[0];
             if (serviceName === "IRCTC") return { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" };
             if (serviceName === "REDBUS") return { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" };
             if (serviceName === "AMC") return { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" };
@@ -305,8 +271,8 @@
 
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
-            let sClean = sheetName.toString().toLowerCase().replace(/\s+/g, ' ').trim();
-            let lClean = loginName.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
             if (sClean === lClean) return true;
             if (lClean.length > 4 && sClean.includes(lClean)) return true;
             if (sClean.length > 4 && lClean.includes(sClean)) return true;
@@ -314,18 +280,18 @@
         }
 
         window.onload = async () => {
-            let today = new Date();
-            let tzoffset = (new Date()).getTimezoneOffset() * 60000;
-            let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
-            
             if (isSpoc) {
                 document.getElementById("spocScreen").style.display = "block";
                 document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
+                
+                let today = new Date();
+                let tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
                 document.getElementById("spocDatePicker").value = localISOTime;
+                
                 await loadSpocDashboard();
             } else {
                 document.getElementById("dmScreen").style.display = "flex";
-                document.getElementById("dmLogDate").value = localISOTime; 
                 if(!dmName) { alert("Please login through the dashboard."); document.getElementById("loader").style.display = "none"; return; }
                 await fetchDMData();
             }
@@ -339,8 +305,48 @@
             document.getElementById(val).style.display = 'block';
         }
 
+        window.downloadStateHeadReport = function() {
+            let card = document.getElementById("reportCardToCapture");
+            let btn = document.getElementById("dlBtn");
+            let ths = document.querySelectorAll(".report-table th");
+            
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Saving...";
+            btn.disabled = true;
+            
+            ths.forEach(th => th.style.position = "static");
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
+                    let link = document.createElement('a');
+                    let selDate = document.getElementById("spocDatePicker").value || "Report";
+                    link.download = `State_Head_Report_${selDate}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                }).catch(err => {
+                    console.error("Screenshot Error:", err);
+                    alert("Failed to save image. Please try again.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                });
+            }, 300);
+        };
+
+        function formatTalkTime(sec) {
+            if(!sec || sec == 0 || isNaN(sec)) return "0s";
+            sec = parseInt(sec);
+            if(sec < 60) return sec + "s";
+            let m = Math.floor(sec / 60); let s = sec % 60;
+            return s > 0 ? `${m}m ${s}s` : `${m}m`;
+        }
+
         // ==========================================
-        // 🌟 1. DM VIEW LOGIC 🌟
+        // 🌟 1. DM VIEW LOGIC (100% DYNAMIC & TRAVEL MERGE) 🌟
         // ==========================================
         async function fetchDMData() {
             try {
@@ -351,32 +357,29 @@
                 
                 let targetRaw = await targetRes.json();
                 let logsRaw = await logsRes.json();
-                window.globalLogsRaw = logsRaw || []; 
                 
                 let today = new Date();
                 let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
                 let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
                 let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
 
-                let allTimeCalledIds = new Set();
+                serverCalledIds.clear();
                 todayCalledVLEs = [];
                 
-                if (Array.isArray(logsRaw)) {
-                    for(let i=1; i<logsRaw.length; i++) {
-                        if(!logsRaw[i]) continue;
-                        let logDate = (logsRaw[i][0] || "").toString();
-                        let logDmName = (logsRaw[i][3] || "").toString().trim();
+                // 1. Process Logs to find what's already been called
+                for(let i=1; i<logsRaw.length; i++) {
+                    let logDate = logsRaw[i][0];
+                    let logDmName = (logsRaw[i][3] || "").toString().trim();
+                    
+                    if (isNameMatch(logDmName, dmName)) {
+                        let logCscId = (logsRaw[i][1] || "").toString().trim();
+                        let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
+                        let logRemark = logsRaw[i][4] || "";
                         
-                        if (isNameMatch(logDmName, dmName)) {
-                            let logCscId = (logsRaw[i][1] || "").toString().trim();
-                            let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
-                            let logRemark = (logsRaw[i][4] || "").toString();
-                            
-                            allTimeCalledIds.add(logCscId + "_" + logService);
-                            
-                            if (isToday(logDate)) {
-                                todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
-                            }
+                        serverCalledIds.add(logCscId + "_" + logService);
+                        
+                        if (isToday(logDate)) {
+                            todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
                         }
                     }
                 }
@@ -384,56 +387,67 @@
                 let dynamicTasksMap = {}; 
                 let dmServiceCounts = {}; 
                 let totalDMPendingTargets = 0;
+                
+                // 🌟 Special Map just to merge IRCTC & REDBUS 🌟
                 let standardMap = {}; 
 
-                if (Array.isArray(targetRaw)) {
-                    for(let i=1; i<targetRaw.length; i++) {
-                        if(!targetRaw[i]) continue;
-                        let rDmName = (targetRaw[i][3]||"").toString().trim();
-                        let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
-                        let cscId = (targetRaw[i][0]||"").toString().trim();
-                        let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
+                // 2. Process App_Targets dynamically
+                for(let i=1; i<targetRaw.length; i++) {
+                    let rDmName = (targetRaw[i][3]||"").toString().trim();
+                    let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
+                    let cscId = (targetRaw[i][0]||"").toString().trim();
+                    let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
+                    
+                    if(isNameMatch(rDmName, dmName) && status === "PENDING") {
                         
-                        if(isNameMatch(rDmName, dmName) && status === "PENDING") {
-                            
-                            let t = {
-                                cscId: cscId, name: (targetRaw[i][1]||"").toString(), mobile: (targetRaw[i][2]||"").toString(),
-                                taskName: taskNameStr, extraData: (targetRaw[i][5]||"0").toString()
-                            };
-                            
-                            if(!dmServiceCounts[taskNameStr]) { dmServiceCounts[taskNameStr] = 0; }
-                            
-                            // Check against allTimeCalledIds, not just today
-                            if(!allTimeCalledIds.has(cscId + "_" + taskNameStr)) {
-                                dmServiceCounts[taskNameStr]++;
-                                totalDMPendingTargets++;
-                            }
+                        let t = {
+                            cscId: cscId, name: targetRaw[i][1], mobile: targetRaw[i][2],
+                            taskName: taskNameStr, extraData: targetRaw[i][5] || "0"
+                        };
+                        
+                        // Always maintain real individual counts for the header
+                        if(!dmServiceCounts[taskNameStr]) {
+                            dmServiceCounts[taskNameStr] = 0;
+                        }
+                        if(!serverCalledIds.has(cscId + "_" + taskNameStr)) {
+                            dmServiceCounts[taskNameStr]++;
+                            totalDMPendingTargets++;
+                        }
 
-                            if (taskNameStr === "IRCTC" || taskNameStr === "REDBUS") {
-                                if(!standardMap[cscId]) {
-                                    standardMap[cscId] = { ...t };
-                                    if(taskNameStr === "IRCTC") { standardMap[cscId].iTxn = t.extraData; standardMap[cscId].rTxn = "0"; } 
-                                    else { standardMap[cscId].iTxn = "0"; standardMap[cscId].rTxn = t.extraData; }
-                                } else {
-                                    standardMap[cscId].taskName = "BOTH";
-                                    if(taskNameStr === "IRCTC") standardMap[cscId].iTxn = t.extraData;
-                                    if(taskNameStr === "REDBUS") standardMap[cscId].rTxn = t.extraData;
-                                }
+                        // 🌟 Route IRCTC & REDBUS to be Merged 🌟
+                        if (taskNameStr === "IRCTC" || taskNameStr === "REDBUS") {
+                            if(!standardMap[cscId]) {
+                                standardMap[cscId] = { ...t };
+                                if(taskNameStr === "IRCTC") { standardMap[cscId].iTxn = t.extraData; standardMap[cscId].rTxn = "0"; } 
+                                else { standardMap[cscId].iTxn = "0"; standardMap[cscId].rTxn = t.extraData; }
                             } else {
-                                if(!dynamicTasksMap[taskNameStr]) { dynamicTasksMap[taskNameStr] = []; }
-                                dynamicTasksMap[taskNameStr].push(t);
+                                standardMap[cscId].taskName = "BOTH";
+                                if(taskNameStr === "IRCTC") standardMap[cscId].iTxn = t.extraData;
+                                if(taskNameStr === "REDBUS") standardMap[cscId].rTxn = t.extraData;
                             }
+                        } else {
+                            // Route all other tasks (AMC, etc) normally
+                            if(!dynamicTasksMap[taskNameStr]) {
+                                dynamicTasksMap[taskNameStr] = [];
+                            }
+                            dynamicTasksMap[taskNameStr].push(t);
                         }
                     }
                 }
 
+                // 🌟 Inject the merged IRCTC & REDBUS tasks back into the dynamic list 🌟
                 let standardFollowUps = Object.values(standardMap);
-                if (standardFollowUps.length > 0) { dynamicTasksMap["STANDARD_TRAVEL"] = standardFollowUps; }
+                if (standardFollowUps.length > 0) {
+                    dynamicTasksMap["STANDARD_TRAVEL"] = standardFollowUps;
+                }
 
                 allTaskGroups = { ...dynamicTasksMap };
 
+                // 3. Render Dynamic Stats Box for DM
                 if (totalDMPendingTargets > 0) {
                     let statsHtml = `<span>Total Targets: <b>${totalDMPendingTargets}</b></span>`;
+                    
+                    // Loop dynamically through all services for counts
                     Object.keys(dmServiceCounts).forEach(srv => {
                         let count = dmServiceCounts[srv];
                         if (count > 0) {
@@ -441,21 +455,29 @@
                             statsHtml += ` <span class="stat-divider">|</span> <span style="color:${colorData.text};">${srv}: <b id="dmTotal_${srv}">${count}</b></span>`;
                         }
                     });
+                    
                     document.getElementById("dmOverallStats").innerHTML = statsHtml;
                     document.getElementById("dmOverallStats").style.display = "flex";
                 } else {
                     document.getElementById("dmOverallStats").style.display = "none";
                 }
 
+                // 4. Render Task Selector Dropdown
                 let selectHtml = `<option value="" disabled selected>Select Task to Start...</option>`;
                 if (Object.keys(allTaskGroups).length === 0) {
                     document.getElementById("taskSelector").style.display = "none";
                     document.getElementById("targetLabelBox").style.display = "none";
                     showSummaryScreen("");
                 } else {
-                    if (allTaskGroups["STANDARD_TRAVEL"]) { selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`; }
+                    // Display STANDARD_TRAVEL nicely if it exists
+                    if (allTaskGroups["STANDARD_TRAVEL"]) {
+                        selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`;
+                    }
+                    // Loop through the rest dynamically
                     Object.keys(allTaskGroups).forEach(k => { 
-                        if (k !== "STANDARD_TRAVEL") { selectHtml += `<option value="${k}">Follow-up: ${k}</option>`; }
+                        if (k !== "STANDARD_TRAVEL") {
+                            selectHtml += `<option value="${k}">Follow-up: ${k}</option>`; 
+                        }
                     });
                     document.getElementById("cardStack").innerHTML = `<p style="color:#64748b; font-weight:700; font-size:15px;">Please select a task from the dropdown above.</p>`;
                 }
@@ -464,61 +486,10 @@
                 document.getElementById("loader").style.display = "none";
 
             } catch(e) {
-                console.error(e);
                 alert("Error connecting to server. Please try again.");
                 document.getElementById("loader").style.display = "none";
             }
         }
-
-        window.downloadDMLogsExcel = function() {
-            let selDate = document.getElementById("dmLogDate").value;
-            if(!selDate) { alert("Please select a date first."); return; }
-            
-            let d1 = selDate.split("-")[2]; let m1 = selDate.split("-")[1]; let y1 = selDate.split("-")[0];
-            let f1 = `${d1}-${m1}-${y1}`; let f2 = `${y1}-${m1}-${d1}`; let f3 = `${d1}/${m1}/${y1}`; let f4 = `${m1}/${d1}/${y1}`;
-            
-            let exportData = [];
-            if (Array.isArray(window.globalLogsRaw)) {
-                window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return; 
-                    let logDate = String(row[0] || "").trim();
-                    let logDmName = (row[3] || "").toString().trim();
-                    
-                    if (isNameMatch(logDmName, dmName) && (logDate.includes(f1) || logDate.includes(f2) || logDate.includes(f3) || logDate.includes(f4))) {
-                        exportData.push({
-                            "Date & Time": row[0],
-                            "CSC ID": row[1],
-                            "Service": row[2],
-                            "Outcome / Remark": row[4],
-                            "Talk Time (Sec)": row[5] || 0
-                        });
-                    }
-                });
-            }
-
-            if(exportData.length === 0) { alert(`No logs found for ${f1}. You haven't made any calls on this date.`); return; }
-
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px;">`;
-            tableHtml += `<thead><tr><th colspan="5" style="background-color:#10b981; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
-            Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px;">${k}</th>`);
-            tableHtml += `</tr></thead><tbody>`;
-
-            exportData.forEach((row, i) => {
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                Object.values(row).forEach(v => tableHtml += `<td style="padding: 8px;">${v}</td>`);
-                tableHtml += `</tr>`;
-            });
-            tableHtml += `</tbody></table></body></html>`;
-
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `My_Call_Logs_${f1}.xls`;
-            link.click();
-        };
 
         window.unlockActions = function(idx, method) {
             document.getElementById(`lock-msg-${idx}`).style.display = "none";
@@ -538,25 +509,12 @@
             
             let limit = 1000; 
             let baseQueue = fullList.slice(0, limit);
-            
-            let allTimeCalledIds = new Set();
-            if (Array.isArray(window.globalLogsRaw)) {
-                window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return; 
-                    let logDmName = (row[3] || "").toString().trim();
-                    if (isNameMatch(logDmName, dmName)) {
-                        let logCscId = (row[1] || "").toString().trim();
-                        let logService = (row[2] || "").toString().trim().toUpperCase();
-                        allTimeCalledIds.add(logCscId + "_" + logService);
-                    }
-                });
-            }
 
             filteredQueue = baseQueue.filter(item => {
                 if(item.taskName === "BOTH") {
-                    return !allTimeCalledIds.has(item.cscId + "_IRCTC") && !allTimeCalledIds.has(item.cscId + "_REDBUS");
+                    return !serverCalledIds.has(item.cscId + "_IRCTC") && !serverCalledIds.has(item.cscId + "_REDBUS");
                 } else {
-                    return !allTimeCalledIds.has(item.cscId + "_" + item.taskName);
+                    return !serverCalledIds.has(item.cscId + "_" + item.taskName);
                 }
             });
 
@@ -573,7 +531,8 @@
         function renderCards() {
             let html = ""; let myName = localStorage.getItem("userName") || "State Office";
             filteredQueue.forEach((v, i) => {
-                let cleanMob = (v.mobile || "").toString().replace(/\D/g,''); 
+                let cleanMob = (v.mobile || "").replace(/\D/g,''); 
+                
                 let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
                 
                 let headerClass = "bg-generic";
@@ -583,10 +542,13 @@
                 if(v.taskName === "AMC") headerClass = "bg-amc";
 
                 let emoji = "⚡";
-                if(isTravel) { emoji = (v.taskName === "BOTH") ? "🤝" : ((v.taskName === "IRCTC") ? "🚆" : "🚌"); }
+                if(isTravel) {
+                    emoji = (v.taskName === "BOTH") ? "🤝" : ((v.taskName === "IRCTC") ? "🚆" : "🚌");
+                }
                 
                 let titleText = isTravel ? (v.taskName === "BOTH" ? "IRCTC & REDBUS COMBINED" : `${v.taskName} FOLLOW-UP`) : `${v.taskName} FOLLOW-UP`;
                 
+                // 🌟 UPDATED WHATSAPP MESSAGE TEXT 🌟
                 let txnBoxHtml = ""; let msg = "";
                 if (isTravel) {
                     if (v.taskName === "BOTH") {
@@ -601,9 +563,13 @@
                     msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                 }
                 
+                // WhatsApp needs country code for direct message
                 let waMob = cleanMob;
                 if(waMob.length === 10) waMob = "91" + waMob;
+                
                 let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${waMob}&text=${encodedMsg}`;
+                
+                // 🌟 MASKED MOBILE NUMBER 🌟
                 let maskedMobile = maskMobileNumber(v.mobile);
                 
                 html += `
@@ -613,11 +579,15 @@
                         <div class="vle-details">
                             <h2>${v.name}</h2>
                             <p>CSC ID: ${v.cscId}</p>
+                            
+                            <!-- Display Masked Number Here -->
                             <div style="margin-bottom:15px; font-weight:800; color:#3b82f6; font-size:16px;">
                                 <i class="fa-solid fa-phone"></i> ${maskedMobile}
                             </div>
+                            
                             ${txnBoxHtml}
                             <div class="action-btn-group">
+                                <!-- Real number remains hidden inside the href attribute. Calling href uses raw 10 digit number -->
                                 <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call')">📞 Call</a>
                                 <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp')" target="_blank">💬 WhatsApp</a>
                             </div>
@@ -678,6 +648,7 @@
             }
             todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, task: v.taskName, remark: rmk });
 
+            // Reduce count dynamically in header
             if(rmk.includes("Activated") || rmk.includes("Withdrawn")) {
                 let totalEl = document.getElementById("dmTotalInactive");
                 if (totalEl) totalEl.innerText = Math.max(0, parseInt(totalEl.innerText || 0) - (v.taskName === "BOTH" ? 2 : 1));
@@ -722,30 +693,21 @@
         }
 
         // ==========================================
-        // 🌟 2. SPOC MONITORING VIEW (WITH STORAGE QUOTA FIX & REPORT DOWNLOAD) 🌟
+        // 🌟 2. SPOC MONITORING VIEW (100% DYNAMIC) 🌟
         // ==========================================
         async function loadSpocDashboard() {
             try {
-                let cachedLogs = sessionStorage.getItem("cscSpocLogs_v2");
-                let cachedTargets = sessionStorage.getItem("cscSpocTargets_v2");
-                let cachedUsers = sessionStorage.getItem("cscUsersData_v2");
-                
-                rawSpocLogs = cachedLogs ? JSON.parse(cachedLogs) : null;
-                rawSpocTargets = cachedTargets ? JSON.parse(cachedTargets) : null;
-                rawSpocUsers = cachedUsers ? JSON.parse(cachedUsers) : null;
-
-                let promises = [];
-                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; try{sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
-                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; try{sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
-                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; try{sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
-
-                if(promises.length > 0) await Promise.all(promises);
+                let [logsRes, targetsRes, usersRes] = await Promise.all([
+                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs"), fetch(SCRIPT_URL + "?sheet=App_Targets"), fetch(SCRIPT_URL + "?sheet=Users")
+                ]);
+                rawSpocLogs = await logsRes.json(); 
+                rawSpocTargets = await targetsRes.json(); 
+                rawSpocUsers = await usersRes.json();
                 
                 processSpocData();
             } catch(e) { 
-                console.error(e);
                 document.getElementById("loader").style.display = "none"; 
-                alert("Error loading SPOC Dashboard: " + e.message); 
+                alert("Error loading SPOC Dashboard"); 
             }
         }
 
@@ -754,9 +716,7 @@
         };
 
         function processSpocData() {
-            let logs = rawSpocLogs || []; 
-            let targets = rawSpocTargets || []; 
-            let users = rawSpocUsers || [];
+            let logs = rawSpocLogs; let targets = rawSpocTargets; let users = rawSpocUsers;
             
             let dateVal = document.getElementById("spocDatePicker").value;
             let selDate = dateVal ? new Date(dateVal) : new Date();
@@ -779,145 +739,102 @@
             document.getElementById("reportDateText").innerText = "(" + format1 + ")";
 
             let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
-            let allTimeTotalTargets = 0; let allTimePendingTargets = 0;
-            let globalServiceCallStats = {};
-            let globalPendingStats = {}; 
-            let globalTargetStats = {}; 
+            
+            let allTimeTotalTargets = 0;
+            let allTimePendingTargets = 0;
 
-            if (Array.isArray(users)) {
-                users.forEach(u => { 
-                    if(u && (u[2]||"").toString().toLowerCase().includes("manager") && u[0]) { 
-                        let dmKey = (u[5]||"").toString().trim();
-                        if(dmKey) {
-                            uniqueDMs[dmKey] = { 
-                                name: dmKey, mobile: u[0], targetTotal: 0, pendingTotal: 0, actTotal: 0, 
-                                calledToday: 0, totalDuration: 0, taskBreakdown: {}, callBreakdown: {},
-                                allTimeCalledTotal: 0, unattemptedTotal: 0
-                            }; 
-                        }
-                    } 
-                });
+            // 1. Initialize DM map
+            users.forEach(u => { 
+                if((u[2]||"").toLowerCase().includes("manager") && u[0]) { 
+                    let dmKey = u[5].trim();
+                    uniqueDMs[dmKey] = { name: dmKey, mobile: u[0], targetTotal: 0, pendingTotal: 0, actTotal: 0, calledToday: 0, totalDuration: 0, taskBreakdown: {} }; 
+                } 
+            });
+
+            // 2. Map activated VLEs from logs
+            let activatedVLEs = new Set();
+            for(let i=1; i<logs.length; i++) { 
+                if((logs[i][4] || "").includes("Activated")) {
+                    let srv = (logs[i][2]||"").trim().toUpperCase();
+                    activatedVLEs.add(logs[i][1] + "_" + srv);
+                } 
             }
 
-            let activatedVLEs = new Set();
-            let allCalledTargets = new Set(); 
+            // 3. Process targets dynamically
+            for(let i=1; i<targets.length; i++) {
+                let rDmName = (targets[i][3]||"").trim(); let srv = (targets[i][4]||"").trim().toUpperCase(); let cscId = targets[i][0];
+                let isReallyActivated = activatedVLEs.has(cscId + "_" + srv);
+                
+                let matchedDmName = null;
+                Object.keys(uniqueDMs).forEach(key => {
+                    if (isNameMatch(rDmName, key)) matchedDmName = key;
+                });
 
-            // 1. Map logs to find out which VLEs were EVER called and which are ACTIVATED
-            if (Array.isArray(logs)) {
-                for(let i=1; i<logs.length; i++) { 
-                    if(!logs[i]) continue;
-                    let srv = (logs[i][2]||"").toString().trim().toUpperCase();
-                    let cId = (logs[i][1]||"").toString().trim();
-                    let combinedKey = cId + "_" + srv;
+                if(matchedDmName && srv) {
+                    uniqueDMs[matchedDmName].targetTotal++;
+                    allTimeTotalTargets++;
                     
-                    allCalledTargets.add(combinedKey);
+                    if (!uniqueDMs[matchedDmName].taskBreakdown[srv]) {
+                        uniqueDMs[matchedDmName].taskBreakdown[srv] = { total: 0, pending: 0, act: 0 };
+                    }
+                    uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
                     
-                    if((logs[i][4] || "").toString().includes("Activated")) {
-                        activatedVLEs.add(combinedKey);
-                    } 
+                    if(!isReallyActivated) { 
+                        uniqueDMs[matchedDmName].pendingTotal++; 
+                        uniqueDMs[matchedDmName].taskBreakdown[srv].pending++;
+                        allTimePendingTargets++; 
+                    } else { 
+                        uniqueDMs[matchedDmName].actTotal++; 
+                        uniqueDMs[matchedDmName].taskBreakdown[srv].act++;
+                    }
                 }
             }
 
-            // 2. Iterate through TARGETS strictly
-            if (Array.isArray(targets)) {
-                for(let i=1; i<targets.length; i++) {
-                    if(!targets[i]) continue;
-                    let rDmName = (targets[i][3]||"").toString().trim(); 
-                    let srv = (targets[i][4]||"").toString().trim().toUpperCase(); 
-                    let cscId = (targets[i][0]||"").toString().trim();
-                    let combinedKey = cscId + "_" + srv;
-                    
-                    let isReallyActivated = activatedVLEs.has(combinedKey);
-                    let isAttempted = allCalledTargets.has(combinedKey); // Checks if THIS target was ever called
+            // 4. Process logs for today's stats
+            for(let i = logs.length - 1; i >= 1; i--) {
+                if(isSelectedDate(logs[i][0])) {
+                    totalCallsToday++;
+                    let logDmName = (logs[i][3]||"").trim();
+                    let srv = (logs[i][2]||"").trim().toUpperCase();
                     
                     let matchedDmName = null;
                     Object.keys(uniqueDMs).forEach(key => {
-                        if (isNameMatch(rDmName, key)) matchedDmName = key;
+                        if (isNameMatch(logDmName, key)) matchedDmName = key;
                     });
 
-                    if(matchedDmName && srv) {
-                        uniqueDMs[matchedDmName].targetTotal++;
-                        allTimeTotalTargets++;
-                        
-                        globalTargetStats[srv] = (globalTargetStats[srv] || 0) + 1;
-                        
-                        if (!uniqueDMs[matchedDmName].taskBreakdown[srv]) {
-                            uniqueDMs[matchedDmName].taskBreakdown[srv] = { total: 0, pending: 0, act: 0 };
-                        }
-                        uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
-                        
-                        // 🌟 Directly update unattempted and all time called based ONLY on targets
-                        if (isAttempted) {
-                            uniqueDMs[matchedDmName].allTimeCalledTotal++;
-                        } else {
-                            uniqueDMs[matchedDmName].unattemptedTotal++;
-                        }
+                    let timeStr = String(logs[i][0]).split(" ")[1] || "Just now";
+                    let isActivated = logs[i][4].includes("Activated");
+                    let isRed = logs[i][4].includes("Not Reachable") || logs[i][4].includes("lift") || logs[i][4].includes("Closed") || logs[i][4].includes("Problem") || logs[i][4].includes("Pending") || logs[i][4].includes("Issue") || logs[i][4].includes("change");
+                    let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
+                    
+                    let durationSec = parseInt(logs[i][5] || 0);
 
-                        if(!isReallyActivated) { 
-                            uniqueDMs[matchedDmName].pendingTotal++; 
-                            uniqueDMs[matchedDmName].taskBreakdown[srv].pending++;
-                            allTimePendingTargets++; 
-                            
-                            globalPendingStats[srv] = (globalPendingStats[srv] || 0) + 1;
-                        } else { 
-                            uniqueDMs[matchedDmName].actTotal++; 
-                            uniqueDMs[matchedDmName].taskBreakdown[srv].act++;
+                    if(matchedDmName) {
+                        uniqueDMs[matchedDmName].calledToday++;
+                        uniqueDMs[matchedDmName].totalDuration += durationSec; 
+                        
+                        if(!activeDMsMap[matchedDmName]) {
+                            activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, taskBreakdown: {} };
+                        }
+                        activeDMsMap[matchedDmName].calls++;
+                        
+                        // Keep track of what they are working on today
+                        let tb = uniqueDMs[matchedDmName].taskBreakdown[srv];
+                        if (tb) {
+                            activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
                         }
                     }
+                    let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
+                    
+                    globalSpocLogs.push({
+                        dmName: matchedDmName || logDmName, vleName: logs[i][1], service: srv,
+                        time: timeStr, rmkBadge: rmkBadge, rmk: logs[i][4], actionBtns: actionBtns,
+                        durationText: formatTalkTime(durationSec) 
+                    });
                 }
             }
 
-            // 3. Process Calls Today (Selected Date)
-            if (Array.isArray(logs)) {
-                for(let i = logs.length - 1; i >= 1; i--) {
-                    if(!logs[i]) continue;
-                    if(isSelectedDate(logs[i][0])) {
-                        totalCallsToday++;
-                        let logDmName = (logs[i][3]||"").toString().trim();
-                        let srv = (logs[i][2]||"").toString().trim().toUpperCase();
-                        
-                        globalServiceCallStats[srv] = (globalServiceCallStats[srv] || 0) + 1;
-
-                        let matchedDmName = null;
-                        Object.keys(uniqueDMs).forEach(key => {
-                            if (isNameMatch(logDmName, key)) matchedDmName = key;
-                        });
-
-                        let timeStr = String(logs[i][0] || "").split(" ")[1] || "Just now";
-                        let logRemark = (logs[i][4] || "").toString();
-                        let isActivated = logRemark.includes("Activated");
-                        let isRed = logRemark.includes("Not Reachable") || logRemark.includes("lift") || logRemark.includes("Closed") || logRemark.includes("Problem") || logRemark.includes("Pending") || logRemark.includes("Issue") || logRemark.includes("change");
-                        let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
-                        
-                        let durationSec = parseInt(logs[i][5] || 0);
-
-                        if(matchedDmName) {
-                            uniqueDMs[matchedDmName].calledToday++;
-                            uniqueDMs[matchedDmName].totalDuration += durationSec; 
-                            
-                            uniqueDMs[matchedDmName].callBreakdown[srv] = (uniqueDMs[matchedDmName].callBreakdown[srv] || 0) + 1;
-                            
-                            if(!activeDMsMap[matchedDmName]) {
-                                activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, taskBreakdown: {} };
-                            }
-                            activeDMsMap[matchedDmName].calls++;
-                            
-                            let tb = uniqueDMs[matchedDmName].taskBreakdown[srv];
-                            if (tb) {
-                                activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
-                            }
-                        }
-                        let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
-                        
-                        globalSpocLogs.push({
-                            dmName: matchedDmName || logDmName, vleName: logs[i][1], service: srv,
-                            time: timeStr, rmkBadge: rmkBadge, rmk: logRemark, actionBtns: actionBtns,
-                            durationText: formatTalkTime(durationSec) 
-                        });
-                    }
-                }
-            }
-
+            // 5. Render Active DMs Grid (Dynamic Labels)
             let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs</option>`;
             Object.values(activeDMsMap).forEach(adm => {
                 filterHtml += `<option value="${adm.name}">${adm.name}</option>`;
@@ -937,85 +854,48 @@
             document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs logged actions on this date.</p>";
             renderSpocFeed("ALL"); 
 
-            let vertHtml = "";
-            Object.keys(globalServiceCallStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                vertHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalServiceCallStats[srv]}</span>`;
-            });
-            if(vertHtml === "") vertHtml = `<span style="font-size:10px; color:#94a3b8;">No calls yet</span>`;
-
-            let penHtml = "";
-            Object.keys(globalPendingStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                penHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalPendingStats[srv]}</span>`;
-            });
-            if(penHtml === "") penHtml = `<span style="font-size:10px; color:#94a3b8;">No pending</span>`;
-
-            let tgtHtml = "";
-            Object.keys(globalTargetStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                tgtHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalTargetStats[srv]}</span>`;
-            });
-            if(tgtHtml === "") tgtHtml = `<span style="font-size:10px; color:#94a3b8;">No targets</span>`;
-
+            // 6. Update Top KPI Boxes dynamically
             let kpiHtml = `
-                <div class="stat-box" style="border-color:#e2e8f0; background:#f8fafc; padding:10px;">
-                    <p style="margin-bottom:2px;">Calls Today</p>
-                    <h3 style="color:#0f172a; font-size:22px;">${totalCallsToday}</h3>
-                    <div style="margin-top:5px;">${vertHtml}</div>
-                </div>
-                <div class="stat-box" style="border-color:#bbf7d0; background:#f0fdf4; padding:10px; display:flex; flex-direction:column; justify-content:center;">
-                    <h3 style="color:#16a34a;">${Object.keys(activeDMsMap).length}</h3><p style="color:#166534;">Active DMs</p>
-                </div>
-                <div class="stat-box" style="border-color:#bae6fd; background:#f0f9ff; padding:10px;">
-                    <h3 style="color:#0284c7; font-size:22px;">${allTimePendingTargets}</h3><p style="color:#075985;">Total Pending</p>
-                    <div style="margin-top:5px;">${penHtml}</div>
-                </div>
-                <div class="stat-box" style="border-color:#fecaca; background:#fef2f2; padding:10px;">
-                    <h3 style="color:#dc2626; font-size:22px;">${allTimeTotalTargets}</h3><p style="color:#991b1b;">Overall Target</p>
-                    <div style="margin-top:5px;">${tgtHtml}</div>
-                </div>
+                <div class="stat-box" style="border-color:#e2e8f0; background:#f8fafc;"><h3 style="color:#0f172a;">${totalCallsToday}</h3><p>Calls Made</p></div>
+                <div class="stat-box" style="border-color:#bbf7d0; background:#f0fdf4;"><h3 style="color:#16a34a;">${Object.keys(activeDMsMap).length}</h3><p style="color:#166534;">Active DMs</p></div>
+                <div class="stat-box" style="border-color:#bae6fd; background:#f0f9ff;"><h3 style="color:#0284c7;">${allTimePendingTargets}</h3><p style="color:#075985;">Total Pending</p></div>
+                <div class="stat-box" style="border-color:#fecaca; background:#fef2f2;"><h3 style="color:#dc2626;">${allTimeTotalTargets}</h3><p style="color:#991b1b;">Overall Target</p></div>
             `;
             document.getElementById("spocStatGrid").innerHTML = kpiHtml;
             
+            // 7. Render Report Table
             let tableHtml = "";
             let sno = 1; let isFriday = selDate.getDay() === 5; let iLimit = isFriday ? 50 : 40; 
 
             Object.values(uniqueDMs).forEach(dm => {
                 let tTotal = dm.targetTotal;
                 if(tTotal > 0) {
-                    let aTotal = dm.actTotal; 
-                    let pTotal = dm.pendingTotal;
-                    let unattemptedTotal = dm.unattemptedTotal;
-                    let allTimeCalledTotal = dm.allTimeCalledTotal;
-
-                    let attemptColor = dm.calledToday > 0 ? "#10b981" : "#0f172a"; 
+                    let aTotal = dm.actTotal; let pTotal = dm.pendingTotal;
+                    let assigned = Math.min(pTotal, iLimit); let attemptColor = dm.calledToday > 0 ? "#dc2626" : "#0f172a"; 
                     let avgSec = dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0;
                     let avgTimeText = formatTalkTime(avgSec);
                     
-                    let callBreakdownStr = "";
-                    Object.keys(dm.callBreakdown).forEach(srv => {
-                        let colors = getColorForService(srv);
-                        callBreakdownStr += `<span style="background:${colors.bg}; color:${colors.text}; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:4px; border:1px solid ${colors.border};">${srv}(${dm.callBreakdown[srv]})</span>`;
+                    let breakdownStr = "";
+                    Object.keys(dm.taskBreakdown).forEach(k => {
+                        let t = dm.taskBreakdown[k];
+                        breakdownStr += `${k}: ${t.total} | `;
                     });
-                    if(callBreakdownStr === "") callBreakdownStr = "-";
 
                     tableHtml += `<tr>
                         <td>${sno++}</td>
-                        <td style="font-weight:800; color:#1e3a8a;">${dm.name}</td>
-                        <td style="font-size:14px;">${tTotal}</td>
-                        <td style="color:#16a34a; font-size:14px;">${aTotal}</td>
-                        <td style="color:#dc2626; font-size:14px; background:#fef2f2; font-weight:900;">${unattemptedTotal}</td>
-                        <td style="color:#d97706; font-size:14px;">${pTotal}</td>
-                        <td style="color:#0ea5e9; font-weight:900; font-size:14px; background:#f0f9ff;">${allTimeCalledTotal}</td>
-                        <td style="color:${attemptColor}; font-weight:900; font-size:15px;">${dm.calledToday}</td>
-                        <td>${callBreakdownStr}</td>
+                        <td style="font-weight:800;">${dm.name}</td>
+                        <td>${tTotal}<span class="sub-stat">(${breakdownStr.slice(0, -2)})</span></td>
+                        <td style="color:#16a34a;">${aTotal}</td>
+                        <td style="color:#dc2626;">${pTotal}</td>
+                        <td style="color:#2563eb;">${assigned}</td>
+                        <td style="color:${attemptColor}; font-weight:900;">${dm.calledToday}</td>
                         <td style="color:#10b981; font-weight:800;">${avgTimeText}</td>
                     </tr>`;
                 }
             });
-            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
+            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="8" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
 
+            // 8. Render Follow-up Section
             let followUpHtml = "";
             Object.values(uniqueDMs).forEach(dm => {
                 let pTotal = dm.pendingTotal;
@@ -1027,7 +907,7 @@
                         let p = dm.taskBreakdown[k].pending;
                         if(p > 0) bDownTxt += `*${k} (${p})* & `;
                     });
-                    bDownTxt = bDownTxt.slice(0, -3); 
+                    bDownTxt = bDownTxt.slice(0, -3); // remove last &
 
                     let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${pTotal}* pending targets (${bDownTxt}) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
                     followUpHtml += `<div class="dm-action-item"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>${dm.name}</h4><span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px;">${pTotal} Pending</span></div><p>Total Targets: ${dm.targetTotal} | Assigned Today: ${assigned} | Called: <b style="color:${dm.calledToday!=='0'?'#10b981':'#ef4444'};">${dm.calledToday}</b></p><div class="action-btn-group" style="margin-top:15px; margin-bottom:0;"><a href="tel:${dm.mobile}" class="call-btn" style="padding:10px; font-size:13px; text-align:center; color:#166534; background:#dcfce7; border-color:#bbf7d0;">📞 Call</a><a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(waMsg)}" class="wa-btn" style="padding:10px; font-size:13px; text-align:center;">💬 WhatsApp</a></div></div>`;
@@ -1036,75 +916,6 @@
             document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
             document.getElementById("loader").style.display = "none";
         }
-
-        // 🌟 NEW: STATE HEAD REPORT IMAGE DOWNLOADER RESTORED 🌟
-        window.downloadStateHeadReport = function() {
-            let card = document.getElementById("reportCardToCapture");
-            let btn = document.getElementById("dlBtn");
-            let ths = document.querySelectorAll(".report-table th");
-            
-            let originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Saving...";
-            btn.disabled = true;
-            
-            // Temporary static position for proper rendering
-            ths.forEach(th => th.style.position = "static");
-            window.scrollTo(0, 0);
-
-            setTimeout(() => {
-                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
-                    let link = document.createElement('a');
-                    let selDate = document.getElementById("spocDatePicker").value || "Report";
-                    link.download = `State_Head_Report_${selDate}.png`;
-                    link.href = canvas.toDataURL("image/png");
-                    link.click();
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    ths.forEach(th => th.style.position = "sticky");
-                }).catch(err => {
-                    console.error("Screenshot Error:", err);
-                    alert("Failed to save image. Please try again.");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    ths.forEach(th => th.style.position = "sticky");
-                });
-            }, 300);
-        };
-
-        window.downloadStateHeadExcel = function() {
-            let table = document.querySelector(".report-table");
-            let rows = table.querySelectorAll("tr");
-            let selDate = document.getElementById("spocDatePicker").value || "Report";
-            
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px;">`;
-            
-            tableHtml += `<thead><tr><th colspan="10" style="background-color:#2563eb; color:white; font-size:16px; padding:10px; text-align:center;">STATE HEAD FOLLOW-UP REPORT (${selDate})</th></tr>`;
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
-            
-            let headers = rows[0].querySelectorAll("th");
-            headers.forEach(h => {
-                tableHtml += `<th style="padding: 10px;">${h.innerText.replace(/(\r\n|\n|\r)/gm, " ")}</th>`;
-            });
-            tableHtml += `</tr></thead><tbody>`;
-
-            for(let i=1; i<rows.length; i++) {
-                let cells = rows[i].querySelectorAll("td");
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                cells.forEach(c => {
-                    tableHtml += `<td style="padding: 8px;">${c.innerText}</td>`;
-                });
-                tableHtml += `</tr>`;
-            }
-            tableHtml += `</tbody></table></body></html>`;
-
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `State_Head_Report_${selDate}.xls`;
-            link.click();
-        };
 
         window.renderSpocFeed = function(filterVal) {
             let feedHtml = "";
