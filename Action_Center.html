@@ -11,7 +11,6 @@
         body { background: #f4f7fe; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* 🌟 COMMON STYLES 🌟 */
-        /* FIX 1: Added position relative and z-index 999 to keep header completely above invisible cards */
         .task-header { background: #ffffff; padding: 25px 20px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px; border-radius:16px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.02); position: relative; z-index: 999;}
         .task-title { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .loader-box { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:99; display:flex; flex-direction:column; align-items:center; justify-content:center; }
@@ -26,13 +25,10 @@
         .progress-bar-container { background: #e2e8f0; height: 8px; width: 100%; position: relative; border-radius: 10px; overflow: hidden; margin-bottom: 15px;}
         .progress-bar-fill { background: linear-gradient(90deg, #10b981, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 0 4px 4px 0;}
         
-        /* FIX 2: Disabled clicks completely on the stack container */
         .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:20px; min-height: 450px; pointer-events: none; }
         
-        /* FIX 3: Base card style pointer-events none */
         .vle-card { width: 100%; max-width: 500px; background: #fff; border-radius: 24px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); position:absolute; transition: all 0.4s ease; display:flex; flex-direction:column; border: 1px solid #f1f5f9; pointer-events: none; }
         
-        /* FIX 4: Only active card receives clicks, done cards shrink instead of flying up */
         .card-active { transform: translateY(0) scale(1); opacity: 1; z-index:5; pointer-events: auto; }
         .card-next { transform: translateY(50px); opacity: 0; z-index:4; pointer-events: none; visibility: hidden; } 
         .card-done { transform: scale(0.8); opacity: 0; z-index:1; pointer-events: none; visibility: hidden; } 
@@ -270,6 +266,7 @@
         let rawSpocUsers = [];
         
         window.globalLogsRaw = []; 
+        window.globalTargetsRaw = []; 
 
         function formatTalkTime(sec) {
             if(!sec || sec == 0 || isNaN(sec)) return "0s";
@@ -360,7 +357,9 @@
                 
                 let targetRaw = await targetRes.json();
                 let logsRaw = await logsRes.json();
+                
                 window.globalLogsRaw = logsRaw || []; 
+                window.globalTargetsRaw = targetRaw || []; 
                 
                 let today = new Date();
                 let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
@@ -478,6 +477,7 @@
             }
         }
 
+        // 🌟 NEW: VLE NAME & MOBILE NO ADDED TO EXCEL EXPORT 🌟
         window.downloadDMLogsExcel = function(event) {
             if(event) { event.preventDefault(); event.stopPropagation(); } 
             
@@ -487,6 +487,18 @@
             let d1 = selDate.split("-")[2]; let m1 = selDate.split("-")[1]; let y1 = selDate.split("-")[0];
             let f1 = `${d1}-${m1}-${y1}`; let f2 = `${y1}-${m1}-${d1}`; let f3 = `${d1}/${m1}/${y1}`; let f4 = `${m1}/${d1}/${y1}`;
             
+            let vleMap = {};
+            if (Array.isArray(window.globalTargetsRaw)) {
+                window.globalTargetsRaw.forEach(row => {
+                    if(row && row[0]) {
+                        vleMap[row[0].toString().trim()] = { 
+                            name: row[1] ? row[1].toString().trim() : "-", 
+                            mobile: row[2] ? row[2].toString().trim() : "-" 
+                        };
+                    }
+                });
+            }
+
             let exportData = [];
             if (Array.isArray(window.globalLogsRaw)) {
                 window.globalLogsRaw.forEach((row, i) => {
@@ -495,9 +507,14 @@
                     let logDmName = (row[3] || "").toString().trim();
                     
                     if (isNameMatch(logDmName, dmName) && (logDate.includes(f1) || logDate.includes(f2) || logDate.includes(f3) || logDate.includes(f4))) {
+                        let logCscId = (row[1] || "").toString().trim();
+                        let vData = vleMap[logCscId] || {name: "Unknown", mobile: "-"};
+                        
                         exportData.push({
                             "Date & Time": row[0],
-                            "CSC ID": row[1],
+                            "CSC ID": logCscId,
+                            "VLE Name": vData.name,
+                            "Mobile No": vData.mobile,
                             "Service": row[2],
                             "Outcome / Remark": row[4],
                             "Talk Time (Sec)": row[5] || 0
@@ -510,7 +527,7 @@
 
             let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
             tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px;">`;
-            tableHtml += `<thead><tr><th colspan="5" style="background-color:#10b981; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
+            tableHtml += `<thead><tr><th colspan="7" style="background-color:#10b981; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
             tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
             Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px;">${k}</th>`);
             tableHtml += `</tr></thead><tbody>`;
@@ -518,7 +535,10 @@
             exportData.forEach((row, i) => {
                 let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
                 tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                Object.values(row).forEach(v => tableHtml += `<td style="padding: 8px;">${v}</td>`);
+                Object.values(row).forEach((v, colIdx) => {
+                    let tdStyle = colIdx === 3 ? `padding: 8px; mso-number-format:'\\@';` : `padding: 8px;`;
+                    tableHtml += `<td style="${tdStyle}">${v}</td>`;
+                });
                 tableHtml += `</tr>`;
             });
             tableHtml += `</tbody></table></body></html>`;
@@ -827,7 +847,6 @@
             let activatedVLEs = new Set();
             let allCalledTargets = new Set(); 
 
-            // 1. Map logs to find out which VLEs were EVER called and which are ACTIVATED
             if (Array.isArray(logs)) {
                 for(let i=1; i<logs.length; i++) { 
                     if(!logs[i]) continue;
@@ -843,7 +862,6 @@
                 }
             }
 
-            // 2. Iterate through TARGETS strictly
             if (Array.isArray(targets)) {
                 for(let i=1; i<targets.length; i++) {
                     if(!targets[i]) continue;
@@ -853,7 +871,7 @@
                     let combinedKey = cscId + "_" + srv;
                     
                     let isReallyActivated = activatedVLEs.has(combinedKey);
-                    let isAttempted = allCalledTargets.has(combinedKey); // Checks if THIS target was ever called
+                    let isAttempted = allCalledTargets.has(combinedKey); 
                     
                     let matchedDmName = null;
                     Object.keys(uniqueDMs).forEach(key => {
@@ -871,7 +889,6 @@
                         }
                         uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
                         
-                        // 🌟 Directly update unattempted and all time called based ONLY on targets
                         if (isAttempted) {
                             uniqueDMs[matchedDmName].allTimeCalledTotal++;
                         } else {
@@ -892,7 +909,6 @@
                 }
             }
 
-            // 3. Process Calls Today (Selected Date)
             if (Array.isArray(logs)) {
                 for(let i = logs.length - 1; i >= 1; i--) {
                     if(!logs[i]) continue;
