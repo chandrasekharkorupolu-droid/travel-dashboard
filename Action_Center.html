@@ -403,6 +403,7 @@
                             
                             if(!dmServiceCounts[taskNameStr]) { dmServiceCounts[taskNameStr] = 0; }
                             
+                            // Check against allTimeCalledIds, not just today
                             if(!allTimeCalledIds.has(cscId + "_" + taskNameStr)) {
                                 dmServiceCounts[taskNameStr]++;
                                 totalDMPendingTargets++;
@@ -721,7 +722,7 @@
         }
 
         // ==========================================
-        // 🌟 2. SPOC MONITORING VIEW (WITH PERFECT UNATTEMPTED LOGIC) 🌟
+        // 🌟 2. SPOC MONITORING VIEW (WITH STORAGE QUOTA FIX & REPORT DOWNLOAD) 🌟
         // ==========================================
         async function loadSpocDashboard() {
             try {
@@ -734,9 +735,9 @@
                 rawSpocUsers = cachedUsers ? JSON.parse(cachedUsers) : null;
 
                 let promises = [];
-                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d)); }));
-                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d)); }));
-                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d)); }));
+                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; try{sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
+                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; try{sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
+                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; try{sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
 
                 if(promises.length > 0) await Promise.all(promises);
                 
@@ -845,7 +846,7 @@
                         }
                         uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
                         
-                        // 🌟 THE FIX: Directly update unattempted and all time called based ONLY on targets
+                        // 🌟 Directly update unattempted and all time called based ONLY on targets
                         if (isAttempted) {
                             uniqueDMs[matchedDmName].allTimeCalledTotal++;
                         } else {
@@ -936,13 +937,12 @@
             document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs logged actions on this date.</p>";
             renderSpocFeed("ALL"); 
 
-            // 🌟 GENERATING VERTICAL BADGES FOR KPI BOXES 🌟
-            let callsHtml = "";
+            let vertHtml = "";
             Object.keys(globalServiceCallStats).forEach(srv => {
                 let colors = getColorForService(srv);
-                callsHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalServiceCallStats[srv]}</span>`;
+                vertHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalServiceCallStats[srv]}</span>`;
             });
-            if(callsHtml === "") callsHtml = `<span style="font-size:10px; color:#94a3b8;">No calls yet</span>`;
+            if(vertHtml === "") vertHtml = `<span style="font-size:10px; color:#94a3b8;">No calls yet</span>`;
 
             let penHtml = "";
             Object.keys(globalPendingStats).forEach(srv => {
@@ -962,7 +962,7 @@
                 <div class="stat-box" style="border-color:#e2e8f0; background:#f8fafc; padding:10px;">
                     <p style="margin-bottom:2px;">Calls Today</p>
                     <h3 style="color:#0f172a; font-size:22px;">${totalCallsToday}</h3>
-                    <div style="margin-top:5px;">${callsHtml}</div>
+                    <div style="margin-top:5px;">${vertHtml}</div>
                 </div>
                 <div class="stat-box" style="border-color:#bbf7d0; background:#f0fdf4; padding:10px; display:flex; flex-direction:column; justify-content:center;">
                     <h3 style="color:#16a34a;">${Object.keys(activeDMsMap).length}</h3><p style="color:#166534;">Active DMs</p>
@@ -1036,6 +1036,40 @@
             document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
             document.getElementById("loader").style.display = "none";
         }
+
+        // 🌟 NEW: STATE HEAD REPORT IMAGE DOWNLOADER RESTORED 🌟
+        window.downloadStateHeadReport = function() {
+            let card = document.getElementById("reportCardToCapture");
+            let btn = document.getElementById("dlBtn");
+            let ths = document.querySelectorAll(".report-table th");
+            
+            let originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Saving...";
+            btn.disabled = true;
+            
+            // Temporary static position for proper rendering
+            ths.forEach(th => th.style.position = "static");
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
+                    let link = document.createElement('a');
+                    let selDate = document.getElementById("spocDatePicker").value || "Report";
+                    link.download = `State_Head_Report_${selDate}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                }).catch(err => {
+                    console.error("Screenshot Error:", err);
+                    alert("Failed to save image. Please try again.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    ths.forEach(th => th.style.position = "sticky");
+                });
+            }, 300);
+        };
 
         window.downloadStateHeadExcel = function() {
             let table = document.querySelector(".report-table");
