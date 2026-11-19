@@ -859,27 +859,95 @@
         }
 
         function pushToMobileApp() {
+            const selectedDist = document.getElementById("districtName").value;
+            const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            const distType = document.getElementById("districtType").value;
+            const distKey = distType === "old" ? "olddist" : "newdist";
+            const userDesignation = localStorage.getItem("userDesignation") || "State Head";
+            const loggedInUser = localStorage.getItem("userName") || "";
+
+            let customRows = [];
+
+            globalData.forEach(row => {
+                if (userDesignation === "District Manager" && !isRowAllowedForDM(row, distType, loggedInUser)) return;
+
+                let dist = row[distKey] || '-';
+                let statusLogic = row.statusLogic;
+
+                let matchSearch = true;
+                if (searchQuery !== "") {
+                    let text = `${row.vlename} ${row.cscid} ${row.irctc} ${row.mob} ${row.vlemob}`.toLowerCase();
+                    matchSearch = text.includes(searchQuery);
+                }
+
+                let matchDist = (selectedDist === "All" || dist === selectedDist);
+                let mappedKpi = (statusLogic === 'suspended' || statusLogic === 'blacklisted') ? 'blocked' : statusLogic;
+                let isRestricted = (mappedKpi === 'blocked' || mappedKpi === 'deleted');
+
+                let matchStatus = true;
+                if (currentKpiFilter !== 'all') {
+                    if (currentKpiFilter === 'live') matchStatus = !isRestricted;
+                    else if (currentKpiFilter === 'active26') matchStatus = (row.val_fy27 > 0 && !isRestricted);
+                    else if (currentKpiFilter === 'inactive26') matchStatus = (row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'active25') matchStatus = (row.val_fy26 > 0 && !isRestricted);
+                    else if (currentKpiFilter === 'inactive25') matchStatus = (row.val_fy26 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'target') matchStatus = (row.val_fy26 > 0 && row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'blocked') matchStatus = isRestricted;
+                    else matchStatus = (mappedKpi === currentKpiFilter);
+                }
+
+                if (matchDist && matchStatus && matchSearch) {
+                    let mob = (row.vlemob && row.vlemob !== '-') ? row.vlemob : ((row.mob && row.mob !== '-') ? row.mob : "0");
+                    customRows.push([
+                        row.cscid,
+                        row.vlename || "Unknown",
+                        mob,
+                        row.dmname || "Unknown DM",
+                        "IRCTC",
+                        row.val_fy26 || 0,
+                        row.val_fy27 || 0,
+                        "PENDING"
+                    ]);
+                }
+            });
+
+            if (customRows.length === 0) {
+                alert("❌ సెలెక్ట్ చేసిన ఫిల్టర్‌లో పుష్ చేయడానికి VLEs ఎవరూ లేరు!");
+                return;
+            }
+
+            if (!confirm(`📱 సెలెక్ట్ చేసిన [${currentKpiFilter.toUpperCase()}] ఫిల్టర్ నుండి ${customRows.length} VLEs ని Mobile App లోకి పుష్ చేయమంటారా?`)) {
+                return;
+            }
+
             let btn = document.getElementById("pushAppBtn");
-            btn.innerText = "⏳ Filtering in Backend..."; btn.disabled = true;
+            btn.innerText = "⏳ Pushing " + customRows.length + " VLEs...";
+            btn.disabled = true;
 
             let targetUrl = typeof apiURL !== 'undefined' ? apiURL : (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : "");
 
             fetch(targetUrl, {
                 method: "POST",
-                body: JSON.stringify({ action: "generateAppTargets", service: "IRCTC" })
+                body: JSON.stringify({
+                    action: "generateAppTargets",
+                    service: "IRCTC",
+                    customRows: customRows
+                })
             })
             .then(r => r.json())
             .then(data => {
-                if(data.success) {
+                if (data.success) {
                     alert(`✅ IRCTC Targets Generated! (${data.count} VLEs pushed to App)`);
                 } else {
                     alert("❌ Backend Error: " + data.error);
                 }
-                btn.innerText = "📱 Push to App"; btn.disabled = false;
+                btn.innerText = "📱 Push to App";
+                btn.disabled = false;
             })
             .catch(e => {
                 alert("❌ Network Timeout. But check Google Sheet, data might be there.");
-                btn.innerText = "📱 Push to App"; btn.disabled = false;
+                btn.innerText = "📱 Push to App";
+                btn.disabled = false;
             });
         }
     </script>
