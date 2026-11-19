@@ -70,6 +70,7 @@
         tr.row-active td { background-color: #ffffff; }
         tr.row-blocked td { background-color: #f8fafc; color: #94a3b8; }
         tr.row-blacklisted td { background-color: #e2e8f0; color: #475569; }
+        tr.row-deleted td { background-color: #f1f5f9; color: #64748b; text-decoration: line-through; }
 
         .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; border: 1px solid; text-transform: uppercase; }
         .badge-active { color: #16a34a; border-color: #16a34a; background-color: #f0fdf4;}
@@ -77,6 +78,7 @@
         .badge-never { color: #d97706; border-color: #d97706; background-color: #fffbeb;}
         .badge-suspended { background-color: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; display: inline-block; font-weight: bold; }
         .badge-blacklisted { background-color: #1e293b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; display: inline-block; font-weight: bold; }
+        .badge-deleted { background-color: #475569; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; display: inline-block; font-weight: bold; text-decoration: none; }
 
         /* ACTION CELL */
         .action-cell { display: flex; gap: 6px; align-items: center; justify-content: center; width: 100%; }
@@ -91,6 +93,7 @@
         .btn-disabled { background-color: #e2e8f0; cursor: not-allowed; color: #94a3b8; }
         .btn-blocked { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; cursor: not-allowed; width: 85px; font-weight: bold; }
         .btn-blacklisted { background-color: #334155; color: #ffffff; border: 1px solid #1e293b; cursor: not-allowed; width: 85px; font-weight: bold; }
+        .btn-deleted { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; cursor: not-allowed; width: 85px; font-weight: bold; }
         
         .spacer-btn { width: 85px; height: 26px; display: block; }
 
@@ -136,118 +139,66 @@
         .month-box.active-month h3 { color: #16a34a; }
         .month-box.active-month span { color: #16a34a; }
 
-
-/* ========================================================================= */
+        /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR IRCTC PERFORMANCE REPORT (Added by Chandra) 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            
             body {
                 padding: 10px;
-                overflow-y: auto; /* మొబైల్ లో పేజీ మొత్తం స్క్రోల్ అవ్వాలి కాబట్టి */
+                overflow-y: auto;
                 height: auto;
             }
-
-            /* 1. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
             .top-controls {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
                 padding: 15px;
             }
-
             .filter-group {
-                flex-wrap: wrap; /* పక్కపక్కన సరిపోకపోతే కిందకి వస్తాయి */
+                flex-wrap: wrap;
                 width: 100%;
             }
-            
             .filter-group select, 
             .search-box {
-                width: 100%; /* సెర్చ్ బాక్స్ అండ్ డ్రాప్‌డౌన్ ఫుల్ విడ్త్ */
+                width: 100%;
                 min-width: 100%;
             }
-
             .btn-action {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో బటన్స్ రెండు లైన్స్ లో వస్తాయి */
+                flex: 1 1 calc(50% - 10px);
                 text-align: center;
                 padding: 10px;
             }
-
-            /* 2. KPI కార్డ్స్ సెట్టింగ్స్ */
             .kpi-grid {
-                grid-template-columns: repeat(4, 1fr); /* మొబైల్ లో ఒక లైన్ కి 4 బాక్సులు */
+                grid-template-columns: repeat(4, 1fr);
                 gap: 8px;
             }
-
             .kpi-title { font-size: 8px; }
             .kpi-value { font-size: 16px; }
-
-            /* 3. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
             .table-container {
                 overflow-y: auto;
                 overflow-x: auto;
-                max-height: 500px; /* మొబైల్ లో టేబుల్ మరీ పొడవుగా ఉండకూడదు */
-                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ కోసం */
+                max-height: 500px;
+                -webkit-overflow-scrolling: touch;
             }
-
-            table {
-                min-width: 900px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా ఉండేలా కనీస వెడల్పు */
-            }
-
+            table { min-width: 900px; }
             th, td {
-                font-size: 10px !important; /* మొబైల్ లో డేటా చిన్నగా చేస్తే ఎక్కువ కనిపిస్తుంది */
+                font-size: 10px !important;
                 padding: 8px 4px !important;
             }
-
-            .badge {
-                font-size: 8px;
-                padding: 3px 6px;
-            }
-
-            .remark-input {
-                width: 80px; /* ఇన్‌పుట్ బాక్స్ కొంచెం చిన్నది చేశాను */
-            }
-
-            .btn-submit, .btn-whatsapp {
-                width: 70px;
-                font-size: 9px;
-            }
-
-            /* 4. మోడల్ (పాప్-అప్) అడ్జస్ట్‌మెంట్స్ */
-            .modal-content {
-                width: 95%; /* మొబైల్ లో పాప్-అప్ ఫుల్ విడ్త్ వస్తుంది */
-                padding: 15px;
-            }
-
-            .modal-top-card {
-                grid-template-columns: 1fr; /* డీటెయిల్స్ ఒకదాని కింద ఒకటి */
-                gap: 10px;
-                padding: 15px;
-            }
-
-            .yearly-grid, .monthly-grid {
-                grid-template-columns: repeat(3, 1fr); /* రిపోర్ట్స్ ఒక లైన్ కి 3 వస్తాయి */
-                gap: 5px;
-            }
-
-            .stat-box h3, .month-box h3 {
-                font-size: 14px;
-            }
+            .badge { font-size: 8px; padding: 3px 6px; }
+            .remark-input { width: 80px; }
+            .btn-submit, .btn-whatsapp { width: 70px; font-size: 9px; }
+            .modal-content { width: 95%; padding: 15px; }
+            .modal-top-card { grid-template-columns: 1fr; gap: 10px; padding: 15px; }
+            .yearly-grid, .monthly-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+            .stat-box h3, .month-box h3 { font-size: 14px; }
         }
 
-        /* మరీ చిన్న స్క్రీన్ల కోసం (ఉదాహరణకు పాత మొబైల్స్) */
         @media (max-width: 480px) {
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr); /* 2 బాక్సులు మాత్రమే */
-            }
-            .yearly-grid, .monthly-grid {
-                grid-template-columns: repeat(2, 1fr); /* 2 బాక్సులు మాత్రమే */
-            }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .yearly-grid, .monthly-grid { grid-template-columns: repeat(2, 1fr); }
         }
-
-
     </style>
-
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
@@ -281,7 +232,15 @@
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card kpi-total selected-filter" id="kpi-all" onclick="setKpiFilter('all')"><div class="kpi-title">Total VLES</div><div class="kpi-value" id="val-total">0</div></div>
+        <div class="kpi-card kpi-total selected-filter" id="kpi-all" onclick="setKpiFilter('all')">
+            <div class="kpi-title">Total VLES</div>
+            <div class="kpi-value" id="val-total">0</div>
+            <div style="font-size: 9px; font-weight: 800; margin-top: 3px; display: flex; justify-content: center; gap: 5px;">
+                <span style="color: #16a34a; text-decoration: underline;" title="Click to view only Live (HO Active) VLEs" onclick="event.stopPropagation(); setKpiFilter('live');">Live: <b id="val-live">0</b></span>
+                <span style="color: #cbd5e1;">|</span>
+                <span style="color: #dc2626; text-decoration: underline;" title="Click to view only Deleted VLEs" onclick="event.stopPropagation(); setKpiFilter('deleted');">Del: <b id="val-del">0</b></span>
+            </div>
+        </div>
         <div class="kpi-card kpi-act25" onclick="setKpiFilter('active25')"><div class="kpi-title">Active (25-26)</div><div class="kpi-value" id="val-act25">0</div></div>
         <div class="kpi-card kpi-act26" id="kpi-active" onclick="setKpiFilter('active26')"><div class="kpi-title">Active (26-27)</div><div class="kpi-value" id="val-act26">0</div></div>
         <div class="kpi-card kpi-target" id="kpi-target" onclick="setKpiFilter('target')"><div class="kpi-title">Target VLES</div><div class="kpi-value" id="val-target">0</div></div>
@@ -307,11 +266,13 @@
                     <th style="padding: 0;">
                         <select id="tableStatusFilter" onchange="setKpiFilter(this.value)" style="background:transparent; color:white; border:none; font-weight:800; font-size:11px; outline:none; cursor:pointer; text-transform:uppercase; text-align:center; width:100%; padding: 12px 5px; appearance: auto;">
                             <option value="all" style="color:black;">STATUS</option>
+                            <option value="live" style="color:black;">LIVE (HO ACTIVE)</option>
                             <option value="active26" style="color:black;">ACTIVE (26-27)</option>
                             <option value="inactive26" style="color:black;">INACTIVE (26-27)</option>
                             <option value="never" style="color:black;">NEVER ACTIVE</option>
                             <option value="target" style="color:black;">TARGET VLES</option>
                             <option value="blocked" style="color:black;">BLOCKED / SUSPEND</option>
+                            <option value="deleted" style="color:black;">DELETED</option>
                         </select>
                     </th>
                     <th>Remarks & Action</th>
@@ -447,14 +408,12 @@
                     if (mIdx === -1) mIdx = 0;
 
                     for(let i=1; i<usersData.length; i++) {
-                        // మొబైల్ మ్యాపింగ్ కోసం
                         if(nIdx > -1 && mIdx > -1) {
                             let empName = (usersData[i][nIdx] || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
                             let empMob = (usersData[i][mIdx] || '').toString().replace(/\D/g, ''); 
                             if(empName && empMob.length >= 10) dmMobileMap[empName] = empMob; 
                         }
 
-                        // DM జిల్లాని లాక్ చేయడం కోసం
                         if (idxUid > -1 && idxDist > -1) {
                             let sheetUid = (usersData[i][idxUid] || '').toString().trim();
                             if (sheetUid === loggedInUserId) {
@@ -495,6 +454,7 @@
             let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxho = cleanHeaders.findIndex(h => h.includes('horemarks'));
+            if (idxho === -1) idxho = 36; // AK column fallback
             
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('dmname') || h.includes('districtmanager'));
 
@@ -545,7 +505,9 @@
                 let hoRemarks = idxho > -1 ? (row[idxho] || '').toString().toLowerCase().trim() : '';
                 let statusLogic = 'active';
                 
-                if(hoRemarks.includes('suspend') || hoRemarks.includes('blacklist') || hoRemarks.includes('block')) {
+                if(hoRemarks.includes('delete')) {
+                    statusLogic = 'deleted';
+                } else if(hoRemarks.includes('suspend') || hoRemarks.includes('blacklist') || hoRemarks.includes('block')) {
                     statusLogic = 'blocked';
                 } else if(lifetimeTxns === 0) {
                     statusLogic = 'never'; 
@@ -637,13 +599,12 @@
             let userDesignation = localStorage.getItem("userDesignation") || "State Head";
             let loggedInUser = localStorage.getItem("userName") || "";
 
-            let counts = { total: 0, target: 0, act26: 0, inact26: 0, act25: 0, inact25: 0, never: 0, blocked: 0 };
+            let counts = { total: 0, deleted: 0, target: 0, act26: 0, inact26: 0, act25: 0, inact25: 0, never: 0, blocked: 0 };
             let html = "";
             let displayedRows = 0;
             let distKey = distType === "old" ? "olddist" : "newdist";
 
             globalData.forEach((row, index) => {
-                // 🌟 THE FIX: Applying the combined logic for DM Records 🌟
                 if (userDesignation === "District Manager") {
                     if (!isRowAllowedForDM(row, distType, loggedInUser)) return;
                 }
@@ -658,32 +619,36 @@
                 }
 
                 let matchDist = (selectedDist === "All" || dist === selectedDist);
-                let mappedKpi = statusLogic === 'suspended' || statusLogic === 'blacklisted' ? 'blocked' : statusLogic;
+                let mappedKpi = (statusLogic === 'suspended' || statusLogic === 'blacklisted') ? 'blocked' : statusLogic;
+                let isRestricted = (mappedKpi === 'blocked' || mappedKpi === 'deleted');
                 
                 let matchStatus = true;
                 if(currentKpiFilter !== 'all') {
-                    if (currentKpiFilter === 'active26') matchStatus = (row.val_fy27 > 0 && mappedKpi !== 'blocked');
-                    else if (currentKpiFilter === 'inactive26') matchStatus = (row.val_fy27 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked');
-                    else if (currentKpiFilter === 'active25') matchStatus = (row.val_fy26 > 0 && mappedKpi !== 'blocked');
-                    else if (currentKpiFilter === 'inactive25') matchStatus = (row.val_fy26 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked');
-                    else if (currentKpiFilter === 'target') matchStatus = (row.val_fy26 > 0 && row.val_fy27 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked');
+                    if (currentKpiFilter === 'live') matchStatus = !isRestricted;
+                    else if (currentKpiFilter === 'active26') matchStatus = (row.val_fy27 > 0 && !isRestricted);
+                    else if (currentKpiFilter === 'inactive26') matchStatus = (row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'active25') matchStatus = (row.val_fy26 > 0 && !isRestricted);
+                    else if (currentKpiFilter === 'inactive25') matchStatus = (row.val_fy26 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'target') matchStatus = (row.val_fy26 > 0 && row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted);
+                    else if (currentKpiFilter === 'blocked') matchStatus = isRestricted;
                     else matchStatus = (mappedKpi === currentKpiFilter);
                 }
 
                 if(matchDist && matchSearch) {
                     counts.total++; 
-                    if (row.val_fy26 > 0 && mappedKpi !== 'blocked') counts.act25++; 
-                    if (row.val_fy26 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked') counts.inact25++;
+                    if (row.val_fy26 > 0 && !isRestricted) counts.act25++; 
+                    if (row.val_fy26 === 0 && mappedKpi !== 'never' && !isRestricted) counts.inact25++;
                     
-                    if (row.val_fy27 > 0 && mappedKpi !== 'blocked') counts.act26++; 
-                    if (row.val_fy27 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked') counts.inact26++;
+                    if (row.val_fy27 > 0 && !isRestricted) counts.act26++; 
+                    if (row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted) counts.inact26++;
 
-                    if (row.val_fy26 > 0 && row.val_fy27 === 0 && mappedKpi !== 'never' && mappedKpi !== 'blocked') {
+                    if (row.val_fy26 > 0 && row.val_fy27 === 0 && mappedKpi !== 'never' && !isRestricted) {
                         counts.target++;
                     }
                     
                     if (statusLogic === 'never') counts.never++;
-                    if (mappedKpi === 'blocked') counts.blocked++;
+                    if (isRestricted) counts.blocked++;
+                    if (statusLogic === 'deleted') counts.deleted++;
                 }
 
                 if(matchDist && matchStatus && matchSearch) {
@@ -695,7 +660,11 @@
                         let inputHtml = `<input type="text" class="remark-input" placeholder="Enter Reason...">`;
                         let disabledInputHtml = `<input type="text" class="remark-input" disabled>`;
 
-                        if (statusLogic === 'blocked') {
+                        if (statusLogic === 'deleted') {
+                            rowClass = "row-deleted";
+                            badgeHtml = `<span class="badge-deleted">DELETED 🗑️</span>`;
+                            actionBtns = `${disabledInputHtml}<button class="btn btn-disabled btn-submit" disabled>Submit</button><button class="btn btn-deleted">🗑️ DELETED</button>`;
+                        } else if (statusLogic === 'blocked') {
                             let isBlacklisted = row.hoRemark.toLowerCase().includes('blacklist');
                             let blockType = isBlacklisted ? "BLACKLISTED" : (row.hoRemark.toLowerCase().includes('suspend') ? "SUSPENDED" : "BLOCKED");
                             
@@ -746,6 +715,8 @@
 
             document.getElementById("val-target").innerText = counts.target;
             document.getElementById("val-total").innerText = counts.total;
+            document.getElementById("val-live").innerText = counts.total - counts.blocked;
+            document.getElementById("val-del").innerText = counts.deleted;
             document.getElementById("val-act26").innerText = counts.act26;
             document.getElementById("val-inact26").innerText = counts.inact26;
             document.getElementById("val-act25").innerText = counts.act25;
@@ -758,14 +729,14 @@
             currentKpiFilter = status;
             document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
 
-            if(status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
+            if(status === 'all' || status === 'live') document.getElementById('kpi-all').classList.add('selected-filter');
             else if(status === 'active25') document.getElementById('kpi-all').nextElementSibling.classList.add('selected-filter');
             else if(status === 'active26') document.getElementById('kpi-active').classList.add('selected-filter');
             else if(status === 'target') document.getElementById('kpi-target').classList.add('selected-filter');
             else if(status === 'inactive25') document.getElementById('kpi-inact25').classList.add('selected-filter'); 
             else if(status === 'inactive26') document.getElementById('kpi-inactive').classList.add('selected-filter'); 
             else if(status === 'never') document.getElementById('kpi-never').classList.add('selected-filter');
-            else if(status === 'blocked') document.getElementById('kpi-blocked').classList.add('selected-filter');
+            else if(status === 'blocked' || status === 'deleted') document.getElementById('kpi-blocked').classList.add('selected-filter');
 
             let selectBox = document.getElementById('tableStatusFilter');
             if(selectBox) selectBox.value = status;
