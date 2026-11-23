@@ -564,6 +564,14 @@
         window.globalLogsRaw = [];
         window.globalTargetsRaw = [];
 
+        // 🌟 UNIVERSAL WHATSAPP LINK BUILDER (Works in Desktop, Mobile & Iframe) 🌟
+        function getWaLink(mobile, msg) {
+            let digits = String(mobile || "").replace(/\D/g, "");
+            if (digits.length > 10) digits = digits.slice(-10);
+            let phone = digits.length === 10 ? "91" + digits : digits;
+            return `whatsapp://send?phone=${phone}&text=${encodeURIComponent(msg || "")}`;
+        }
+
         function getInitials(name) {
             if (!name) return "DM";
             let parts = name.trim().split(/\s+/);
@@ -876,8 +884,7 @@
                     msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                 }
 
-                let waMob = cleanMob.length === 10 ? "91" + cleanMob : cleanMob;
-                let waLink = `whatsapp://send?phone=${waMob}&text=${encodeURIComponent(msg)}`;
+                let waLink = getWaLink(cleanMob, msg);
 
                 html += `
                 <div class="vle-card" id="card-${i}">
@@ -890,7 +897,7 @@
                             ${txnBoxHtml}
                             <div class="action-btn-group" style="margin-top:14px; margin-bottom:14px;">
                                 <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call', event)"><i class="fa-solid fa-phone"></i> Call</a>
-                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp', event)" target="_blank"><i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> WhatsApp</a>
+                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp', event)" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> WhatsApp</a>
                             </div>
                         </div>
                         <div id="lock-msg-${i}" class="lock-message">🔒 Tap Call or WhatsApp to unlock Submit</div>
@@ -1014,6 +1021,7 @@
             let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
             let allTimeTotalTargets = 0; let allTimePendingTargets = 0;
             let globalServiceCallStats = {}; let globalPendingStats = {}; let globalTargetStats = {};
+            let vleInfoMap = {};
 
             if (Array.isArray(users)) {
                 users.forEach(u => {
@@ -1021,7 +1029,7 @@
                         let dmKey = (u[5]||"").toString().trim();
                         if(dmKey) {
                             uniqueDMs[dmKey] = {
-                                name: dmKey, mobile: u[0], targetTotal: 0, pendingTotal: 0, actTotal: 0,
+                                name: dmKey, mobile: String(u[0] || "").trim(), targetTotal: 0, pendingTotal: 0, actTotal: 0,
                                 calledToday: 0, totalDuration: 0, taskBreakdown: {}, callBreakdown: {},
                                 allTimeCalledTotal: 0, unattemptedTotal: 0
                             };
@@ -1043,9 +1051,17 @@
             if (Array.isArray(targets)) {
                 for(let i=1; i<targets.length; i++) {
                     if(!targets[i]) continue;
+                    let cscIdKey = (targets[i][0]||"").toString().trim();
+                    if (cscIdKey && !vleInfoMap[cscIdKey]) {
+                        vleInfoMap[cscIdKey] = {
+                            name: (targets[i][1]||"").toString().trim(),
+                            mobile: (targets[i][2]||"").toString().trim()
+                        };
+                    }
+
                     let rDmName = (targets[i][3]||"").toString().trim();
                     let srv = (targets[i][4]||"").toString().trim().toUpperCase();
-                    let combinedKey = (targets[i][0]||"").toString().trim() + "_" + srv;
+                    let combinedKey = cscIdKey + "_" + srv;
                     let isReallyActivated = activatedVLEs.has(combinedKey);
                     let isAttempted = allCalledTargets.has(combinedKey);
 
@@ -1076,6 +1092,7 @@
                     if(!logs[i]) continue;
                     if(isSelectedDate(logs[i][0])) {
                         totalCallsToday++;
+                        let logCscId = (logs[i][1]||"").toString().trim();
                         let logDmName = (logs[i][3]||"").toString().trim();
                         let srv = (logs[i][2]||"").toString().trim().toUpperCase();
                         globalServiceCallStats[srv] = (globalServiceCallStats[srv] || 0) + 1;
@@ -1100,9 +1117,19 @@
                             if (tb) activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
                         }
 
+                        let vleInfo = vleInfoMap[logCscId] || { name: "", mobile: "" };
+                        let dmMob = (matchedDmName && uniqueDMs[matchedDmName]) ? uniqueDMs[matchedDmName].mobile : "";
+
                         globalSpocLogs.push({
-                            dmName: matchedDmName || logDmName, vleName: logs[i][1], service: srv,
-                            time: timeStr, rmkBadge: rmkBadge, rmk: logRemark,
+                            dmName: matchedDmName || logDmName,
+                            dmMobile: dmMob,
+                            vleName: logCscId,
+                            vleFullName: vleInfo.name,
+                            vleMobile: vleInfo.mobile,
+                            service: srv,
+                            time: timeStr,
+                            rmkBadge: rmkBadge,
+                            rmk: logRemark,
                             durationText: formatTalkTime(durationSec),
                             isActivated: isActivated
                         });
@@ -1258,11 +1285,25 @@
             globalSpocLogs.forEach(log => {
                 if(filterVal === "ALL" || log.dmName === filterVal) {
                     let colors = getColorForService(log.service);
-                    let actionBtns = !log.isActivated ? `
-                        <div style="display:flex; gap:8px; flex-shrink:0;">
-                            <div class="call-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-solid fa-phone"></i> Call</div>
-                            <div class="wa-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</div>
-                        </div>` : ``;
+                    let targetMob = String(log.vleMobile || log.dmMobile || "").replace(/\D/g, "");
+                    let displayVle = log.vleFullName ? `${log.vleName} (${log.vleFullName})` : log.vleName;
+                    let waText = `Dear ${log.vleFullName || "VLE"} గారు (CSC ID: ${log.vleName}),\n\nCSC Andhra Pradesh State Office నుండి మాట్లాడుతున్నాము. దయచేసి *${log.service}* సేవలను వెంటనే ప్రారంభించగలరు.\n\nధన్యవాదాలు,\nCSC AP State Office.`;
+
+                    let actionBtns = "";
+                    if (!log.isActivated) {
+                        if (targetMob.length >= 10) {
+                            actionBtns = `
+                            <div style="display:flex; gap:8px; flex-shrink:0;">
+                                <a href="tel:${targetMob}" class="call-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-solid fa-phone"></i> Call</a>
+                                <a href="${getWaLink(targetMob, waText)}" target="_blank" rel="noopener noreferrer" class="wa-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                            </div>`;
+                        } else {
+                            actionBtns = `
+                            <div style="display:flex; gap:8px; flex-shrink:0;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:700;">No Mobile</span>
+                            </div>`;
+                        }
+                    }
 
                     feedHtml += `
                     <div class="timeline-item">
@@ -1273,7 +1314,7 @@
                             </div>
                             <div class="tl-details">
                                 <div class="tl-title-row">
-                                    <h5>${log.vleName}</h5>
+                                    <h5>${displayVle}</h5>
                                     <span style="font-size:10px; font-weight:800; color:${colors.text}; background:${colors.bg}; border:1px solid ${colors.border}; padding:2px 7px; border-radius:5px;">${log.service}</span>
                                     <span class="tl-dm-tag"><i class="fa-solid fa-user-tie" style="color:#2563eb;"></i> ${log.dmName}</span>
                                 </div>
@@ -1316,6 +1357,7 @@
                 let pct = dm.assigned > 0 ? Math.min(100, Math.round((dm.calledToday / dm.assigned) * 100)) : 0;
                 let barColor = dm.calledToday === 0 ? "#dc2626" : (pct >= 75 ? "#16a34a" : "#2563eb");
                 let cardCls = dm.calledToday === 0 ? "zero-alert" : "active-ok";
+                let cleanDmMob = String(dm.mobile || "").replace(/\D/g, "");
 
                 html += `
                 <div class="fu-card ${cardCls}">
@@ -1337,8 +1379,8 @@
                         <div class="fu-bar-bg"><div class="fu-bar-fill" style="width:${Math.max(pct, dm.calledToday > 0 ? 4 : 0)}%; background:${barColor};"></div></div>
                     </div>
                     <div class="action-btn-group">
-                        <a href="tel:${dm.mobile}" class="call-btn"><i class="fa-solid fa-phone"></i> Call DM</a>
-                        <a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(dm.waMsg)}" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Send Reminder</a>
+                        <a href="tel:${cleanDmMob}" class="call-btn"><i class="fa-solid fa-phone"></i> Call DM</a>
+                        <a href="${getWaLink(cleanDmMob, dm.waMsg)}" target="_blank" rel="noopener noreferrer" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Send Reminder</a>
                     </div>
                 </div>`;
             });
