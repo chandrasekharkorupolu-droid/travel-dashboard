@@ -3,1451 +3,1635 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Action Center | CSC AP</title>
+    <title>CSC AP | Action Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --corp-dark: #0f172a;
-            --corp-navy: #1e3a8a;
-            --corp-blue: #2563eb;
-            --corp-bg: #eef2f6;
-            --corp-border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
+            --navy: #0f172a; --royal: #1e3a8a; --blue: #2563eb;
+            --bg: #f1f5f9; --border: #e2e8f0; --text: #0f172a; --muted: #64748b;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--corp-bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-        /* 🌟 EXECUTIVE LOADER 🌟 */
+        /* 🌟 LOADER 🌟 */
         .loader-box {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            z-index: 9999; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; color: #ffffff;
+            position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;
         }
-        .loader-spinner {
-            width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.2);
-            border-top-color: #fcd34d; border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin-bottom: 16px;
+        .spinner {
+            width: 42px; height: 42px; border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #fcd34d; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* 🌟 SPOC CONTAINER 🌟 */
-        .spoc-container { padding: 18px 22px 40px 22px; max-width: 1440px; margin: auto; width: 100%; }
-
-        /* 🌟 INNOVATIVE COMMAND HEADER 🌟 */
-        .cmd-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%);
-            color: #ffffff; padding: 20px 26px; border-radius: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 16px; margin-bottom: 18px;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
-            border: 1px solid rgba(255,255,255,0.08);
+        /* =========================================================
+           💻 1. SPOC FULL-SCREEN CLEAN LAYOUT
+           ========================================================= */
+        .spoc-layout { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
+        .spoc-topbar {
+            background: #ffffff; padding: 10px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+            position: sticky; top: 0; z-index: 40; box-shadow: 0 2px 10px rgba(15,23,42,0.03);
         }
-        .cmd-title-area { display: flex; align-items: center; gap: 14px; }
-        .cmd-logo-box {
-            width: 46px; height: 46px; border-radius: 12px;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #ffffff; box-shadow: 0 6px 16px rgba(37,99,235,0.4);
-        }
-        .cmd-title-area h2 {
-            font-family: 'Outfit', sans-serif; font-size: 21px; font-weight: 800;
-            letter-spacing: 0.2px; display: flex; align-items: center; gap: 10px;
-        }
-        .live-pill {
-            font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
-            background: rgba(16, 185, 129, 0.18); color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.35); padding: 3px 9px; border-radius: 20px;
-            display: inline-flex; align-items: center; gap: 6px;
-        }
-        .pulse-dot {
-            width: 7px; height: 7px; border-radius: 50%; background: #10b981;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulseGreen 1.6s infinite;
-        }
-        @keyframes pulseGreen {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        .cmd-title-area p { font-size: 12px; color: #94a3b8; font-weight: 500; margin-top: 2px; }
-
-        .cmd-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .date-glass {
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
-            padding: 6px 12px; border-radius: 10px;
-        }
-        .date-glass label { font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; }
-        .date-glass input[type="date"] {
-            background: transparent; border: none; color: #ffffff;
-            font-family: 'Outfit', sans-serif; font-size: 13.5px; font-weight: 700;
-            outline: none; cursor: pointer; color-scheme: dark;
-        }
-
-        /* 🌟 SEGMENTED NAVIGATION TABS 🌟 */
-        .nav-tabs-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
-        }
-        .seg-tabs {
-            display: inline-flex; background: #ffffff; padding: 5px; border-radius: 12px;
-            border: 1px solid var(--corp-border); box-shadow: 0 2px 8px rgba(15,23,42,0.04);
-            gap: 4px; flex-wrap: wrap;
-        }
-        .seg-tab {
-            padding: 9px 18px; border-radius: 9px; border: none; background: transparent;
-            font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;
-        }
-        .seg-tab:hover { color: #0f172a; background: #f8fafc; }
-        .seg-tab.active {
-            background: #0f172a; color: #ffffff;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-        }
-
-        /* 🌟 MODERN KPI STRIP 🌟 */
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
-        .stat-box {
-            background: #ffffff; padding: 18px 20px; border-radius: 14px;
-            border: 1px solid var(--corp-border);
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-            display: flex; flex-direction: column; justify-content: space-between;
-            transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; overflow: hidden;
-        }
-        .stat-box:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08); }
-        .stat-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-        .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-        .stat-box h3 { font-size: 30px; font-weight: 800; font-family: 'Outfit', sans-serif; line-height: 1.05; color: #0f172a; font-variant-numeric: tabular-nums; }
-        .stat-icon-circle {
-            width: 42px; height: 42px; border-radius: 12px; display: flex;
-            align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-        }
-        .stat-pills { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 5px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
-
-        /* 🌟 SPLIT-SCREEN LIVE COMMAND DECK 🌟 */
-        .command-split {
-            display: grid; grid-template-columns: 440px 1fr; gap: 18px; align-items: start;
-        }
-        .deck-panel {
-            background: #ffffff; border-radius: 16px; border: 1px solid var(--corp-border);
-            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04); overflow: hidden;
-            display: flex; flex-direction: column;
-        }
-        .deck-head {
-            padding: 15px 18px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-            display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-        }
-        .deck-head h4 {
-            font-family: 'Outfit', sans-serif; font-size: 14.5px; font-weight: 800;
-            color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;
-            display: flex; align-items: center; gap: 8px; margin: 0;
-        }
-        .deck-body { padding: 14px; max-height: 620px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .deck-body::-webkit-scrollbar { width: 6px; }
-        .deck-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-
-        /* 🌟 LEADERBOARD DM ROW (LEFT PANEL) 🌟 */
-        .dm-leader-card {
-            padding: 13px 14px; border-radius: 12px; border: 1px solid #e2e8f0;
-            background: #ffffff; cursor: pointer; transition: all 0.2s ease;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .dm-leader-card:hover { border-color: #93c5fd; background: #f8fafc; transform: translateX(3px); }
-        .dm-leader-card.selected-dm {
-            border-color: #2563eb; background: #eff6ff;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
-        }
-        .dm-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .dm-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
-        .dm-avatar {
-            width: 38px; height: 38px; border-radius: 10px;
-            background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #ffffff;
-            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 13px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            position: relative;
-        }
-        .avatar-live-dot {
-            position: absolute; bottom: -2px; right: -2px; width: 11px; height: 11px;
-            background: #10b981; border: 2px solid #ffffff; border-radius: 50%;
-        }
-        .dm-name-block h5 { font-size: 13.5px; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
-        .dm-name-block span { font-size: 11px; font-weight: 600; color: #64748b; }
-        .dm-calls-pill {
-            background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;
-            padding: 4px 10px; border-radius: 8px; font-family: 'Outfit', sans-serif;
-            font-size: 13px; font-weight: 800; white-space: nowrap;
-        }
-        .dm-badges-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
-        .tgt-badge { font-size: 10px; padding: 2px 7px; border-radius: 5px; font-weight: 800; }
-
-        /* 🌟 LIVE CALL TIMELINE STREAM (RIGHT PANEL) 🌟 */
-        .timeline-item {
-            display: flex; gap: 14px; padding: 13px 15px; border-radius: 12px;
-            border: 1px solid #e2e8f0; background: #ffffff; transition: 0.2s;
-            align-items: center; justify-content: space-between; flex-wrap: wrap;
-        }
-        .timeline-item:hover { border-color: #cbd5e1; background: #f8fafc; }
-        .tl-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 240px; }
-        .tl-time-box {
-            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
-            padding: 6px 8px; text-align: center; min-width: 64px; flex-shrink: 0;
-        }
-        .tl-time-box strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
-        .tl-time-box span { display: block; font-size: 10px; font-weight: 700; color: #059669; margin-top: 2px; }
-        .tl-details { flex: 1; }
-        .tl-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
-        .tl-title-row h5 { font-size: 13.5px; font-weight: 800; color: #0f172a; font-family: 'Outfit', sans-serif; }
-        .tl-dm-tag { font-size: 11px; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 4px; }
-        .tl-rmk-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; margin-top: 4px; }
-
-        /* 🌟 DM FOLLOW-UP CENTER (INNOVATIVE CARDS + FILTERS) 🌟 */
-        .fu-toolbar {
-            background: #ffffff; padding: 14px 18px; border-radius: 14px;
-            border: 1px solid var(--corp-border); margin-bottom: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 10px rgba(15,23,42,0.03);
-        }
-        .fu-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-        .fu-pill {
-            padding: 7px 14px; border-radius: 8px; border: 1px solid #cbd5e1;
-            background: #f8fafc; font-size: 12px; font-weight: 800; color: #475569;
+        .spoc-nav-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .snav-pill {
+            display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 9px;
+            border: 1px solid transparent; background: #f8fafc; color: #475569; font-size: 13px; font-weight: 700;
             cursor: pointer; transition: 0.2s;
         }
-        .fu-pill.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .fu-search {
-            padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;
-            font-size: 13px; font-weight: 600; outline: none; min-width: 230px; background: #f8fafc;
-        }
-        .fu-search:focus { border-color: #2563eb; background: #ffffff; }
+        .snav-pill:hover { background: #eff6ff; color: #1e3a8a; }
+        .snav-pill.active { background: #1e3a8a; color: #ffffff; font-weight: 800; box-shadow: 0 4px 12px rgba(30,58,138,0.22); }
+        .spoc-body { padding: 18px 22px 35px 22px; flex: 1; max-width: 1500px; width: 100%; margin: 0 auto; }
 
-        .fu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
-        .fu-card {
-            background: #ffffff; border-radius: 14px; padding: 18px 20px;
-            border: 1px solid var(--corp-border); box-shadow: 0 3px 12px rgba(15,23,42,0.04);
-            display: flex; flex-direction: column; gap: 12px; transition: 0.2s;
+        /* 🏆 TOP 5 PERFORMERS BAR */
+        .top5-bar {
+            background: linear-gradient(90deg, #020617 0%, #1e1b4b 55%, #1e3a8a 100%);
+            color: #fcd34d; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.14);
         }
-        .fu-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15,23,42,0.08); }
-        .fu-card.zero-alert { border-top: 4px solid #dc2626; }
-        .fu-card.active-ok { border-top: 4px solid #16a34a; }
+        .top5-label { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.6px; display: flex; align-items: center; gap: 8px; }
+        .top5-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        .top5-chip {
+            background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+            padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+        }
+        .top5-chip b { color: #34d399; margin-left: 5px; }
 
-        .fu-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .fu-progress-wrap { display: flex; flex-direction: column; gap: 5px; }
-        .fu-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: #475569; }
-        .fu-bar-bg { height: 7px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
-        .fu-bar-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+        /* 📊 KPI CARDS */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+        .kpi-white {
+            background: #ffffff; border: 1px solid var(--border); border-left: 4px solid #1e3a8a;
+            border-radius: 12px; padding: 15px 18px; box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+        }
+        .kpi-white span { display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-white strong { display: block; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-        /* 🌟 CORPORATE STATE HEAD REPORT TABLE 🌟 */
-        .report-card {
-            background: #ffffff; border-radius: 16px; border: 1px solid var(--corp-border);
-            padding: 22px 24px; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
-        }
-        .report-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            color: #ffffff; padding: 18px 22px; border-radius: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 18px; flex-wrap: wrap; gap: 14px;
-        }
-        .report-header h3 { font-size: 19px; font-family: 'Outfit', sans-serif; font-weight: 800; color: #ffffff; margin: 0; }
-        .report-header p { font-size: 12px; color: #cbd5e1; font-weight: 600; margin-top: 3px; }
+        .kpi-solid { border-radius: 12px; padding: 16px 20px; color: #ffffff; box-shadow: 0 6px 16px rgba(15,23,42,0.1); }
+        .kpi-solid span { display: block; font-size: 11px; font-weight: 800; opacity: 0.88; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-solid strong { display: block; font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .ks-navy { background: linear-gradient(135deg, #1e3a8a, #1d4ed8); }
+        .ks-green { background: linear-gradient(135deg, #059669, #10b981); }
+        .ks-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+        .ks-red { background: linear-gradient(135deg, #b91c1c, #dc2626); }
 
-        .report-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid #cbd5e1; }
-        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 960px; }
-        .report-table th {
-            position: -webkit-sticky; position: sticky; top: 0;
-            background: #1e3a8a; color: #ffffff; padding: 13px 10px;
-            font-weight: 800; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.4px;
-            border-right: 1px solid rgba(255,255,255,0.12); white-space: nowrap; z-index: 10;
+        /* 🔍 FILTER TOOLBAR */
+        .filter-bar {
+            background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            margin-bottom: 16px;
         }
-        .report-table th:last-child { border-right: none; }
-        .report-table td {
-            padding: 12px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9;
-            color: #0f172a; font-weight: 700; white-space: nowrap; background: #ffffff;
+        .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .f-input, .f-select {
+            padding: 7px 11px; border-radius: 8px; border: 1px solid #cbd5e1;
+            font-size: 12.5px; font-weight: 700; color: #0f172a; background: #f8fafc; outline: none;
+        }
+        .f-input:focus, .f-select:focus { border-color: #2563eb; background: #fff; }
+        .btn-sm-corp {
+            padding: 8px 14px; border-radius: 8px; border: none; font-size: 12.5px; font-weight: 800;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .btn-green { background: #10b981; color: #fff; }
+        .btn-amber { background: #f59e0b; color: #fff; }
+        .btn-navy { background: #1e3a8a; color: #fff; }
+        .btn-light { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* 📋 CORPORATE DATA TABLE */
+        .table-card {
+            background: #ffffff; border-radius: 14px; border: 1px solid var(--border);
+            overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+        }
+        .table-scroll { overflow-x: auto; max-height: 560px; }
+        .corp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: center; min-width: 820px; }
+        .corp-table thead th {
+            position: sticky; top: 0; background: #f8fafc; color: #1e3a8a; padding: 12px 10px;
+            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+            border-bottom: 2px solid #e2e8f0; z-index: 5; white-space: nowrap;
+        }
+        .corp-table tbody td {
+            padding: 11px 10px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;
             font-variant-numeric: tabular-nums;
         }
-        .report-table tbody tr:nth-child(even) td { background: #f8fafc; }
-        .report-table tbody tr:hover td { background: #eff6ff; }
-        .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; padding-left: 14px; }
+        .corp-table tbody tr:hover { background: #f8fafc; }
+        .corp-table tfoot td {
+            background: #f1f5f9; color: #0f172a; font-weight: 900; padding: 12px 10px;
+            border-top: 2px solid #cbd5e1; position: sticky; bottom: 0;
+        }
+        .rep-row-dbl { cursor: pointer; user-select: none; }
+        .rep-row-dbl:hover { background: #eff6ff !important; }
+        .also-pending-pill {
+            display: inline-block; margin-top: 4px; background: #fef2f2; color: #b91c1c;
+            border: 1px solid #fecaca; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 800;
+        }
+        .status-pill { padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; }
+        .st-pending { background: #fef3c7; color: #b45309; }
+        .st-active { background: #dcfce7; color: #15803d; }
 
-        .dl-btn {
-            background: #2563eb; color: #ffffff; border: 1px solid rgba(255,255,255,0.2);
-            padding: 9px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 800;
-            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-            gap: 6px; transition: 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        /* 🪟 SHARED CALL LOGS & REMARKS MODAL */
+        .modal-backdrop-custom {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65);
+            z-index: 9998; align-items: center; justify-content: center; padding: 16px;
+            backdrop-filter: blur(4px);
         }
-        .dl-btn:hover { transform: translateY(-1px); opacity: 0.95; }
-        .dl-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-        .dl-btn-excel { background: #059669; }
+        .modal-card-custom {
+            background: #ffffff; width: 100%; max-width: 1140px; max-height: 86vh;
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.28); border: 1px solid #cbd5e1;
+        }
+        .modal-head-custom {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #ffffff;
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .modal-body-custom { padding: 14px 20px 20px 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
+        .srv-summary-bar {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+            background: #ffffff; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
+        }
+        .srv-pill-btn {
+            padding: 5px 12px; border-radius: 20px; border: 1px solid #cbd5e1;
+            background: #f8fafc; color: #1e293b; font-size: 12px; font-weight: 800;
+            cursor: pointer; transition: 0.15s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .srv-pill-btn:hover { border-color: #2563eb; background: #eff6ff; }
+        .srv-pill-btn.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .srv-pill-btn b { font-family: 'Outfit', sans-serif; font-size: 13px; }
+        .rmk-badge { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 800; }
 
-        /* 🌟 ACTION BUTTONS 🌟 */
-        .action-btn-group { display: flex; gap: 10px; }
-        .call-btn {
-            flex: 1; background: #eff6ff; color: #1e3a8a; border: 1.5px solid #bfdbfe;
-            padding: 9px 12px; border-radius: 9px; font-weight: 800; font-size: 12.5px;
-            cursor: pointer; text-decoration: none; display: flex; align-items: center;
-            justify-content: center; gap: 7px; transition: 0.2s;
+        /* 📤 DATA MANAGEMENT UPLOAD CARD */
+        .upload-center-card {
+            background: #ffffff; max-width: 560px; margin: 20px auto; padding: 30px 26px;
+            border-radius: 18px; border: 1px solid var(--border); text-align: center;
+            box-shadow: 0 12px 30px rgba(15,23,42,0.06);
         }
-        .call-btn:hover { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
-        .wa-btn {
-            flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0;
-            padding: 9px 12px; border-radius: 9px; font-weight: 800; font-size: 12.5px;
-            cursor: pointer; text-decoration: none; display: flex; align-items: center;
-            justify-content: center; gap: 7px; transition: 0.2s;
+        .upload-drop {
+            border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 12px;
+            padding: 24px 16px; margin: 18px 0; cursor: pointer; transition: 0.2s;
         }
-        .wa-btn:hover { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+        .upload-drop:hover { border-color: #2563eb; background: #eff6ff; }
+        .prog-bg { height: 9px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-top: 12px; display: none; }
+        .prog-fill { height: 100%; background: linear-gradient(90deg, #1e3a8a, #10b981); width: 0%; transition: width 0.3s; }
 
-        /* 🌟 DM ACTION CENTER VIEW 🌟 */
-        .dm-container { flex: 1; padding: 20px; max-width: 780px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
-        .task-header {
-            background: #ffffff; padding: 22px 24px; border: 1px solid var(--corp-border);
-            display: flex; flex-direction: column; gap: 14px; border-radius: 14px;
-            margin-bottom: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05); position: relative; z-index: 50;
+        /* =========================================================
+           📱 2. DM APP SHELL (ONE-CALL MULTI-SERVICE DESK)
+           ========================================================= */
+        .dm-app-shell {
+            max-width: 560px; margin: 0 auto; min-height: 100vh; background: #f8fafc;
+            display: flex; flex-direction: column; padding-bottom: 78px;
+            box-shadow: 0 0 30px rgba(15,23,42,0.08); transition: max-width 0.25s ease;
         }
-        .dm-overall-stats {
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;
-            padding: 10px 18px; font-size: 13px; font-weight: 700; color: #334155;
-            margin: 0 auto; width: fit-content; flex-wrap: wrap;
+        .dm-app-shell.wide-mode { max-width: 1140px; }
+        .dm-topbar {
+            background: #ffffff; padding: 14px 18px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100;
         }
-        .stat-divider { color: #cbd5e1; font-weight: 400; }
-        .dm-overall-stats b { font-size: 15px; font-family: 'Outfit', sans-serif; color: #0f172a; }
-        .dm-log-bar {
-            display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;
-            background: #f8fafc; padding: 10px 14px; border-radius: 10px;
-            margin: 0 auto; width: 100%; max-width: 520px; border: 1px solid #e2e8f0;
+        .dm-topbar-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .vertical-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 12px 16px 12px; }
+        .v-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+            padding: 14px 8px; text-align: center; cursor: pointer; position: relative;
+            box-shadow: 0 3px 10px rgba(15,23,42,0.04); transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; min-height: 98px;
         }
-        .task-selector {
-            width: 100%; max-width: 520px; padding: 12px 16px; border-radius: 10px;
-            border: 1.5px solid #1e3a8a; font-weight: 800; font-size: 14px;
-            color: #1e3a8a; background: #eff6ff; outline: none; cursor: pointer; margin: 0 auto;
+        .v-card:hover { transform: translateY(-2px); border-color: #93c5fd; }
+        .v-card.v-all { background: linear-gradient(135deg, #0f172a, #1e3a8a, #1d4ed8); color: #fff; border: none; }
+        .v-card.v-all .v-name { color: #fff; }
+        .v-card.v-zero { opacity: 0.52; }
+        .v-icon { font-size: 26px; }
+        .v-name { font-size: 11.5px; font-weight: 800; color: #1e293b; word-break: break-word; }
+        .v-badge {
+            position: absolute; top: 6px; right: 6px; background: #ef4444; color: #fff;
+            font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 10px; font-family: 'Outfit';
         }
-        .progress-bar-container { background: #e2e8f0; height: 8px; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-        .progress-bar-fill { background: linear-gradient(90deg, #2563eb, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 10px; }
+        .v-card.v-all .v-badge { background: #fcd34d; color: #0f172a; }
+        .v-badge.b-zero { background: #cbd5e1; color: #475569; }
 
-        .card-stack { flex: 1; position: relative; display: flex; justify-content: center; align-items: flex-start; padding: 10px 0 30px 0; min-height: 460px; pointer-events: none; }
-        .vle-card {
-            width: 100%; max-width: 520px; background: #ffffff; border-radius: 16px;
-            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1); position: absolute;
-            transition: all 0.35s ease; display: flex; flex-direction: column;
-            border: 1px solid #cbd5e1; pointer-events: none; overflow: hidden;
+        .calling-deck-wrap { padding: 12px; display: none; flex-direction: column; gap: 12px; }
+        .vle-call-card { background: #fff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
+        .vle-card-head { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff; padding: 14px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .vle-card-body { padding: 18px; text-align: center; }
+        .btn-row { display: flex; gap: 10px; margin: 12px 0; }
+        .btn-call { flex: 1; background: #eff6ff; color: #1e3a8a; border: 1.5px solid #bfdbfe; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-wa { flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* 🎯 MULTI-SERVICE REMARK ROWS */
+        .master-rmk-box {
+            background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px;
+            padding: 10px 12px; margin-bottom: 12px; text-align: left;
         }
-        .card-active { transform: translateY(0) scale(1); opacity: 1; z-index: 5; pointer-events: auto; }
-        .card-next { transform: translateY(40px); opacity: 0; z-index: 4; pointer-events: none; visibility: hidden; }
-        .card-done { transform: scale(0.9); opacity: 0; z-index: 1; pointer-events: none; visibility: hidden; }
-
-        .vle-card-header { padding: 16px 20px; text-align: center; color: #ffffff; font-weight: 800; font-size: 13.5px; text-transform: uppercase; letter-spacing: 1px; }
-        .bg-generic { background: linear-gradient(135deg, #0f172a, #d97706); }
-        .bg-irctc { background: linear-gradient(135deg, #0f172a, #ea580c); }
-        .bg-redbus { background: linear-gradient(135deg, #0f172a, #dc2626); }
-        .bg-both { background: linear-gradient(135deg, #0f172a, #1e3a8a); }
-        .bg-amc { background: linear-gradient(135deg, #0f172a, #7c3aed); }
-
-        .vle-info { padding: 26px 28px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .vle-details h2 { font-size: 23px; font-family: 'Outfit', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
-        .vle-details p { font-size: 13px; font-weight: 700; color: #475569; background: #f1f5f9; display: inline-block; padding: 5px 14px; border-radius: 8px; margin-bottom: 14px; border: 1px solid #e2e8f0; }
-        .txn-badge { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 16px; border-radius: 10px; margin-bottom: 12px; font-size: 13.5px; font-weight: 700; color: #334155; }
-        .lock-message { background: #fffbeb; border: 1px dashed #f59e0b; color: #b45309; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 12.5px; margin-bottom: 10px; }
-        .vle-action select { width: 100%; padding: 13px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; margin-bottom: 12px; outline: none; font-weight: 700; font-size: 13.5px; color: #0f172a; background: #f8fafc; cursor: pointer; }
-        .other-input-box { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px dashed #94a3b8; margin-bottom: 12px; outline: none; font-weight: 600; font-size: 13.5px; color: #0f172a; background: #ffffff; display: none; }
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #ffffff; padding: 14px; border-radius: 10px; font-weight: 800; border: none; font-size: 15px; cursor: pointer; transition: 0.2s; }
-
-        .summary-view { display: none; width: 100%; margin: 0 auto; padding: 10px 0; }
-        .summary-card { background: #ffffff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--corp-border); border-left: 4px solid #1e3a8a; }
-        .summary-info h4 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-        .summary-info p { font-size: 12.5px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
-        .summary-remark { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
-
-        @media (max-width: 1024px) {
-            .command-split { grid-template-columns: 1fr; }
-            .deck-body { max-height: 460px; }
+        .master-rmk-label { font-size: 11px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .srv-rmk-card {
+            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px;
+            padding: 10px 12px; margin-bottom: 9px; text-align: left; transition: 0.2s;
         }
-        @media (max-width: 768px) {
-            .spoc-container { padding: 12px; }
-            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .fu-grid { grid-template-columns: 1fr; }
-            .seg-tabs { width: 100%; }
-            .seg-tab { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12px; }
-            .vle-card { max-width: 100%; }
-            .report-header { flex-direction: column; align-items: flex-start; }
-            .dl-btn { width: 100%; }
+        .srv-rmk-card.unchecked { opacity: 0.45; background: #f1f5f9; }
+        .srv-rmk-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 7px; }
+        .srv-chk-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 800; font-size: 13px; color: #0f172a; }
+        .srv-chk-wrap input { width: 17px; height: 17px; accent-color: #1e3a8a; cursor: pointer; }
+        .srv-stat-mini { font-size: 10.5px; font-weight: 800; color: #475569; background: #ffffff; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+
+        .rmk-select, .rmk-input {
+            width: 100%; padding: 9px 11px; border-radius: 8px; border: 1.5px solid #cbd5e1;
+            font-size: 12.5px; font-weight: 700; outline: none; background: #ffffff; color: #0f172a;
         }
+        .rmk-select:focus, .rmk-input:focus { border-color: #2563eb; }
+        .rmk-input { margin-top: 7px; border-style: dashed; }
+
+        .dm-bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 560px; background: #fff; border-top: 1px solid #e2e8f0;
+            display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 4px 10px 4px; z-index: 200;
+            box-shadow: 0 -4px 16px rgba(15,23,42,0.06); transition: max-width 0.25s ease;
+        }
+        .dm-app-shell.wide-mode .dm-bottom-nav { max-width: 1140px; }
+        .bnav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #64748b; font-size: 11px; font-weight: 700; }
+        .bnav-item i { font-size: 18px; }
+        .bnav-item.active { color: #1e3a8a; font-weight: 800; }
+        .dm-subpage { padding: 14px 16px; display: none; }
+        .mini-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+
+        @media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
 
-    <!-- 🌟 SPOC INNOVATIVE COMMAND CENTER 🌟 -->
-    <div id="spocScreen" style="display:none;" class="spoc-container">
+    <div id="loader" class="loader-box">
+        <div class="spinner"></div>
+        <h3 style="font-family:'Outfit'; font-size:19px;">Syncing Live Data...</h3>
+        <p id="loaderText" style="font-size:12px; color:#cbd5e1; margin-top:6px;">Connecting to server...</p>
+    </div>
 
-        <!-- Executive Command Header -->
-        <div class="cmd-header">
-            <div class="cmd-title-area">
-                <div class="cmd-logo-box"><i class="fa-solid fa-bolt"></i></div>
-                <div>
-                    <h2>SPOC Command Center <span class="live-pill"><span class="pulse-dot"></span> Live</span></h2>
-                    <p>CSC Andhra Pradesh | Real-Time DM Monitoring & Activation Intelligence</p>
+    <!-- =========================================================
+         💻 SPOC FULL-SCREEN PORTAL
+         ========================================================= -->
+    <div id="spocAppScreen" class="spoc-layout" style="display:none;">
+        <header class="spoc-topbar">
+            <div class="spoc-nav-tabs">
+                <button class="snav-pill active" id="snav-desk" onclick="switchSpocModule('desk')"><i class="fa-solid fa-phone-volume"></i> Calling Desk</button>
+                <button class="snav-pill" id="snav-reports" onclick="switchSpocModule('reports')"><i class="fa-solid fa-chart-column"></i> Reports Module</button>
+                <button class="snav-pill" id="snav-data" onclick="switchSpocModule('data')"><i class="fa-solid fa-cloud-arrow-up"></i> Data Management</button>
+            </div>
+            <div style="display:flex; gap:8px;" id="spocTopActions">
+                <button class="btn-sm-corp btn-light" onclick="reloadAllData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                <button class="btn-sm-corp btn-green" onclick="exportCallingDeskExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
+            </div>
+        </header>
+
+        <div class="spoc-body">
+            <!-- 1. CALLING DESK -->
+            <section id="spocMod-desk">
+                <div class="top5-bar">
+                    <div class="top5-label">🏆 TOP 5 PERFORMERS (TODAY)</div>
+                    <div class="top5-list" id="spocTop5List"></div>
                 </div>
-            </div>
-            <div class="cmd-controls">
-                <div class="date-glass">
-                    <label for="spocDatePicker"><i class="fa-regular fa-calendar"></i> Date</label>
-                    <input type="date" id="spocDatePicker" onchange="reloadSpocData()">
+
+                <div class="kpi-row">
+                    <div class="kpi-white" style="border-left-color:#1e3a8a;"><span>Assigned</span><strong id="cdAssigned">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#10b981;"><span>Active / Activated (Sheet)</span><strong id="cdActive" style="color:#10b981;">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#2563eb;"><span>Answered / Msg (Date)</span><strong id="cdAnswered" style="color:#1e3a8a;">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#ef4444;"><span>Pending / Busy</span><strong id="cdPending" style="color:#ef4444;">0</strong></div>
                 </div>
-            </div>
-        </div>
 
-        <!-- KPI Strip -->
-        <div class="stat-grid" id="spocStatGrid"></div>
-
-        <!-- Segmented Navigation Tabs -->
-        <div class="nav-tabs-bar">
-            <div class="seg-tabs">
-                <button class="seg-tab active" id="tab-spoc-live" onclick="switchSpocTab('spoc-live')"><i class="fa-solid fa-satellite-dish"></i> Live Command</button>
-                <button class="seg-tab" id="tab-spoc-report" onclick="switchSpocTab('spoc-report')"><i class="fa-solid fa-table-list"></i> State Head Report</button>
-                <button class="seg-tab" id="tab-spoc-followup" onclick="switchSpocTab('spoc-followup')"><i class="fa-solid fa-paper-plane"></i> DM Follow-Up Center</button>
-            </div>
-        </div>
-
-        <!-- 1. SPLIT-SCREEN LIVE COMMAND DECK -->
-        <div id="spoc-live">
-            <div class="command-split">
-                <!-- Left: Active DMs Leaderboard -->
-                <div class="deck-panel">
-                    <div class="deck-head">
-                        <h4><i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> Active DMs Leaderboard</h4>
-                        <span style="font-size:11px; font-weight:700; color:#64748b;" id="activeDmCountBadge">0 Active</span>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <input type="text" id="cdSearch" class="f-input" placeholder="🔍 Name, CSC ID, Mobile..." oninput="renderCallingDeskTable()">
+                        <select id="cdProject" class="f-select" onchange="renderCallingDeskTable()"><option value="ALL">All Projects</option></select>
+                        <select id="cdDistrict" class="f-select" onchange="renderCallingDeskTable()"><option value="ALL">All Districts</option></select>
+                        <select id="cdStatus" class="f-select" onchange="renderCallingDeskTable()">
+                            <option value="ALL">All Status</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="ACTIVATED">Activated</option>
+                        </select>
+                        <button class="btn-sm-corp btn-light" onclick="resetCallingDeskFilters()">Reset</button>
                     </div>
-                    <div class="deck-body" id="activeDmsGrid">
-                        <p style="font-size:13px; color:#64748b; text-align:center; padding:20px;">Fetching Active DMs...</p>
+                    <div class="filter-group">
+                        <input type="date" id="cdDate" class="f-input" onchange="renderCallingDeskTable()">
                     </div>
                 </div>
 
-                <!-- Right: Live Call Activity Stream -->
-                <div class="deck-panel">
-                    <div class="deck-head">
-                        <h4><i class="fa-solid fa-tower-broadcast" style="color:#dc2626;"></i> Live Call Activity Stream</h4>
-                        <select id="spocFeedFilter" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 700; color: #0f172a; outline: none; background:#ffffff; min-width:170px; cursor:pointer;" onchange="filterSpocFeed()">
-                            <option value="ALL">All DMs</option>
+                <div class="table-card">
+                    <div class="table-scroll">
+                        <table class="corp-table" id="callingDeskTable">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; padding-left:14px;">Name</th>
+                                    <th>CSC ID</th>
+                                    <th>Mobile</th>
+                                    <th>District</th>
+                                    <th>Project</th>
+                                    <th>Last Year</th>
+                                    <th>This Year</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cdTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. REPORTS MODULE -->
+            <section id="spocMod-reports" style="display:none;">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <select id="repProject" class="f-select" onchange="renderReportsModule()"><option value="ALL">All Projects</option></select>
+                        <select id="repViewBy" class="f-select" onchange="renderReportsModule()">
+                            <option value="DM">👤 DM-Wise</option>
+                            <option value="DISTRICT">📍 District-Wise</option>
+                        </select>
+                        <select id="repSortBy" class="f-select" onchange="renderReportsModule()">
+                            <option value="ACH_DESC">🚀 ACH % (High to Low)</option>
+                            <option value="ACH_ASC">📉 ACH % (Low to High)</option>
+                            <option value="PEND_DESC">🔴 Pending (High to Low)</option>
                         </select>
                     </div>
-                    <div class="deck-body" id="liveFeedGrid">
-                        <p style="font-size:13px; color:#64748b; text-align:center; padding:20px;">Fetching live logs...</p>
+                    <div class="filter-group">
+                        <input type="date" id="repFromDate" class="f-input" onchange="renderReportsModule()">
+                        <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                        <input type="date" id="repToDate" class="f-input" onchange="renderReportsModule()">
+                    </div>
+                </div>
+
+                <div id="reportCaptureCard" style="background:#fff; padding:22px; border-radius:16px; border:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-left:4px solid #1e3a8a; padding-left:12px;">
+                        <div>
+                            <h3 style="font-family:'Outfit'; font-weight:900; font-size:17px; color:#1e3a8a;">OVERALL PERFORMANCE</h3>
+                            <p style="font-size:11.5px; color:#64748b; font-weight:700;" id="repRangeText">Range: Today</p>
+                        </div>
+                        <span style="font-size:11px; font-weight:700; color:#2563eb; background:#eff6ff; padding:5px 10px; border-radius:6px; border:1px solid #bfdbfe;">💡 Double-click any row to view VLE Remarks</span>
+                    </div>
+
+                    <div class="kpi-row">
+                        <div class="kpi-solid ks-navy"><span>Assigned (Total)</span><strong id="repKpiTotal">0</strong></div>
+                        <div class="kpi-solid ks-green"><span>Active / Activated (Sheet)</span><strong id="repKpiActive">0</strong></div>
+                        <div class="kpi-solid ks-teal"><span>Called (Range)</span><strong id="repKpiRangeCalls">0</strong></div>
+                        <div class="kpi-solid ks-red"><span>Pending (To Call)</span><strong id="repKpiPending">0</strong></div>
+                    </div>
+
+                    <div class="table-card" style="box-shadow:none;">
+                        <div class="table-scroll" style="max-height:none;">
+                            <table class="corp-table" id="repMainTable">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left; padding-left:14px;" id="repCol1Head">DM Name</th>
+                                        <th style="text-align:left;">District</th>
+                                        <th>Total Target</th>
+                                        <th style="color:#059669;">Calling Report<br><span style="font-size:9px; color:#64748b;">(Selected Date)</span></th>
+                                        <th style="color:#1e3a8a;">Overall Called<br><span style="font-size:9px; color:#64748b;">(All Time)</span></th>
+                                        <th style="color:#dc2626;">Pending<br><span style="font-size:9px; color:#64748b;">(To Call)</span></th>
+                                        <th>ACH %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="repTableBody"></tbody>
+                                <tfoot id="repTableFoot"></tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. DATA MANAGEMENT (SELF-UPLOAD + ADD NEW VERTICAL) -->
+            <section id="spocMod-data" style="display:none;">
+                <div class="upload-center-card">
+                    <div style="font-size:38px; margin-bottom:8px;">📊</div>
+                    <h3 style="font-family:'Outfit'; font-weight:900; font-size:21px; color:#1e3a8a;">Upload Calling Data</h3>
+                    <p style="font-size:12.5px; color:#64748b; margin-top:4px;">Select an existing Project or add a New Vertical, then upload your Excel file. New verticals appear automatically in all screens.</p>
+
+                    <div style="text-align:left; margin-top:20px;">
+                        <label style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; display:block; margin-bottom:6px;">Select Project Type</label>
+                        <select id="uploadVerticalSelect" class="f-select" style="width:100%; padding:11px 14px; font-size:13.5px;" onchange="onUploadVerticalChange()"></select>
+                        <input type="text" id="newVerticalInput" class="f-input" style="width:100%; margin-top:10px; padding:11px 14px; font-size:13.5px; display:none; border-color:#2563eb; background:#eff6ff; text-transform:uppercase;" placeholder="Type New Vertical Name (e.g., FASTAG, E-STAMPING, NFDP)">
+                    </div>
+
+                    <div class="upload-drop" onclick="document.getElementById('excelFileInput').click()">
+                        <i class="fa-solid fa-file-excel" style="font-size:26px; color:#10b981; margin-bottom:6px;"></i>
+                        <div style="font-size:13.5px; font-weight:800; color:#1e3a8a;" id="uploadFileLabel">Click to Browse Excel</div>
+                        <div style="font-size:11px; color:#64748b; margin-top:4px;">CSC ID, District Name, VLE Name, Mobile, DM Name, Service, Last Year, This Year, Status</div>
+                        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelSelect(event)">
+                    </div>
+
+                    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                        <button class="btn-sm-corp btn-light" onclick="downloadSampleTemplate()"><i class="fa-solid fa-download"></i> Sample Excel</button>
+                        <button id="btnStartUpload" class="btn-sm-corp btn-navy" style="padding:11px 26px; font-size:13.5px;" onclick="startChunkedUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Sync Data to Server</button>
+                    </div>
+
+                    <div class="prog-bg" id="uploadProgWrap"><div class="prog-fill" id="uploadProgFill"></div></div>
+                    <p id="uploadStatusMsg" style="font-size:12.5px; font-weight:800; margin-top:10px;"></p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 🪟 SHARED CALL LOGS & REMARKS MODAL (BOTH SPOC & DM — WITH DISTRICT COLUMN) -->
+    <div id="dmLogsModal" class="modal-backdrop-custom" onclick="if(event.target === this) closeDmLogsModal()">
+        <div class="modal-card-custom">
+            <div class="modal-head-custom">
+                <div>
+                    <h4 id="modalDmTitle" style="font-family:'Outfit'; font-size:17px; font-weight:800;">Call Logs & Remarks</h4>
+                    <span id="modalDmSub" style="font-size:11.5px; color:#cbd5e1;">Showing VLE call details & remarks</span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <button class="btn-sm-corp btn-light" id="btnModalDate" onclick="switchModalScope('DATE')">Selected Date</button>
+                    <button class="btn-sm-corp btn-light" id="btnModalAll" onclick="switchModalScope('ALL')">All Time</button>
+                    <button class="btn-sm-corp btn-green" onclick="exportModalDmLogs()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                    <button class="btn-sm-corp" style="background:rgba(255,255,255,0.18); color:#fff;" onclick="closeDmLogsModal()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="modal-body-custom">
+                <div id="modalServiceSummary" class="srv-summary-bar"></div>
+                <div class="table-card" style="box-shadow:none;">
+                    <div class="table-scroll" style="max-height:58vh;">
+                        <table class="corp-table" style="min-width:920px;" id="modalLogsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>CSC ID</th>
+                                    <th style="text-align:left;">VLE Name</th>
+                                    <th>Mobile</th>
+                                    <th>District</th>
+                                    <th>Service</th>
+                                    <th style="text-align:left;">Remark / Outcome</th>
+                                    <th>Talk Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalLogsBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 2. STATE HEAD REPORT -->
-        <div id="spoc-report" style="display:none;">
-            <div id="reportCardToCapture" class="report-card">
-                <div class="report-header">
-                    <div style="text-align:left;">
-                        <h3><i class="fa-solid fa-chart-column" style="color:#fcd34d; margin-right:8px;"></i> State Head Follow-Up Report</h3>
-                        <p id="reportDateText">(Date)</p>
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="dl-btn dl-btn-excel" onclick="downloadStateHeadExcel(event)"><i class="fa-solid fa-file-excel"></i> Save Excel</button>
-                        <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport(event)"><i class="fa-solid fa-camera"></i> Save Image</button>
-                    </div>
+    <!-- =========================================================
+         📱 DM MOBILE-APP VIEW (ONE-CALL MULTI-SERVICE + REMARKS)
+         ========================================================= -->
+    <div id="dmAppScreen" class="dm-app-shell" style="display:none;">
+        <div class="dm-topbar">
+            <div class="dm-topbar-title"><i class="fa-solid fa-phone" style="color:#1e3a8a;"></i> CALLING DESK</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-sm-corp btn-light" onclick="reloadAllData()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+                <button class="btn-sm-corp btn-green" onclick="exportDMDataExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
+            </div>
+        </div>
+
+        <!-- TAB 1: CALLING -->
+        <div id="dmTab-calling">
+            <div class="top5-bar" style="margin:10px 12px 14px 12px; padding:10px 14px;">
+                <div class="top5-label" style="font-size:12px;">🏆 TOP 5 PERFORMERS</div>
+                <div class="top5-list" id="dmTop5Ticker"></div>
+            </div>
+
+            <div id="verticalGridView" class="vertical-grid"></div>
+
+            <div id="callingDeckView" class="calling-deck-wrap">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 14px; border-radius:12px; border:1px solid #e2e8f0;">
+                    <button class="btn-sm-corp btn-light" onclick="backToVerticalGrid()"><i class="fa-solid fa-arrow-left"></i> Verticals</button>
+                    <span style="font-size:12.5px; font-weight:800; color:#1e3a8a;" id="activeVerticalLabel">ALL</span>
+                    <span style="font-size:12px; font-weight:800; color:#dc2626;" id="deckRemainCount">0 VLEs Left</span>
                 </div>
-                <div class="report-table-container" id="reportTableWrapper">
-                    <table class="report-table">
+                <div id="activeVleCardHost"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: HOME -->
+        <div id="dmTab-home" class="dm-subpage">
+            <h4 style="font-family:'Outfit'; font-weight:800; margin-bottom:12px;">🏠 My Daily Overview</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                <div class="mini-card" style="border-top:4px solid #dc2626;"><p style="font-size:11px; color:#64748b; font-weight:800;">PENDING TARGETS</p><h3 id="dmHomePending" style="font-family:'Outfit'; font-size:26px; color:#dc2626;">0</h3></div>
+                <div class="mini-card" style="border-top:4px solid #16a34a;"><p style="font-size:11px; color:#64748b; font-weight:800;">CALLED TODAY</p><h3 id="dmHomeCalled" style="font-family:'Outfit'; font-size:26px; color:#16a34a;">0</h3></div>
+            </div>
+            <div class="mini-card">
+                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Oka VLE ki multiple services pending unte, <b>Calling</b> tab lo okate card lo anni kanipisthayi. Anni services ki same remark leda prathi service ki veru veru remark petti okate sari submit cheyavachu.</p>
+            </div>
+        </div>
+
+        <!-- TAB 3: DM REPORT -->
+        <div id="dmTab-report" class="dm-subpage">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <h4 style="font-family:'Outfit'; font-weight:800;">📊 My Vertical-Wise Report</h4>
+                <div class="filter-group">
+                    <input type="date" id="dmRepFromDate" class="f-input" onchange="renderDMReport()">
+                    <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                    <input type="date" id="dmRepToDate" class="f-input" onchange="renderDMReport()">
+                </div>
+            </div>
+            <p style="font-size:11.5px; color:#2563eb; font-weight:700; margin-bottom:10px;">💡 Double-click any Vertical row to view VLE Call Details & Remarks</p>
+            <div class="table-card">
+                <div class="table-scroll">
+                    <table class="corp-table" style="min-width:540px;">
                         <thead>
                             <tr>
-                                <th>S.No</th>
-                                <th>Employee Name</th>
-                                <th>Total Target</th>
-                                <th>Act. (Total)</th>
-                                <th style="background:#991b1b;">Unattempted<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Not Called)</span></th>
-                                <th>Pending<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Not Activated)</span></th>
-                                <th style="background:#0369a1;">Total Called<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(All Time)</span></th>
-                                <th>Calls Made<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Selected Date)</span></th>
-                                <th style="background:#166534;">Call Breakdown<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Vertical Wise)</span></th>
-                                <th>Avg Talk Time</th>
+                                <th style="text-align:left; padding-left:14px;">Vertical</th>
+                                <th>Target</th>
+                                <th style="color:#059669;">Called<br><span style="font-size:9px; color:#64748b;">(Date Range)</span></th>
+                                <th style="color:#1e3a8a;">Overall<br><span style="font-size:9px; color:#64748b;">(All Time)</span></th>
+                                <th style="color:#dc2626;">Pending</th>
+                                <th>ACH %</th>
                             </tr>
                         </thead>
-                        <tbody id="reportTableBody">
-                            <tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">Generating report...</td></tr>
-                        </tbody>
+                        <tbody id="dmReportBody"></tbody>
+                        <tfoot id="dmReportFoot"></tfoot>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- 3. SMART DM FOLLOW-UP CENTER -->
-        <div id="spoc-followup" style="display:none;">
-            <div class="fu-toolbar">
-                <div class="fu-pills">
-                    <button class="fu-pill active" id="fu-ALL" onclick="setFollowUpFilter('ALL')">All Pending DMs</button>
-                    <button class="fu-pill" id="fu-ZERO" onclick="setFollowUpFilter('ZERO')">🔴 0 Calls Today (Priority)</button>
-                    <button class="fu-pill" id="fu-ACTIVE" onclick="setFollowUpFilter('ACTIVE')">🟢 Active Today</button>
+        <!-- TAB 4: DM DATA (WITH DISTRICT COLUMN) -->
+        <div id="dmTab-data" class="dm-subpage">
+            <div class="filter-bar" style="margin-bottom:12px;">
+                <div class="filter-group">
+                    <h4 style="font-family:'Outfit'; font-weight:800; font-size:15px;">📁 My Call Remarks</h4>
                 </div>
-                <input type="text" id="fuSearchInput" class="fu-search" placeholder="🔍 Search DM name..." oninput="renderFollowUpCards()">
-            </div>
-            <div id="dmFollowUpGrid" class="fu-grid"><p style='font-size:13px; color:#64748b;'>Loading DM Data...</p></div>
-        </div>
-    </div>
-
-    <!-- 🌟 DM ACTION CENTER VIEW 🌟 -->
-    <div id="dmScreen" style="display:none;" class="dm-container">
-        <div class="cmd-header" style="padding: 18px 22px; margin-bottom: 14px;">
-            <div class="cmd-title-area">
-                <div class="cmd-logo-box"><i class="fa-solid fa-bullseye"></i></div>
-                <div>
-                    <h2 style="font-size: 20px;">My Action Center</h2>
-                    <p>Daily Priority VLE Follow-Up & Activation Desk</p>
+                <div class="filter-group">
+                    <input type="date" id="dmDataFromDate" class="f-input" onchange="renderDMDataLogs()">
+                    <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                    <input type="date" id="dmDataToDate" class="f-input" onchange="renderDMDataLogs()">
+                    <button class="btn-sm-corp btn-light" id="btnDmDataDate" onclick="switchDMDataScope('DATE')">Selected Date</button>
+                    <button class="btn-sm-corp btn-light" id="btnDmDataAll" onclick="switchDMDataScope('ALL')">All Time</button>
                 </div>
             </div>
+
+            <div id="dmDataServiceSummary" class="srv-summary-bar"></div>
+
+            <div class="table-card">
+                <div class="table-scroll">
+                    <table class="corp-table" style="min-width:920px;" id="dmDataTable">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>CSC ID</th>
+                                <th style="text-align:left;">VLE Name</th>
+                                <th>Mobile</th>
+                                <th>District</th>
+                                <th>Service</th>
+                                <th style="text-align:left;">Remark / Outcome</th>
+                                <th>Talk Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dmDataBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="task-header" id="dmHeader">
-            <div class="dm-overall-stats" id="dmOverallStats" style="display:none;"></div>
-
-            <div class="dm-log-bar">
-                <label style="font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">My Logs:</label>
-                <input type="date" id="dmLogDate" style="padding: 6px 10px; border-radius:8px; border:1px solid #cbd5e1; font-size: 13px; font-weight:700;">
-                <button type="button" onclick="downloadDMLogsExcel(event)" class="dl-btn" style="padding: 7px 14px; font-size: 12.5px;"><i class="fa-solid fa-download"></i> Download Excel</button>
-            </div>
-
-            <select id="taskSelector" class="task-selector" onchange="filterCardsByTask()">
-                <option value="" disabled selected>Loading tasks...</option>
-            </select>
-
-            <div style="font-size:13px; font-weight:700; color:#475569; text-align:center;" id="targetLabelBox">
-                Remaining Targets: <span id="pendingCount" style="color:#dc2626; font-weight:900; font-size:16px; font-family:'Outfit';">0</span>
-            </div>
+        <!-- BOTTOM NAV -->
+        <div class="dm-bottom-nav">
+            <button class="bnav-item" id="bnav-home" onclick="switchDMTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+            <button class="bnav-item active" id="bnav-calling" onclick="switchDMTab('calling')"><i class="fa-solid fa-phone"></i><span>Calling</span></button>
+            <button class="bnav-item" id="bnav-report" onclick="switchDMTab('report')"><i class="fa-solid fa-chart-column"></i><span>Report</span></button>
+            <button class="bnav-item" id="bnav-data" onclick="switchDMTab('data')"><i class="fa-solid fa-folder-open"></i><span>Data</span></button>
         </div>
-
-        <div class="progress-bar-container" id="dmProgress"><div class="progress-bar-fill" id="progressBar"></div></div>
-        <div class="card-stack" id="cardStack"></div>
-
-        <div id="summaryView" class="summary-view">
-            <div style="background:#ffffff; border:1px solid #bbf7d0; border-top:4px solid #16a34a; border-radius:14px; padding:22px; text-align:center; margin-bottom:18px;">
-                <h2 style="font-family:'Outfit'; font-size:22px; color:#15803d; margin-bottom:6px;">🎉 Task Completed!</h2>
-                <p style="color:#64748b; font-size:13.5px; font-weight:600;">Here is the list of VLEs you called today.</p>
-            </div>
-            <div id="summaryListContainer"></div>
-        </div>
-    </div>
-
-    <!-- 🌟 LOADER 🌟 -->
-    <div id="loader" class="loader-box">
-        <div class="loader-spinner"></div>
-        <h3 style="font-family:'Outfit'; font-size:20px; font-weight:800; margin-bottom:6px;">Fetching Live Data...</h3>
-        <p style="color:#cbd5e1; font-size:13px; font-weight:500;" id="loaderText">Syncing with HO Database</p>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        let rawRole = (sessionStorage.getItem("designation") || localStorage.getItem("designation") || sessionStorage.getItem("userRole") || localStorage.getItem("userRole") || "").toUpperCase();
-        let rawName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toUpperCase();
+        const BASE_VERTICALS = [
+            { key: "DIGIPAY", label: "Digipay", icon: "💰" },
+            { key: "PVT BANKING", label: "PVT Banking", icon: "🏦" },
+            { key: "PSU BANKING", label: "PSB Bank", icon: "🏛️" },
+            { key: "INSURANCE", label: "Insurance", icon: "🛡️" },
+            { key: "TRAVEL", label: "Travels", icon: "✈️" },
+            { key: "DSP", label: "DSP", icon: "📋" },
+            { key: "PACS", label: "PACS", icon: "🌾" },
+            { key: "DIGI LAXMI", label: "Digilakshmi", icon: "👩" },
+            { key: "AADHAAR", label: "Aadhar", icon: "🆔" },
+            { key: "PROJECT MANAGEMENT", label: "Project Management", icon: "📊" },
+            { key: "SKILL DEVELOPMENT", label: "Skill Development", icon: "💡" },
+            { key: "EDUCATION", label: "Education", icon: "🎓" },
+            { key: "CSC E STORE", label: "CSC E Store", icon: "💼" }
+        ];
+        let VERTICALS = [...BASE_VERTICALS];
 
-        let isSpoc = false;
-        if (rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.includes("CHANDRA SEKHARA")) {
-            isSpoc = true;
-        }
+        const REMARK_OPTIONS = [
+            "Activated",
+            "Promised to do Today / Tomorrow",
+            "Did not lift / Not Reachable",
+            "DSP e-KYC Problem",
+            "Shop Closed / Not in Station",
+            "ID Recovery Pending",
+            "Password Reset / Login Issue",
+            "Mobile No change",
+            "Others"
+        ];
 
-        let dmName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toLowerCase().trim();
-        let allTaskGroups = {}; let filteredQueue = []; let currentIndex = 0; let todayCalledVLEs = []; let globalSpocLogs = [];
-        let activeCallStartTime = null;
-        let allTimeCalledIds = new Set();
+        const rawRole = (sessionStorage.getItem("designation") || localStorage.getItem("designation") || localStorage.getItem("userDesignation") || "").toUpperCase();
+        const rawName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").trim();
+        const assignedVertical = (localStorage.getItem("assignedVertical") || "ALL").toUpperCase();
+        const isSpoc = rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.toUpperCase().includes("CHANDRA SEKHARA");
 
-        let rawSpocLogs = [];
-        let rawSpocTargets = [];
-        let rawSpocUsers = [];
-        let cachedFollowUpItems = [];
-        let currentFollowUpFilter = "ALL";
+        let parsedTargets = [], allLogs = [], vleOtherPending = {}, vleNameLookup = {}, vleMobileLookup = {}, vleDistrictLookup = {};
+        let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], deckIdx = 0, callStartTime = null;
+        let rawUploadJson = [];
 
-        window.globalLogsRaw = [];
-        window.globalTargetsRaw = [];
+        let activeModalDm = "", activeModalScope = "DATE", activeModalSrvFilter = "ALL", activeModalProjectLock = "ALL", activeModalFrom = "", activeModalTo = "";
+        let dmDataScope = "DATE", dmDataSrvFilter = "ALL";
 
-        // 🌟 UNIVERSAL WHATSAPP LINK BUILDER (Works in Desktop, Mobile & Iframe) 🌟
         function getWaLink(mobile, msg) {
-            let digits = String(mobile || "").replace(/\D/g, "");
-            if (digits.length > 10) digits = digits.slice(-10);
-            let phone = digits.length === 10 ? "91" + digits : digits;
+            let d = String(mobile || "").replace(/\D/g, "");
+            if (d.length > 10) d = d.slice(-10);
+            let phone = d.length === 10 ? "91" + d : d;
             return `whatsapp://send?phone=${phone}&text=${encodeURIComponent(msg || "")}`;
         }
 
-        function getInitials(name) {
-            if (!name) return "DM";
-            let parts = name.trim().split(/\s+/);
-            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        function formatSec(sec) {
+            let s = parseInt(sec || 0);
+            if (!s) return "0s";
+            if (s < 60) return s + "s";
+            let m = Math.floor(s / 60), r = s % 60;
+            return r ? `${m}m ${r}s` : `${m}m`;
         }
 
-        function formatTalkTime(sec) {
-            if(!sec || sec == 0 || isNaN(sec)) return "0s";
-            sec = parseInt(sec);
-            if(sec < 60) return sec + "s";
-            let m = Math.floor(sec / 60); let s = sec % 60;
-            return s > 0 ? `${m}m ${s}s` : `${m}m`;
+        function isNameMatch(a, b) {
+            if (!a || !b) return false;
+            let x = a.toString().toLowerCase().replace(/[^a-z]/g, '');
+            let y = b.toString().toLowerCase().replace(/[^a-z]/g, '');
+            return x === y || (y.length > 4 && x.includes(y)) || (x.length > 4 && y.includes(x));
         }
 
-        function maskMobileNumber(mobileStr) {
-            if (!mobileStr) return "N/A";
-            let cleanMob = mobileStr.toString().replace(/\D/g, '');
-            if (cleanMob.length >= 10) {
-                let base = cleanMob.slice(-10);
-                return base.substring(0, 2) + "*****" + base.substring(7);
+        function normVertical(srv) {
+            let s = String(srv || "").toUpperCase().trim();
+            if (s.includes("IRCTC") || s.includes("REDBUS") || s.includes("AIR") || s.includes("TRAVEL") || s.includes("AMC") || s.includes("APSRTC") || s.includes("RTC")) return "TRAVEL";
+            if (s.includes("LAXMI") || s.includes("LAKSHMI")) return "DIGI LAXMI";
+            if (s.includes("DIGIPAY")) return "DIGIPAY";
+            if (s.includes("PSU") || s.includes("PSB")) return "PSU BANKING";
+            if (s.includes("PVT")) return "PVT BANKING";
+            if (s.includes("AADHAR") || s.includes("AADHAAR")) return "AADHAAR";
+            if (s.includes("ESTORE") || s.includes("E STORE") || s.includes("E-STORE")) return "CSC E STORE";
+            if (s.includes("PROJECT")) return "PROJECT MANAGEMENT";
+            if (s.includes("SKILL")) return "SKILL DEVELOPMENT";
+            if (s.includes("EDU")) return "EDUCATION";
+            if (s.includes("INSUR")) return "INSURANCE";
+            if (s.includes("PACS")) return "PACS";
+            if (s.includes("DSP")) return "DSP";
+            return s || "OTHER";
+        }
+
+        function getAutoIcon(key) {
+            if (key.includes("FASTAG")) return "🚗";
+            if (key.includes("STAMP")) return "📜";
+            if (key.includes("NFDP") || key.includes("FISH")) return "🐟";
+            if (key.includes("AGRI") || key.includes("KISAN")) return "🌱";
+            if (key.includes("TELE") || key.includes("LAW")) return "⚖️";
+            if (key.includes("HEALTH") || key.includes("MED")) return "🏥";
+            if (key.includes("PAN") || key.includes("TAX")) return "🧾";
+            return "📌";
+        }
+
+        function formatVerticalLabel(key) {
+            if (key.length <= 4) return key;
+            return key.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function syncDynamicVerticals(targetsArr) {
+            VERTICALS = [...BASE_VERTICALS];
+            let existingKeys = new Set(VERTICALS.map(v => v.key));
+            let extraKeys = new Set();
+            targetsArr.forEach(t => {
+                if (t.service && t.service !== "OTHER" && !existingKeys.has(t.service)) {
+                    extraKeys.add(t.service);
+                }
+            });
+            [...extraKeys].sort().forEach(k => {
+                VERTICALS.push({ key: k, label: formatVerticalLabel(k), icon: getAutoIcon(k) });
+            });
+        }
+
+        function getDateFormats(dateObj = new Date()) {
+            let d = String(dateObj.getDate()).padStart(2, '0'), m = String(dateObj.getMonth() + 1).padStart(2, '0'), y = dateObj.getFullYear();
+            return [`${d}-${m}-${y}`, `${y}-${m}-${d}`, `${d}/${m}/${y}`, `${m}/${d}/${y}`];
+        }
+
+        function isLogInDateRange(logDateStr, fromISO, toISO) {
+            if (!logDateStr) return false;
+            let s = String(logDateStr).trim();
+            let f = fromISO ? new Date(fromISO + "T00:00:00") : new Date();
+            let t = toISO ? new Date(toISO + "T23:59:59") : new Date();
+            if (f > t) { let tmp = f; f = t; t = tmp; }
+            for (let d = new Date(f); d <= t; d.setDate(d.getDate() + 1)) {
+                if (getDateFormats(d).some(fmt => s.includes(fmt))) return true;
             }
-            return cleanMob;
-        }
-
-        const dynamicColors = [
-            { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" },
-            { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" },
-            { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" },
-            { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" },
-            { bg: "#ffedd5", text: "#c2410c", border: "#fed7aa" },
-            { bg: "#fce7f3", text: "#be185d", border: "#fbcfe8" }
-        ];
-
-        function getColorForService(serviceName) {
-            if(!serviceName) return dynamicColors[0];
-            if (serviceName === "IRCTC") return { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" };
-            if (serviceName === "REDBUS") return { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" };
-            if (serviceName === "AMC") return { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" };
-
-            let hash = 0;
-            for (let i = 0; i < serviceName.length; i++) {
-                hash = serviceName.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return dynamicColors[Math.abs(hash) % dynamicColors.length];
-        }
-
-        function isNameMatch(sheetName, loginName) {
-            if (!sheetName || !loginName) return false;
-            let sClean = sheetName.toString().toLowerCase().replace(/\s+/g, ' ').trim();
-            let lClean = loginName.toString().toLowerCase().replace(/\s+/g, ' ').trim();
-            if (sClean === lClean) return true;
-            if (lClean.length > 4 && sClean.includes(lClean)) return true;
-            if (sClean.length > 4 && lClean.includes(sClean)) return true;
             return false;
         }
 
-        window.onload = async () => {
-            let tzoffset = (new Date()).getTimezoneOffset() * 60000;
-            let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
-
-            if (isSpoc) {
-                document.getElementById("spocScreen").style.display = "block";
-                document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
-                document.getElementById("spocDatePicker").value = localISOTime;
-                await loadSpocDashboard();
-            } else {
-                document.getElementById("dmScreen").style.display = "flex";
-                document.getElementById("dmLogDate").value = localISOTime;
-                if(!dmName) { alert("Please login through the dashboard."); document.getElementById("loader").style.display = "none"; return; }
-                await fetchDMData();
-            }
-        };
-
-        function switchSpocTab(tabId) {
-            ['spoc-live', 'spoc-report', 'spoc-followup'].forEach(id => {
-                document.getElementById(id).style.display = (id === tabId) ? 'block' : 'none';
-                document.getElementById('tab-' + id).classList.toggle('active', id === tabId);
-            });
+        function getRemarkStyle(rmk) {
+            let s = String(rmk || "");
+            if (s.includes("Activated")) return "background:#dcfce7; color:#15803d;";
+            if (s.includes("Not Reachable") || s.includes("lift") || s.includes("Closed") || s.includes("Problem") || s.includes("not working")) return "background:#fef2f2; color:#b91c1c;";
+            return "background:#eff6ff; color:#1e3a8a;";
         }
 
-        // ==========================================
-        // 🌟 1. DM VIEW LOGIC 🌟
-        // ==========================================
-        async function fetchDMData() {
+        // ✅ STRICTLY FOLLOWS SHEET STATUS COLUMN ONLY
+        function normalizeTargetRows(rawRows) {
+            if (!Array.isArray(rawRows) || rawRows.length < 2) return [];
+            let hdr = rawRows[0].map(h => String(h || "").toUpperCase().trim());
+            let hasDistCol = hdr.some(h => h.includes("DISTRICT"));
+
+            let iCsc = hdr.findIndex(h => h.includes("CSC")); if (iCsc < 0) iCsc = 0;
+            let iDist = hdr.findIndex(h => h.includes("DISTRICT"));
+            let iName = hdr.findIndex(h => h.includes("VLE") && h.includes("NAME")); if (iName < 0) iName = hasDistCol ? 2 : 1;
+            let iMob = hdr.findIndex(h => h.includes("MOB")); if (iMob < 0) iMob = hasDistCol ? 3 : 2;
+            let iDm = hdr.findIndex(h => h.includes("DM") || h.includes("EMP")); if (iDm < 0) iDm = hasDistCol ? 4 : 3;
+            let iSrv = hdr.findIndex(h => h.includes("SERV") || h.includes("PROJ") || h.includes("VERT")); if (iSrv < 0) iSrv = hasDistCol ? 5 : 4;
+            let iLast = hdr.findIndex(h => h.includes("LAST") || h.includes("FY24")); if (iLast < 0) iLast = hasDistCol ? 6 : 5;
+            let iThis = hdr.findIndex(h => h.includes("THIS") || h.includes("MARCH")); if (iThis < 0) iThis = hasDistCol ? 7 : 6;
+            let iStat = hdr.findIndex(h => h.includes("STAT")); if (iStat < 0) iStat = hasDistCol ? 8 : 7;
+
+            let out = [];
+            vleOtherPending = {};
+            vleNameLookup = {};
+            vleMobileLookup = {};
+            vleDistrictLookup = {};
+            for (let i = 1; i < rawRows.length; i++) {
+                let r = rawRows[i]; if (!r || !r[iCsc]) continue;
+                let cscId = String(r[iCsc] || "").trim();
+                let vDist = iDist >= 0 ? String(r[iDist] || "-").trim() : "-";
+                let vName = String(r[iName] || "VLE").trim();
+                let vMob = String(r[iMob] || "").trim();
+                let rawSrv = String(r[iSrv] || "").toUpperCase().trim();
+                let srv = normVertical(rawSrv);
+                let sheetStat = String(r[iStat] || "PENDING").toUpperCase().trim();
+
+                if (cscId && !vleNameLookup[cscId]) vleNameLookup[cscId] = vName;
+                if (cscId && vMob && !vleMobileLookup[cscId]) vleMobileLookup[cscId] = vMob;
+                if (cscId && vDist && vDist !== "-" && !vleDistrictLookup[cscId]) vleDistrictLookup[cscId] = vDist;
+
+                let isAct = (sheetStat === "ACTIVATED" || sheetStat === "ACTIVE");
+                let finalStat = isAct ? "ACTIVATED" : "PENDING";
+
+                if (!isAct) {
+                    if (!vleOtherPending[cscId]) vleOtherPending[cscId] = new Set();
+                    vleOtherPending[cscId].add(rawSrv || srv);
+                }
+
+                out.push({
+                    cscId,
+                    district: vDist,
+                    name: vName,
+                    mobile: vMob,
+                    dm: String(r[iDm] || "").trim(),
+                    service: srv,
+                    rawService: rawSrv || srv,
+                    lastYr: r[iLast] || 0,
+                    thisYr: r[iThis] || 0,
+                    status: finalStat
+                });
+            }
+            return out;
+        }
+
+        async function fetchSheetSafe(sheetName, timeoutMs = 45000) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), timeoutMs);
             try {
-                let [targetRes, logsRes] = await Promise.all([
-                    fetch(SCRIPT_URL + "?sheet=App_Targets"),
-                    fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
+                const res = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`, { signal: ctrl.signal });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                return JSON.parse(text);
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        async function initApp() {
+            const loader = document.getElementById("loader");
+            const loaderText = document.getElementById("loaderText");
+            loader.style.display = "flex";
+            let localISO = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+            try {
+                loaderText.innerText = "Fetching Targets & Call Logs...";
+                let [tRes, lRes] = await Promise.all([
+                    fetchSheetSafe("App_Targets"),
+                    fetchSheetSafe("FollowUp_Logs")
                 ]);
-                let targetRaw = await targetRes.json();
-                let logsRaw = await logsRes.json();
 
-                window.globalLogsRaw = logsRaw || [];
-                window.globalTargetsRaw = targetRaw || [];
+                loaderText.innerText = "Processing Dashboard...";
+                allLogs = Array.isArray(lRes) ? lRes : [];
+                parsedTargets = normalizeTargetRows(tRes);
+                syncDynamicVerticals(parsedTargets);
 
-                let today = new Date();
-                let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
-                let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
-                let isToday = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
-
-                allTimeCalledIds.clear();
-                todayCalledVLEs = [];
-
-                if (Array.isArray(logsRaw)) {
-                    for(let i=1; i<logsRaw.length; i++) {
-                        if(!logsRaw[i]) continue;
-                        let logDate = (logsRaw[i][0] || "").toString();
-                        let logDmName = (logsRaw[i][3] || "").toString().trim();
-
-                        if (isNameMatch(logDmName, dmName)) {
-                            let logCscId = (logsRaw[i][1] || "").toString().trim();
-                            let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
-                            let logRemark = (logsRaw[i][4] || "").toString();
-
-                            allTimeCalledIds.add(logCscId + "_" + logService);
-                            if (isToday(logDate)) {
-                                todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
-                            }
-                        }
-                    }
-                }
-
-                let dynamicTasksMap = {}; let dmServiceCounts = {}; let totalDMPendingTargets = 0; let standardMap = {};
-
-                if (Array.isArray(targetRaw)) {
-                    for(let i=1; i<targetRaw.length; i++) {
-                        if(!targetRaw[i]) continue;
-                        let rDmName = (targetRaw[i][3]||"").toString().trim();
-                        let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
-                        let cscId = (targetRaw[i][0]||"").toString().trim();
-                        let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
-
-                        if(isNameMatch(rDmName, dmName) && status === "PENDING") {
-                            let t = { cscId: cscId, name: (targetRaw[i][1]||"").toString(), mobile: (targetRaw[i][2]||"").toString(), taskName: taskNameStr, extraData: (targetRaw[i][5]||"0").toString() };
-                            if(!dmServiceCounts[taskNameStr]) dmServiceCounts[taskNameStr] = 0;
-                            if(!allTimeCalledIds.has(cscId + "_" + taskNameStr)) { dmServiceCounts[taskNameStr]++; totalDMPendingTargets++; }
-
-                            if (taskNameStr === "IRCTC" || taskNameStr === "REDBUS") {
-                                if(!standardMap[cscId]) {
-                                    standardMap[cscId] = { ...t };
-                                    if(taskNameStr === "IRCTC") { standardMap[cscId].iTxn = t.extraData; standardMap[cscId].rTxn = "0"; }
-                                    else { standardMap[cscId].iTxn = "0"; standardMap[cscId].rTxn = t.extraData; }
-                                } else {
-                                    standardMap[cscId].taskName = "BOTH";
-                                    if(taskNameStr === "IRCTC") standardMap[cscId].iTxn = t.extraData;
-                                    if(taskNameStr === "REDBUS") standardMap[cscId].rTxn = t.extraData;
-                                }
-                            } else {
-                                if(!dynamicTasksMap[taskNameStr]) dynamicTasksMap[taskNameStr] = [];
-                                dynamicTasksMap[taskNameStr].push(t);
-                            }
-                        }
-                    }
-                }
-
-                let standardFollowUps = Object.values(standardMap);
-                if (standardFollowUps.length > 0) dynamicTasksMap["STANDARD_TRAVEL"] = standardFollowUps;
-                allTaskGroups = { ...dynamicTasksMap };
-
-                if (totalDMPendingTargets > 0) {
-                    let statsHtml = `<span>Total Targets: <b id="dmTotalInactive">${totalDMPendingTargets}</b></span>`;
-                    Object.keys(dmServiceCounts).forEach(srv => {
-                        let count = dmServiceCounts[srv];
-                        if (count > 0) {
-                            let colorData = getColorForService(srv);
-                            statsHtml += ` <span class="stat-divider">|</span> <span style="color:${colorData.text};">${srv}: <b id="dmTotal_${srv}" style="color:${colorData.text};">${count}</b></span>`;
-                        }
-                    });
-                    document.getElementById("dmOverallStats").innerHTML = statsHtml;
-                    document.getElementById("dmOverallStats").style.display = "flex";
+                if (isSpoc) {
+                    document.getElementById("spocAppScreen").style.display = "flex";
+                    document.getElementById("cdDate").value = localISO;
+                    document.getElementById("repFromDate").value = localISO;
+                    document.getElementById("repToDate").value = localISO;
+                    initSpocDropdowns();
+                    renderSpocTop5();
+                    renderCallingDeskTable();
+                    renderReportsModule();
                 } else {
-                    document.getElementById("dmOverallStats").style.display = "none";
+                    document.getElementById("dmAppScreen").style.display = "flex";
+                    document.getElementById("dmRepFromDate").value = localISO;
+                    document.getElementById("dmRepToDate").value = localISO;
+                    document.getElementById("dmDataFromDate").value = localISO;
+                    document.getElementById("dmDataToDate").value = localISO;
+                    initDMDashboard();
                 }
-
-                let selectHtml = `<option value="" disabled selected>Select Task to Start...</option>`;
-                if (Object.keys(allTaskGroups).length === 0) {
-                    document.getElementById("taskSelector").style.display = "none";
-                    document.getElementById("targetLabelBox").style.display = "none";
-                    showSummaryScreen("");
-                } else {
-                    if (allTaskGroups["STANDARD_TRAVEL"]) selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`;
-                    Object.keys(allTaskGroups).forEach(k => { if (k !== "STANDARD_TRAVEL") selectHtml += `<option value="${k}">Follow-up: ${k}</option>`; });
-                    document.getElementById("cardStack").innerHTML = `<p style="color:#64748b; font-weight:700; font-size:14.5px; margin-top:40px;">Please select a task from the dropdown above.</p>`;
-                }
-
-                document.getElementById("taskSelector").innerHTML = selectHtml;
-                document.getElementById("loader").style.display = "none";
-            } catch(e) {
-                console.error(e); alert("Error connecting to server. Please try again.");
-                document.getElementById("loader").style.display = "none";
+            } catch (e) {
+                console.error("Load error:", e);
+                alert("Server slow ga undi leda network issue vachindi. Okasari Refresh click cheyandi.\n(" + e.message + ")");
+            } finally {
+                loader.style.display = "none";
             }
         }
 
-        window.downloadDMLogsExcel = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let selDate = document.getElementById("dmLogDate").value;
-            if(!selDate) { alert("Please select a date first."); return; }
+        function reloadAllData() { initApp(); }
+        document.addEventListener("DOMContentLoaded", initApp);
 
-            let d1 = selDate.split("-")[2]; let m1 = selDate.split("-")[1]; let y1 = selDate.split("-")[0];
-            let f1 = `${d1}-${m1}-${y1}`; let f2 = `${y1}-${m1}-${d1}`; let f3 = `${d1}/${m1}/${y1}`; let f4 = `${m1}/${d1}/${y1}`;
-
-            let vleMap = {};
-            if (Array.isArray(window.globalTargetsRaw)) {
-                window.globalTargetsRaw.forEach(row => {
-                    if(row && row[0]) vleMap[row[0].toString().trim()] = { name: row[1] ? row[1].toString().trim() : "-", mobile: row[2] ? row[2].toString().trim() : "-" };
-                });
-            }
-
-            let exportData = [];
-            if (Array.isArray(window.globalLogsRaw)) {
-                window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return;
-                    let logDate = String(row[0] || "").trim();
-                    let logDmName = (row[3] || "").toString().trim();
-                    if (isNameMatch(logDmName, dmName) && (logDate.includes(f1) || logDate.includes(f2) || logDate.includes(f3) || logDate.includes(f4))) {
-                        let logCscId = (row[1] || "").toString().trim();
-                        let vData = vleMap[logCscId] || {name: "Unknown", mobile: "-"};
-                        exportData.push({ "Date & Time": row[0], "CSC ID": logCscId, "VLE Name": vData.name, "Mobile No": vData.mobile, "Service": row[2], "Outcome / Remark": row[4], "Talk Time (Sec)": row[5] || 0 });
-                    }
-                });
-            }
-
-            if(exportData.length === 0) { alert(`No logs found for ${f1}.`); return; }
-
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px;">`;
-            tableHtml += `<thead><tr><th colspan="7" style="background-color:#1e3a8a; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
-            Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px;">${k}</th>`);
-            tableHtml += `</tr></thead><tbody>`;
-            exportData.forEach((row, i) => {
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                Object.values(row).forEach((v, colIdx) => {
-                    let tdStyle = colIdx === 3 ? `padding: 8px; mso-number-format:'\\@';` : `padding: 8px;`;
-                    tableHtml += `<td style="${tdStyle}">${v}</td>`;
-                });
-                tableHtml += `</tr>`;
+        // =========================================================
+        // 💻 SPOC FUNCTIONS
+        // =========================================================
+        function switchSpocModule(mod) {
+            ['desk', 'reports', 'data'].forEach(m => {
+                document.getElementById('spocMod-' + m).style.display = (m === mod) ? 'block' : 'none';
+                document.getElementById('snav-' + m).classList.toggle('active', m === mod);
             });
-            tableHtml += `</tbody></table></body></html>`;
-
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `My_Call_Logs_${f1}.xls`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        };
-
-        window.unlockActions = function(idx, method, event) {
-            if(event && method !== 'WhatsApp' && method !== 'Call') event.stopPropagation();
-            document.getElementById(`lock-msg-${idx}`).style.display = "none";
-            document.getElementById(`action-area-${idx}`).style.display = "block";
-            activeCallStartTime = new Date();
-        };
-
-        window.handleRemarkChange = function(sel, idx) {
-            let inputBox = document.getElementById(`otherRemark-${idx}`);
-            if(sel.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); }
-            else { inputBox.style.display = "none"; inputBox.value = ""; }
-        };
-
-        window.filterCardsByTask = function() {
-            let selectedTask = document.getElementById("taskSelector").value;
-            let fullList = allTaskGroups[selectedTask] || [];
-            let baseQueue = fullList.slice(0, 1000);
-
-            allTimeCalledIds = new Set();
-            if (Array.isArray(window.globalLogsRaw)) {
-                window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return;
-                    if (isNameMatch((row[3] || "").toString().trim(), dmName)) {
-                        allTimeCalledIds.add((row[1] || "").toString().trim() + "_" + (row[2] || "").toString().trim().toUpperCase());
-                    }
-                });
-            }
-
-            filteredQueue = baseQueue.filter(item => {
-                if(item.taskName === "BOTH") return !allTimeCalledIds.has(item.cscId + "_IRCTC") && !allTimeCalledIds.has(item.cscId + "_REDBUS");
-                return !allTimeCalledIds.has(item.cscId + "_" + item.taskName);
-            });
-
-            if (filteredQueue.length === 0) { showSummaryScreen(selectedTask); return; }
-            currentIndex = 0;
-            document.getElementById("dmProgress").style.display = "block";
-            document.getElementById("cardStack").style.display = "flex";
-            document.getElementById("summaryView").style.display = "none";
-            document.getElementById("targetLabelBox").style.display = "block";
-            renderCards(); updateUI();
-        };
-
-        function renderCards() {
-            let html = ""; let myName = localStorage.getItem("userName") || "State Office";
-            filteredQueue.forEach((v, i) => {
-                let cleanMob = (v.mobile || "").toString().replace(/\D/g,'');
-                let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
-                let headerClass = v.taskName === "IRCTC" ? "bg-irctc" : (v.taskName === "REDBUS" ? "bg-redbus" : (v.taskName === "BOTH" ? "bg-both" : (v.taskName === "AMC" ? "bg-amc" : "bg-generic")));
-                let emoji = isTravel ? (v.taskName === "BOTH" ? "🤝" : (v.taskName === "IRCTC" ? "🚆" : "🚌")) : "⚡";
-                let titleText = isTravel ? (v.taskName === "BOTH" ? "IRCTC & REDBUS COMBINED" : `${v.taskName} FOLLOW-UP`) : `${v.taskName} FOLLOW-UP`;
-
-                let txnBoxHtml = ""; let msg = "";
-                if (isTravel) {
-                    if (v.taskName === "BOTH") {
-                        txnBoxHtml = `<div class="txn-badge"><span>🚆 IRCTC Last Year:</span> <span>${v.iTxn}</span></div><div class="txn-badge" style="margin-top:-6px;"><span>🚌 REDBUS Last Year:</span> <span>${v.rTxn}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *IRCTC* మరియు *REDBUS* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు ఈ సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా ఈ సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
-                    } else {
-                        txnBoxHtml = `<div class="txn-badge"><span>📊 Last Year Txns:</span> <span>${v.extraData}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
-                    }
-                } else {
-                    txnBoxHtml = `<div class="txn-badge"><span>📌 Target Data:</span> <span style="color:#b91c1c;">${v.extraData}</span></div>`;
-                    msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
-                }
-
-                let waLink = getWaLink(cleanMob, msg);
-
-                html += `
-                <div class="vle-card" id="card-${i}">
-                    <div class="vle-card-header ${headerClass}">${emoji} ${titleText}</div>
-                    <div class="vle-info">
-                        <div class="vle-details">
-                            <h2>${v.name}</h2>
-                            <p>CSC ID: ${v.cscId}</p>
-                            <div style="margin-bottom:14px; font-weight:800; color:#1e3a8a; font-size:15.5px;"><i class="fa-solid fa-phone" style="margin-right:6px;"></i> ${maskMobileNumber(v.mobile)}</div>
-                            ${txnBoxHtml}
-                            <div class="action-btn-group" style="margin-top:14px; margin-bottom:14px;">
-                                <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call', event)"><i class="fa-solid fa-phone"></i> Call</a>
-                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp', event)" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> WhatsApp</a>
-                            </div>
-                        </div>
-                        <div id="lock-msg-${i}" class="lock-message">🔒 Tap Call or WhatsApp to unlock Submit</div>
-                        <div class="vle-action" id="action-area-${i}" style="display:none;">
-                            <select id="remark-${i}" onchange="handleRemarkChange(this, ${i})">
-                                <option value="" disabled selected>Select Call Outcome...</option>
-                                <option value="Activated">Activated</option>
-                                <option value="Promised to do Today / Tomorrow">Promised to do Today / Tomorrow</option>
-                                <option value="Did not lift / Not Reachable">Did not lift / Not Reachable</option>
-                                <option value="DSP e-KYC Problem">DSP e-KYC Problem</option>
-                                <option value="Shop Closed / Not in Station">Shop Closed / Not in Station</option>
-                                <option value="ID Recovery Pending">ID Recovery Pending</option>
-                                <option value="Password Reset / Login Issue">Password Reset / Login Issue</option>
-                                <option value="Mobile No change">Mobile No change</option>
-                                <option value="Others">Others (Type reason below)</option>
-                            </select>
-                            <input type="text" id="otherRemark-${i}" class="other-input-box" placeholder="Type actual reason here...">
-                            <button type="button" id="submitBtn-${i}" class="submit-btn" onclick="submitCall(${i}, event)">Submit & Next →</button>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            document.getElementById("cardStack").innerHTML = html;
+            let refreshBtn = `<button class="btn-sm-corp btn-light" onclick="reloadAllData()"><i class="fa-solid fa-rotate"></i> Refresh</button>`;
+            document.getElementById("spocTopActions").innerHTML = mod === 'desk'
+                ? `${refreshBtn}<button class="btn-sm-corp btn-green" onclick="exportCallingDeskExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>`
+                : (mod === 'reports'
+                    ? `${refreshBtn}<button class="btn-sm-corp btn-amber" onclick="downloadReportJPG()"><i class="fa-solid fa-image"></i> JPG</button><button class="btn-sm-corp btn-green" onclick="exportReportsExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>`
+                    : refreshBtn);
         }
 
-        function updateUI() {
-            if(filteredQueue.length === 0) return;
-            document.getElementById("progressBar").style.width = `${(currentIndex / filteredQueue.length) * 100}%`;
-            document.getElementById("pendingCount").innerText = (filteredQueue.length - currentIndex);
-            for(let i=0; i<filteredQueue.length; i++) {
-                let c = document.getElementById(`card-${i}`); if(!c) continue;
-                c.className = i < currentIndex ? "vle-card card-done" : (i === currentIndex ? "vle-card card-active" : (i === currentIndex + 1 ? "vle-card card-next" : "vle-card"));
-            }
-            activeCallStartTime = null;
-        }
+        function initSpocDropdowns() {
+            let projOpts = `<option value="ALL">All Projects</option>` + VERTICALS.map(v => `<option value="${v.key}">${v.label}</option>`).join("");
+            document.getElementById("cdProject").innerHTML = projOpts;
+            document.getElementById("repProject").innerHTML = projOpts;
 
-        window.submitCall = function(idx, event) {
-            if(event) { event.stopPropagation(); event.preventDefault(); }
-            let rmk = document.getElementById(`remark-${idx}`).value;
-            if(!rmk) { alert("Please select an outcome reason!"); return; }
-            if(rmk === "Others") {
-                let otherVal = document.getElementById(`otherRemark-${idx}`).value.trim();
-                if(!otherVal) { alert("Please type the actual reason."); return; }
-                rmk = "Others: " + otherVal;
-            }
-            let btn = document.getElementById(`submitBtn-${idx}`);
-            if(btn) { btn.innerText = "⏳ Saving..."; btn.disabled = true; }
+            let dists = [...new Set(parsedTargets.map(t => t.district).filter(d => d && d !== "-"))].sort();
+            document.getElementById("cdDistrict").innerHTML = `<option value="ALL">All Districts</option>` + dists.map(d => `<option value="${d}">${d}</option>`).join("");
 
-            let v = filteredQueue[idx];
-            let dur = activeCallStartTime ? Math.round((new Date() - activeCallStartTime) / 1000) : 12;
-
-            if(v.taskName === "BOTH") { allTimeCalledIds.add(v.cscId + "_IRCTC"); allTimeCalledIds.add(v.cscId + "_REDBUS"); }
-            else { allTimeCalledIds.add(v.cscId + "_" + v.taskName); }
-            todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, task: v.taskName, remark: rmk });
-
-            if(v.taskName === "BOTH") {
-                fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "IRCTC", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
-                setTimeout(() => { fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "REDBUS", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) }); }, 1500);
+            let uSel = document.getElementById("uploadVerticalSelect");
+            if (assignedVertical === "ALL") {
+                uSel.innerHTML = VERTICALS.map(v => `<option value="${v.key}">${v.label} Calling</option>`).join("") +
+                    `<option value="__NEW__" style="font-weight:800; color:#2563eb;">➕ Add New Vertical...</option>`;
+                uSel.disabled = false;
             } else {
-                fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: v.taskName, dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
+                uSel.innerHTML = `<option value="${assignedVertical}">${assignedVertical} Calling (Locked)</option>`;
+                uSel.disabled = true;
             }
-
-            setTimeout(() => { currentIndex++; if(currentIndex < filteredQueue.length) updateUI(); else showSummaryScreen(document.getElementById("taskSelector").value); }, 600);
-        };
-
-        function showSummaryScreen(selectedTask) {
-            document.getElementById("dmProgress").style.display = "none"; document.getElementById("cardStack").style.display = "none";
-            document.getElementById("targetLabelBox").style.display = "none"; document.getElementById("summaryView").style.display = "block";
-            let taskCalledVLEs = selectedTask ? todayCalledVLEs.filter(t => selectedTask === "STANDARD_TRAVEL" ? (t.task === "IRCTC" || t.task === "REDBUS" || t.task === "BOTH") : t.task === selectedTask) : todayCalledVLEs;
-            if(taskCalledVLEs.length === 0) { document.getElementById("summaryListContainer").innerHTML = `<p style="text-align:center; color:#64748b; font-weight:700;">No tasks completed today yet.</p>`; return; }
-            let html = "";
-            taskCalledVLEs.forEach(c => {
-                let isActivated = c.remark.includes("Activated");
-                let isRed = c.remark.includes("Not Reachable") || c.remark.includes("lift") || c.remark.includes("Closed") || c.remark.includes("Problem") || c.remark.includes("Pending") || c.remark.includes("Issue") || c.remark.includes("change");
-                let badgeColor = isActivated ? "background:#dcfce7; color:#15803d;" : (isRed ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
-                html += `<div class="summary-card"><div class="summary-info"><h4>${c.name && c.name.length > 3 ? c.name : "VLE Action Tracked"}</h4><p>${c.task} Follow-up</p><span class="summary-remark" style="${badgeColor}">${c.remark}</span></div></div>`;
-            });
-            document.getElementById("summaryListContainer").innerHTML = html;
+            onUploadVerticalChange();
         }
 
-        // ==========================================
-        // 🌟 2. SPOC COMMAND CENTER LOGIC 🌟
-        // ==========================================
-        async function loadSpocDashboard() {
-            try {
-                let cachedLogs = sessionStorage.getItem("cscSpocLogs_v2");
-                let cachedTargets = sessionStorage.getItem("cscSpocTargets_v2");
-                let cachedUsers = sessionStorage.getItem("cscUsersData_v2");
-
-                rawSpocLogs = cachedLogs ? JSON.parse(cachedLogs) : null;
-                rawSpocTargets = cachedTargets ? JSON.parse(cachedTargets) : null;
-                rawSpocUsers = cachedUsers ? JSON.parse(cachedUsers) : null;
-
-                let promises = [];
-                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; try{sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d));}catch(e){} }));
-                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; try{sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d));}catch(e){} }));
-                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; try{sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d));}catch(e){} }));
-
-                if(promises.length > 0) await Promise.all(promises);
-                processSpocData();
-            } catch(e) {
-                console.error(e);
-                document.getElementById("loader").style.display = "none";
-                alert("Error loading SPOC Dashboard: " + e.message);
-            }
+        function onUploadVerticalChange() {
+            let val = document.getElementById("uploadVerticalSelect").value;
+            let box = document.getElementById("newVerticalInput");
+            box.style.display = (val === "__NEW__") ? "block" : "none";
+            if (val === "__NEW__") box.focus();
         }
 
-        window.reloadSpocData = function() { processSpocData(); };
-
-        function processSpocData() {
-            let logs = rawSpocLogs || []; let targets = rawSpocTargets || []; let users = rawSpocUsers || [];
-            let dateVal = document.getElementById("spocDatePicker").value;
-            let selDate = dateVal ? new Date(dateVal) : new Date();
-
-            let d1 = String(selDate.getDate()).padStart(2, '0'); let m1 = String(selDate.getMonth() + 1).padStart(2, '0'); let y1 = selDate.getFullYear();
-            let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
-            let isSelectedDate = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
-
-            document.getElementById("reportDateText").innerText = "Report Date: " + format1;
-
-            let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
-            let allTimeTotalTargets = 0; let allTimePendingTargets = 0;
-            let globalServiceCallStats = {}; let globalPendingStats = {}; let globalTargetStats = {};
-            let vleInfoMap = {};
-
-            if (Array.isArray(users)) {
-                users.forEach(u => {
-                    if(u && (u[2]||"").toString().toLowerCase().includes("manager") && u[0]) {
-                        let dmKey = (u[5]||"").toString().trim();
-                        if(dmKey) {
-                            uniqueDMs[dmKey] = {
-                                name: dmKey, mobile: String(u[0] || "").trim(), targetTotal: 0, pendingTotal: 0, actTotal: 0,
-                                calledToday: 0, totalDuration: 0, taskBreakdown: {}, callBreakdown: {},
-                                allTimeCalledTotal: 0, unattemptedTotal: 0
-                            };
-                        }
-                    }
-                });
+        function getSelectedUploadVertical() {
+            let val = document.getElementById("uploadVerticalSelect").value;
+            if (val === "__NEW__") {
+                return (document.getElementById("newVerticalInput").value || "").trim().toUpperCase();
             }
-
-            let activatedVLEs = new Set(); let allCalledTargets = new Set();
-            if (Array.isArray(logs)) {
-                for(let i=1; i<logs.length; i++) {
-                    if(!logs[i]) continue;
-                    let combinedKey = (logs[i][1]||"").toString().trim() + "_" + (logs[i][2]||"").toString().trim().toUpperCase();
-                    allCalledTargets.add(combinedKey);
-                    if((logs[i][4] || "").toString().includes("Activated")) activatedVLEs.add(combinedKey);
-                }
-            }
-
-            if (Array.isArray(targets)) {
-                for(let i=1; i<targets.length; i++) {
-                    if(!targets[i]) continue;
-                    let cscIdKey = (targets[i][0]||"").toString().trim();
-                    if (cscIdKey && !vleInfoMap[cscIdKey]) {
-                        vleInfoMap[cscIdKey] = {
-                            name: (targets[i][1]||"").toString().trim(),
-                            mobile: (targets[i][2]||"").toString().trim()
-                        };
-                    }
-
-                    let rDmName = (targets[i][3]||"").toString().trim();
-                    let srv = (targets[i][4]||"").toString().trim().toUpperCase();
-                    let combinedKey = cscIdKey + "_" + srv;
-                    let isReallyActivated = activatedVLEs.has(combinedKey);
-                    let isAttempted = allCalledTargets.has(combinedKey);
-
-                    let matchedDmName = null;
-                    Object.keys(uniqueDMs).forEach(key => { if (isNameMatch(rDmName, key)) matchedDmName = key; });
-
-                    if(matchedDmName && srv) {
-                        uniqueDMs[matchedDmName].targetTotal++; allTimeTotalTargets++;
-                        globalTargetStats[srv] = (globalTargetStats[srv] || 0) + 1;
-                        if (!uniqueDMs[matchedDmName].taskBreakdown[srv]) uniqueDMs[matchedDmName].taskBreakdown[srv] = { total: 0, pending: 0, act: 0 };
-                        uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
-
-                        if (isAttempted) uniqueDMs[matchedDmName].allTimeCalledTotal++;
-                        else uniqueDMs[matchedDmName].unattemptedTotal++;
-
-                        if(!isReallyActivated) {
-                            uniqueDMs[matchedDmName].pendingTotal++; uniqueDMs[matchedDmName].taskBreakdown[srv].pending++;
-                            allTimePendingTargets++; globalPendingStats[srv] = (globalPendingStats[srv] || 0) + 1;
-                        } else {
-                            uniqueDMs[matchedDmName].actTotal++; uniqueDMs[matchedDmName].taskBreakdown[srv].act++;
-                        }
-                    }
-                }
-            }
-
-            if (Array.isArray(logs)) {
-                for(let i = logs.length - 1; i >= 1; i--) {
-                    if(!logs[i]) continue;
-                    if(isSelectedDate(logs[i][0])) {
-                        totalCallsToday++;
-                        let logCscId = (logs[i][1]||"").toString().trim();
-                        let logDmName = (logs[i][3]||"").toString().trim();
-                        let srv = (logs[i][2]||"").toString().trim().toUpperCase();
-                        globalServiceCallStats[srv] = (globalServiceCallStats[srv] || 0) + 1;
-
-                        let matchedDmName = null;
-                        Object.keys(uniqueDMs).forEach(key => { if (isNameMatch(logDmName, key)) matchedDmName = key; });
-
-                        let timeStr = String(logs[i][0] || "").split(" ")[1] || "Just now";
-                        let logRemark = (logs[i][4] || "").toString();
-                        let isActivated = logRemark.includes("Activated");
-                        let isRed = logRemark.includes("Not Reachable") || logRemark.includes("lift") || logRemark.includes("Closed") || logRemark.includes("Problem") || logRemark.includes("Pending") || logRemark.includes("Issue") || logRemark.includes("change");
-                        let rmkBadge = isActivated ? `background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;` : (isRed ? `background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;` : `background:#f1f5f9; color:#334155; border:1px solid #e2e8f0;`);
-                        let durationSec = parseInt(logs[i][5] || 0);
-
-                        if(matchedDmName) {
-                            uniqueDMs[matchedDmName].calledToday++;
-                            uniqueDMs[matchedDmName].totalDuration += durationSec;
-                            uniqueDMs[matchedDmName].callBreakdown[srv] = (uniqueDMs[matchedDmName].callBreakdown[srv] || 0) + 1;
-                            if(!activeDMsMap[matchedDmName]) activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, taskBreakdown: {} };
-                            activeDMsMap[matchedDmName].calls++;
-                            let tb = uniqueDMs[matchedDmName].taskBreakdown[srv];
-                            if (tb) activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
-                        }
-
-                        let vleInfo = vleInfoMap[logCscId] || { name: "", mobile: "" };
-                        let dmMob = (matchedDmName && uniqueDMs[matchedDmName]) ? uniqueDMs[matchedDmName].mobile : "";
-
-                        globalSpocLogs.push({
-                            dmName: matchedDmName || logDmName,
-                            dmMobile: dmMob,
-                            vleName: logCscId,
-                            vleFullName: vleInfo.name,
-                            vleMobile: vleInfo.mobile,
-                            service: srv,
-                            time: timeStr,
-                            rmkBadge: rmkBadge,
-                            rmk: logRemark,
-                            durationText: formatTalkTime(durationSec),
-                            isActivated: isActivated
-                        });
-                    }
-                }
-            }
-
-            // 🌟 LEADERBOARD: Sort Active DMs by Calls (Highest First) 🌟
-            let sortedActiveDMs = Object.values(activeDMsMap).sort((a, b) => b.calls - a.calls);
-            document.getElementById("activeDmCountBadge").innerText = `${sortedActiveDMs.length} Active`;
-
-            let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs (${globalSpocLogs.length})</option>`;
-            sortedActiveDMs.forEach((adm, idx) => {
-                filterHtml += `<option value="${adm.name}">${adm.name} (${adm.calls})</option>`;
-                let dynamicBadges = "";
-                Object.keys(adm.taskBreakdown).forEach(k => {
-                    let d = adm.taskBreakdown[k]; let colors = getColorForService(k);
-                    dynamicBadges += `<span class="tgt-badge" style="background:${colors.bg}; color:${colors.text}; border:1px solid ${colors.border};">${k}: ${d.pending}/${d.total}</span>`;
-                });
-                if (dynamicBadges === "") dynamicBadges = `<span class="tgt-badge" style="background:#f1f5f9; color:#475569;">General Follow-up</span>`;
-
-                let safeDm = adm.name.replace(/'/g, "\\'");
-                let rankTag = idx === 0 ? "🥇 " : (idx === 1 ? "🥈 " : (idx === 2 ? "🥉 " : ""));
-                activeDMsHtml += `
-                <div class="dm-leader-card" data-dm="${adm.name}" onclick="selectDmForFeed('${safeDm}', this)">
-                    <div class="dm-row-top">
-                        <div class="dm-identity">
-                            <div class="dm-avatar">${getInitials(adm.name)}<span class="avatar-live-dot"></span></div>
-                            <div class="dm-name-block">
-                                <h5>${rankTag}${adm.name}</h5>
-                                <span><i class="fa-regular fa-clock"></i> Last log: ${adm.time}</span>
-                            </div>
-                        </div>
-                        <div class="dm-calls-pill">${adm.calls} Calls</div>
-                    </div>
-                    <div class="dm-badges-wrap">${dynamicBadges}</div>
-                </div>`;
-            });
-
-            document.getElementById("spocFeedFilter").innerHTML = filterHtml;
-            document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px; text-align:center; padding:20px;'>No DMs logged actions on this date.</p>";
-            renderSpocFeed("ALL");
-
-            // 🌟 KPI STRIP 🌟
-            let mkPills = (obj, emptyTxt) => {
-                let s = "";
-                Object.keys(obj).forEach(srv => {
-                    let c = getColorForService(srv);
-                    s += `<span style="padding:2px 7px; background:${c.bg}; color:${c.text}; border-radius:5px; font-size:10px; font-weight:800; border:1px solid ${c.border};">${srv}: ${obj[srv]}</span>`;
-                });
-                return s || `<span style="font-size:11px; color:#94a3b8;">${emptyTxt}</span>`;
-            };
-
-            document.getElementById("spocStatGrid").innerHTML = `
-                <div class="stat-box">
-                    <div class="stat-top">
-                        <div><p>Calls On Selected Date</p><h3 style="color:#1e3a8a;">${totalCallsToday}</h3></div>
-                        <div class="stat-icon-circle" style="background:#eff6ff; color:#2563eb;"><i class="fa-solid fa-phone-volume"></i></div>
-                    </div>
-                    <div class="stat-pills">${mkPills(globalServiceCallStats, "No calls yet")}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-top">
-                        <div><p>Active DMs Today</p><h3 style="color:#15803d;">${sortedActiveDMs.length}</h3></div>
-                        <div class="stat-icon-circle" style="background:#dcfce7; color:#16a34a;"><i class="fa-solid fa-user-check"></i></div>
-                    </div>
-                    <div class="stat-pills"><span style="font-size:11px; color:#15803d; font-weight:700;">● Actively calling & updating</span></div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-top">
-                        <div><p>Total Pending</p><h3 style="color:#b45309;">${allTimePendingTargets.toLocaleString()}</h3></div>
-                        <div class="stat-icon-circle" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-hourglass-half"></i></div>
-                    </div>
-                    <div class="stat-pills">${mkPills(globalPendingStats, "No pending")}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-top">
-                        <div><p>Overall Target</p><h3 style="color:#dc2626;">${allTimeTotalTargets.toLocaleString()}</h3></div>
-                        <div class="stat-icon-circle" style="background:#fee2e2; color:#dc2626;"><i class="fa-solid fa-bullseye"></i></div>
-                    </div>
-                    <div class="stat-pills">${mkPills(globalTargetStats, "No targets")}</div>
-                </div>
-            `;
-
-            // 🌟 STATE HEAD REPORT TABLE 🌟
-            let tableHtml = ""; let sno = 1; let isFriday = selDate.getDay() === 5; let iLimit = isFriday ? 50 : 40;
-            cachedFollowUpItems = [];
-
-            Object.values(uniqueDMs).forEach(dm => {
-                let tTotal = dm.targetTotal;
-                if(tTotal > 0) {
-                    let attemptColor = dm.calledToday > 0 ? "#15803d" : "#dc2626";
-                    let avgTimeText = formatTalkTime(dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0);
-                    let callBreakdownStr = "";
-                    Object.keys(dm.callBreakdown).forEach(srv => {
-                        let c = getColorForService(srv);
-                        callBreakdownStr += `<span style="background:${c.bg}; color:${c.text}; font-size:10.5px; padding:2px 6px; border-radius:5px; margin-right:4px; border:1px solid ${c.border}; font-weight:800;">${srv}(${dm.callBreakdown[srv]})</span>`;
-                    });
-                    tableHtml += `<tr>
-                        <td>${sno++}</td>
-                        <td style="font-weight:800; color:#0f172a;">${dm.name}</td>
-                        <td>${tTotal}</td>
-                        <td style="color:#15803d; font-weight:800;">${dm.actTotal}</td>
-                        <td style="color:#b91c1c; background:#fef2f2 !important; font-weight:900;">${dm.unattemptedTotal}</td>
-                        <td style="color:#b45309; font-weight:800;">${dm.pendingTotal}</td>
-                        <td style="color:#0369a1; background:#f0f9ff !important; font-weight:800;">${dm.allTimeCalledTotal}</td>
-                        <td style="color:${attemptColor}; font-weight:900; font-size:14px;">${dm.calledToday}</td>
-                        <td>${callBreakdownStr || "-"}</td>
-                        <td style="color:#059669; font-weight:800;">${avgTimeText}</td>
-                    </tr>`;
-                }
-
-                if (dm.pendingTotal > 0) {
-                    let assigned = Math.min(dm.pendingTotal, iLimit);
-                    let bDownTxt = "";
-                    Object.keys(dm.taskBreakdown).forEach(k => { if(dm.taskBreakdown[k].pending > 0) bDownTxt += `*${k} (${dm.taskBreakdown[k].pending})* & `; });
-                    bDownTxt = bDownTxt.slice(0, -3);
-                    let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${dm.pendingTotal}* pending targets (${bDownTxt}) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
-                    cachedFollowUpItems.push({ ...dm, assigned, waMsg });
-                }
-            });
-
-            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
-
-            // Sort Follow-Up Cards: 0 Calls first, then highest pending
-            cachedFollowUpItems.sort((a, b) => {
-                if ((a.calledToday === 0) !== (b.calledToday === 0)) return a.calledToday === 0 ? -1 : 1;
-                return b.pendingTotal - a.pendingTotal;
-            });
-            renderFollowUpCards();
-
-            document.getElementById("loader").style.display = "none";
+            return val;
         }
 
-        // 🌟 CLICK DM IN LEADERBOARD TO FILTER TIMELINE 🌟
-        window.selectDmForFeed = function(dmNameStr, cardEl) {
-            let sel = document.getElementById("spocFeedFilter");
-            let isAlready = cardEl.classList.contains("selected-dm");
-            document.querySelectorAll(".dm-leader-card").forEach(el => el.classList.remove("selected-dm"));
-
-            if (isAlready) {
-                sel.value = "ALL";
-                renderSpocFeed("ALL");
-            } else {
-                cardEl.classList.add("selected-dm");
-                sel.value = dmNameStr;
-                renderSpocFeed(dmNameStr);
-            }
-        };
-
-        window.renderSpocFeed = function(filterVal) {
-            let feedHtml = "";
-            globalSpocLogs.forEach(log => {
-                if(filterVal === "ALL" || log.dmName === filterVal) {
-                    let colors = getColorForService(log.service);
-                    let targetMob = String(log.vleMobile || log.dmMobile || "").replace(/\D/g, "");
-                    let displayVle = log.vleFullName ? `${log.vleName} (${log.vleFullName})` : log.vleName;
-                    let waText = `Dear ${log.vleFullName || "VLE"} గారు (CSC ID: ${log.vleName}),\n\nCSC Andhra Pradesh State Office నుండి మాట్లాడుతున్నాము. దయచేసి *${log.service}* సేవలను వెంటనే ప్రారంభించగలరు.\n\nధన్యవాదాలు,\nCSC AP State Office.`;
-
-                    let actionBtns = "";
-                    if (!log.isActivated) {
-                        if (targetMob.length >= 10) {
-                            actionBtns = `
-                            <div style="display:flex; gap:8px; flex-shrink:0;">
-                                <a href="tel:${targetMob}" class="call-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-solid fa-phone"></i> Call</a>
-                                <a href="${getWaLink(targetMob, waText)}" target="_blank" rel="noopener noreferrer" class="wa-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-                            </div>`;
-                        } else {
-                            actionBtns = `
-                            <div style="display:flex; gap:8px; flex-shrink:0;">
-                                <span style="font-size:11px; color:#94a3b8; font-weight:700;">No Mobile</span>
-                            </div>`;
-                        }
-                    }
-
-                    feedHtml += `
-                    <div class="timeline-item">
-                        <div class="tl-left">
-                            <div class="tl-time-box">
-                                <strong>${log.time}</strong>
-                                <span><i class="fa-solid fa-stopwatch"></i> ${log.durationText}</span>
-                            </div>
-                            <div class="tl-details">
-                                <div class="tl-title-row">
-                                    <h5>${displayVle}</h5>
-                                    <span style="font-size:10px; font-weight:800; color:${colors.text}; background:${colors.bg}; border:1px solid ${colors.border}; padding:2px 7px; border-radius:5px;">${log.service}</span>
-                                    <span class="tl-dm-tag"><i class="fa-solid fa-user-tie" style="color:#2563eb;"></i> ${log.dmName}</span>
-                                </div>
-                                <span class="tl-rmk-pill" style="${log.rmkBadge}">${log.rmk}</span>
-                            </div>
-                        </div>
-                        ${actionBtns}
-                    </div>`;
+        function renderSpocTop5() {
+            let todayFormats = getDateFormats();
+            let dmCounts = {};
+            for (let i = 1; i < allLogs.length; i++) {
+                let r = allLogs[i]; if (!r) continue;
+                if (todayFormats.some(f => String(r[0] || "").includes(f)) && r[3]) {
+                    let dm = String(r[3]).trim();
+                    dmCounts[dm] = (dmCounts[dm] || 0) + 1;
                 }
-            });
-            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px; text-align:center; padding:30px;'>No calls found for this selection.</p>";
-        };
+            }
+            let top5 = Object.entries(dmCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            let html = top5.length ? top5.map((x, i) => `<span class="top5-chip">${i + 1}. ${x[0]}<b>${x[1]}</b></span>`).join("") : `<span class="top5-chip">No calls logged today</span>`;
+            document.getElementById("spocTop5List").innerHTML = html;
+        }
 
-        window.filterSpocFeed = function() {
-            let val = document.getElementById("spocFeedFilter").value;
-            document.querySelectorAll(".dm-leader-card").forEach(el => {
-                el.classList.toggle("selected-dm", el.getAttribute("data-dm") === val);
-            });
-            renderSpocFeed(val);
-        };
+        function resetCallingDeskFilters() {
+            document.getElementById("cdSearch").value = "";
+            document.getElementById("cdProject").value = "ALL";
+            document.getElementById("cdDistrict").value = "ALL";
+            document.getElementById("cdStatus").value = "ALL";
+            renderCallingDeskTable();
+        }
 
-        // 🌟 SMART FOLLOW-UP FILTERS 🌟
-        window.setFollowUpFilter = function(mode) {
-            currentFollowUpFilter = mode;
-            ['ALL', 'ZERO', 'ACTIVE'].forEach(m => document.getElementById('fu-' + m).classList.toggle('active', m === mode));
-            renderFollowUpCards();
-        };
+        function renderCallingDeskTable() {
+            let q = (document.getElementById("cdSearch").value || "").toLowerCase().trim();
+            let proj = document.getElementById("cdProject").value;
+            let dist = document.getElementById("cdDistrict").value;
+            let stat = document.getElementById("cdStatus").value;
+            let dtVal = document.getElementById("cdDate").value;
+            let dtFormats = getDateFormats(dtVal ? new Date(dtVal) : new Date());
 
-        window.renderFollowUpCards = function() {
-            let q = (document.getElementById("fuSearchInput").value || "").toLowerCase().trim();
-            let list = cachedFollowUpItems.filter(dm => {
-                if (q && !dm.name.toLowerCase().includes(q)) return false;
-                if (currentFollowUpFilter === "ZERO") return dm.calledToday === 0;
-                if (currentFollowUpFilter === "ACTIVE") return dm.calledToday > 0;
+            let filtered = parsedTargets.filter(t => {
+                if (proj !== "ALL" && t.service !== proj) return false;
+                if (dist !== "ALL" && t.district !== dist) return false;
+                if (stat !== "ALL" && t.status !== stat) return false;
+                if (q && !(t.name.toLowerCase().includes(q) || t.cscId.toLowerCase().includes(q) || t.mobile.includes(q))) return false;
                 return true;
             });
 
+            let actCount = filtered.filter(t => t.status === "ACTIVATED").length;
+            let pendCount = filtered.length - actCount;
+            let dateCalls = 0;
+            for (let i = 1; i < allLogs.length; i++) {
+                if (allLogs[i] && dtFormats.some(f => String(allLogs[i][0] || "").includes(f))) dateCalls++;
+            }
+
+            document.getElementById("cdAssigned").innerText = filtered.length.toLocaleString();
+            document.getElementById("cdActive").innerText = actCount.toLocaleString();
+            document.getElementById("cdAnswered").innerText = dateCalls.toLocaleString();
+            document.getElementById("cdPending").innerText = pendCount.toLocaleString();
+
             let html = "";
-            list.forEach(dm => {
-                let pct = dm.assigned > 0 ? Math.min(100, Math.round((dm.calledToday / dm.assigned) * 100)) : 0;
-                let barColor = dm.calledToday === 0 ? "#dc2626" : (pct >= 75 ? "#16a34a" : "#2563eb");
-                let cardCls = dm.calledToday === 0 ? "zero-alert" : "active-ok";
-                let cleanDmMob = String(dm.mobile || "").replace(/\D/g, "");
+            filtered.slice(0, 200).forEach(t => {
+                let others = [...(vleOtherPending[t.cscId] || [])].filter(s => s !== t.rawService);
+                let alsoBadge = others.length ? `<br><span class="also-pending-pill">🚨 Also Pending: ${others.join(", ")}</span>` : "";
+                let stCls = t.status === "ACTIVATED" ? "st-active" : "st-pending";
+                let waLink = getWaLink(t.mobile, `Dear ${t.name} గారు (CSC ID: ${t.cscId}), దయచేసి ${t.rawService} సేవలను వెంటనే ప్రారంభించగలరు.`);
 
-                html += `
-                <div class="fu-card ${cardCls}">
-                    <div class="fu-card-top">
-                        <div class="dm-identity">
-                            <div class="dm-avatar" style="background:${dm.calledToday === 0 ? 'linear-gradient(135deg,#991b1b,#dc2626)' : 'linear-gradient(135deg,#1e3a8a,#2563eb)'};">${getInitials(dm.name)}</div>
-                            <div class="dm-name-block">
-                                <h5 style="max-width:190px;">${dm.name}</h5>
-                                <span>Total Targets: <b>${dm.targetTotal}</b></span>
-                            </div>
-                        </div>
-                        <span style="font-size:11px; font-weight:800; color:#b91c1c; background:#fef2f2; border:1px solid #fecaca; padding:4px 9px; border-radius:7px; white-space:nowrap;">${dm.pendingTotal} Pending</span>
-                    </div>
-                    <div class="fu-progress-wrap">
-                        <div class="fu-progress-labels">
-                            <span>Today's Progress: <b style="color:${barColor};">${dm.calledToday} / ${dm.assigned}</b></span>
-                            <span style="color:${barColor};">${pct}%</span>
-                        </div>
-                        <div class="fu-bar-bg"><div class="fu-bar-fill" style="width:${Math.max(pct, dm.calledToday > 0 ? 4 : 0)}%; background:${barColor};"></div></div>
-                    </div>
-                    <div class="action-btn-group">
-                        <a href="tel:${cleanDmMob}" class="call-btn"><i class="fa-solid fa-phone"></i> Call DM</a>
-                        <a href="${getWaLink(cleanDmMob, dm.waMsg)}" target="_blank" rel="noopener noreferrer" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Send Reminder</a>
-                    </div>
-                </div>`;
+                html += `<tr>
+                    <td style="text-align:left; padding-left:14px;">${t.name}</td>
+                    <td style="color:#1e3a8a;">${t.cscId}</td>
+                    <td>${t.mobile}</td>
+                    <td>${t.district}</td>
+                    <td><b>${t.rawService}</b>${alsoBadge}</td>
+                    <td>${t.lastYr}</td>
+                    <td style="color:${t.thisYr > 0 ? '#16a34a' : '#dc2626'};">${t.thisYr}</td>
+                    <td><span class="status-pill ${stCls}">${t.status}</span></td>
+                    <td>
+                        <a href="tel:${t.mobile.replace(/\D/g,'')}" style="color:#1e3a8a; margin-right:8px;" title="Call"><i class="fa-solid fa-phone"></i></a>
+                        <a href="${waLink}" target="_blank" style="color:#16a34a;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                    </td>
+                </tr>`;
             });
-            document.getElementById("dmFollowUpGrid").innerHTML = html || "<p style='color:#64748b; font-size:13px; padding:20px;'>No matching DMs found.</p>";
-        };
+            document.getElementById("cdTableBody").innerHTML = html || `<tr><td colspan="9" style="padding:24px; color:#64748b;">No matching records found.</td></tr>`;
+        }
 
-        // 🌟 REPORT EXPORTS 🌟
-        window.downloadStateHeadReport = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let card = document.getElementById("reportCardToCapture");
-            let container = document.querySelector(".report-table-container");
-            let btn = document.getElementById("dlBtn");
-            let ths = document.querySelectorAll(".report-table th");
+        function renderReportsModule() {
+            let proj = document.getElementById("repProject").value;
+            let viewBy = document.getElementById("repViewBy").value;
+            let sortBy = document.getElementById("repSortBy").value;
+            let fDate = document.getElementById("repFromDate").value;
+            let tDate = document.getElementById("repToDate").value;
+            document.getElementById("repRangeText").innerText = `Range: ${fDate} to ${tDate}`;
+            document.getElementById("repCol1Head").innerText = viewBy === "DM" ? "DM Name" : "District Name";
 
-            let originalText = btn.innerHTML; btn.innerHTML = "⏳ Saving..."; btn.disabled = true;
-            let origOverflow = container.style.overflow; let origOverflowX = container.style.overflowX; let origWidth = card.style.width;
-            container.style.overflow = "visible"; container.style.overflowX = "visible"; card.style.width = "max-content";
-            ths.forEach(th => th.style.position = "static"); window.scrollTo(0, 0);
+            let groups = {};
+            let allCalledKeys = new Set();
+            let rangeCalledByDm = {};
+
+            for (let i = 1; i < allLogs.length; i++) {
+                let r = allLogs[i]; if (!r) continue;
+                let cscId = String(r[1] || "").trim();
+                let rawSrv = String(r[2] || "").toUpperCase().trim();
+                let logVert = normVertical(rawSrv);
+                let dm = String(r[3] || "").trim();
+
+                if (proj !== "ALL" && logVert !== proj) continue;
+
+                if (cscId && rawSrv) allCalledKeys.add(cscId + "_" + rawSrv);
+                if (dm && isLogInDateRange(r[0], fDate, tDate)) {
+                    rangeCalledByDm[dm] = (rangeCalledByDm[dm] || 0) + 1;
+                }
+            }
+
+            parsedTargets.forEach(t => {
+                if (proj !== "ALL" && t.service !== proj) return;
+                let key = viewBy === "DM" ? (t.dm || "Unassigned") : (t.district || "Unknown");
+                if (!groups[key]) groups[key] = { name: key, districts: new Set(), total: 0, act: 0, allCalls: 0, pending: 0, rangeCalls: 0 };
+                groups[key].total++;
+                if (t.district && t.district !== "-") groups[key].districts.add(t.district);
+                if (t.status === "ACTIVATED") groups[key].act++;
+                if (allCalledKeys.has(t.cscId + "_" + t.rawService)) groups[key].allCalls++;
+            });
+
+            let rows = Object.values(groups).map(g => {
+                let matchedRange = 0;
+                if (viewBy === "DM") {
+                    Object.keys(rangeCalledByDm).forEach(k => { if (isNameMatch(k, g.name)) matchedRange += rangeCalledByDm[k]; });
+                }
+                g.rangeCalls = matchedRange;
+                g.pending = Math.max(0, g.total - g.allCalls);
+                g.ach = g.total > 0 ? Math.round((g.allCalls / g.total) * 100) : 0;
+                return g;
+            });
+
+            if (sortBy === "ACH_DESC") rows.sort((a, b) => b.ach - a.ach);
+            else if (sortBy === "ACH_ASC") rows.sort((a, b) => a.ach - b.ach);
+            else rows.sort((a, b) => b.pending - a.pending);
+
+            let gt = { total: 0, act: 0, rangeCalls: 0, allCalls: 0, pending: 0 };
+            let html = "";
+            rows.forEach(g => {
+                gt.total += g.total; gt.act += g.act; gt.rangeCalls += g.rangeCalls; gt.allCalls += g.allCalls; gt.pending += g.pending;
+                let distStr = [...g.districts].slice(0, 2).join(", ") || "-";
+                let safeName = g.name.replace(/'/g, "\\'");
+                html += `<tr class="rep-row-dbl" ondblclick="openDmLogsModal('${safeName}', 'DATE', '${proj}', '${fDate}', '${tDate}')" title="Double-click to view VLE Call Details">
+                    <td style="text-align:left; padding-left:14px;">👤 ${g.name}</td>
+                    <td style="text-align:left; color:#1e3a8a; font-size:11.5px;">${distStr}</td>
+                    <td>${g.total}</td>
+                    <td style="color:${g.rangeCalls > 0 ? '#059669' : '#dc2626'}; font-weight:900;">${g.rangeCalls}</td>
+                    <td style="color:#1e3a8a;">${g.allCalls}</td>
+                    <td style="color:#dc2626;">${g.pending}</td>
+                    <td style="font-weight:900;">${g.ach}%</td>
+                </tr>`;
+            });
+
+            let gtAch = gt.total > 0 ? Math.round((gt.allCalls / gt.total) * 100) : 0;
+            document.getElementById("repKpiTotal").innerText = gt.total.toLocaleString();
+            document.getElementById("repKpiActive").innerText = gt.act.toLocaleString();
+            document.getElementById("repKpiRangeCalls").innerText = gt.rangeCalls.toLocaleString();
+            document.getElementById("repKpiPending").innerText = gt.pending.toLocaleString();
+
+            document.getElementById("repTableBody").innerHTML = html || `<tr><td colspan="7" style="padding:20px;">No data</td></tr>`;
+            document.getElementById("repTableFoot").innerHTML = `<tr>
+                <td style="text-align:left; padding-left:14px;">GRAND TOTAL</td><td>-</td>
+                <td>${gt.total}</td><td style="color:#059669;">${gt.rangeCalls}</td>
+                <td style="color:#1e3a8a;">${gt.allCalls}</td><td style="color:#dc2626;">${gt.pending}</td><td>${gtAch}%</td>
+            </tr>`;
+        }
+
+        // =========================================================
+        // 🪟 SHARED REMARKS MODAL (BOTH SPOC & DM — WITH DISTRICT)
+        // =========================================================
+        function openDmLogsModal(dmNameStr, scope, projLock, fDate, tDate) {
+            activeModalDm = dmNameStr;
+            activeModalScope = scope || "DATE";
+            activeModalProjectLock = projLock || "ALL";
+            activeModalFrom = fDate || new Date().toISOString().slice(0, 10);
+            activeModalTo = tDate || activeModalFrom;
+            activeModalSrvFilter = "ALL";
+            document.getElementById("dmLogsModal").style.display = "flex";
+            renderModalDmLogs();
+        }
+        function closeDmLogsModal() { document.getElementById("dmLogsModal").style.display = "none"; }
+        function switchModalScope(scope) { activeModalScope = scope; activeModalSrvFilter = "ALL"; renderModalDmLogs(); }
+        function setModalSrvFilter(srv) { activeModalSrvFilter = srv; renderModalDmLogs(); }
+
+        function renderModalDmLogs() {
+            document.getElementById("btnModalDate").style.background = activeModalScope === "DATE" ? "#fcd34d" : "#f1f5f9";
+            document.getElementById("btnModalAll").style.background = activeModalScope === "ALL" ? "#fcd34d" : "#f1f5f9";
+
+            let matched = [], srvCounts = {};
+            for (let i = allLogs.length - 1; i >= 1; i--) {
+                let r = allLogs[i]; if (!r) continue;
+                if (!isNameMatch(r[3], activeModalDm)) continue;
+
+                let rawSrv = String(r[2] || "OTHER").toUpperCase().trim();
+                let logVert = normVertical(rawSrv);
+
+                if (activeModalProjectLock !== "ALL" && logVert !== activeModalProjectLock) continue;
+                if (activeModalScope === "DATE" && !isLogInDateRange(r[0], activeModalFrom, activeModalTo)) continue;
+
+                let cscKey = String(r[1] || "").trim();
+                srvCounts[rawSrv] = (srvCounts[rawSrv] || 0) + 1;
+                matched.push({
+                    date: String(r[0] || ""), cscId: cscKey,
+                    vleName: vleNameLookup[cscKey] || "-",
+                    vleMobile: vleMobileLookup[cscKey] || "-",
+                    vleDistrict: vleDistrictLookup[cscKey] || "-",
+                    service: rawSrv, remark: String(r[4] || "-"), dur: formatSec(r[5])
+                });
+            }
+
+            let projLabel = activeModalProjectLock === "ALL" ? "All Projects" : activeModalProjectLock;
+            document.getElementById("modalDmTitle").innerText = `📞 ${activeModalDm} — ${projLabel}`;
+            document.getElementById("modalDmSub").innerText = `${activeModalScope === "DATE" ? "Range (" + activeModalFrom + " to " + activeModalTo + ")" : "All Time"} | Total Calls: ${matched.length}`;
+
+            let summaryBar = document.getElementById("modalServiceSummary");
+            if (matched.length > 0) {
+                let sortedSrvs = Object.entries(srvCounts).sort((a, b) => b[1] - a[1]);
+                let pillsHtml = `<button class="srv-pill-btn ${activeModalSrvFilter === 'ALL' ? 'active' : ''}" onclick="setModalSrvFilter('ALL')">All Services <b>(${matched.length})</b></button>`;
+                sortedSrvs.forEach(([srvName, cnt]) => {
+                    let safeSrv = srvName.replace(/'/g, "\\'");
+                    pillsHtml += `<button class="srv-pill-btn ${activeModalSrvFilter === srvName ? 'active' : ''}" onclick="setModalSrvFilter('${safeSrv}')">${srvName}: <b>${cnt}</b></button>`;
+                });
+                summaryBar.innerHTML = pillsHtml;
+                summaryBar.style.display = "flex";
+            } else {
+                summaryBar.style.display = "none";
+            }
+
+            let filteredRows = activeModalSrvFilter === "ALL" ? matched : matched.filter(m => m.service === activeModalSrvFilter);
+            let html = "";
+            filteredRows.slice(0, 500).forEach(m => {
+                html += `<tr>
+                    <td style="font-size:11.5px; color:#475569;">${m.date}</td>
+                    <td style="color:#1e3a8a;">${m.cscId}</td>
+                    <td style="text-align:left;">${m.vleName}</td>
+                    <td style="color:#0f172a;">${m.vleMobile}</td>
+                    <td style="color:#1e3a8a; font-size:11.5px;">${m.vleDistrict}</td>
+                    <td><b>${m.service}</b></td>
+                    <td style="text-align:left;"><span class="rmk-badge" style="${getRemarkStyle(m.remark)}">${m.remark}</span></td>
+                    <td style="color:#059669;">${m.dur}</td>
+                </tr>`;
+            });
+            document.getElementById("modalLogsBody").innerHTML = html || `<tr><td colspan="8" style="padding:28px; color:#64748b;">No calls found for ${projLabel}.</td></tr>`;
+        }
+
+        function exportModalDmLogs() {
+            let wb = XLSX.utils.table_to_book(document.getElementById("modalLogsTable"), { sheet: "Call_Logs", raw: true });
+            XLSX.writeFile(wb, `${activeModalDm}_Call_Logs.xlsx`);
+        }
+        function downloadReportJPG() {
+            html2canvas(document.getElementById("reportCaptureCard"), { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let link = document.createElement("a");
+                link.download = `CSC_AP_Performance_Report.jpg`;
+                link.href = canvas.toDataURL("image/jpeg", 0.95);
+                link.click();
+            });
+        }
+        function exportReportsExcel() {
+            let wb = XLSX.utils.table_to_book(document.getElementById("repMainTable"), { sheet: "Performance", raw: true });
+            XLSX.writeFile(wb, "CSC_AP_Performance_Report.xlsx");
+        }
+        function exportCallingDeskExcel() {
+            let wb = XLSX.utils.table_to_book(document.getElementById("callingDeskTable"), { sheet: "Calling_Desk", raw: true });
+            XLSX.writeFile(wb, "CSC_AP_Calling_Desk.xlsx");
+        }
+
+        // 📤 UPLOAD LOGIC (SUPPORTS NEW VERTICALS DYNAMICALLY)
+        function downloadSampleTemplate() {
+            let vName = getSelectedUploadVertical() || "DSP";
+            let sample = [{ "CSC ID": "123456789012", "District Name": "Visakhapatnam", "VLE Name": "Sample VLE", "Mobile": "9876543210", "DM Name": "Kada Siva", "Service": vName, "Last Year": 120, "This Year": 0, "Status": "PENDING" }];
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sample), "Template");
+            XLSX.writeFile(wb, "CSC_AP_Upload_Template.xlsx");
+        }
+
+        function handleExcelSelect(e) {
+            let file = e.target.files[0]; if (!file) return;
+            let reader = new FileReader();
+            reader.onload = evt => {
+                let wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                rawUploadJson = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+                let validCount = rawUploadJson.filter(r => String(r["CSC ID"] || r["CSCID"] || "").trim() !== "").length;
+                document.getElementById("uploadFileLabel").innerText = `✅ ${file.name} (${validCount.toLocaleString()} rows ready)`;
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function startChunkedUpload() {
+            let chosenV = getSelectedUploadVertical();
+            if (!chosenV) { alert("Please enter a valid New Vertical Name!"); document.getElementById("newVerticalInput").focus(); return; }
+            if (!rawUploadJson.length) { alert("Please select an Excel file first!"); return; }
+
+            let uploadRows = rawUploadJson.map(r => [
+                String(r["CSC ID"] || r["CSCID"] || "").trim(), String(r["District Name"] || r["District"] || "").trim(),
+                String(r["VLE Name"] || "").trim(), String(r["Mobile"] || r["Mobile No"] || "").trim(),
+                String(r["DM Name"] || "").trim(), chosenV, r["Last Year"] || 0, r["This Year"] || 0,
+                String(r["Status"] || "PENDING").trim().toUpperCase()
+            ]).filter(r => r[0] !== "");
+
+            if (!uploadRows.length) { alert("No valid CSC ID rows found in Excel!"); return; }
+
+            let btn = document.getElementById("btnStartUpload");
+            let pWrap = document.getElementById("uploadProgWrap"), pFill = document.getElementById("uploadProgFill"), msg = document.getElementById("uploadStatusMsg");
+            btn.disabled = true; pWrap.style.display = "block"; pFill.style.width = "0%";
+            const CHUNK = 2000, total = Math.ceil(uploadRows.length / CHUNK);
+            try {
+                for (let c = 0; c < total; c++) {
+                    let batch = uploadRows.slice(c * CHUNK, (c + 1) * CHUNK);
+                    msg.innerText = `⏳ Syncing ${chosenV} — batch ${c + 1}/${total}...`;
+                    let res = await fetch(SCRIPT_URL, {
+                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ action: "replaceVerticalTargets", vertical: chosenV, clearOld: (c === 0), uploadedBy: rawName, rows: batch })
+                    }).then(r => r.json());
+                    if (!res.success) throw new Error(res.message || "Failed");
+                    pFill.style.width = `${Math.round(((c + 1) / total) * 100)}%`;
+                }
+                msg.innerHTML = `<span style="color:#059669;">✅ Successfully synced ${uploadRows.length.toLocaleString()} rows for ${chosenV}! Click Refresh to view updated screens.</span>`;
+            } catch (err) {
+                msg.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`;
+            }
+            btn.disabled = false;
+        }
+
+        // =========================================================
+        // 📱 DM FUNCTIONS (ONE-CALL MULTI-SERVICE + 2-IN-1 REMARKS)
+        // =========================================================
+        function initDMDashboard() {
+            let todayFormats = getDateFormats();
+            let isToday = s => todayFormats.some(f => String(s || "").includes(f));
+            let dmCallCounts = {}, calledSet = new Set();
+            dmTodayLogs = [];
+
+            for (let i = 1; i < allLogs.length; i++) {
+                let r = allLogs[i]; if (!r) continue;
+                let lDate = String(r[0] || ""), lCsc = String(r[1] || "").trim(), lRawSrv = String(r[2] || "").toUpperCase().trim(), lDm = String(r[3] || "").trim(), lRmk = String(r[4] || "");
+                if (isToday(lDate) && lDm) dmCallCounts[lDm] = (dmCallCounts[lDm] || 0) + 1;
+                if (isNameMatch(lDm, rawName)) {
+                    calledSet.add(lCsc + "_" + lRawSrv);
+                    if (isToday(lDate)) dmTodayLogs.push({ date: lDate, cscId: lCsc, service: lRawSrv, remark: lRmk });
+                }
+            }
+
+            let top5 = Object.entries(dmCallCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            document.getElementById("dmTop5Ticker").innerHTML = top5.length
+                ? top5.map((x, i) => `<span class="top5-chip">${i + 1}. ${x[0]}<b>${x[1]}</b></span>`).join("")
+                : `<span class="top5-chip">No calls today</span>`;
+
+            dmPendingList = [];
+            parsedTargets.forEach(t => {
+                if (isNameMatch(t.dm, rawName) && t.status !== "ACTIVATED") {
+                    if (!calledSet.has(t.cscId + "_" + t.rawService)) {
+                        dmPendingList.push(t);
+                    }
+                }
+            });
+
+            refreshDMVerticalGrid();
+            renderDMReport();
+            renderDMDataLogs();
+        }
+
+        function refreshDMVerticalGrid() {
+            let vCounts = {};
+            dmPendingList.forEach(t => { vCounts[t.service] = (vCounts[t.service] || 0) + 1; });
+
+            document.getElementById("dmHomePending").innerText = dmPendingList.length;
+            document.getElementById("dmHomeCalled").innerText = dmTodayLogs.length;
+
+            let gridHtml = `<div class="v-card v-all" onclick="openVerticalDeck('ALL')"><span class="v-badge">${dmPendingList.length}</span><div class="v-icon">🌐</div><div class="v-name">All</div></div>`;
+            VERTICALS.forEach(v => {
+                let cnt = vCounts[v.key] || 0;
+                let safeKey = v.key.replace(/'/g, "\\'");
+                gridHtml += `<div class="v-card ${cnt === 0 ? 'v-zero' : ''}" onclick="openVerticalDeck('${safeKey}')"><span class="v-badge ${cnt === 0 ? 'b-zero' : ''}">${cnt}</span><div class="v-icon">${v.icon}</div><div class="v-name">${v.label}</div></div>`;
+            });
+            document.getElementById("verticalGridView").innerHTML = gridHtml;
+        }
+
+        function renderDMReport() {
+            let fDate = document.getElementById("dmRepFromDate").value;
+            let tDate = document.getElementById("dmRepToDate").value;
+
+            let allCalledKeys = new Set();
+            let rangeByVert = {};
+            for (let i = 1; i < allLogs.length; i++) {
+                let r = allLogs[i]; if (!r) continue;
+                if (!isNameMatch(r[3], rawName)) continue;
+                let cscId = String(r[1] || "").trim();
+                let rawSrv = String(r[2] || "").toUpperCase().trim();
+                let vert = normVertical(rawSrv);
+                if (cscId && rawSrv) allCalledKeys.add(cscId + "_" + rawSrv);
+                if (isLogInDateRange(r[0], fDate, tDate)) {
+                    rangeByVert[vert] = (rangeByVert[vert] || 0) + 1;
+                }
+            }
+
+            let vStats = {};
+            parsedTargets.forEach(t => {
+                if (!isNameMatch(t.dm, rawName)) return;
+                if (!vStats[t.service]) vStats[t.service] = { total: 0, overall: 0 };
+                vStats[t.service].total++;
+                if (allCalledKeys.has(t.cscId + "_" + t.rawService)) vStats[t.service].overall++;
+            });
+
+            let html = "", gt = { total: 0, range: 0, overall: 0, pending: 0 };
+            let safeDm = rawName.replace(/'/g, "\\'");
+
+            VERTICALS.forEach(v => {
+                let st = vStats[v.key];
+                let rCalls = rangeByVert[v.key] || 0;
+                if (!st && !rCalls) return;
+                let tot = st ? st.total : 0;
+                let ov = st ? st.overall : 0;
+                let pend = Math.max(0, tot - ov);
+                let ach = tot > 0 ? Math.round((ov / tot) * 100) : 0;
+                let safeKey = v.key.replace(/'/g, "\\'");
+
+                gt.total += tot; gt.range += rCalls; gt.overall += ov; gt.pending += pend;
+                html += `<tr class="rep-row-dbl" ondblclick="openDmLogsModal('${safeDm}', 'DATE', '${safeKey}', '${fDate}', '${tDate}')" title="Double-click to view VLE Remarks">
+                    <td style="text-align:left; padding-left:14px;">${v.icon} ${v.label}</td>
+                    <td>${tot}</td>
+                    <td style="color:${rCalls > 0 ? '#059669' : '#dc2626'}; font-weight:900;">${rCalls}</td>
+                    <td style="color:#1e3a8a;">${ov}</td>
+                    <td style="color:#dc2626;">${pend}</td>
+                    <td style="font-weight:900;">${ach}%</td>
+                </tr>`;
+            });
+
+            let gtAch = gt.total > 0 ? Math.round((gt.overall / gt.total) * 100) : 0;
+            document.getElementById("dmReportBody").innerHTML = html || `<tr><td colspan="6" style="padding:20px; color:#64748b;">No targets assigned.</td></tr>`;
+            document.getElementById("dmReportFoot").innerHTML = `<tr>
+                <td style="text-align:left; padding-left:14px;">GRAND TOTAL</td>
+                <td>${gt.total}</td>
+                <td style="color:#059669;">${gt.range}</td>
+                <td style="color:#1e3a8a;">${gt.overall}</td>
+                <td style="color:#dc2626;">${gt.pending}</td>
+                <td>${gtAch}%</td>
+            </tr>`;
+        }
+
+        function switchDMDataScope(scope) { dmDataScope = scope; dmDataSrvFilter = "ALL"; renderDMDataLogs(); }
+        function setDMDataSrvFilter(srv) { dmDataSrvFilter = srv; renderDMDataLogs(); }
+
+        function renderDMDataLogs() {
+            let fDate = document.getElementById("dmDataFromDate").value;
+            let tDate = document.getElementById("dmDataToDate").value;
+            document.getElementById("btnDmDataDate").style.background = dmDataScope === "DATE" ? "#fcd34d" : "#f1f5f9";
+            document.getElementById("btnDmDataAll").style.background = dmDataScope === "ALL" ? "#fcd34d" : "#f1f5f9";
+
+            let matched = [], srvCounts = {};
+            for (let i = allLogs.length - 1; i >= 1; i--) {
+                let r = allLogs[i]; if (!r) continue;
+                if (!isNameMatch(r[3], rawName)) continue;
+                if (dmDataScope === "DATE" && !isLogInDateRange(r[0], fDate, tDate)) continue;
+
+                let cscKey = String(r[1] || "").trim();
+                let rawSrv = String(r[2] || "OTHER").toUpperCase().trim();
+                srvCounts[rawSrv] = (srvCounts[rawSrv] || 0) + 1;
+                matched.push({
+                    date: String(r[0] || ""), cscId: cscKey,
+                    vleName: vleNameLookup[cscKey] || "-",
+                    vleMobile: vleMobileLookup[cscKey] || "-",
+                    vleDistrict: vleDistrictLookup[cscKey] || "-",
+                    service: rawSrv, remark: String(r[4] || "-"), dur: formatSec(r[5])
+                });
+            }
+
+            let summaryBar = document.getElementById("dmDataServiceSummary");
+            if (matched.length > 0) {
+                let sortedSrvs = Object.entries(srvCounts).sort((a, b) => b[1] - a[1]);
+                let pillsHtml = `<button class="srv-pill-btn ${dmDataSrvFilter === 'ALL' ? 'active' : ''}" onclick="setDMDataSrvFilter('ALL')">All Services <b>(${matched.length})</b></button>`;
+                sortedSrvs.forEach(([srvName, cnt]) => {
+                    let safeSrv = srvName.replace(/'/g, "\\'");
+                    pillsHtml += `<button class="srv-pill-btn ${dmDataSrvFilter === srvName ? 'active' : ''}" onclick="setDMDataSrvFilter('${safeSrv}')">${srvName}: <b>${cnt}</b></button>`;
+                });
+                summaryBar.innerHTML = pillsHtml;
+                summaryBar.style.display = "flex";
+            } else {
+                summaryBar.style.display = "none";
+            }
+
+            let filtered = dmDataSrvFilter === "ALL" ? matched : matched.filter(m => m.service === dmDataSrvFilter);
+            let html = "";
+            filtered.slice(0, 500).forEach(m => {
+                html += `<tr>
+                    <td style="font-size:11.5px; color:#475569;">${m.date}</td>
+                    <td style="color:#1e3a8a;">${m.cscId}</td>
+                    <td style="text-align:left;">${m.vleName}</td>
+                    <td>${m.vleMobile}</td>
+                    <td style="color:#1e3a8a; font-size:11.5px;">${m.vleDistrict}</td>
+                    <td><b>${m.service}</b></td>
+                    <td style="text-align:left;"><span class="rmk-badge" style="${getRemarkStyle(m.remark)}">${m.remark}</span></td>
+                    <td style="color:#059669;">${m.dur}</td>
+                </tr>`;
+            });
+            document.getElementById("dmDataBody").innerHTML = html || `<tr><td colspan="8" style="padding:26px; color:#64748b;">No calls found for selected date.</td></tr>`;
+        }
+
+        function switchDMTab(tab) {
+            ['home', 'calling', 'report', 'data'].forEach(t => {
+                document.getElementById('dmTab-' + t).style.display = (t === tab) ? 'block' : 'none';
+                document.getElementById('bnav-' + t).classList.toggle('active', t === tab);
+            });
+            document.getElementById("dmAppScreen").classList.toggle("wide-mode", tab === "report" || tab === "data");
+        }
+
+        // 🌟 ONE-CALL MULTI-SERVICE QUEUE BUILDER 🌟
+        function openVerticalDeck(vKey) {
+            let matchingItems = vKey === "ALL" ? dmPendingList : dmPendingList.filter(x => x.service === vKey);
+            if (!matchingItems.length) { alert("No pending VLEs in this vertical!"); return; }
+
+            let seenCsc = new Set();
+            activeDeckQueue = [];
+
+            matchingItems.forEach(item => {
+                if (seenCsc.has(item.cscId)) return;
+                seenCsc.add(item.cscId);
+
+                let allForVle = dmPendingList.filter(p => p.cscId === item.cscId);
+                allForVle.sort((a, b) => (a.service === vKey ? -1 : 1) - (b.service === vKey ? -1 : 1));
+
+                activeDeckQueue.push({
+                    cscId: item.cscId,
+                    name: item.name,
+                    mobile: item.mobile,
+                    district: item.district,
+                    services: allForVle
+                });
+            });
+
+            deckIdx = 0;
+            document.getElementById("verticalGridView").style.display = "none";
+            document.getElementById("callingDeckView").style.display = "flex";
+            document.getElementById("activeVerticalLabel").innerText = vKey;
+            renderCurrentCallCard();
+        }
+
+        function backToVerticalGrid() {
+            document.getElementById("callingDeckView").style.display = "none";
+            document.getElementById("verticalGridView").style.display = "grid";
+            refreshDMVerticalGrid();
+        }
+
+        function buildRemarkOptionsHtml() {
+            return `<option value="" disabled selected>Select Outcome...</option>` +
+                REMARK_OPTIONS.map(opt => `<option value="${opt}">${opt === 'Others' ? 'Others (Type reason)' : opt}</option>`).join("");
+        }
+
+        function renderCurrentCallCard() {
+            if (deckIdx >= activeDeckQueue.length) {
+                document.getElementById("activeVleCardHost").innerHTML = `
+                    <div class="mini-card" style="text-align:center; padding:30px;">
+                        <h3 style="font-family:'Outfit'; color:#15803d;">🎉 Completed!</h3>
+                        <p style="font-size:12.5px; color:#64748b; margin-top:6px;">All VLEs in this list have been called.</p>
+                        <button class="btn-sm-corp btn-navy" style="margin-top:14px;" onclick="backToVerticalGrid()">Back to Verticals</button>
+                    </div>`;
+                document.getElementById("deckRemainCount").innerText = "0 VLEs Left";
+                return;
+            }
+
+            let v = activeDeckQueue[deckIdx];
+            document.getElementById("deckRemainCount").innerText = `${activeDeckQueue.length - deckIdx} VLEs Left`;
+
+            let srvNames = v.services.map(s => s.rawService);
+            let isMulti = v.services.length > 1;
+            let headerTitle = isMulti
+                ? `${srvNames[0]} + ${v.services.length - 1} MORE PENDING`
+                : `${srvNames[0]} FOLLOW-UP`;
+
+            let cleanMob = v.mobile.replace(/\D/g, '');
+            let msg = `Dear ${v.name} గారు (CSC ID: ${v.cscId}),\n\nదయచేసి మీ పెండింగ్ లో ఉన్న *${srvNames.join(", ")}* సేవలను వెంటనే ప్రారంభించి లావాదేవీలు చేయగలరు.\n\nధన్యవాదాలు,\n*${rawName}*\nCSC District Manager.`;
+
+            let previewChipsHtml = v.services.map(s =>
+                `<span style="display:inline-flex; align-items:center; gap:5px; background:#eff6ff; color:#1e3a8a; border:1px solid #bfdbfe; padding:4px 10px; border-radius:8px; font-size:11.5px; font-weight:800;">
+                    ${s.rawService} <span style="color:#64748b; font-weight:700;">(LY: ${s.lastYr} | TY: ${s.thisYr})</span>
+                </span>`
+            ).join("");
+
+            let optHtml = buildRemarkOptionsHtml();
+            let masterBoxHtml = isMulti ? `
+                <div class="master-rmk-box">
+                    <span class="master-rmk-label">⚡ Quick Fill: Apply Same Remark to All (${v.services.length} Services)</span>
+                    <select id="dmMasterRmk" class="rmk-select" onchange="applyMasterRemark()">
+                        <option value="">-- Select only if SAME remark for all --</option>
+                        ${REMARK_OPTIONS.map(opt => `<option value="${opt}">${opt === 'Others' ? 'Others (Type reason)' : opt}</option>`).join("")}
+                    </select>
+                    <input type="text" id="dmMasterOther" class="rmk-input" style="display:none;" placeholder="Type common reason for all services..." oninput="syncMasterOther()">
+                </div>` : ``;
+
+            let srvRowsHtml = v.services.map((s, idx) => `
+                <div class="srv-rmk-card" id="srvCard-${idx}">
+                    <div class="srv-rmk-top">
+                        <label class="srv-chk-wrap">
+                            <input type="checkbox" id="srvChk-${idx}" checked onchange="toggleSrvCard(${idx})">
+                            <span>${s.rawService}</span>
+                        </label>
+                        <span class="srv-stat-mini">LY: ${s.lastYr} | TY: <b style="color:#dc2626;">${s.thisYr}</b></span>
+                    </div>
+                    <select id="srvRmk-${idx}" class="rmk-select" onchange="toggleSrvOther(${idx})">${optHtml}</select>
+                    <input type="text" id="srvOther-${idx}" class="rmk-input" style="display:none;" placeholder="Type specific reason for ${s.rawService}...">
+                </div>`
+            ).join("");
+
+            document.getElementById("activeVleCardHost").innerHTML = `
+            <div class="vle-call-card">
+                <div class="vle-card-head">${headerTitle}</div>
+                <div class="vle-card-body">
+                    <h3 style="font-family:'Outfit'; font-size:20px; font-weight:800; color:#0f172a;">${v.name}</h3>
+                    <p style="font-size:12px; color:#64748b; font-weight:700; margin:4px 0 10px 0;">CSC ID: ${v.cscId} ${v.district && v.district !== '-' ? '| ' + v.district : ''}</p>
+                    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:12px;">
+                        ${previewChipsHtml}
+                    </div>
+                    <div class="btn-row">
+                        <a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit()"><i class="fa-solid fa-phone"></i> Call</a>
+                        <a href="${getWaLink(cleanMob, msg)}" target="_blank" class="btn-wa" onclick="unlockCallSubmit()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                    </div>
+                    <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">🔒 Tap Call or WhatsApp to unlock Remarks</div>
+                    <div id="dmActionBox" style="display:none; margin-top:12px;">
+                        ${masterBoxHtml}
+                        ${srvRowsHtml}
+                        <button id="dmSubmitBtn" class="btn-sm-corp btn-navy" style="width:100%; justify-content:center; padding:12px; font-size:14px; margin-top:4px;" onclick="submitDMCall()">
+                            Submit ${isMulti ? 'Selected Services' : ''} & Next →
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            callStartTime = null;
+        }
+
+        function unlockCallSubmit() {
+            document.getElementById("dmLockMsg").style.display = "none";
+            document.getElementById("dmActionBox").style.display = "block";
+            if (!callStartTime) callStartTime = new Date();
+        }
+
+        function toggleSrvCard(idx) {
+            let chk = document.getElementById(`srvChk-${idx}`).checked;
+            document.getElementById(`srvCard-${idx}`).classList.toggle("unchecked", !chk);
+            document.getElementById(`srvRmk-${idx}`).disabled = !chk;
+            document.getElementById(`srvOther-${idx}`).disabled = !chk;
+        }
+
+        function toggleSrvOther(idx) {
+            let val = document.getElementById(`srvRmk-${idx}`).value;
+            let box = document.getElementById(`srvOther-${idx}`);
+            box.style.display = val === "Others" ? "block" : "none";
+            if (val === "Others") box.focus();
+        }
+
+        function applyMasterRemark() {
+            let mVal = document.getElementById("dmMasterRmk").value;
+            let mOther = document.getElementById("dmMasterOther");
+            mOther.style.display = mVal === "Others" ? "block" : "none";
+            if (!mVal) return;
+
+            let v = activeDeckQueue[deckIdx];
+            v.services.forEach((_, idx) => {
+                if (document.getElementById(`srvChk-${idx}`).checked) {
+                    document.getElementById(`srvRmk-${idx}`).value = mVal;
+                    document.getElementById(`srvOther-${idx}`).style.display = mVal === "Others" ? "block" : "none";
+                    if (mVal === "Others") document.getElementById(`srvOther-${idx}`).value = mOther.value;
+                }
+            });
+            if (mVal === "Others") mOther.focus();
+        }
+
+        function syncMasterOther() {
+            let txt = document.getElementById("dmMasterOther").value;
+            let v = activeDeckQueue[deckIdx];
+            v.services.forEach((_, idx) => {
+                if (document.getElementById(`srvChk-${idx}`).checked && document.getElementById(`srvRmk-${idx}`).value === "Others") {
+                    document.getElementById(`srvOther-${idx}`).value = txt;
+                }
+            });
+        }
+
+        function submitDMCall() {
+            let v = activeDeckQueue[deckIdx];
+            let toSubmit = [];
+
+            for (let idx = 0; idx < v.services.length; idx++) {
+                let chk = document.getElementById(`srvChk-${idx}`).checked;
+                if (!chk) continue;
+
+                let rmk = document.getElementById(`srvRmk-${idx}`).value;
+                if (!rmk) {
+                    alert(`Please select outcome for ${v.services[idx].rawService}!`);
+                    return;
+                }
+                if (rmk === "Others") {
+                    let oTxt = document.getElementById(`srvOther-${idx}`).value.trim();
+                    if (!oTxt) {
+                        alert(`Please type reason for ${v.services[idx].rawService}!`);
+                        return;
+                    }
+                    rmk = "Others: " + oTxt;
+                }
+                toSubmit.push({ srvObj: v.services[idx], remark: rmk });
+            }
+
+            if (toSubmit.length === 0) {
+                alert("Please keep at least one service checked to submit!");
+                return;
+            }
+
+            let btn = document.getElementById("dmSubmitBtn");
+            btn.innerText = `⏳ Saving ${toSubmit.length} service(s)...`;
+            btn.disabled = true;
+
+            let dur = callStartTime ? Math.round((new Date() - callStartTime) / 1000) : 15;
+            let nowStr = getDateFormats()[0] + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            toSubmit.forEach((item, i) => {
+                setTimeout(() => {
+                    fetch(SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        body: JSON.stringify({
+                            action: "saveFollowUp",
+                            cscId: v.cscId,
+                            service: item.srvObj.rawService,
+                            dmName: rawName,
+                            remark: item.remark,
+                            duration: dur,
+                            location: "CallingDeskV2"
+                        })
+                    });
+                }, i * 450);
+
+                allLogs.push([nowStr, v.cscId, item.srvObj.rawService, rawName, item.remark, dur]);
+                dmTodayLogs.unshift({ date: nowStr, cscId: v.cscId, service: item.srvObj.rawService, remark: item.remark });
+                dmPendingList = dmPendingList.filter(p => !(p.cscId === v.cscId && p.rawService === item.srvObj.rawService));
+            });
 
             setTimeout(() => {
-                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: card.scrollWidth + 100 }).then(canvas => {
-                    let selDate = document.getElementById("spocDatePicker").value || "Report";
-                    let filename = `State_Head_Report_${selDate}.png`;
-                    if (canvas.toBlob) {
-                        canvas.toBlob(blob => {
-                            let url = URL.createObjectURL(blob); let link = document.createElement('a');
-                            link.download = filename; link.href = url; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                            setTimeout(() => URL.revokeObjectURL(url), 1000);
-                        }, "image/png");
-                    } else {
-                        let link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png");
-                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    }
-                    btn.innerHTML = originalText; btn.disabled = false;
-                    container.style.overflow = origOverflow; container.style.overflowX = origOverflowX; card.style.width = origWidth;
-                    ths.forEach(th => th.style.position = "sticky");
-                }).catch(err => {
-                    alert("Failed to save image."); btn.innerHTML = originalText; btn.disabled = false;
-                    container.style.overflow = origOverflow; container.style.overflowX = origOverflowX; card.style.width = origWidth;
-                    ths.forEach(th => th.style.position = "sticky");
-                });
-            }, 400);
-        };
+                deckIdx++;
+                renderCurrentCallCard();
+                refreshDMVerticalGrid();
+                renderDMReport();
+                renderDMDataLogs();
+            }, Math.max(500, toSubmit.length * 450 + 250));
+        }
 
-        window.downloadStateHeadExcel = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let table = document.querySelector(".report-table"); let rows = table.querySelectorAll("tr");
-            let selDate = document.getElementById("spocDatePicker").value || "Report";
-
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px;">`;
-            tableHtml += `<thead><tr><th colspan="10" style="background-color:#1e3a8a; color:white; font-size:16px; padding:10px; text-align:center;">STATE HEAD FOLLOW-UP REPORT (${selDate})</th></tr>`;
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
-            rows[0].querySelectorAll("th").forEach(h => tableHtml += `<th style="padding: 10px;">${h.innerText.replace(/(\r\n|\n|\r)/gm, " ")}</th>`);
-            tableHtml += `</tr></thead><tbody>`;
-            for(let i=1; i<rows.length; i++) {
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                rows[i].querySelectorAll("td").forEach(c => tableHtml += `<td style="padding: 8px;">${c.innerText}</td>`);
-                tableHtml += `</tr>`;
-            }
-            tableHtml += `</tbody></table></body></html>`;
-
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `State_Head_Report_${selDate}.xls`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        };
+        function exportDMDataExcel() {
+            let wb = XLSX.utils.table_to_book(document.getElementById("dmDataTable"), { sheet: "My_Call_Remarks", raw: true });
+            XLSX.writeFile(wb, `${rawName || "DM"}_Call_Remarks.xlsx`);
+        }
     </script>
 </body>
 </html>
