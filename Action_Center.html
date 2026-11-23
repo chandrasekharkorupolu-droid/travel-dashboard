@@ -4,172 +4,452 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Action Center | CSC AP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        :root {
+            --corp-dark: #0f172a;
+            --corp-navy: #1e3a8a;
+            --corp-blue: #2563eb;
+            --corp-bg: #eef2f6;
+            --corp-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #f4f7fe; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-        
-        /* 🌟 COMMON STYLES 🌟 */
-        .task-header { background: #ffffff; padding: 25px 20px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px; border-radius:16px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.02); position: relative; z-index: 999;}
-        .task-title { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        .loader-box { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:99; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        
-        /* 🌟 DM UI STYLES 🌟 */
-        .dm-container { flex: 1; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
-        .dm-overall-stats { display: flex; justify-content: center; align-items: center; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 30px; padding: 10px 25px; font-size: 14px; font-weight: 800; color: #334155; margin: 0 auto 15px auto; width: fit-content; flex-wrap: wrap; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        body { background: var(--corp-bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+        /* 🌟 EXECUTIVE LOADER 🌟 */
+        .loader-box {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #ffffff;
+        }
+        .loader-spinner {
+            width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #fcd34d; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin-bottom: 16px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 🌟 SPOC CONTAINER 🌟 */
+        .spoc-container { padding: 18px 22px 40px 22px; max-width: 1440px; margin: auto; width: 100%; }
+
+        /* 🌟 INNOVATIVE COMMAND HEADER 🌟 */
+        .cmd-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%);
+            color: #ffffff; padding: 20px 26px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 16px; margin-bottom: 18px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .cmd-title-area { display: flex; align-items: center; gap: 14px; }
+        .cmd-logo-box {
+            width: 46px; height: 46px; border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #ffffff; box-shadow: 0 6px 16px rgba(37,99,235,0.4);
+        }
+        .cmd-title-area h2 {
+            font-family: 'Outfit', sans-serif; font-size: 21px; font-weight: 800;
+            letter-spacing: 0.2px; display: flex; align-items: center; gap: 10px;
+        }
+        .live-pill {
+            font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+            background: rgba(16, 185, 129, 0.18); color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.35); padding: 3px 9px; border-radius: 20px;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .pulse-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulseGreen 1.6s infinite;
+        }
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .cmd-title-area p { font-size: 12px; color: #94a3b8; font-weight: 500; margin-top: 2px; }
+
+        .cmd-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .date-glass {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+            padding: 6px 12px; border-radius: 10px;
+        }
+        .date-glass label { font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; }
+        .date-glass input[type="date"] {
+            background: transparent; border: none; color: #ffffff;
+            font-family: 'Outfit', sans-serif; font-size: 13.5px; font-weight: 700;
+            outline: none; cursor: pointer; color-scheme: dark;
+        }
+
+        /* 🌟 SEGMENTED NAVIGATION TABS 🌟 */
+        .nav-tabs-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
+        }
+        .seg-tabs {
+            display: inline-flex; background: #ffffff; padding: 5px; border-radius: 12px;
+            border: 1px solid var(--corp-border); box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+            gap: 4px; flex-wrap: wrap;
+        }
+        .seg-tab {
+            padding: 9px 18px; border-radius: 9px; border: none; background: transparent;
+            font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;
+        }
+        .seg-tab:hover { color: #0f172a; background: #f8fafc; }
+        .seg-tab.active {
+            background: #0f172a; color: #ffffff;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+        }
+
+        /* 🌟 MODERN KPI STRIP 🌟 */
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+        .stat-box {
+            background: #ffffff; padding: 18px 20px; border-radius: 14px;
+            border: 1px solid var(--corp-border);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; overflow: hidden;
+        }
+        .stat-box:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08); }
+        .stat-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+        .stat-box h3 { font-size: 30px; font-weight: 800; font-family: 'Outfit', sans-serif; line-height: 1.05; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .stat-icon-circle {
+            width: 42px; height: 42px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .stat-pills { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 5px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+
+        /* 🌟 SPLIT-SCREEN LIVE COMMAND DECK 🌟 */
+        .command-split {
+            display: grid; grid-template-columns: 440px 1fr; gap: 18px; align-items: start;
+        }
+        .deck-panel {
+            background: #ffffff; border-radius: 16px; border: 1px solid var(--corp-border);
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04); overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .deck-head {
+            padding: 15px 18px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .deck-head h4 {
+            font-family: 'Outfit', sans-serif; font-size: 14.5px; font-weight: 800;
+            color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 8px; margin: 0;
+        }
+        .deck-body { padding: 14px; max-height: 620px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .deck-body::-webkit-scrollbar { width: 6px; }
+        .deck-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+
+        /* 🌟 LEADERBOARD DM ROW (LEFT PANEL) 🌟 */
+        .dm-leader-card {
+            padding: 13px 14px; border-radius: 12px; border: 1px solid #e2e8f0;
+            background: #ffffff; cursor: pointer; transition: all 0.2s ease;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .dm-leader-card:hover { border-color: #93c5fd; background: #f8fafc; transform: translateX(3px); }
+        .dm-leader-card.selected-dm {
+            border-color: #2563eb; background: #eff6ff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+        }
+        .dm-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .dm-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .dm-avatar {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #ffffff;
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 13px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            position: relative;
+        }
+        .avatar-live-dot {
+            position: absolute; bottom: -2px; right: -2px; width: 11px; height: 11px;
+            background: #10b981; border: 2px solid #ffffff; border-radius: 50%;
+        }
+        .dm-name-block h5 { font-size: 13.5px; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
+        .dm-name-block span { font-size: 11px; font-weight: 600; color: #64748b; }
+        .dm-calls-pill {
+            background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;
+            padding: 4px 10px; border-radius: 8px; font-family: 'Outfit', sans-serif;
+            font-size: 13px; font-weight: 800; white-space: nowrap;
+        }
+        .dm-badges-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+        .tgt-badge { font-size: 10px; padding: 2px 7px; border-radius: 5px; font-weight: 800; }
+
+        /* 🌟 LIVE CALL TIMELINE STREAM (RIGHT PANEL) 🌟 */
+        .timeline-item {
+            display: flex; gap: 14px; padding: 13px 15px; border-radius: 12px;
+            border: 1px solid #e2e8f0; background: #ffffff; transition: 0.2s;
+            align-items: center; justify-content: space-between; flex-wrap: wrap;
+        }
+        .timeline-item:hover { border-color: #cbd5e1; background: #f8fafc; }
+        .tl-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 240px; }
+        .tl-time-box {
+            background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 6px 8px; text-align: center; min-width: 64px; flex-shrink: 0;
+        }
+        .tl-time-box strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .tl-time-box span { display: block; font-size: 10px; font-weight: 700; color: #059669; margin-top: 2px; }
+        .tl-details { flex: 1; }
+        .tl-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+        .tl-title-row h5 { font-size: 13.5px; font-weight: 800; color: #0f172a; font-family: 'Outfit', sans-serif; }
+        .tl-dm-tag { font-size: 11px; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 4px; }
+        .tl-rmk-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; margin-top: 4px; }
+
+        /* 🌟 DM FOLLOW-UP CENTER (INNOVATIVE CARDS + FILTERS) 🌟 */
+        .fu-toolbar {
+            background: #ffffff; padding: 14px 18px; border-radius: 14px;
+            border: 1px solid var(--corp-border); margin-bottom: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 10px rgba(15,23,42,0.03);
+        }
+        .fu-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+        .fu-pill {
+            padding: 7px 14px; border-radius: 8px; border: 1px solid #cbd5e1;
+            background: #f8fafc; font-size: 12px; font-weight: 800; color: #475569;
+            cursor: pointer; transition: 0.2s;
+        }
+        .fu-pill.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .fu-search {
+            padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;
+            font-size: 13px; font-weight: 600; outline: none; min-width: 230px; background: #f8fafc;
+        }
+        .fu-search:focus { border-color: #2563eb; background: #ffffff; }
+
+        .fu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+        .fu-card {
+            background: #ffffff; border-radius: 14px; padding: 18px 20px;
+            border: 1px solid var(--corp-border); box-shadow: 0 3px 12px rgba(15,23,42,0.04);
+            display: flex; flex-direction: column; gap: 12px; transition: 0.2s;
+        }
+        .fu-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15,23,42,0.08); }
+        .fu-card.zero-alert { border-top: 4px solid #dc2626; }
+        .fu-card.active-ok { border-top: 4px solid #16a34a; }
+
+        .fu-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .fu-progress-wrap { display: flex; flex-direction: column; gap: 5px; }
+        .fu-progress-labels { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: #475569; }
+        .fu-bar-bg { height: 7px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+        .fu-bar-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+
+        /* 🌟 CORPORATE STATE HEAD REPORT TABLE 🌟 */
+        .report-card {
+            background: #ffffff; border-radius: 16px; border: 1px solid var(--corp-border);
+            padding: 22px 24px; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+        }
+        .report-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: #ffffff; padding: 18px 22px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; flex-wrap: wrap; gap: 14px;
+        }
+        .report-header h3 { font-size: 19px; font-family: 'Outfit', sans-serif; font-weight: 800; color: #ffffff; margin: 0; }
+        .report-header p { font-size: 12px; color: #cbd5e1; font-weight: 600; margin-top: 3px; }
+
+        .report-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid #cbd5e1; }
+        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 960px; }
+        .report-table th {
+            position: -webkit-sticky; position: sticky; top: 0;
+            background: #1e3a8a; color: #ffffff; padding: 13px 10px;
+            font-weight: 800; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.4px;
+            border-right: 1px solid rgba(255,255,255,0.12); white-space: nowrap; z-index: 10;
+        }
+        .report-table th:last-child { border-right: none; }
+        .report-table td {
+            padding: 12px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9;
+            color: #0f172a; font-weight: 700; white-space: nowrap; background: #ffffff;
+            font-variant-numeric: tabular-nums;
+        }
+        .report-table tbody tr:nth-child(even) td { background: #f8fafc; }
+        .report-table tbody tr:hover td { background: #eff6ff; }
+        .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; padding-left: 14px; }
+
+        .dl-btn {
+            background: #2563eb; color: #ffffff; border: 1px solid rgba(255,255,255,0.2);
+            padding: 9px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 800;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; transition: 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .dl-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+        .dl-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+        .dl-btn-excel { background: #059669; }
+
+        /* 🌟 ACTION BUTTONS 🌟 */
+        .action-btn-group { display: flex; gap: 10px; }
+        .call-btn {
+            flex: 1; background: #eff6ff; color: #1e3a8a; border: 1.5px solid #bfdbfe;
+            padding: 9px 12px; border-radius: 9px; font-weight: 800; font-size: 12.5px;
+            cursor: pointer; text-decoration: none; display: flex; align-items: center;
+            justify-content: center; gap: 7px; transition: 0.2s;
+        }
+        .call-btn:hover { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .wa-btn {
+            flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0;
+            padding: 9px 12px; border-radius: 9px; font-weight: 800; font-size: 12.5px;
+            cursor: pointer; text-decoration: none; display: flex; align-items: center;
+            justify-content: center; gap: 7px; transition: 0.2s;
+        }
+        .wa-btn:hover { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+
+        /* 🌟 DM ACTION CENTER VIEW 🌟 */
+        .dm-container { flex: 1; padding: 20px; max-width: 780px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
+        .task-header {
+            background: #ffffff; padding: 22px 24px; border: 1px solid var(--corp-border);
+            display: flex; flex-direction: column; gap: 14px; border-radius: 14px;
+            margin-bottom: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05); position: relative; z-index: 50;
+        }
+        .dm-overall-stats {
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;
+            padding: 10px 18px; font-size: 13px; font-weight: 700; color: #334155;
+            margin: 0 auto; width: fit-content; flex-wrap: wrap;
+        }
         .stat-divider { color: #cbd5e1; font-weight: 400; }
-        .dm-overall-stats b { font-size: 16px; font-family: 'Outfit', sans-serif;}
+        .dm-overall-stats b { font-size: 15px; font-family: 'Outfit', sans-serif; color: #0f172a; }
+        .dm-log-bar {
+            display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;
+            background: #f8fafc; padding: 10px 14px; border-radius: 10px;
+            margin: 0 auto; width: 100%; max-width: 520px; border: 1px solid #e2e8f0;
+        }
+        .task-selector {
+            width: 100%; max-width: 520px; padding: 12px 16px; border-radius: 10px;
+            border: 1.5px solid #1e3a8a; font-weight: 800; font-size: 14px;
+            color: #1e3a8a; background: #eff6ff; outline: none; cursor: pointer; margin: 0 auto;
+        }
+        .progress-bar-container { background: #e2e8f0; height: 8px; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+        .progress-bar-fill { background: linear-gradient(90deg, #2563eb, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 10px; }
 
-        .task-selector { width: 100%; max-width: 500px; padding: 14px 20px; border-radius: 12px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer; margin: 0 auto;}
-        .progress-bar-container { background: #e2e8f0; height: 8px; width: 100%; position: relative; border-radius: 10px; overflow: hidden; margin-bottom: 15px;}
-        .progress-bar-fill { background: linear-gradient(90deg, #10b981, #059669); height: 100%; width: 0%; transition: 0.4s ease; border-radius: 0 4px 4px 0;}
-        
-        .card-stack { flex:1; position:relative; display:flex; justify-content:center; align-items:center; padding:20px; min-height: 450px; pointer-events: none; }
-        
-        .vle-card { width: 100%; max-width: 500px; background: #fff; border-radius: 24px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); position:absolute; transition: all 0.4s ease; display:flex; flex-direction:column; border: 1px solid #f1f5f9; pointer-events: none; }
-        
-        .card-active { transform: translateY(0) scale(1); opacity: 1; z-index:5; pointer-events: auto; }
-        .card-next { transform: translateY(50px); opacity: 0; z-index:4; pointer-events: none; visibility: hidden; } 
-        .card-done { transform: scale(0.8); opacity: 0; z-index:1; pointer-events: none; visibility: hidden; } 
-        
-        .vle-card-header { padding: 20px; text-align: center; color: white; font-weight: 900; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; border-radius: 24px 24px 0 0; }
-        
-        /* 🌟 DYNAMIC HEADER COLORS 🌟 */
-        .bg-generic { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .bg-irctc { background: linear-gradient(135deg, #38bdf8, #0284c7); }
-        .bg-redbus { background: linear-gradient(135deg, #fb7185, #e11d48); }
-        .bg-both { background: linear-gradient(135deg, #4f46e5, #312e81); } 
-        .bg-amc { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-        
-        .vle-info { padding: 30px; text-align: center; flex:1; display: flex; flex-direction: column; justify-content: space-between;}
-        .vle-details h2 { font-size: 26px; font-family: 'Outfit', sans-serif; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
-        .vle-details p { font-size: 14px; font-weight: 700; color: #64748b; background: #f1f5f9; display: inline-block; padding: 6px 16px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;}
-        .txn-badge { display:flex; justify-content:space-between; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px 18px; border-radius: 12px; margin-bottom: 15px; font-size:14px; font-weight:700;}
-        
-        .action-btn-group { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 15px; }
-        .call-btn { flex: 1; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; text-decoration: none; display:flex; align-items:center; justify-content:center; gap:8px;}
-        .wa-btn { flex: 1; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; text-decoration: none; display:flex; align-items:center; justify-content:center; gap:8px;}
-        
-        .lock-message { background: #fffbeb; border: 1px dashed #f59e0b; color: #b45309; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; margin-bottom: 15px; transition: 0.3s;}
-        
-        .vle-action { transition: 0.3s; }
-        .vle-action select { width: 100%; padding: 16px; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 15px; outline:none; font-weight:700; font-size: 14px; color: #1e293b; background: #f8fafc; cursor: pointer;}
-        .other-input-box { width: 100%; padding: 14px; border-radius: 12px; border: 2px dashed #94a3b8; margin-bottom: 15px; outline:none; font-weight:700; font-size: 14px; color: #0f172a; background: #ffffff; display: none; transition: 0.3s; }
-        .other-input-box:focus { border-color: #3b82f6; }
-        
-        .submit-btn { width: 100%; background: #0f172a; color: #fff; padding: 16px; border-radius: 12px; font-weight: 800; border:none; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 15px rgba(15, 23, 42, 0.2);}
-        .submit-btn:hover { transform: translateY(-2px); }
+        .card-stack { flex: 1; position: relative; display: flex; justify-content: center; align-items: flex-start; padding: 10px 0 30px 0; min-height: 460px; pointer-events: none; }
+        .vle-card {
+            width: 100%; max-width: 520px; background: #ffffff; border-radius: 16px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1); position: absolute;
+            transition: all 0.35s ease; display: flex; flex-direction: column;
+            border: 1px solid #cbd5e1; pointer-events: none; overflow: hidden;
+        }
+        .card-active { transform: translateY(0) scale(1); opacity: 1; z-index: 5; pointer-events: auto; }
+        .card-next { transform: translateY(40px); opacity: 0; z-index: 4; pointer-events: none; visibility: hidden; }
+        .card-done { transform: scale(0.9); opacity: 0; z-index: 1; pointer-events: none; visibility: hidden; }
 
-        .summary-view { display: none; width: 100%; margin: 0 auto; padding: 10px; }
-        .summary-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
-        .summary-info h4 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
-        .summary-info p { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 5px; }
-        .summary-remark { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+        .vle-card-header { padding: 16px 20px; text-align: center; color: #ffffff; font-weight: 800; font-size: 13.5px; text-transform: uppercase; letter-spacing: 1px; }
+        .bg-generic { background: linear-gradient(135deg, #0f172a, #d97706); }
+        .bg-irctc { background: linear-gradient(135deg, #0f172a, #ea580c); }
+        .bg-redbus { background: linear-gradient(135deg, #0f172a, #dc2626); }
+        .bg-both { background: linear-gradient(135deg, #0f172a, #1e3a8a); }
+        .bg-amc { background: linear-gradient(135deg, #0f172a, #7c3aed); }
 
-        /* 🌟 SPOC DASHBOARD STYLES 🌟 */
-        .spoc-container { padding: 20px; max-width: 1300px; margin: auto; width: 100%; }
-        
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px; }
-        .stat-box { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .stat-box h3 { font-size: 26px; font-weight: 900; margin-bottom: 4px; font-family: 'Outfit', sans-serif; line-height: 1; color: #0f172a;}
-        .stat-box p { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
+        .vle-info { padding: 26px 28px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .vle-details h2 { font-size: 23px; font-family: 'Outfit', sans-serif; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .vle-details p { font-size: 13px; font-weight: 700; color: #475569; background: #f1f5f9; display: inline-block; padding: 5px 14px; border-radius: 8px; margin-bottom: 14px; border: 1px solid #e2e8f0; }
+        .txn-badge { display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 16px; border-radius: 10px; margin-bottom: 12px; font-size: 13.5px; font-weight: 700; color: #334155; }
+        .lock-message { background: #fffbeb; border: 1px dashed #f59e0b; color: #b45309; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 12.5px; margin-bottom: 10px; }
+        .vle-action select { width: 100%; padding: 13px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; margin-bottom: 12px; outline: none; font-weight: 700; font-size: 13.5px; color: #0f172a; background: #f8fafc; cursor: pointer; }
+        .other-input-box { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px dashed #94a3b8; margin-bottom: 12px; outline: none; font-weight: 600; font-size: 13.5px; color: #0f172a; background: #ffffff; display: none; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #ffffff; padding: 14px; border-radius: 10px; font-weight: 800; border: none; font-size: 15px; cursor: pointer; transition: 0.2s; }
 
-        .view-selector { width: 100%; max-width: 400px; margin: 0 auto 15px auto; display: block; padding: 12px 20px; border-radius: 30px; border: 2px solid #10b981; font-weight: 800; font-size: 15px; color: #10b981; background: #ecfdf5; outline: none; cursor: pointer;}
-        
-        .dash-section-title { font-size: 18px; font-family: 'Outfit', sans-serif; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 25px;}
-        
-        .dm-item { padding: 18px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);}
-        .dm-info h4 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 10px;}
-        
-        .tgt-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; display: inline-block; font-weight: 800; margin-right: 6px; margin-bottom: 10px;}
-        .dm-calls-text { font-size: 13px; font-weight: 800; color: #059669; margin-bottom: 5px;}
-        .dm-login-text { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 8px;}
-        .dm-status { font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; background: #dcfce7; color: #166534; display: inline-block;}
+        .summary-view { display: none; width: 100%; margin: 0 auto; padding: 10px 0; }
+        .summary-card { background: #ffffff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--corp-border); border-left: 4px solid #1e3a8a; }
+        .summary-info h4 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .summary-info p { font-size: 12.5px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+        .summary-remark { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
 
-        .live-feed-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #3b82f6; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;}
-        .live-feed-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
-        .live-feed-header h4 { font-size: 14px; font-weight: 900; color: #0f172a; line-height: 1.3;}
-        .feed-dm { font-size: 11px; font-weight: 800; color: #4f46e5; background: #e0e7ff; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;}
-        .feed-rmk { display: inline-block; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; margin-top: 8px; align-self: flex-start;}
-        .feed-duration { font-size: 11px; font-weight: 700; color: #10b981; margin-top: 6px;}
-        .feed-actions { display: flex; gap: 10px; margin-top: 12px; }
-        .feed-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none; cursor: pointer;}
-        .f-call { background: #f8fafc; color: #4f46e5; border: 1px solid #e0e7ff; }
-        .f-wa { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-
-        .dm-action-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #10b981; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .dm-action-item h4 { font-size: 16px; font-weight: 900; color: #0f172a; margin-bottom: 6px;}
-        .dm-action-item p { font-size: 12px; font-weight: 700; color: #64748b; margin-top: 8px;}
-        
-        .report-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px; margin-top: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); }
-        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;}
-        
-        /* 🌟 MOBILE RESPONSIVE TABLE CONTAINER 🌟 */
-        .report-table-container { width: 100%; padding-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; } 
-        .report-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 900px; } 
-        
-        .report-table th { position: -webkit-sticky; position: sticky; top: 0; background: #e0e7ff; color: #312e81; padding: 14px 10px; font-weight: 900; border-bottom: 3px solid #a5b4fc; white-space: nowrap; z-index: 100; }
-        .report-table td { padding: 14px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 800; white-space: nowrap; background: #fff;} 
-        .report-table th:nth-child(2), .report-table td:nth-child(2) { text-align: left; }
-        .sub-stat { display: block; font-size: 10px; color: #64748b; font-weight: 700; margin-top: 3px;}
-        
-        .dl-btn { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); }
-        .dl-btn:hover { transform: translateY(-2px);}
-        .dl-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        @media (max-width: 768px) { 
-            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px;} 
-            .grid-container { grid-template-columns: 1fr; } 
-            .vle-card { max-width: 100%; } 
-            .report-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-            .dl-btn { width: 100%; justify-content: center; }
+        @media (max-width: 1024px) {
+            .command-split { grid-template-columns: 1fr; }
+            .deck-body { max-height: 460px; }
+        }
+        @media (max-width: 768px) {
+            .spoc-container { padding: 12px; }
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .fu-grid { grid-template-columns: 1fr; }
+            .seg-tabs { width: 100%; }
+            .seg-tab { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12px; }
+            .vle-card { max-width: 100%; }
+            .report-header { flex-direction: column; align-items: flex-start; }
+            .dl-btn { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 🌟 SPOC MONITORING VIEW 🌟 -->
+    <!-- 🌟 SPOC INNOVATIVE COMMAND CENTER 🌟 -->
     <div id="spocScreen" style="display:none;" class="spoc-container">
-        <div class="stat-grid" id="spocStatGrid">
-            <!-- Dynamic SPOC Stats will be injected here -->
-        </div>
 
-        <select id="spocViewSelector" class="view-selector" onchange="switchSpocView()">
-            <option value="spoc-live">🟢 Live Feed & Active DMs</option>
-            <option value="spoc-report">📊 State Head Report</option>
-            <option value="spoc-followup">🚀 DM Follow-Up Center</option>
-        </select>
-
-        <div style="text-align: center; margin-bottom: 25px;">
-            <label style="font-weight: 800; color: #0f172a; margin-right: 10px; font-size:15px;">📅 Select Report Date:</label>
-            <input type="date" id="spocDatePicker" onchange="reloadSpocData()" style="padding: 8px 15px; border-radius: 8px; border: 2px solid #10b981; font-weight: 800; color: #0f172a; outline: none; cursor: pointer; background: #fff; font-family:'Outfit'; font-size:14px;">
-        </div>
-        
-        <div id="spoc-live">
-            <div class="dash-section-title">🟢 Active DMs (Logged In)</div>
-            <div id="activeDmsGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Fetching Active DMs...</p></div>
-
-            <div class="dash-section-title" style="margin-top: 15px; justify-content: space-between;">
-                <div>🔴 Live Call Feed</div>
-                <select id="spocFeedFilter" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 800; color: #334155; outline: none; background:#fff; max-width:200px; cursor:pointer;" onchange="filterSpocFeed()">
-                    <option value="ALL">All DMs</option>
-                </select>
+        <!-- Executive Command Header -->
+        <div class="cmd-header">
+            <div class="cmd-title-area">
+                <div class="cmd-logo-box"><i class="fa-solid fa-bolt"></i></div>
+                <div>
+                    <h2>SPOC Command Center <span class="live-pill"><span class="pulse-dot"></span> Live</span></h2>
+                    <p>CSC Andhra Pradesh | Real-Time DM Monitoring & Activation Intelligence</p>
+                </div>
             </div>
-            <div id="liveFeedGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Fetching live logs...</p></div>
+            <div class="cmd-controls">
+                <div class="date-glass">
+                    <label for="spocDatePicker"><i class="fa-regular fa-calendar"></i> Date</label>
+                    <input type="date" id="spocDatePicker" onchange="reloadSpocData()">
+                </div>
+            </div>
         </div>
 
+        <!-- KPI Strip -->
+        <div class="stat-grid" id="spocStatGrid"></div>
+
+        <!-- Segmented Navigation Tabs -->
+        <div class="nav-tabs-bar">
+            <div class="seg-tabs">
+                <button class="seg-tab active" id="tab-spoc-live" onclick="switchSpocTab('spoc-live')"><i class="fa-solid fa-satellite-dish"></i> Live Command</button>
+                <button class="seg-tab" id="tab-spoc-report" onclick="switchSpocTab('spoc-report')"><i class="fa-solid fa-table-list"></i> State Head Report</button>
+                <button class="seg-tab" id="tab-spoc-followup" onclick="switchSpocTab('spoc-followup')"><i class="fa-solid fa-paper-plane"></i> DM Follow-Up Center</button>
+            </div>
+        </div>
+
+        <!-- 1. SPLIT-SCREEN LIVE COMMAND DECK -->
+        <div id="spoc-live">
+            <div class="command-split">
+                <!-- Left: Active DMs Leaderboard -->
+                <div class="deck-panel">
+                    <div class="deck-head">
+                        <h4><i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> Active DMs Leaderboard</h4>
+                        <span style="font-size:11px; font-weight:700; color:#64748b;" id="activeDmCountBadge">0 Active</span>
+                    </div>
+                    <div class="deck-body" id="activeDmsGrid">
+                        <p style="font-size:13px; color:#64748b; text-align:center; padding:20px;">Fetching Active DMs...</p>
+                    </div>
+                </div>
+
+                <!-- Right: Live Call Activity Stream -->
+                <div class="deck-panel">
+                    <div class="deck-head">
+                        <h4><i class="fa-solid fa-tower-broadcast" style="color:#dc2626;"></i> Live Call Activity Stream</h4>
+                        <select id="spocFeedFilter" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 700; color: #0f172a; outline: none; background:#ffffff; min-width:170px; cursor:pointer;" onchange="filterSpocFeed()">
+                            <option value="ALL">All DMs</option>
+                        </select>
+                    </div>
+                    <div class="deck-body" id="liveFeedGrid">
+                        <p style="font-size:13px; color:#64748b; text-align:center; padding:20px;">Fetching live logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. STATE HEAD REPORT -->
         <div id="spoc-report" style="display:none;">
             <div id="reportCardToCapture" class="report-card">
                 <div class="report-header">
                     <div style="text-align:left;">
-                        <h3 style="font-size:20px; font-family:'Outfit'; color:#2563eb;">📊 Followup Report</h3>
-                        <p style="font-size:12px; color:#64748b; font-weight:700; margin-top:4px;" id="reportDateText">(Date)</p>
+                        <h3><i class="fa-solid fa-chart-column" style="color:#fcd34d; margin-right:8px;"></i> State Head Follow-Up Report</h3>
+                        <p id="reportDateText">(Date)</p>
                     </div>
-                    <div style="display:flex; gap:10px; width:100%; max-width: 300px;">
-                        <button class="dl-btn" style="background: linear-gradient(135deg, #10b981, #059669); flex:1;" onclick="downloadStateHeadExcel(event)">📗 Save Excel</button>
-                        <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport(event)" style="flex:1;">📸 Save Image</button>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="dl-btn dl-btn-excel" onclick="downloadStateHeadExcel(event)"><i class="fa-solid fa-file-excel"></i> Save Excel</button>
+                        <button class="dl-btn" id="dlBtn" onclick="downloadStateHeadReport(event)"><i class="fa-solid fa-camera"></i> Save Image</button>
                     </div>
                 </div>
                 <div class="report-table-container" id="reportTableWrapper">
@@ -178,14 +458,14 @@
                             <tr>
                                 <th>S.No</th>
                                 <th>Employee Name</th>
-                                <th>🎯 Total Target</th>
-                                <th>✅ Act. (Total)</th>
-                                <th style="background:#fef2f2; color:#b91c1c;">🔴 Unattempted<br><span style="font-size:10px;font-weight:600;">(Not Called)</span></th>
-                                <th>⏳ Pending<br><span style="font-size:10px;font-weight:600;">(Not Activated)</span></th>
-                                <th style="background:#f0f9ff; color:#0369a1;">📞 Total Called<br><span style="font-size:10px;font-weight:600;">(All Time)</span></th>
-                                <th>📞 Calls Made<br><span style="font-size:10px;font-weight:600;">(Selected Date)</span></th>
-                                <th style="background:#f0fdf4; color:#166534;">📊 Call Breakdown<br><span style="font-size:10px;font-weight:600;">(Vertical Wise)</span></th>
-                                <th>⏱️ Avg Talk Time</th>
+                                <th>Total Target</th>
+                                <th>Act. (Total)</th>
+                                <th style="background:#991b1b;">Unattempted<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Not Called)</span></th>
+                                <th>Pending<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Not Activated)</span></th>
+                                <th style="background:#0369a1;">Total Called<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(All Time)</span></th>
+                                <th>Calls Made<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Selected Date)</span></th>
+                                <th style="background:#166534;">Call Breakdown<br><span style="font-size:9.5px; font-weight:600; opacity:0.85;">(Vertical Wise)</span></th>
+                                <th>Avg Talk Time</th>
                             </tr>
                         </thead>
                         <tbody id="reportTableBody">
@@ -196,60 +476,75 @@
             </div>
         </div>
 
+        <!-- 3. SMART DM FOLLOW-UP CENTER -->
         <div id="spoc-followup" style="display:none;">
-            <div class="dash-section-title" style="color:#059669; font-size: 20px;">🚀 DM Follow-Up Center</div>
-            <div id="dmFollowUpGrid" class="grid-container"><p style='font-size:13px; color:#64748b;'>Loading DM Data...</p></div>
+            <div class="fu-toolbar">
+                <div class="fu-pills">
+                    <button class="fu-pill active" id="fu-ALL" onclick="setFollowUpFilter('ALL')">All Pending DMs</button>
+                    <button class="fu-pill" id="fu-ZERO" onclick="setFollowUpFilter('ZERO')">🔴 0 Calls Today (Priority)</button>
+                    <button class="fu-pill" id="fu-ACTIVE" onclick="setFollowUpFilter('ACTIVE')">🟢 Active Today</button>
+                </div>
+                <input type="text" id="fuSearchInput" class="fu-search" placeholder="🔍 Search DM name..." oninput="renderFollowUpCards()">
+            </div>
+            <div id="dmFollowUpGrid" class="fu-grid"><p style='font-size:13px; color:#64748b;'>Loading DM Data...</p></div>
         </div>
     </div>
 
     <!-- 🌟 DM ACTION CENTER VIEW 🌟 -->
     <div id="dmScreen" style="display:none;" class="dm-container">
-        
-        <div class="task-header" id="dmHeader">
-            <div class="task-title">🎯 My Action Center</div>
-            
-            <div class="dm-overall-stats" id="dmOverallStats" style="display:none;">
-                <!-- DYNAMIC DM STATS WILL BE INJECTED HERE -->
+        <div class="cmd-header" style="padding: 18px 22px; margin-bottom: 14px;">
+            <div class="cmd-title-area">
+                <div class="cmd-logo-box"><i class="fa-solid fa-bullseye"></i></div>
+                <div>
+                    <h2 style="font-size: 20px;">My Action Center</h2>
+                    <p>Daily Priority VLE Follow-Up & Activation Desk</p>
+                </div>
             </div>
+        </div>
 
-            <div style="display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; background:#f1f5f9; padding:10px; border-radius:12px; margin: 0 auto 15px auto; width:100%; max-width:500px; border:1px dashed #cbd5e1; position: relative; z-index: 50;">
-                <label style="font-size:12px; font-weight:800; color:#475569;">My Logs:</label>
-                <input type="date" id="dmLogDate" style="padding:6px 12px; border-radius:8px; border:1px solid #94a3b8; outline:none; font-family:'Outfit'; font-size:13px; font-weight:700; color:#0f172a;">
-                <button type="button" onclick="downloadDMLogsExcel(event)" style="background:#2563eb; color:white; border:none; padding:8px 15px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 2px 4px rgba(37,99,235,0.2);">📥 Download Excel</button>
+        <div class="task-header" id="dmHeader">
+            <div class="dm-overall-stats" id="dmOverallStats" style="display:none;"></div>
+
+            <div class="dm-log-bar">
+                <label style="font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">My Logs:</label>
+                <input type="date" id="dmLogDate" style="padding: 6px 10px; border-radius:8px; border:1px solid #cbd5e1; font-size: 13px; font-weight:700;">
+                <button type="button" onclick="downloadDMLogsExcel(event)" class="dl-btn" style="padding: 7px 14px; font-size: 12.5px;"><i class="fa-solid fa-download"></i> Download Excel</button>
             </div>
 
             <select id="taskSelector" class="task-selector" onchange="filterCardsByTask()">
                 <option value="" disabled selected>Loading tasks...</option>
             </select>
-            <div style="font-size:13px; font-weight:700; color:#64748b; text-align:center; margin-top:5px;" id="targetLabelBox">
-                Total Target: <span id="pendingCount" style="color:#ef4444; font-weight:900; font-size:15px;">0</span>
+
+            <div style="font-size:13px; font-weight:700; color:#475569; text-align:center;" id="targetLabelBox">
+                Remaining Targets: <span id="pendingCount" style="color:#dc2626; font-weight:900; font-size:16px; font-family:'Outfit';">0</span>
             </div>
         </div>
-        
-        <div class="progress-bar-container" id="dmProgress"><div class="progress-bar-fill" id="progressBar"></div></div>
 
-        <!-- Cards Container -->
+        <div class="progress-bar-container" id="dmProgress"><div class="progress-bar-fill" id="progressBar"></div></div>
         <div class="card-stack" id="cardStack"></div>
 
-        <!-- SUMMARY SCREEN -->
         <div id="summaryView" class="summary-view">
-            <h2 style="font-family:'Outfit'; font-size:24px; color:#10b981; text-align:center; margin-bottom:8px;">🎉 Task Completed!</h2>
-            <p style="text-align:center; color:#64748b; font-size:14px; font-weight:600; margin-bottom:30px;">Here is the list of VLEs you called today.</p>
+            <div style="background:#ffffff; border:1px solid #bbf7d0; border-top:4px solid #16a34a; border-radius:14px; padding:22px; text-align:center; margin-bottom:18px;">
+                <h2 style="font-family:'Outfit'; font-size:22px; color:#15803d; margin-bottom:6px;">🎉 Task Completed!</h2>
+                <p style="color:#64748b; font-size:13.5px; font-weight:600;">Here is the list of VLEs you called today.</p>
+            </div>
             <div id="summaryListContainer"></div>
         </div>
     </div>
 
+    <!-- 🌟 LOADER 🌟 -->
     <div id="loader" class="loader-box">
-        <h3 style="color:#10b981; font-family:'Outfit'; font-size:24px; margin-bottom:10px;">Fetching Data...</h3>
-        <p style="color:#64748b; font-size:14px; font-weight:600;" id="loaderText">Syncing with HO Database</p>
+        <div class="loader-spinner"></div>
+        <h3 style="font-family:'Outfit'; font-size:20px; font-weight:800; margin-bottom:6px;">Fetching Live Data...</h3>
+        <p style="color:#cbd5e1; font-size:13px; font-weight:500;" id="loaderText">Syncing with HO Database</p>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-        
+
         let rawRole = (sessionStorage.getItem("designation") || localStorage.getItem("designation") || sessionStorage.getItem("userRole") || localStorage.getItem("userRole") || "").toUpperCase();
         let rawName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toUpperCase();
-        
+
         let isSpoc = false;
         if (rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.includes("CHANDRA SEKHARA")) {
             isSpoc = true;
@@ -257,16 +552,24 @@
 
         let dmName = (sessionStorage.getItem("userName") || localStorage.getItem("userName") || "").toLowerCase().trim();
         let allTaskGroups = {}; let filteredQueue = []; let currentIndex = 0; let todayCalledVLEs = []; let globalSpocLogs = [];
-        let activeCallStartTime = null; 
-        
+        let activeCallStartTime = null;
         let allTimeCalledIds = new Set();
-        
+
         let rawSpocLogs = [];
         let rawSpocTargets = [];
         let rawSpocUsers = [];
-        
-        window.globalLogsRaw = []; 
-        window.globalTargetsRaw = []; 
+        let cachedFollowUpItems = [];
+        let currentFollowUpFilter = "ALL";
+
+        window.globalLogsRaw = [];
+        window.globalTargetsRaw = [];
+
+        function getInitials(name) {
+            if (!name) return "DM";
+            let parts = name.trim().split(/\s+/);
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
 
         function formatTalkTime(sec) {
             if(!sec || sec == 0 || isNaN(sec)) return "0s";
@@ -280,33 +583,32 @@
             if (!mobileStr) return "N/A";
             let cleanMob = mobileStr.toString().replace(/\D/g, '');
             if (cleanMob.length >= 10) {
-                let base = cleanMob.slice(-10); 
+                let base = cleanMob.slice(-10);
                 return base.substring(0, 2) + "*****" + base.substring(7);
             }
-            return cleanMob; 
+            return cleanMob;
         }
 
         const dynamicColors = [
-            { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" }, 
-            { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" }, 
-            { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" }, 
-            { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" }, 
-            { bg: "#ffedd5", text: "#c2410c", border: "#fed7aa" }, 
-            { bg: "#fce7f3", text: "#be185d", border: "#fbcfe8" }  
+            { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" },
+            { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" },
+            { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" },
+            { bg: "#dcfce7", text: "#15803d", border: "#bbf7d0" },
+            { bg: "#ffedd5", text: "#c2410c", border: "#fed7aa" },
+            { bg: "#fce7f3", text: "#be185d", border: "#fbcfe8" }
         ];
 
         function getColorForService(serviceName) {
             if(!serviceName) return dynamicColors[0];
-            if (serviceName === "IRCTC") return { bg: "#e0f2fe", text: "#0369a1", border: "#bae6fd" };
-            if (serviceName === "REDBUS") return { bg: "#fee2e2", text: "#b91c1c", border: "#fecaca" };
+            if (serviceName === "IRCTC") return { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" };
+            if (serviceName === "REDBUS") return { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" };
             if (serviceName === "AMC") return { bg: "#f3e8ff", text: "#7e22ce", border: "#e9d5ff" };
-            
+
             let hash = 0;
             for (let i = 0; i < serviceName.length; i++) {
                 hash = serviceName.charCodeAt(i) + ((hash << 5) - hash);
             }
-            let index = Math.abs(hash) % dynamicColors.length;
-            return dynamicColors[index];
+            return dynamicColors[Math.abs(hash) % dynamicColors.length];
         }
 
         function isNameMatch(sheetName, loginName) {
@@ -320,10 +622,9 @@
         }
 
         window.onload = async () => {
-            let today = new Date();
             let tzoffset = (new Date()).getTimezoneOffset() * 60000;
             let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
-            
+
             if (isSpoc) {
                 document.getElementById("spocScreen").style.display = "block";
                 document.getElementById("loaderText").innerText = "Analyzing Live Action Feed...";
@@ -331,18 +632,17 @@
                 await loadSpocDashboard();
             } else {
                 document.getElementById("dmScreen").style.display = "flex";
-                document.getElementById("dmLogDate").value = localISOTime; 
+                document.getElementById("dmLogDate").value = localISOTime;
                 if(!dmName) { alert("Please login through the dashboard."); document.getElementById("loader").style.display = "none"; return; }
                 await fetchDMData();
             }
         };
 
-        function switchSpocView() {
-            let val = document.getElementById('spocViewSelector').value;
-            document.getElementById('spoc-live').style.display = 'none';
-            document.getElementById('spoc-report').style.display = 'none';
-            document.getElementById('spoc-followup').style.display = 'none';
-            document.getElementById(val).style.display = 'block';
+        function switchSpocTab(tabId) {
+            ['spoc-live', 'spoc-report', 'spoc-followup'].forEach(id => {
+                document.getElementById(id).style.display = (id === tabId) ? 'block' : 'none';
+                document.getElementById('tab-' + id).classList.toggle('active', id === tabId);
+            });
         }
 
         // ==========================================
@@ -354,13 +654,12 @@
                     fetch(SCRIPT_URL + "?sheet=App_Targets"),
                     fetch(SCRIPT_URL + "?sheet=FollowUp_Logs")
                 ]);
-                
                 let targetRaw = await targetRes.json();
                 let logsRaw = await logsRes.json();
-                
-                window.globalLogsRaw = logsRaw || []; 
-                window.globalTargetsRaw = targetRaw || []; 
-                
+
+                window.globalLogsRaw = logsRaw || [];
+                window.globalTargetsRaw = targetRaw || [];
+
                 let today = new Date();
                 let d1 = String(today.getDate()).padStart(2, '0'); let m1 = String(today.getMonth() + 1).padStart(2, '0'); let y1 = today.getFullYear();
                 let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
@@ -368,20 +667,19 @@
 
                 allTimeCalledIds.clear();
                 todayCalledVLEs = [];
-                
+
                 if (Array.isArray(logsRaw)) {
                     for(let i=1; i<logsRaw.length; i++) {
                         if(!logsRaw[i]) continue;
                         let logDate = (logsRaw[i][0] || "").toString();
                         let logDmName = (logsRaw[i][3] || "").toString().trim();
-                        
+
                         if (isNameMatch(logDmName, dmName)) {
                             let logCscId = (logsRaw[i][1] || "").toString().trim();
                             let logService = (logsRaw[i][2] || "").toString().trim().toUpperCase();
                             let logRemark = (logsRaw[i][4] || "").toString();
-                            
+
                             allTimeCalledIds.add(logCscId + "_" + logService);
-                            
                             if (isToday(logDate)) {
                                 todayCalledVLEs.push({ cscId: logCscId, name: logCscId, mobile: "", task: logService, remark: logRemark });
                             }
@@ -389,10 +687,7 @@
                     }
                 }
 
-                let dynamicTasksMap = {}; 
-                let dmServiceCounts = {}; 
-                let totalDMPendingTargets = 0;
-                let standardMap = {}; 
+                let dynamicTasksMap = {}; let dmServiceCounts = {}; let totalDMPendingTargets = 0; let standardMap = {};
 
                 if (Array.isArray(targetRaw)) {
                     for(let i=1; i<targetRaw.length; i++) {
@@ -401,25 +696,16 @@
                         let status = (targetRaw[i][7]||"").toString().trim().toUpperCase();
                         let cscId = (targetRaw[i][0]||"").toString().trim();
                         let taskNameStr = (targetRaw[i][4]||"Unknown").toString().trim().toUpperCase();
-                        
+
                         if(isNameMatch(rDmName, dmName) && status === "PENDING") {
-                            
-                            let t = {
-                                cscId: cscId, name: (targetRaw[i][1]||"").toString(), mobile: (targetRaw[i][2]||"").toString(),
-                                taskName: taskNameStr, extraData: (targetRaw[i][5]||"0").toString()
-                            };
-                            
-                            if(!dmServiceCounts[taskNameStr]) { dmServiceCounts[taskNameStr] = 0; }
-                            
-                            if(!allTimeCalledIds.has(cscId + "_" + taskNameStr)) {
-                                dmServiceCounts[taskNameStr]++;
-                                totalDMPendingTargets++;
-                            }
+                            let t = { cscId: cscId, name: (targetRaw[i][1]||"").toString(), mobile: (targetRaw[i][2]||"").toString(), taskName: taskNameStr, extraData: (targetRaw[i][5]||"0").toString() };
+                            if(!dmServiceCounts[taskNameStr]) dmServiceCounts[taskNameStr] = 0;
+                            if(!allTimeCalledIds.has(cscId + "_" + taskNameStr)) { dmServiceCounts[taskNameStr]++; totalDMPendingTargets++; }
 
                             if (taskNameStr === "IRCTC" || taskNameStr === "REDBUS") {
                                 if(!standardMap[cscId]) {
                                     standardMap[cscId] = { ...t };
-                                    if(taskNameStr === "IRCTC") { standardMap[cscId].iTxn = t.extraData; standardMap[cscId].rTxn = "0"; } 
+                                    if(taskNameStr === "IRCTC") { standardMap[cscId].iTxn = t.extraData; standardMap[cscId].rTxn = "0"; }
                                     else { standardMap[cscId].iTxn = "0"; standardMap[cscId].rTxn = t.extraData; }
                                 } else {
                                     standardMap[cscId].taskName = "BOTH";
@@ -427,7 +713,7 @@
                                     if(taskNameStr === "REDBUS") standardMap[cscId].rTxn = t.extraData;
                                 }
                             } else {
-                                if(!dynamicTasksMap[taskNameStr]) { dynamicTasksMap[taskNameStr] = []; }
+                                if(!dynamicTasksMap[taskNameStr]) dynamicTasksMap[taskNameStr] = [];
                                 dynamicTasksMap[taskNameStr].push(t);
                             }
                         }
@@ -435,17 +721,16 @@
                 }
 
                 let standardFollowUps = Object.values(standardMap);
-                if (standardFollowUps.length > 0) { dynamicTasksMap["STANDARD_TRAVEL"] = standardFollowUps; }
-
+                if (standardFollowUps.length > 0) dynamicTasksMap["STANDARD_TRAVEL"] = standardFollowUps;
                 allTaskGroups = { ...dynamicTasksMap };
 
                 if (totalDMPendingTargets > 0) {
-                    let statsHtml = `<span>Total Targets: <b>${totalDMPendingTargets}</b></span>`;
+                    let statsHtml = `<span>Total Targets: <b id="dmTotalInactive">${totalDMPendingTargets}</b></span>`;
                     Object.keys(dmServiceCounts).forEach(srv => {
                         let count = dmServiceCounts[srv];
                         if (count > 0) {
                             let colorData = getColorForService(srv);
-                            statsHtml += ` <span class="stat-divider">|</span> <span style="color:${colorData.text};">${srv}: <b id="dmTotal_${srv}">${count}</b></span>`;
+                            statsHtml += ` <span class="stat-divider">|</span> <span style="color:${colorData.text};">${srv}: <b id="dmTotal_${srv}" style="color:${colorData.text};">${count}</b></span>`;
                         }
                     });
                     document.getElementById("dmOverallStats").innerHTML = statsHtml;
@@ -460,78 +745,56 @@
                     document.getElementById("targetLabelBox").style.display = "none";
                     showSummaryScreen("");
                 } else {
-                    if (allTaskGroups["STANDARD_TRAVEL"]) { selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`; }
-                    Object.keys(allTaskGroups).forEach(k => { 
-                        if (k !== "STANDARD_TRAVEL") { selectHtml += `<option value="${k}">Follow-up: ${k}</option>`; }
-                    });
-                    document.getElementById("cardStack").innerHTML = `<p style="color:#64748b; font-weight:700; font-size:15px;">Please select a task from the dropdown above.</p>`;
+                    if (allTaskGroups["STANDARD_TRAVEL"]) selectHtml += `<option value="STANDARD_TRAVEL">Travel Inactive Follow-ups (IRCTC & REDBUS)</option>`;
+                    Object.keys(allTaskGroups).forEach(k => { if (k !== "STANDARD_TRAVEL") selectHtml += `<option value="${k}">Follow-up: ${k}</option>`; });
+                    document.getElementById("cardStack").innerHTML = `<p style="color:#64748b; font-weight:700; font-size:14.5px; margin-top:40px;">Please select a task from the dropdown above.</p>`;
                 }
-                
+
                 document.getElementById("taskSelector").innerHTML = selectHtml;
                 document.getElementById("loader").style.display = "none";
-
             } catch(e) {
-                console.error(e);
-                alert("Error connecting to server. Please try again.");
+                console.error(e); alert("Error connecting to server. Please try again.");
                 document.getElementById("loader").style.display = "none";
             }
         }
 
-        // 🌟 NEW: VLE NAME & MOBILE NO ADDED TO EXCEL EXPORT 🌟
         window.downloadDMLogsExcel = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); } 
-            
+            if(event) { event.preventDefault(); event.stopPropagation(); }
             let selDate = document.getElementById("dmLogDate").value;
             if(!selDate) { alert("Please select a date first."); return; }
-            
+
             let d1 = selDate.split("-")[2]; let m1 = selDate.split("-")[1]; let y1 = selDate.split("-")[0];
             let f1 = `${d1}-${m1}-${y1}`; let f2 = `${y1}-${m1}-${d1}`; let f3 = `${d1}/${m1}/${y1}`; let f4 = `${m1}/${d1}/${y1}`;
-            
+
             let vleMap = {};
             if (Array.isArray(window.globalTargetsRaw)) {
                 window.globalTargetsRaw.forEach(row => {
-                    if(row && row[0]) {
-                        vleMap[row[0].toString().trim()] = { 
-                            name: row[1] ? row[1].toString().trim() : "-", 
-                            mobile: row[2] ? row[2].toString().trim() : "-" 
-                        };
-                    }
+                    if(row && row[0]) vleMap[row[0].toString().trim()] = { name: row[1] ? row[1].toString().trim() : "-", mobile: row[2] ? row[2].toString().trim() : "-" };
                 });
             }
 
             let exportData = [];
             if (Array.isArray(window.globalLogsRaw)) {
                 window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return; 
+                    if(i === 0 || !row) return;
                     let logDate = String(row[0] || "").trim();
                     let logDmName = (row[3] || "").toString().trim();
-                    
                     if (isNameMatch(logDmName, dmName) && (logDate.includes(f1) || logDate.includes(f2) || logDate.includes(f3) || logDate.includes(f4))) {
                         let logCscId = (row[1] || "").toString().trim();
                         let vData = vleMap[logCscId] || {name: "Unknown", mobile: "-"};
-                        
-                        exportData.push({
-                            "Date & Time": row[0],
-                            "CSC ID": logCscId,
-                            "VLE Name": vData.name,
-                            "Mobile No": vData.mobile,
-                            "Service": row[2],
-                            "Outcome / Remark": row[4],
-                            "Talk Time (Sec)": row[5] || 0
-                        });
+                        exportData.push({ "Date & Time": row[0], "CSC ID": logCscId, "VLE Name": vData.name, "Mobile No": vData.mobile, "Service": row[2], "Outcome / Remark": row[4], "Talk Time (Sec)": row[5] || 0 });
                     }
                 });
             }
 
-            if(exportData.length === 0) { alert(`No logs found for ${f1}. You haven't made any calls on this date.`); return; }
+            if(exportData.length === 0) { alert(`No logs found for ${f1}.`); return; }
 
             let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px;">`;
-            tableHtml += `<thead><tr><th colspan="7" style="background-color:#10b981; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
+            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px;">`;
+            tableHtml += `<thead><tr><th colspan="7" style="background-color:#1e3a8a; color:white; font-size:16px; padding:10px; text-align:center;">MY CALL LOGS (${f1}) - ${dmName.toUpperCase()}</th></tr>`;
             tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
             Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px;">${k}</th>`);
             tableHtml += `</tr></thead><tbody>`;
-
             exportData.forEach((row, i) => {
                 let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
                 tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
@@ -544,59 +807,44 @@
             tableHtml += `</tbody></table></body></html>`;
 
             let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `My_Call_Logs_${f1}.xls`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `My_Call_Logs_${f1}.xls`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
         window.unlockActions = function(idx, method, event) {
-            if(event && method !== 'WhatsApp' && method !== 'Call') {
-                event.stopPropagation();
-            }
+            if(event && method !== 'WhatsApp' && method !== 'Call') event.stopPropagation();
             document.getElementById(`lock-msg-${idx}`).style.display = "none";
             document.getElementById(`action-area-${idx}`).style.display = "block";
-            activeCallStartTime = new Date(); 
+            activeCallStartTime = new Date();
         };
 
         window.handleRemarkChange = function(sel, idx) {
             let inputBox = document.getElementById(`otherRemark-${idx}`);
-            if(sel.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); } 
+            if(sel.value === "Others") { inputBox.style.display = "block"; inputBox.focus(); }
             else { inputBox.style.display = "none"; inputBox.value = ""; }
         };
 
         window.filterCardsByTask = function() {
             let selectedTask = document.getElementById("taskSelector").value;
             let fullList = allTaskGroups[selectedTask] || [];
-            
-            let limit = 1000; 
-            let baseQueue = fullList.slice(0, limit);
-            
+            let baseQueue = fullList.slice(0, 1000);
+
             allTimeCalledIds = new Set();
             if (Array.isArray(window.globalLogsRaw)) {
                 window.globalLogsRaw.forEach((row, i) => {
-                    if(i === 0 || !row) return; 
-                    let logDmName = (row[3] || "").toString().trim();
-                    if (isNameMatch(logDmName, dmName)) {
-                        let logCscId = (row[1] || "").toString().trim();
-                        let logService = (row[2] || "").toString().trim().toUpperCase();
-                        allTimeCalledIds.add(logCscId + "_" + logService);
+                    if(i === 0 || !row) return;
+                    if (isNameMatch((row[3] || "").toString().trim(), dmName)) {
+                        allTimeCalledIds.add((row[1] || "").toString().trim() + "_" + (row[2] || "").toString().trim().toUpperCase());
                     }
                 });
             }
 
             filteredQueue = baseQueue.filter(item => {
-                if(item.taskName === "BOTH") {
-                    return !allTimeCalledIds.has(item.cscId + "_IRCTC") && !allTimeCalledIds.has(item.cscId + "_REDBUS");
-                } else {
-                    return !allTimeCalledIds.has(item.cscId + "_" + item.taskName);
-                }
+                if(item.taskName === "BOTH") return !allTimeCalledIds.has(item.cscId + "_IRCTC") && !allTimeCalledIds.has(item.cscId + "_REDBUS");
+                return !allTimeCalledIds.has(item.cscId + "_" + item.taskName);
             });
 
             if (filteredQueue.length === 0) { showSummaryScreen(selectedTask); return; }
-            
             currentIndex = 0;
             document.getElementById("dmProgress").style.display = "block";
             document.getElementById("cardStack").style.display = "flex";
@@ -608,39 +856,29 @@
         function renderCards() {
             let html = ""; let myName = localStorage.getItem("userName") || "State Office";
             filteredQueue.forEach((v, i) => {
-                let cleanMob = (v.mobile || "").toString().replace(/\D/g,''); 
+                let cleanMob = (v.mobile || "").toString().replace(/\D/g,'');
                 let isTravel = (v.taskName === "IRCTC" || v.taskName === "REDBUS" || v.taskName === "BOTH");
-                
-                let headerClass = "bg-generic";
-                if(v.taskName === "IRCTC") headerClass = "bg-irctc";
-                if(v.taskName === "REDBUS") headerClass = "bg-redbus";
-                if(v.taskName === "BOTH") headerClass = "bg-both";
-                if(v.taskName === "AMC") headerClass = "bg-amc";
-
-                let emoji = "⚡";
-                if(isTravel) { emoji = (v.taskName === "BOTH") ? "🤝" : ((v.taskName === "IRCTC") ? "🚆" : "🚌"); }
-                
+                let headerClass = v.taskName === "IRCTC" ? "bg-irctc" : (v.taskName === "REDBUS" ? "bg-redbus" : (v.taskName === "BOTH" ? "bg-both" : (v.taskName === "AMC" ? "bg-amc" : "bg-generic")));
+                let emoji = isTravel ? (v.taskName === "BOTH" ? "🤝" : (v.taskName === "IRCTC" ? "🚆" : "🚌")) : "⚡";
                 let titleText = isTravel ? (v.taskName === "BOTH" ? "IRCTC & REDBUS COMBINED" : `${v.taskName} FOLLOW-UP`) : `${v.taskName} FOLLOW-UP`;
-                
+
                 let txnBoxHtml = ""; let msg = "";
                 if (isTravel) {
                     if (v.taskName === "BOTH") {
-                        txnBoxHtml = `<div class="txn-badge"><span>🚆 IRCTC Last Year:</span> <span>${v.iTxn}</span></div><div class="txn-badge" style="margin-top:-10px;"><span>🚌 REDBUS Last Year:</span> <span>${v.rTxn}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *IRCTC* మరియు *REDBUS* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు ఈ సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా ఈ సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                        txnBoxHtml = `<div class="txn-badge"><span>🚆 IRCTC Last Year:</span> <span>${v.iTxn}</span></div><div class="txn-badge" style="margin-top:-6px;"><span>🚌 REDBUS Last Year:</span> <span>${v.rTxn}</span></div>`;
+                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *IRCTC* మరియు *REDBUS* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు ఈ సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా ఈ సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                     } else {
                         txnBoxHtml = `<div class="txn-badge"><span>📊 Last Year Txns:</span> <span>${v.extraData}</span></div>`;
-                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                        msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, టికెట్ బుకింగ్స్ చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                     }
                 } else {
                     txnBoxHtml = `<div class="txn-badge"><span>📌 Target Data:</span> <span style="color:#b91c1c;">${v.extraData}</span></div>`;
-                    msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nమీరు నిరంతరం సేవలను వినియోగిస్తూ మంచి పనితీరు కనబరుస్తారని ఆశిస్తున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
+                    msg = `Dear ${v.name} గారు,\n\nగత సంవత్సరం మీరు *${v.taskName}* సేవల్లో మంచి పనితీరు కనబరిచారు. అయితే, ఈ ఆర్థిక సంవత్సరంలో ఇప్పటివరకు మీరు *${v.taskName}* సేవలను వినియోగించలేదు.\n\nకావున, గతంలో మాదిరిగానే ఈ సంవత్సరం కూడా *${v.taskName}* సేవలను తిరిగి ప్రారంభించి, లావాదేవీలు చేయడం వెంటనే మొదలుపెట్టాలని కోరుతున్నాము.\n\nధన్యవాదాలు,\n*${myName}*\nCSC District Manager.`;
                 }
-                
-                let waMob = cleanMob;
-                if(waMob.length === 10) waMob = "91" + waMob;
-                let encodedMsg = encodeURIComponent(msg); let waLink = `whatsapp://send?phone=${waMob}&text=${encodedMsg}`;
-                let maskedMobile = maskMobileNumber(v.mobile);
-                
+
+                let waMob = cleanMob.length === 10 ? "91" + cleanMob : cleanMob;
+                let waLink = `whatsapp://send?phone=${waMob}&text=${encodeURIComponent(msg)}`;
+
                 html += `
                 <div class="vle-card" id="card-${i}">
                     <div class="vle-card-header ${headerClass}">${emoji} ${titleText}</div>
@@ -648,13 +886,11 @@
                         <div class="vle-details">
                             <h2>${v.name}</h2>
                             <p>CSC ID: ${v.cscId}</p>
-                            <div style="margin-bottom:15px; font-weight:800; color:#3b82f6; font-size:16px;">
-                                <i class="fa-solid fa-phone"></i> ${maskedMobile}
-                            </div>
+                            <div style="margin-bottom:14px; font-weight:800; color:#1e3a8a; font-size:15.5px;"><i class="fa-solid fa-phone" style="margin-right:6px;"></i> ${maskMobileNumber(v.mobile)}</div>
                             ${txnBoxHtml}
-                            <div class="action-btn-group">
-                                <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call', event)">📞 Call</a>
-                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp', event)" target="_blank">💬 WhatsApp</a>
+                            <div class="action-btn-group" style="margin-top:14px; margin-bottom:14px;">
+                                <a href="tel:${cleanMob}" class="call-btn" onclick="unlockActions(${i}, 'Call', event)"><i class="fa-solid fa-phone"></i> Call</a>
+                                <a href="${waLink}" class="wa-btn" onclick="unlockActions(${i}, 'WhatsApp', event)" target="_blank"><i class="fa-brands fa-whatsapp" style="font-size:16px;"></i> WhatsApp</a>
                             </div>
                         </div>
                         <div id="lock-msg-${i}" class="lock-message">🔒 Tap Call or WhatsApp to unlock Submit</div>
@@ -672,7 +908,7 @@
                                 <option value="Others">Others (Type reason below)</option>
                             </select>
                             <input type="text" id="otherRemark-${i}" class="other-input-box" placeholder="Type actual reason here...">
-                            <button type="button" id="submitBtn-${i}" class="submit-btn" onclick="submitCall(${i}, event)">Submit & Next</button>
+                            <button type="button" id="submitBtn-${i}" class="submit-btn" onclick="submitCall(${i}, event)">Submit & Next →</button>
                         </div>
                     </div>
                 </div>`;
@@ -682,61 +918,33 @@
 
         function updateUI() {
             if(filteredQueue.length === 0) return;
-            let percent = (currentIndex / filteredQueue.length) * 100; 
-            document.getElementById("progressBar").style.width = `${percent}%`;
+            document.getElementById("progressBar").style.width = `${(currentIndex / filteredQueue.length) * 100}%`;
             document.getElementById("pendingCount").innerText = (filteredQueue.length - currentIndex);
-            for(let i=0; i<filteredQueue.length; i++) { 
-                let c = document.getElementById(`card-${i}`); if(!c) continue; 
-                if(i < currentIndex) c.className = "vle-card card-done"; 
-                else if(i === currentIndex) c.className = "vle-card card-active"; 
-                else if(i === currentIndex + 1) c.className = "vle-card card-next"; 
-                else c.className = "vle-card"; 
+            for(let i=0; i<filteredQueue.length; i++) {
+                let c = document.getElementById(`card-${i}`); if(!c) continue;
+                c.className = i < currentIndex ? "vle-card card-done" : (i === currentIndex ? "vle-card card-active" : (i === currentIndex + 1 ? "vle-card card-next" : "vle-card"));
             }
             activeCallStartTime = null;
         }
 
         window.submitCall = function(idx, event) {
             if(event) { event.stopPropagation(); event.preventDefault(); }
-            
-            let rmk = document.getElementById(`remark-${idx}`).value; 
+            let rmk = document.getElementById(`remark-${idx}`).value;
             if(!rmk) { alert("Please select an outcome reason!"); return; }
             if(rmk === "Others") {
                 let otherVal = document.getElementById(`otherRemark-${idx}`).value.trim();
                 if(!otherVal) { alert("Please type the actual reason."); return; }
                 rmk = "Others: " + otherVal;
             }
-            
             let btn = document.getElementById(`submitBtn-${idx}`);
-            if(btn) {
-                btn.innerText = "⏳ Saving..."; 
-                btn.disabled = true; 
-            }
-            
+            if(btn) { btn.innerText = "⏳ Saving..."; btn.disabled = true; }
+
             let v = filteredQueue[idx];
             let dur = activeCallStartTime ? Math.round((new Date() - activeCallStartTime) / 1000) : 12;
 
-            if(v.taskName === "BOTH") {
-                allTimeCalledIds.add(v.cscId + "_IRCTC");
-                allTimeCalledIds.add(v.cscId + "_REDBUS");
-            } else {
-                allTimeCalledIds.add(v.cscId + "_" + v.taskName);
-            }
+            if(v.taskName === "BOTH") { allTimeCalledIds.add(v.cscId + "_IRCTC"); allTimeCalledIds.add(v.cscId + "_REDBUS"); }
+            else { allTimeCalledIds.add(v.cscId + "_" + v.taskName); }
             todayCalledVLEs.push({ cscId: v.cscId, name: v.name, mobile: v.mobile, task: v.taskName, remark: rmk });
-
-            if(rmk.includes("Activated") || rmk.includes("Withdrawn")) {
-                let totalEl = document.getElementById("dmTotalInactive");
-                if (totalEl) totalEl.innerText = Math.max(0, parseInt(totalEl.innerText || 0) - (v.taskName === "BOTH" ? 2 : 1));
-                
-                if(v.taskName === "BOTH") {
-                    let iEl = document.getElementById(`dmTotal_IRCTC`);
-                    if (iEl) iEl.innerText = Math.max(0, parseInt(iEl.innerText || 0) - 1);
-                    let rEl = document.getElementById(`dmTotal_REDBUS`);
-                    if (rEl) rEl.innerText = Math.max(0, parseInt(rEl.innerText || 0) - 1);
-                } else {
-                    let countEl = document.getElementById(`dmTotal_${v.taskName}`);
-                    if (countEl) countEl.innerText = Math.max(0, parseInt(countEl.innerText || 0) - 1);
-                }
-            }
 
             if(v.taskName === "BOTH") {
                 fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: "IRCTC", dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
@@ -745,165 +953,119 @@
                 fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "saveFollowUp", cscId: v.cscId, service: v.taskName, dmName: (localStorage.getItem("userName")||dmName), remark: rmk, duration: dur, location: "Portal" }) });
             }
 
-            setTimeout(() => { currentIndex++; if(currentIndex < filteredQueue.length) { updateUI(); } else { let selectedTask = document.getElementById("taskSelector").value; showSummaryScreen(selectedTask); } }, 600); 
+            setTimeout(() => { currentIndex++; if(currentIndex < filteredQueue.length) updateUI(); else showSummaryScreen(document.getElementById("taskSelector").value); }, 600);
         };
 
         function showSummaryScreen(selectedTask) {
             document.getElementById("dmProgress").style.display = "none"; document.getElementById("cardStack").style.display = "none";
             document.getElementById("targetLabelBox").style.display = "none"; document.getElementById("summaryView").style.display = "block";
-            let taskCalledVLEs = todayCalledVLEs;
-            if (selectedTask) { taskCalledVLEs = todayCalledVLEs.filter(t => selectedTask === "STANDARD_TRAVEL" ? (t.task === "IRCTC" || t.task === "REDBUS" || t.task === "BOTH") : t.task === selectedTask); }
+            let taskCalledVLEs = selectedTask ? todayCalledVLEs.filter(t => selectedTask === "STANDARD_TRAVEL" ? (t.task === "IRCTC" || t.task === "REDBUS" || t.task === "BOTH") : t.task === selectedTask) : todayCalledVLEs;
             if(taskCalledVLEs.length === 0) { document.getElementById("summaryListContainer").innerHTML = `<p style="text-align:center; color:#64748b; font-weight:700;">No tasks completed today yet.</p>`; return; }
             let html = "";
             taskCalledVLEs.forEach(c => {
                 let isActivated = c.remark.includes("Activated");
                 let isRed = c.remark.includes("Not Reachable") || c.remark.includes("lift") || c.remark.includes("Closed") || c.remark.includes("Problem") || c.remark.includes("Pending") || c.remark.includes("Issue") || c.remark.includes("change");
-                let badgeColor = isActivated ? "background:#dcfce7; color:#166534;" : (isRed ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
-                
-                let displayName = c.name && c.name.length > 3 ? c.name : "VLE Action Tracked";
-                html += `<div class="summary-card"><div class="summary-info"><h4>${displayName}</h4><p>${c.task} Follow-up</p><span class="summary-remark" style="${badgeColor}">${c.remark}</span></div></div>`;
+                let badgeColor = isActivated ? "background:#dcfce7; color:#15803d;" : (isRed ? "background:#fee2e2; color:#b91c1c;" : "background:#f1f5f9; color:#475569;");
+                html += `<div class="summary-card"><div class="summary-info"><h4>${c.name && c.name.length > 3 ? c.name : "VLE Action Tracked"}</h4><p>${c.task} Follow-up</p><span class="summary-remark" style="${badgeColor}">${c.remark}</span></div></div>`;
             });
             document.getElementById("summaryListContainer").innerHTML = html;
         }
 
         // ==========================================
-        // 🌟 2. SPOC MONITORING VIEW 🌟
+        // 🌟 2. SPOC COMMAND CENTER LOGIC 🌟
         // ==========================================
         async function loadSpocDashboard() {
             try {
                 let cachedLogs = sessionStorage.getItem("cscSpocLogs_v2");
                 let cachedTargets = sessionStorage.getItem("cscSpocTargets_v2");
                 let cachedUsers = sessionStorage.getItem("cscUsersData_v2");
-                
+
                 rawSpocLogs = cachedLogs ? JSON.parse(cachedLogs) : null;
                 rawSpocTargets = cachedTargets ? JSON.parse(cachedTargets) : null;
                 rawSpocUsers = cachedUsers ? JSON.parse(cachedUsers) : null;
 
                 let promises = [];
-                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; try{sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
-                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; try{sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
-                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; try{sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d));}catch(e){console.warn("Storage full");} }));
+                if (!rawSpocLogs) promises.push(fetch(SCRIPT_URL + "?sheet=FollowUp_Logs").then(r=>r.json()).then(d=>{ rawSpocLogs=d; try{sessionStorage.setItem("cscSpocLogs_v2", JSON.stringify(d));}catch(e){} }));
+                if (!rawSpocTargets) promises.push(fetch(SCRIPT_URL + "?sheet=App_Targets").then(r=>r.json()).then(d=>{ rawSpocTargets=d; try{sessionStorage.setItem("cscSpocTargets_v2", JSON.stringify(d));}catch(e){} }));
+                if (!rawSpocUsers) promises.push(fetch(SCRIPT_URL + "?sheet=Users").then(r=>r.json()).then(d=>{ rawSpocUsers=d; try{sessionStorage.setItem("cscUsersData_v2", JSON.stringify(d));}catch(e){} }));
 
                 if(promises.length > 0) await Promise.all(promises);
-                
                 processSpocData();
-            } catch(e) { 
+            } catch(e) {
                 console.error(e);
-                document.getElementById("loader").style.display = "none"; 
-                alert("Error loading SPOC Dashboard: " + e.message); 
+                document.getElementById("loader").style.display = "none";
+                alert("Error loading SPOC Dashboard: " + e.message);
             }
         }
 
-        window.reloadSpocData = function() {
-            processSpocData();
-        };
+        window.reloadSpocData = function() { processSpocData(); };
 
         function processSpocData() {
-            let logs = rawSpocLogs || []; 
-            let targets = rawSpocTargets || []; 
-            let users = rawSpocUsers || [];
-            
+            let logs = rawSpocLogs || []; let targets = rawSpocTargets || []; let users = rawSpocUsers || [];
             let dateVal = document.getElementById("spocDatePicker").value;
             let selDate = dateVal ? new Date(dateVal) : new Date();
-            
-            let d1 = String(selDate.getDate()).padStart(2, '0'); 
-            let m1 = String(selDate.getMonth() + 1).padStart(2, '0'); 
-            let y1 = selDate.getFullYear();
-            
-            let format1 = `${d1}-${m1}-${y1}`; 
-            let format2 = `${y1}-${m1}-${d1}`; 
-            let format3 = `${d1}/${m1}/${y1}`; 
-            let format4 = `${m1}/${d1}/${y1}`;
-            
-            let isSelectedDate = (dateString) => { 
-                if(!dateString) return false; 
-                let str = String(dateString).trim(); 
-                return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); 
-            };
 
-            document.getElementById("reportDateText").innerText = "(" + format1 + ")";
+            let d1 = String(selDate.getDate()).padStart(2, '0'); let m1 = String(selDate.getMonth() + 1).padStart(2, '0'); let y1 = selDate.getFullYear();
+            let format1 = `${d1}-${m1}-${y1}`; let format2 = `${y1}-${m1}-${d1}`; let format3 = `${d1}/${m1}/${y1}`; let format4 = `${m1}/${d1}/${y1}`;
+            let isSelectedDate = (dateString) => { if(!dateString) return false; let str = String(dateString).trim(); return str.includes(format1) || str.includes(format2) || str.includes(format3) || str.includes(format4); };
+
+            document.getElementById("reportDateText").innerText = "Report Date: " + format1;
 
             let totalCallsToday = 0; globalSpocLogs = []; let uniqueDMs = {}; let activeDMsMap = {};
             let allTimeTotalTargets = 0; let allTimePendingTargets = 0;
-            let globalServiceCallStats = {};
-            let globalPendingStats = {}; 
-            let globalTargetStats = {}; 
+            let globalServiceCallStats = {}; let globalPendingStats = {}; let globalTargetStats = {};
 
             if (Array.isArray(users)) {
-                users.forEach(u => { 
-                    if(u && (u[2]||"").toString().toLowerCase().includes("manager") && u[0]) { 
+                users.forEach(u => {
+                    if(u && (u[2]||"").toString().toLowerCase().includes("manager") && u[0]) {
                         let dmKey = (u[5]||"").toString().trim();
                         if(dmKey) {
-                            uniqueDMs[dmKey] = { 
-                                name: dmKey, mobile: u[0], targetTotal: 0, pendingTotal: 0, actTotal: 0, 
+                            uniqueDMs[dmKey] = {
+                                name: dmKey, mobile: u[0], targetTotal: 0, pendingTotal: 0, actTotal: 0,
                                 calledToday: 0, totalDuration: 0, taskBreakdown: {}, callBreakdown: {},
                                 allTimeCalledTotal: 0, unattemptedTotal: 0
-                            }; 
+                            };
                         }
-                    } 
+                    }
                 });
             }
 
-            let activatedVLEs = new Set();
-            let allCalledTargets = new Set(); 
-
+            let activatedVLEs = new Set(); let allCalledTargets = new Set();
             if (Array.isArray(logs)) {
-                for(let i=1; i<logs.length; i++) { 
+                for(let i=1; i<logs.length; i++) {
                     if(!logs[i]) continue;
-                    let srv = (logs[i][2]||"").toString().trim().toUpperCase();
-                    let cId = (logs[i][1]||"").toString().trim();
-                    let combinedKey = cId + "_" + srv;
-                    
+                    let combinedKey = (logs[i][1]||"").toString().trim() + "_" + (logs[i][2]||"").toString().trim().toUpperCase();
                     allCalledTargets.add(combinedKey);
-                    
-                    if((logs[i][4] || "").toString().includes("Activated")) {
-                        activatedVLEs.add(combinedKey);
-                    } 
+                    if((logs[i][4] || "").toString().includes("Activated")) activatedVLEs.add(combinedKey);
                 }
             }
 
             if (Array.isArray(targets)) {
                 for(let i=1; i<targets.length; i++) {
                     if(!targets[i]) continue;
-                    let rDmName = (targets[i][3]||"").toString().trim(); 
-                    let srv = (targets[i][4]||"").toString().trim().toUpperCase(); 
-                    let cscId = (targets[i][0]||"").toString().trim();
-                    let combinedKey = cscId + "_" + srv;
-                    
+                    let rDmName = (targets[i][3]||"").toString().trim();
+                    let srv = (targets[i][4]||"").toString().trim().toUpperCase();
+                    let combinedKey = (targets[i][0]||"").toString().trim() + "_" + srv;
                     let isReallyActivated = activatedVLEs.has(combinedKey);
-                    let isAttempted = allCalledTargets.has(combinedKey); 
-                    
+                    let isAttempted = allCalledTargets.has(combinedKey);
+
                     let matchedDmName = null;
-                    Object.keys(uniqueDMs).forEach(key => {
-                        if (isNameMatch(rDmName, key)) matchedDmName = key;
-                    });
+                    Object.keys(uniqueDMs).forEach(key => { if (isNameMatch(rDmName, key)) matchedDmName = key; });
 
                     if(matchedDmName && srv) {
-                        uniqueDMs[matchedDmName].targetTotal++;
-                        allTimeTotalTargets++;
-                        
+                        uniqueDMs[matchedDmName].targetTotal++; allTimeTotalTargets++;
                         globalTargetStats[srv] = (globalTargetStats[srv] || 0) + 1;
-                        
-                        if (!uniqueDMs[matchedDmName].taskBreakdown[srv]) {
-                            uniqueDMs[matchedDmName].taskBreakdown[srv] = { total: 0, pending: 0, act: 0 };
-                        }
+                        if (!uniqueDMs[matchedDmName].taskBreakdown[srv]) uniqueDMs[matchedDmName].taskBreakdown[srv] = { total: 0, pending: 0, act: 0 };
                         uniqueDMs[matchedDmName].taskBreakdown[srv].total++;
-                        
-                        if (isAttempted) {
-                            uniqueDMs[matchedDmName].allTimeCalledTotal++;
-                        } else {
-                            uniqueDMs[matchedDmName].unattemptedTotal++;
-                        }
 
-                        if(!isReallyActivated) { 
-                            uniqueDMs[matchedDmName].pendingTotal++; 
-                            uniqueDMs[matchedDmName].taskBreakdown[srv].pending++;
-                            allTimePendingTargets++; 
-                            
-                            globalPendingStats[srv] = (globalPendingStats[srv] || 0) + 1;
-                        } else { 
-                            uniqueDMs[matchedDmName].actTotal++; 
-                            uniqueDMs[matchedDmName].taskBreakdown[srv].act++;
+                        if (isAttempted) uniqueDMs[matchedDmName].allTimeCalledTotal++;
+                        else uniqueDMs[matchedDmName].unattemptedTotal++;
+
+                        if(!isReallyActivated) {
+                            uniqueDMs[matchedDmName].pendingTotal++; uniqueDMs[matchedDmName].taskBreakdown[srv].pending++;
+                            allTimePendingTargets++; globalPendingStats[srv] = (globalPendingStats[srv] || 0) + 1;
+                        } else {
+                            uniqueDMs[matchedDmName].actTotal++; uniqueDMs[matchedDmName].taskBreakdown[srv].act++;
                         }
                     }
                 }
@@ -916,260 +1078,179 @@
                         totalCallsToday++;
                         let logDmName = (logs[i][3]||"").toString().trim();
                         let srv = (logs[i][2]||"").toString().trim().toUpperCase();
-                        
                         globalServiceCallStats[srv] = (globalServiceCallStats[srv] || 0) + 1;
 
                         let matchedDmName = null;
-                        Object.keys(uniqueDMs).forEach(key => {
-                            if (isNameMatch(logDmName, key)) matchedDmName = key;
-                        });
+                        Object.keys(uniqueDMs).forEach(key => { if (isNameMatch(logDmName, key)) matchedDmName = key; });
 
                         let timeStr = String(logs[i][0] || "").split(" ")[1] || "Just now";
                         let logRemark = (logs[i][4] || "").toString();
                         let isActivated = logRemark.includes("Activated");
                         let isRed = logRemark.includes("Not Reachable") || logRemark.includes("lift") || logRemark.includes("Closed") || logRemark.includes("Problem") || logRemark.includes("Pending") || logRemark.includes("Issue") || logRemark.includes("change");
-                        let rmkBadge = isActivated ? `background:#dcfce7; color:#166534;` : (isRed ? `background:#fee2e2; color:#b91c1c;` : `background:#f1f5f9; color:#475569;`);
-                        
+                        let rmkBadge = isActivated ? `background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;` : (isRed ? `background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;` : `background:#f1f5f9; color:#334155; border:1px solid #e2e8f0;`);
                         let durationSec = parseInt(logs[i][5] || 0);
 
                         if(matchedDmName) {
                             uniqueDMs[matchedDmName].calledToday++;
-                            uniqueDMs[matchedDmName].totalDuration += durationSec; 
-                            
+                            uniqueDMs[matchedDmName].totalDuration += durationSec;
                             uniqueDMs[matchedDmName].callBreakdown[srv] = (uniqueDMs[matchedDmName].callBreakdown[srv] || 0) + 1;
-                            
-                            if(!activeDMsMap[matchedDmName]) {
-                                activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, taskBreakdown: {} };
-                            }
+                            if(!activeDMsMap[matchedDmName]) activeDMsMap[matchedDmName] = { name: matchedDmName, calls: 0, time: timeStr, taskBreakdown: {} };
                             activeDMsMap[matchedDmName].calls++;
-                            
                             let tb = uniqueDMs[matchedDmName].taskBreakdown[srv];
-                            if (tb) {
-                                activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
-                            }
+                            if (tb) activeDMsMap[matchedDmName].taskBreakdown[srv] = { pending: tb.pending, total: tb.total };
                         }
-                        let actionBtns = !isActivated ? `<div class="feed-actions"><div class="feed-btn f-call">📞 Call</div><div class="feed-btn f-wa">💬 WhatsApp</div></div>` : ``;
-                        
+
                         globalSpocLogs.push({
                             dmName: matchedDmName || logDmName, vleName: logs[i][1], service: srv,
-                            time: timeStr, rmkBadge: rmkBadge, rmk: logRemark, actionBtns: actionBtns,
-                            durationText: formatTalkTime(durationSec) 
+                            time: timeStr, rmkBadge: rmkBadge, rmk: logRemark,
+                            durationText: formatTalkTime(durationSec),
+                            isActivated: isActivated
                         });
                     }
                 }
             }
 
-            let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs</option>`;
-            Object.values(activeDMsMap).forEach(adm => {
-                filterHtml += `<option value="${adm.name}">${adm.name}</option>`;
-                
+            // 🌟 LEADERBOARD: Sort Active DMs by Calls (Highest First) 🌟
+            let sortedActiveDMs = Object.values(activeDMsMap).sort((a, b) => b.calls - a.calls);
+            document.getElementById("activeDmCountBadge").innerText = `${sortedActiveDMs.length} Active`;
+
+            let activeDMsHtml = ""; let filterHtml = `<option value="ALL">All DMs (${globalSpocLogs.length})</option>`;
+            sortedActiveDMs.forEach((adm, idx) => {
+                filterHtml += `<option value="${adm.name}">${adm.name} (${adm.calls})</option>`;
                 let dynamicBadges = "";
                 Object.keys(adm.taskBreakdown).forEach(k => {
-                    let d = adm.taskBreakdown[k];
-                    let colors = getColorForService(k);
+                    let d = adm.taskBreakdown[k]; let colors = getColorForService(k);
                     dynamicBadges += `<span class="tgt-badge" style="background:${colors.bg}; color:${colors.text}; border:1px solid ${colors.border};">${k}: ${d.pending}/${d.total}</span>`;
                 });
-                if (dynamicBadges === "") dynamicBadges = `<span class="tgt-badge" style="background:#e2e8f0; color:#475569;">General Follow-up</span>`;
+                if (dynamicBadges === "") dynamicBadges = `<span class="tgt-badge" style="background:#f1f5f9; color:#475569;">General Follow-up</span>`;
 
-                activeDMsHtml += `<div class="dm-item"><div class="dm-info"><h4>${adm.name}</h4>${dynamicBadges}<div class="dm-calls-text">Calls On Date: ${adm.calls}</div><div class="dm-login-text">Last Log: ${adm.time}</div></div><span class="dm-status">Active</span></div>`;
+                let safeDm = adm.name.replace(/'/g, "\\'");
+                let rankTag = idx === 0 ? "🥇 " : (idx === 1 ? "🥈 " : (idx === 2 ? "🥉 " : ""));
+                activeDMsHtml += `
+                <div class="dm-leader-card" data-dm="${adm.name}" onclick="selectDmForFeed('${safeDm}', this)">
+                    <div class="dm-row-top">
+                        <div class="dm-identity">
+                            <div class="dm-avatar">${getInitials(adm.name)}<span class="avatar-live-dot"></span></div>
+                            <div class="dm-name-block">
+                                <h5>${rankTag}${adm.name}</h5>
+                                <span><i class="fa-regular fa-clock"></i> Last log: ${adm.time}</span>
+                            </div>
+                        </div>
+                        <div class="dm-calls-pill">${adm.calls} Calls</div>
+                    </div>
+                    <div class="dm-badges-wrap">${dynamicBadges}</div>
+                </div>`;
             });
 
             document.getElementById("spocFeedFilter").innerHTML = filterHtml;
-            document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px;'>No DMs logged actions on this date.</p>";
-            renderSpocFeed("ALL"); 
+            document.getElementById("activeDmsGrid").innerHTML = activeDMsHtml || "<p style='color:#64748b; font-size:13px; text-align:center; padding:20px;'>No DMs logged actions on this date.</p>";
+            renderSpocFeed("ALL");
 
-            let vertHtml = "";
-            Object.keys(globalServiceCallStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                vertHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalServiceCallStats[srv]}</span>`;
-            });
-            if(vertHtml === "") vertHtml = `<span style="font-size:10px; color:#94a3b8;">No calls yet</span>`;
+            // 🌟 KPI STRIP 🌟
+            let mkPills = (obj, emptyTxt) => {
+                let s = "";
+                Object.keys(obj).forEach(srv => {
+                    let c = getColorForService(srv);
+                    s += `<span style="padding:2px 7px; background:${c.bg}; color:${c.text}; border-radius:5px; font-size:10px; font-weight:800; border:1px solid ${c.border};">${srv}: ${obj[srv]}</span>`;
+                });
+                return s || `<span style="font-size:11px; color:#94a3b8;">${emptyTxt}</span>`;
+            };
 
-            let penHtml = "";
-            Object.keys(globalPendingStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                penHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalPendingStats[srv]}</span>`;
-            });
-            if(penHtml === "") penHtml = `<span style="font-size:10px; color:#94a3b8;">No pending</span>`;
-
-            let tgtHtml = "";
-            Object.keys(globalTargetStats).forEach(srv => {
-                let colors = getColorForService(srv);
-                tgtHtml += `<span style="display:inline-block; margin-right:5px; margin-top:5px; padding:2px 6px; background:${colors.bg}; color:${colors.text}; border-radius:4px; font-size:9px; font-weight:800; border:1px solid ${colors.border};">${srv}: ${globalTargetStats[srv]}</span>`;
-            });
-            if(tgtHtml === "") tgtHtml = `<span style="font-size:10px; color:#94a3b8;">No targets</span>`;
-
-            let kpiHtml = `
-                <div class="stat-box" style="border-color:#e2e8f0; background:#f8fafc; padding:10px;">
-                    <p style="margin-bottom:2px;">Calls Today</p>
-                    <h3 style="color:#0f172a; font-size:22px;">${totalCallsToday}</h3>
-                    <div style="margin-top:5px;">${vertHtml}</div>
+            document.getElementById("spocStatGrid").innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-top">
+                        <div><p>Calls On Selected Date</p><h3 style="color:#1e3a8a;">${totalCallsToday}</h3></div>
+                        <div class="stat-icon-circle" style="background:#eff6ff; color:#2563eb;"><i class="fa-solid fa-phone-volume"></i></div>
+                    </div>
+                    <div class="stat-pills">${mkPills(globalServiceCallStats, "No calls yet")}</div>
                 </div>
-                <div class="stat-box" style="border-color:#bbf7d0; background:#f0fdf4; padding:10px; display:flex; flex-direction:column; justify-content:center;">
-                    <h3 style="color:#16a34a;">${Object.keys(activeDMsMap).length}</h3><p style="color:#166534;">Active DMs</p>
+                <div class="stat-box">
+                    <div class="stat-top">
+                        <div><p>Active DMs Today</p><h3 style="color:#15803d;">${sortedActiveDMs.length}</h3></div>
+                        <div class="stat-icon-circle" style="background:#dcfce7; color:#16a34a;"><i class="fa-solid fa-user-check"></i></div>
+                    </div>
+                    <div class="stat-pills"><span style="font-size:11px; color:#15803d; font-weight:700;">● Actively calling & updating</span></div>
                 </div>
-                <div class="stat-box" style="border-color:#bae6fd; background:#f0f9ff; padding:10px;">
-                    <h3 style="color:#0284c7; font-size:22px;">${allTimePendingTargets}</h3><p style="color:#075985;">Total Pending</p>
-                    <div style="margin-top:5px;">${penHtml}</div>
+                <div class="stat-box">
+                    <div class="stat-top">
+                        <div><p>Total Pending</p><h3 style="color:#b45309;">${allTimePendingTargets.toLocaleString()}</h3></div>
+                        <div class="stat-icon-circle" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-hourglass-half"></i></div>
+                    </div>
+                    <div class="stat-pills">${mkPills(globalPendingStats, "No pending")}</div>
                 </div>
-                <div class="stat-box" style="border-color:#fecaca; background:#fef2f2; padding:10px;">
-                    <h3 style="color:#dc2626; font-size:22px;">${allTimeTotalTargets}</h3><p style="color:#991b1b;">Overall Target</p>
-                    <div style="margin-top:5px;">${tgtHtml}</div>
+                <div class="stat-box">
+                    <div class="stat-top">
+                        <div><p>Overall Target</p><h3 style="color:#dc2626;">${allTimeTotalTargets.toLocaleString()}</h3></div>
+                        <div class="stat-icon-circle" style="background:#fee2e2; color:#dc2626;"><i class="fa-solid fa-bullseye"></i></div>
+                    </div>
+                    <div class="stat-pills">${mkPills(globalTargetStats, "No targets")}</div>
                 </div>
             `;
-            document.getElementById("spocStatGrid").innerHTML = kpiHtml;
-            
-            let tableHtml = "";
-            let sno = 1; let isFriday = selDate.getDay() === 5; let iLimit = isFriday ? 50 : 40; 
+
+            // 🌟 STATE HEAD REPORT TABLE 🌟
+            let tableHtml = ""; let sno = 1; let isFriday = selDate.getDay() === 5; let iLimit = isFriday ? 50 : 40;
+            cachedFollowUpItems = [];
 
             Object.values(uniqueDMs).forEach(dm => {
                 let tTotal = dm.targetTotal;
                 if(tTotal > 0) {
-                    let aTotal = dm.actTotal; 
-                    let pTotal = dm.pendingTotal;
-                    let unattemptedTotal = dm.unattemptedTotal;
-                    let allTimeCalledTotal = dm.allTimeCalledTotal;
-
-                    let attemptColor = dm.calledToday > 0 ? "#10b981" : "#0f172a"; 
-                    let avgSec = dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0;
-                    let avgTimeText = formatTalkTime(avgSec);
-                    
+                    let attemptColor = dm.calledToday > 0 ? "#15803d" : "#dc2626";
+                    let avgTimeText = formatTalkTime(dm.calledToday > 0 ? Math.round(dm.totalDuration / dm.calledToday) : 0);
                     let callBreakdownStr = "";
                     Object.keys(dm.callBreakdown).forEach(srv => {
-                        let colors = getColorForService(srv);
-                        callBreakdownStr += `<span style="background:${colors.bg}; color:${colors.text}; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:4px; border:1px solid ${colors.border};">${srv}(${dm.callBreakdown[srv]})</span>`;
+                        let c = getColorForService(srv);
+                        callBreakdownStr += `<span style="background:${c.bg}; color:${c.text}; font-size:10.5px; padding:2px 6px; border-radius:5px; margin-right:4px; border:1px solid ${c.border}; font-weight:800;">${srv}(${dm.callBreakdown[srv]})</span>`;
                     });
-                    if(callBreakdownStr === "") callBreakdownStr = "-";
-
                     tableHtml += `<tr>
                         <td>${sno++}</td>
-                        <td style="font-weight:800; color:#1e3a8a;">${dm.name}</td>
-                        <td style="font-size:14px;">${tTotal}</td>
-                        <td style="color:#16a34a; font-size:14px;">${aTotal}</td>
-                        <td style="color:#dc2626; font-size:14px; background:#fef2f2; font-weight:900;">${unattemptedTotal}</td>
-                        <td style="color:#d97706; font-size:14px;">${pTotal}</td>
-                        <td style="color:#0ea5e9; font-weight:900; font-size:14px; background:#f0f9ff;">${allTimeCalledTotal}</td>
-                        <td style="color:${attemptColor}; font-weight:900; font-size:15px;">${dm.calledToday}</td>
-                        <td>${callBreakdownStr}</td>
-                        <td style="color:#10b981; font-weight:800;">${avgTimeText}</td>
+                        <td style="font-weight:800; color:#0f172a;">${dm.name}</td>
+                        <td>${tTotal}</td>
+                        <td style="color:#15803d; font-weight:800;">${dm.actTotal}</td>
+                        <td style="color:#b91c1c; background:#fef2f2 !important; font-weight:900;">${dm.unattemptedTotal}</td>
+                        <td style="color:#b45309; font-weight:800;">${dm.pendingTotal}</td>
+                        <td style="color:#0369a1; background:#f0f9ff !important; font-weight:800;">${dm.allTimeCalledTotal}</td>
+                        <td style="color:${attemptColor}; font-weight:900; font-size:14px;">${dm.calledToday}</td>
+                        <td>${callBreakdownStr || "-"}</td>
+                        <td style="color:#059669; font-weight:800;">${avgTimeText}</td>
                     </tr>`;
                 }
-            });
-            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
 
-            let followUpHtml = "";
-            Object.values(uniqueDMs).forEach(dm => {
-                let pTotal = dm.pendingTotal;
-                if(pTotal > 0) {
-                    let assigned = Math.min(pTotal, iLimit);
-                    
+                if (dm.pendingTotal > 0) {
+                    let assigned = Math.min(dm.pendingTotal, iLimit);
                     let bDownTxt = "";
-                    Object.keys(dm.taskBreakdown).forEach(k => {
-                        let p = dm.taskBreakdown[k].pending;
-                        if(p > 0) bDownTxt += `*${k} (${p})* & `;
-                    });
-                    bDownTxt = bDownTxt.slice(0, -3); 
-
-                    let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${pTotal}* pending targets (${bDownTxt}) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
-                    followUpHtml += `<div class="dm-action-item"><div style="display:flex; justify-content:space-between; align-items:center;"><h4>${dm.name}</h4><span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px;">${pTotal} Pending</span></div><p>Total Targets: ${dm.targetTotal} | Assigned Today: ${assigned} | Called: <b style="color:${dm.calledToday!=='0'?'#10b981':'#ef4444'};">${dm.calledToday}</b></p><div class="action-btn-group" style="margin-top:15px; margin-bottom:0;"><a href="tel:${dm.mobile}" class="call-btn" style="padding:10px; font-size:13px; text-align:center; color:#166534; background:#dcfce7; border-color:#bbf7d0;">📞 Call</a><a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(waMsg)}" class="wa-btn" style="padding:10px; font-size:13px; text-align:center;">💬 WhatsApp</a></div></div>`;
+                    Object.keys(dm.taskBreakdown).forEach(k => { if(dm.taskBreakdown[k].pending > 0) bDownTxt += `*${k} (${dm.taskBreakdown[k].pending})* & `; });
+                    bDownTxt = bDownTxt.slice(0, -3);
+                    let waMsg = `Dear Mr. *${dm.name}*,\n\nYou have a total of *${dm.pendingTotal}* pending targets (${bDownTxt}) in the priority follow-up system. Out of these, *${assigned}* targets have been assigned to you for follow-up today.\n\nPlease make time to call these individuals today without fail.\n\nhttps://travelcloud.in/\n\nUser ID : *Your Mobile No*\nPassword: *Csc@123*\n\nThank you.\n\n*Sri Y. Ravi Kumar,*\n*State Head*\n*CSC Andhra Pradesh*`;
+                    cachedFollowUpItems.push({ ...dm, assigned, waMsg });
                 }
             });
-            document.getElementById("dmFollowUpGrid").innerHTML = followUpHtml || "<p style='color:#64748b; font-size:13px;'>No DMs pending follow-up.</p>";
+
+            document.getElementById("reportTableBody").innerHTML = tableHtml || `<tr><td colspan="10" style="color:#64748b; font-size:13px; text-align:center;">No report generated.</td></tr>`;
+
+            // Sort Follow-Up Cards: 0 Calls first, then highest pending
+            cachedFollowUpItems.sort((a, b) => {
+                if ((a.calledToday === 0) !== (b.calledToday === 0)) return a.calledToday === 0 ? -1 : 1;
+                return b.pendingTotal - a.pendingTotal;
+            });
+            renderFollowUpCards();
+
             document.getElementById("loader").style.display = "none";
         }
 
-        window.downloadStateHeadReport = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let card = document.getElementById("reportCardToCapture");
-            let container = document.querySelector(".report-table-container");
-            let btn = document.getElementById("dlBtn");
-            let ths = document.querySelectorAll(".report-table th");
-            
-            let originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Saving...";
-            btn.disabled = true;
-            
-            let origOverflow = container.style.overflow;
-            let origOverflowX = container.style.overflowX;
-            let origWidth = card.style.width;
-            
-            container.style.overflow = "visible";
-            container.style.overflowX = "visible";
-            card.style.width = "max-content"; 
-            
-            ths.forEach(th => th.style.position = "static");
-            window.scrollTo(0, 0);
+        // 🌟 CLICK DM IN LEADERBOARD TO FILTER TIMELINE 🌟
+        window.selectDmForFeed = function(dmNameStr, cardEl) {
+            let sel = document.getElementById("spocFeedFilter");
+            let isAlready = cardEl.classList.contains("selected-dm");
+            document.querySelectorAll(".dm-leader-card").forEach(el => el.classList.remove("selected-dm"));
 
-            setTimeout(() => {
-                html2canvas(card, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: "#ffffff",
-                    windowWidth: card.scrollWidth + 100 
-                }).then(canvas => {
-                    let link = document.createElement('a');
-                    let selDate = document.getElementById("spocDatePicker").value || "Report";
-                    link.download = `State_Head_Report_${selDate}.png`;
-                    link.href = canvas.toDataURL("image/png");
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    container.style.overflow = origOverflow;
-                    container.style.overflowX = origOverflowX;
-                    card.style.width = origWidth;
-                    ths.forEach(th => th.style.position = "sticky");
-                }).catch(err => {
-                    console.error("Screenshot Error:", err);
-                    alert("Failed to save image. Please try again.");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    container.style.overflow = origOverflow;
-                    container.style.overflowX = origOverflowX;
-                    card.style.width = origWidth;
-                    ths.forEach(th => th.style.position = "sticky");
-                });
-            }, 500); 
-        };
-
-        window.downloadStateHeadExcel = function(event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let table = document.querySelector(".report-table");
-            let rows = table.querySelectorAll("tr");
-            let selDate = document.getElementById("spocDatePicker").value || "Report";
-            
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 13px;">`;
-            
-            tableHtml += `<thead><tr><th colspan="10" style="background-color:#2563eb; color:white; font-size:16px; padding:10px; text-align:center;">STATE HEAD FOLLOW-UP REPORT (${selDate})</th></tr>`;
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
-            
-            let headers = rows[0].querySelectorAll("th");
-            headers.forEach(h => {
-                tableHtml += `<th style="padding: 10px;">${h.innerText.replace(/(\r\n|\n|\r)/gm, " ")}</th>`;
-            });
-            tableHtml += `</tr></thead><tbody>`;
-
-            for(let i=1; i<rows.length; i++) {
-                let cells = rows[i].querySelectorAll("td");
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                cells.forEach(c => {
-                    tableHtml += `<td style="padding: 8px;">${c.innerText}</td>`;
-                });
-                tableHtml += `</tr>`;
+            if (isAlready) {
+                sel.value = "ALL";
+                renderSpocFeed("ALL");
+            } else {
+                cardEl.classList.add("selected-dm");
+                sel.value = dmNameStr;
+                renderSpocFeed(dmNameStr);
             }
-            tableHtml += `</tbody></table></body></html>`;
-
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `State_Head_Report_${selDate}.xls`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         };
 
         window.renderSpocFeed = function(filterVal) {
@@ -1177,12 +1258,154 @@
             globalSpocLogs.forEach(log => {
                 if(filterVal === "ALL" || log.dmName === filterVal) {
                     let colors = getColorForService(log.service);
-                    feedHtml += `<div class="live-feed-item"><div><div class="live-feed-header"><h4>${log.vleName} <span style="font-size:11px; color:${colors.text}; background:${colors.bg}; padding:2px 6px; border-radius:4px;">${log.service}</span></h4><span style="font-size:11px; color:#64748b;">🕒 ${log.time}</span></div><span class="feed-dm">👤 ${log.dmName}</span><br><span class="feed-rmk" style="${log.rmkBadge}">${log.rmk}</span><div class="feed-duration">⏱️ Talk Time: ${log.durationText}</div></div>${log.actionBtns}</div>`;
+                    let actionBtns = !log.isActivated ? `
+                        <div style="display:flex; gap:8px; flex-shrink:0;">
+                            <div class="call-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-solid fa-phone"></i> Call</div>
+                            <div class="wa-btn" style="padding:6px 12px; font-size:11.5px;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</div>
+                        </div>` : ``;
+
+                    feedHtml += `
+                    <div class="timeline-item">
+                        <div class="tl-left">
+                            <div class="tl-time-box">
+                                <strong>${log.time}</strong>
+                                <span><i class="fa-solid fa-stopwatch"></i> ${log.durationText}</span>
+                            </div>
+                            <div class="tl-details">
+                                <div class="tl-title-row">
+                                    <h5>${log.vleName}</h5>
+                                    <span style="font-size:10px; font-weight:800; color:${colors.text}; background:${colors.bg}; border:1px solid ${colors.border}; padding:2px 7px; border-radius:5px;">${log.service}</span>
+                                    <span class="tl-dm-tag"><i class="fa-solid fa-user-tie" style="color:#2563eb;"></i> ${log.dmName}</span>
+                                </div>
+                                <span class="tl-rmk-pill" style="${log.rmkBadge}">${log.rmk}</span>
+                            </div>
+                        </div>
+                        ${actionBtns}
+                    </div>`;
                 }
             });
-            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px;'>No calls found on this date.</p>";
+            document.getElementById("liveFeedGrid").innerHTML = feedHtml || "<p style='color:#64748b; font-size:13px; text-align:center; padding:30px;'>No calls found for this selection.</p>";
         };
-        window.filterSpocFeed = function() { let val = document.getElementById("spocFeedFilter").value; renderSpocFeed(val); };
+
+        window.filterSpocFeed = function() {
+            let val = document.getElementById("spocFeedFilter").value;
+            document.querySelectorAll(".dm-leader-card").forEach(el => {
+                el.classList.toggle("selected-dm", el.getAttribute("data-dm") === val);
+            });
+            renderSpocFeed(val);
+        };
+
+        // 🌟 SMART FOLLOW-UP FILTERS 🌟
+        window.setFollowUpFilter = function(mode) {
+            currentFollowUpFilter = mode;
+            ['ALL', 'ZERO', 'ACTIVE'].forEach(m => document.getElementById('fu-' + m).classList.toggle('active', m === mode));
+            renderFollowUpCards();
+        };
+
+        window.renderFollowUpCards = function() {
+            let q = (document.getElementById("fuSearchInput").value || "").toLowerCase().trim();
+            let list = cachedFollowUpItems.filter(dm => {
+                if (q && !dm.name.toLowerCase().includes(q)) return false;
+                if (currentFollowUpFilter === "ZERO") return dm.calledToday === 0;
+                if (currentFollowUpFilter === "ACTIVE") return dm.calledToday > 0;
+                return true;
+            });
+
+            let html = "";
+            list.forEach(dm => {
+                let pct = dm.assigned > 0 ? Math.min(100, Math.round((dm.calledToday / dm.assigned) * 100)) : 0;
+                let barColor = dm.calledToday === 0 ? "#dc2626" : (pct >= 75 ? "#16a34a" : "#2563eb");
+                let cardCls = dm.calledToday === 0 ? "zero-alert" : "active-ok";
+
+                html += `
+                <div class="fu-card ${cardCls}">
+                    <div class="fu-card-top">
+                        <div class="dm-identity">
+                            <div class="dm-avatar" style="background:${dm.calledToday === 0 ? 'linear-gradient(135deg,#991b1b,#dc2626)' : 'linear-gradient(135deg,#1e3a8a,#2563eb)'};">${getInitials(dm.name)}</div>
+                            <div class="dm-name-block">
+                                <h5 style="max-width:190px;">${dm.name}</h5>
+                                <span>Total Targets: <b>${dm.targetTotal}</b></span>
+                            </div>
+                        </div>
+                        <span style="font-size:11px; font-weight:800; color:#b91c1c; background:#fef2f2; border:1px solid #fecaca; padding:4px 9px; border-radius:7px; white-space:nowrap;">${dm.pendingTotal} Pending</span>
+                    </div>
+                    <div class="fu-progress-wrap">
+                        <div class="fu-progress-labels">
+                            <span>Today's Progress: <b style="color:${barColor};">${dm.calledToday} / ${dm.assigned}</b></span>
+                            <span style="color:${barColor};">${pct}%</span>
+                        </div>
+                        <div class="fu-bar-bg"><div class="fu-bar-fill" style="width:${Math.max(pct, dm.calledToday > 0 ? 4 : 0)}%; background:${barColor};"></div></div>
+                    </div>
+                    <div class="action-btn-group">
+                        <a href="tel:${dm.mobile}" class="call-btn"><i class="fa-solid fa-phone"></i> Call DM</a>
+                        <a href="whatsapp://send?phone=91${dm.mobile.replace(/\D/g,'')}&text=${encodeURIComponent(dm.waMsg)}" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Send Reminder</a>
+                    </div>
+                </div>`;
+            });
+            document.getElementById("dmFollowUpGrid").innerHTML = html || "<p style='color:#64748b; font-size:13px; padding:20px;'>No matching DMs found.</p>";
+        };
+
+        // 🌟 REPORT EXPORTS 🌟
+        window.downloadStateHeadReport = function(event) {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            let card = document.getElementById("reportCardToCapture");
+            let container = document.querySelector(".report-table-container");
+            let btn = document.getElementById("dlBtn");
+            let ths = document.querySelectorAll(".report-table th");
+
+            let originalText = btn.innerHTML; btn.innerHTML = "⏳ Saving..."; btn.disabled = true;
+            let origOverflow = container.style.overflow; let origOverflowX = container.style.overflowX; let origWidth = card.style.width;
+            container.style.overflow = "visible"; container.style.overflowX = "visible"; card.style.width = "max-content";
+            ths.forEach(th => th.style.position = "static"); window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: "#ffffff", windowWidth: card.scrollWidth + 100 }).then(canvas => {
+                    let selDate = document.getElementById("spocDatePicker").value || "Report";
+                    let filename = `State_Head_Report_${selDate}.png`;
+                    if (canvas.toBlob) {
+                        canvas.toBlob(blob => {
+                            let url = URL.createObjectURL(blob); let link = document.createElement('a');
+                            link.download = filename; link.href = url; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                            setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        }, "image/png");
+                    } else {
+                        let link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png");
+                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    }
+                    btn.innerHTML = originalText; btn.disabled = false;
+                    container.style.overflow = origOverflow; container.style.overflowX = origOverflowX; card.style.width = origWidth;
+                    ths.forEach(th => th.style.position = "sticky");
+                }).catch(err => {
+                    alert("Failed to save image."); btn.innerHTML = originalText; btn.disabled = false;
+                    container.style.overflow = origOverflow; container.style.overflowX = origOverflowX; card.style.width = origWidth;
+                    ths.forEach(th => th.style.position = "sticky");
+                });
+            }, 400);
+        };
+
+        window.downloadStateHeadExcel = function(event) {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            let table = document.querySelector(".report-table"); let rows = table.querySelectorAll("tr");
+            let selDate = document.getElementById("spocDatePicker").value || "Report";
+
+            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
+            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px;">`;
+            tableHtml += `<thead><tr><th colspan="10" style="background-color:#1e3a8a; color:white; font-size:16px; padding:10px; text-align:center;">STATE HEAD FOLLOW-UP REPORT (${selDate})</th></tr>`;
+            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold;">`;
+            rows[0].querySelectorAll("th").forEach(h => tableHtml += `<th style="padding: 10px;">${h.innerText.replace(/(\r\n|\n|\r)/gm, " ")}</th>`);
+            tableHtml += `</tr></thead><tbody>`;
+            for(let i=1; i<rows.length; i++) {
+                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
+                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
+                rows[i].querySelectorAll("td").forEach(c => tableHtml += `<td style="padding: 8px;">${c.innerText}</td>`);
+                tableHtml += `</tr>`;
+            }
+            tableHtml += `</tbody></table></body></html>`;
+
+            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `State_Head_Report_${selDate}.xls`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        };
     </script>
 </body>
 </html>
