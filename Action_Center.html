@@ -175,7 +175,7 @@
         .prog-fill { height: 100%; background: linear-gradient(90deg, #1e3a8a, #10b981); width: 0%; transition: width 0.3s; }
 
         /* =========================================================
-           📱 2. DM APP SHELL (ONE-CALL MULTI-SERVICE DESK)
+           📱 2. DM APP SHELL (SEARCHABLE VLE LIST + TAP-TO-CALL)
            ========================================================= */
         .dm-app-shell {
             max-width: 560px; margin: 0 auto; min-height: 100vh; background: #f8fafc;
@@ -208,7 +208,34 @@
         .v-card.v-all .v-badge { background: #fcd34d; color: #0f172a; }
         .v-badge.b-zero { background: #cbd5e1; color: #475569; }
 
-        .calling-deck-wrap { padding: 12px; display: none; flex-direction: column; gap: 12px; }
+        .calling-deck-wrap { padding: 12px; display: none; flex-direction: column; gap: 10px; }
+
+        /* 📋 COMPACT SEARCHABLE VLE LIST */
+        .vle-search-input {
+            width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1;
+            font-size: 13px; font-weight: 700; color: #0f172a; background: #ffffff; outline: none;
+            box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+        }
+        .vle-search-input:focus { border-color: #2563eb; }
+        .vle-list-container { display: flex; flex-direction: column; gap: 8px; }
+        .vle-list-item {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 13px;
+            padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            cursor: pointer; transition: 0.15s; box-shadow: 0 2px 6px rgba(15,23,42,0.03);
+        }
+        .vle-list-item:hover { border-color: #93c5fd; background: #f8fafc; transform: translateY(-1px); }
+        .vle-li-name { font-family: 'Outfit', sans-serif; font-size: 14.5px; font-weight: 800; color: #0f172a; }
+        .vle-li-sub { font-size: 11px; font-weight: 700; color: #64748b; margin-top: 2px; }
+        .vle-li-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+        .vle-li-chip {
+            background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe;
+            font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+        }
+        .vle-li-go {
+            background: #1e3a8a; color: #ffffff; border-radius: 10px; padding: 8px 12px;
+            font-size: 12px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 5px;
+        }
+
         .vle-call-card { background: #fff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
         .vle-card-head { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff; padding: 14px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         .vle-card-body { padding: 18px; text-align: center; }
@@ -467,7 +494,7 @@
     </div>
 
     <!-- =========================================================
-         📱 DM MOBILE-APP VIEW (ONE-CALL MULTI-SERVICE + REMARKS)
+         📱 DM MOBILE-APP VIEW (SEARCHABLE VLE LIST + TAP-TO-CALL)
          ========================================================= -->
     <div id="dmAppScreen" class="dm-app-shell" style="display:none;">
         <div class="dm-topbar">
@@ -489,11 +516,21 @@
 
             <div id="callingDeckView" class="calling-deck-wrap">
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 14px; border-radius:12px; border:1px solid #e2e8f0;">
-                    <button class="btn-sm-corp btn-light" onclick="backToVerticalGrid()"><i class="fa-solid fa-arrow-left"></i> Verticals</button>
+                    <button class="btn-sm-corp btn-light" id="deckBackBtn" onclick="backToVerticalGrid()"><i class="fa-solid fa-arrow-left"></i> Verticals</button>
                     <span style="font-size:12.5px; font-weight:800; color:#1e3a8a;" id="activeVerticalLabel">ALL</span>
                     <span style="font-size:12px; font-weight:800; color:#dc2626;" id="deckRemainCount">0 VLEs Left</span>
                 </div>
-                <div id="activeVleCardHost"></div>
+
+                <!-- 1. SEARCHABLE VLE LIST -->
+                <div id="vleListView" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="dmVleSearch" class="vle-search-input" placeholder="🔍 Search VLE Name, CSC ID, Mobile..." oninput="renderVleList()">
+                    <div id="vleListHost" class="vle-list-container"></div>
+                </div>
+
+                <!-- 2. SINGLE SELECTED VLE CALL CARD -->
+                <div id="vleSingleCardView" style="display:none;">
+                    <div id="activeVleCardHost"></div>
+                </div>
             </div>
         </div>
 
@@ -505,7 +542,7 @@
                 <div class="mini-card" style="border-top:4px solid #16a34a;"><p style="font-size:11px; color:#64748b; font-weight:800;">CALLED TODAY</p><h3 id="dmHomeCalled" style="font-family:'Outfit'; font-size:26px; color:#16a34a;">0</h3></div>
             </div>
             <div class="mini-card">
-                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Oka VLE ki multiple services pending unte, <b>Calling</b> tab lo okate card lo anni kanipisthayi. Anni services ki same remark leda prathi service ki veru veru remark petti okate sari submit cheyavachu.</p>
+                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Vertical select cheyagane pending VLEs list kanipisthundi. Meeku nachina VLE ni search chesi tap chesi direct ga call & remarks submit cheyavachu.</p>
             </div>
         </div>
 
@@ -625,7 +662,7 @@
         const isSpoc = rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.toUpperCase().includes("CHANDRA SEKHARA");
 
         let parsedTargets = [], allLogs = [], vleOtherPending = {}, vleNameLookup = {}, vleMobileLookup = {}, vleDistrictLookup = {};
-        let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], deckIdx = 0, callStartTime = null;
+        let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], activeVerticalKey = "ALL", activeSelectedVle = null, callStartTime = null;
         let verifiedCallDuration = null;
         const isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid));
         let rawUploadJson = [];
@@ -727,7 +764,6 @@
             return "background:#eff6ff; color:#1e3a8a;";
         }
 
-        // ✅ STRICTLY FOLLOWS SHEET STATUS COLUMN ONLY
         function normalizeTargetRows(rawRows) {
             if (!Array.isArray(rawRows) || rawRows.length < 2) return [];
             let hdr = rawRows[0].map(h => String(h || "").toUpperCase().trim());
@@ -1227,7 +1263,7 @@
         }
 
         // =========================================================
-        // 📱 DM FUNCTIONS (ONE-CALL MULTI-SERVICE + 2-IN-1 REMARKS)
+        // 📱 DM FUNCTIONS (SEARCHABLE VLE LIST + TAP-TO-CALL)
         // =========================================================
         function initDMDashboard() {
             let todayFormats = getDateFormats();
@@ -1408,11 +1444,9 @@
             document.getElementById("dmAppScreen").classList.toggle("wide-mode", tab === "report" || tab === "data");
         }
 
-        // 🌟 ONE-CALL MULTI-SERVICE QUEUE BUILDER 🌟
-        function openVerticalDeck(vKey) {
+        // 🌟 SEARCHABLE VLE LIST + TAP-TO-CALL BUILDER 🌟
+        function buildQueueForVertical(vKey) {
             let matchingItems = vKey === "ALL" ? dmPendingList : dmPendingList.filter(x => x.service === vKey);
-            if (!matchingItems.length) { alert("No pending VLEs in this vertical!"); return; }
-
             let seenCsc = new Set();
             activeDeckQueue = [];
 
@@ -1431,12 +1465,84 @@
                     services: allForVle
                 });
             });
+        }
 
-            deckIdx = 0;
+        function openVerticalDeck(vKey) {
+            activeVerticalKey = vKey;
+            buildQueueForVertical(vKey);
+            if (!activeDeckQueue.length) { alert("No pending VLEs in this vertical!"); return; }
+
+            document.getElementById("dmVleSearch").value = "";
             document.getElementById("verticalGridView").style.display = "none";
             document.getElementById("callingDeckView").style.display = "flex";
             document.getElementById("activeVerticalLabel").innerText = vKey;
-            renderCurrentCallCard();
+            showVleListView();
+        }
+
+        function showVleListView() {
+            activeSelectedVle = null;
+            document.getElementById("vleSingleCardView").style.display = "none";
+            document.getElementById("vleListView").style.display = "flex";
+            let backBtn = document.getElementById("deckBackBtn");
+            backBtn.innerHTML = `<i class="fa-solid fa-arrow-left"></i> Verticals`;
+            backBtn.onclick = backToVerticalGrid;
+            renderVleList();
+        }
+
+        function renderVleList() {
+            let q = (document.getElementById("dmVleSearch").value || "").toLowerCase().trim();
+            document.getElementById("deckRemainCount").innerText = `${activeDeckQueue.length} VLEs Left`;
+
+            if (!activeDeckQueue.length) {
+                document.getElementById("vleListHost").innerHTML = `
+                    <div class="mini-card" style="text-align:center; padding:30px;">
+                        <h3 style="font-family:'Outfit'; color:#15803d;">🎉 Completed!</h3>
+                        <p style="font-size:12.5px; color:#64748b; margin-top:6px;">All VLEs in this list have been called.</p>
+                        <button class="btn-sm-corp btn-navy" style="margin-top:14px;" onclick="backToVerticalGrid()">Back to Verticals</button>
+                    </div>`;
+                return;
+            }
+
+            let filtered = q
+                ? activeDeckQueue.filter(v =>
+                    v.name.toLowerCase().includes(q) ||
+                    v.cscId.toLowerCase().includes(q) ||
+                    v.mobile.includes(q))
+                : activeDeckQueue;
+
+            if (!filtered.length) {
+                document.getElementById("vleListHost").innerHTML = `<div class="mini-card" style="text-align:center; color:#64748b; font-size:12.5px;">No matching VLE found.</div>`;
+                return;
+            }
+
+            let html = "";
+            filtered.slice(0, 200).forEach(v => {
+                let chips = v.services.map(s => `<span class="vle-li-chip">${s.rawService}</span>`).join("");
+                html += `
+                <div class="vle-list-item" onclick="openSingleVleCard('${v.cscId}')">
+                    <div style="min-width:0;">
+                        <div class="vle-li-name">${v.name}</div>
+                        <div class="vle-li-sub">CSC ID: ${v.cscId} | 📞 ${v.mobile}</div>
+                        <div class="vle-li-chips">${chips}</div>
+                    </div>
+                    <div class="vle-li-go"><i class="fa-solid fa-phone"></i> Call</div>
+                </div>`;
+            });
+            document.getElementById("vleListHost").innerHTML = html;
+        }
+
+        function openSingleVleCard(cscId) {
+            let found = activeDeckQueue.find(v => v.cscId === cscId);
+            if (!found) return;
+            activeSelectedVle = found;
+
+            document.getElementById("vleListView").style.display = "none";
+            document.getElementById("vleSingleCardView").style.display = "block";
+            let backBtn = document.getElementById("deckBackBtn");
+            backBtn.innerHTML = `<i class="fa-solid fa-arrow-left"></i> Back to List`;
+            backBtn.onclick = showVleListView;
+
+            renderSelectedVleCard(found);
         }
 
         function backToVerticalGrid() {
@@ -1450,21 +1556,7 @@
                 REMARK_OPTIONS.map(opt => `<option value="${opt}">${opt === 'Others' ? 'Others (Type reason)' : opt}</option>`).join("");
         }
 
-        function renderCurrentCallCard() {
-            if (deckIdx >= activeDeckQueue.length) {
-                document.getElementById("activeVleCardHost").innerHTML = `
-                    <div class="mini-card" style="text-align:center; padding:30px;">
-                        <h3 style="font-family:'Outfit'; color:#15803d;">🎉 Completed!</h3>
-                        <p style="font-size:12.5px; color:#64748b; margin-top:6px;">All VLEs in this list have been called.</p>
-                        <button class="btn-sm-corp btn-navy" style="margin-top:14px;" onclick="backToVerticalGrid()">Back to Verticals</button>
-                    </div>`;
-                document.getElementById("deckRemainCount").innerText = "0 VLEs Left";
-                return;
-            }
-
-            let v = activeDeckQueue[deckIdx];
-            document.getElementById("deckRemainCount").innerText = `${activeDeckQueue.length - deckIdx} VLEs Left`;
-
+        function renderSelectedVleCard(v) {
             let srvNames = v.services.map(s => s.rawService);
             let isMulti = v.services.length > 1;
             let headerTitle = isMulti
@@ -1523,7 +1615,7 @@
                         ${masterBoxHtml}
                         ${srvRowsHtml}
                         <button id="dmSubmitBtn" class="btn-sm-corp btn-navy" style="width:100%; justify-content:center; padding:12px; font-size:14px; margin-top:4px;" onclick="submitDMCall()">
-                            Submit ${isMulti ? 'Selected Services' : ''} & Next →
+                            Submit ${isMulti ? 'Selected Services' : ''} & Return to List
                         </button>
                     </div>
                 </div>
@@ -1576,10 +1668,9 @@
             let mVal = document.getElementById("dmMasterRmk").value;
             let mOther = document.getElementById("dmMasterOther");
             mOther.style.display = mVal === "Others" ? "block" : "none";
-            if (!mVal) return;
+            if (!mVal || !activeSelectedVle) return;
 
-            let v = activeDeckQueue[deckIdx];
-            v.services.forEach((_, idx) => {
+            activeSelectedVle.services.forEach((_, idx) => {
                 if (document.getElementById(`srvChk-${idx}`).checked) {
                     document.getElementById(`srvRmk-${idx}`).value = mVal;
                     document.getElementById(`srvOther-${idx}`).style.display = mVal === "Others" ? "block" : "none";
@@ -1590,9 +1681,9 @@
         }
 
         function syncMasterOther() {
+            if (!activeSelectedVle) return;
             let txt = document.getElementById("dmMasterOther").value;
-            let v = activeDeckQueue[deckIdx];
-            v.services.forEach((_, idx) => {
+            activeSelectedVle.services.forEach((_, idx) => {
                 if (document.getElementById(`srvChk-${idx}`).checked && document.getElementById(`srvRmk-${idx}`).value === "Others") {
                     document.getElementById(`srvOther-${idx}`).value = txt;
                 }
@@ -1600,7 +1691,8 @@
         }
 
         function submitDMCall() {
-            let v = activeDeckQueue[deckIdx];
+            let v = activeSelectedVle;
+            if (!v) return;
             let toSubmit = [];
 
             for (let idx = 0; idx < v.services.length; idx++) {
@@ -1658,8 +1750,8 @@
             });
 
             setTimeout(() => {
-                deckIdx++;
-                renderCurrentCallCard();
+                buildQueueForVertical(activeVerticalKey);
+                showVleListView();
                 refreshDMVerticalGrid();
                 renderDMReport();
                 renderDMDataLogs();
