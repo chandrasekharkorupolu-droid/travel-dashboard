@@ -315,7 +315,15 @@
         .dm-subpage { padding: 14px 16px; display: none; }
         .mini-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
 
-        @media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+
+        @media (min-width: 768px) {
+            .dm-app-shell, .dm-app-shell.wide-mode { max-width: 1360px; width: 100%; }
+            .dm-bottom-nav, .dm-app-shell.wide-mode .dm-bottom-nav { max-width: 1360px; }
+            .vertical-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; padding: 0 18px 20px 18px; }
+            .vle-list-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .vle-call-card { max-width: 540px; margin: 0 auto; }
+        }
     </style>
 </head>
 <body>
@@ -735,7 +743,6 @@
             let txt = box.value.trim();
             if (!txt) { alert("Message empty ga undi!"); return; }
 
-            // Convert current VLE details back to placeholders so it auto-fills for all other VLEs
             let tpl = txt;
             if (activeSelectedVle.name) tpl = tpl.split(activeSelectedVle.name).join("{NAME}");
             if (activeSelectedVle.cscId) tpl = tpl.split(activeSelectedVle.cscId).join("{CSCID}");
@@ -768,6 +775,7 @@
         let verifiedCallDuration = null;
         let isAndroidApp = false;
         try { isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid)); } catch (e) { isAndroidApp = Boolean(window.CSCAndroid); }
+        const isMobileDevice = isAndroidApp || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
         let rawUploadJson = [];
 
         let activeModalDm = "", activeModalScope = "DATE", activeModalSrvFilter = "ALL", activeModalProjectLock = "ALL", activeModalFrom = "", activeModalTo = "";
@@ -1710,6 +1718,12 @@
 
         function sendCustomCardWa(cleanMob) {
             let txt = document.getElementById("cardWaMessageBox").value;
+            if (!isMobileDevice) {
+                let d = String(cleanMob || "").replace(/\D/g, "");
+                if (d.length > 10) d = d.slice(-10);
+                window.open(`https://wa.me/91${d}?text=${encodeURIComponent(txt)}`, "_blank");
+                return;
+            }
             let url = getWaLink(cleanMob, txt);
             unlockCallSubmit(true, 0);
             window.location.href = url;
@@ -1758,6 +1772,14 @@
                 </div>`
             ).join("");
 
+            let callBtnHtml = isMobileDevice
+                ? `<a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit(false)"><i class="fa-solid fa-phone"></i> Call</a>`
+                : `<button type="button" class="btn-call" style="opacity:0.5; cursor:not-allowed;" onclick="alert('📵 Calling is allowed only from Mobile!')"><i class="fa-solid fa-phone-slash"></i> Mobile Only</button>`;
+
+            let lockMsgText = isMobileDevice
+                ? `🔒 Tap Call or WhatsApp to unlock Remarks`
+                : `💻 System lo Call & Remarks disabled. Calling & Remarks kosam Mobile lo login avvandi.`;
+
             document.getElementById("activeVleCardHost").innerHTML = `
             <div class="vle-call-card">
                 <div class="vle-card-head">${headerTitle}</div>
@@ -1777,10 +1799,10 @@
                     </div>
 
                     <div class="btn-row">
-                        <a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit(false)"><i class="fa-solid fa-phone"></i> Call</a>
+                        ${callBtnHtml}
                         <button type="button" class="btn-wa" onclick="sendCustomCardWa('${cleanMob}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                     </div>
-                    <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">🔒 Tap Call or WhatsApp to unlock Remarks</div>
+                    <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">${lockMsgText}</div>
                     <div id="dmActionBox" style="display:none; margin-top:12px;">
                         ${masterBoxHtml}
                         ${srvRowsHtml}
@@ -1795,6 +1817,7 @@
         }
 
         function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
+            if (!isMobileDevice) return;
             if (isAndroidApp && !isVerifiedFromApp) {
                 let lockEl = document.getElementById("dmLockMsg");
                 if (lockEl) {
