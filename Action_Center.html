@@ -380,6 +380,7 @@
                                         <th style="text-align:left;">District</th>
                                         <th>Total Target</th>
                                         <th style="color:#059669;">Calling Report<br><span style="font-size:9px; color:#64748b;">(Selected Date)</span></th>
+                                        <th style="color:#0f766e;">Avg Talk Time<br><span style="font-size:9px; color:#64748b;">(Selected Date)</span></th>
                                         <th style="color:#1e3a8a;">Overall Called<br><span style="font-size:9px; color:#64748b;">(All Time)</span></th>
                                         <th style="color:#dc2626;">Pending<br><span style="font-size:9px; color:#64748b;">(To Call)</span></th>
                                         <th>ACH %</th>
@@ -983,6 +984,7 @@
             let groups = {};
             let allCalledKeys = new Set();
             let rangeCalledByDm = {};
+            let rangeDurByDm = {};
 
             for (let i = 1; i < allLogs.length; i++) {
                 let r = allLogs[i]; if (!r) continue;
@@ -990,19 +992,21 @@
                 let rawSrv = String(r[2] || "").toUpperCase().trim();
                 let logVert = normVertical(rawSrv);
                 let dm = String(r[3] || "").trim();
+                let durSec = parseInt(r[5] || 0) || 0;
 
                 if (proj !== "ALL" && logVert !== proj) continue;
 
                 if (cscId && rawSrv) allCalledKeys.add(cscId + "_" + rawSrv);
                 if (dm && isLogInDateRange(r[0], fDate, tDate)) {
                     rangeCalledByDm[dm] = (rangeCalledByDm[dm] || 0) + 1;
+                    rangeDurByDm[dm] = (rangeDurByDm[dm] || 0) + durSec;
                 }
             }
 
             parsedTargets.forEach(t => {
                 if (proj !== "ALL" && t.service !== proj) return;
                 let key = viewBy === "DM" ? (t.dm || "Unassigned") : (t.district || "Unknown");
-                if (!groups[key]) groups[key] = { name: key, districts: new Set(), total: 0, act: 0, allCalls: 0, pending: 0, rangeCalls: 0 };
+                if (!groups[key]) groups[key] = { name: key, districts: new Set(), total: 0, act: 0, allCalls: 0, pending: 0, rangeCalls: 0, rangeDur: 0 };
                 groups[key].total++;
                 if (t.district && t.district !== "-") groups[key].districts.add(t.district);
                 if (t.status === "ACTIVATED") groups[key].act++;
@@ -1010,11 +1014,18 @@
             });
 
             let rows = Object.values(groups).map(g => {
-                let matchedRange = 0;
+                let matchedRange = 0, matchedDur = 0;
                 if (viewBy === "DM") {
-                    Object.keys(rangeCalledByDm).forEach(k => { if (isNameMatch(k, g.name)) matchedRange += rangeCalledByDm[k]; });
+                    Object.keys(rangeCalledByDm).forEach(k => {
+                        if (isNameMatch(k, g.name)) {
+                            matchedRange += rangeCalledByDm[k];
+                            matchedDur += (rangeDurByDm[k] || 0);
+                        }
+                    });
                 }
                 g.rangeCalls = matchedRange;
+                g.rangeDur = matchedDur;
+                g.avgDur = matchedRange > 0 ? Math.round(matchedDur / matchedRange) : 0;
                 g.pending = Math.max(0, g.total - g.allCalls);
                 g.ach = g.total > 0 ? Math.round((g.allCalls / g.total) * 100) : 0;
                 return g;
@@ -1024,17 +1035,19 @@
             else if (sortBy === "ACH_ASC") rows.sort((a, b) => a.ach - b.ach);
             else rows.sort((a, b) => b.pending - a.pending);
 
-            let gt = { total: 0, act: 0, rangeCalls: 0, allCalls: 0, pending: 0 };
+            let gt = { total: 0, act: 0, rangeCalls: 0, rangeDur: 0, allCalls: 0, pending: 0 };
             let html = "";
             rows.forEach(g => {
-                gt.total += g.total; gt.act += g.act; gt.rangeCalls += g.rangeCalls; gt.allCalls += g.allCalls; gt.pending += g.pending;
+                gt.total += g.total; gt.act += g.act; gt.rangeCalls += g.rangeCalls; gt.rangeDur += g.rangeDur; gt.allCalls += g.allCalls; gt.pending += g.pending;
                 let distStr = [...g.districts].slice(0, 2).join(", ") || "-";
                 let safeName = g.name.replace(/'/g, "\\'");
+                let avgText = g.rangeCalls > 0 ? formatSec(g.avgDur) : "-";
                 html += `<tr class="rep-row-dbl" ondblclick="openDmLogsModal('${safeName}', 'DATE', '${proj}', '${fDate}', '${tDate}')" title="Double-click to view VLE Call Details">
                     <td style="text-align:left; padding-left:14px;">👤 ${g.name}</td>
                     <td style="text-align:left; color:#1e3a8a; font-size:11.5px;">${distStr}</td>
                     <td>${g.total}</td>
                     <td style="color:${g.rangeCalls > 0 ? '#059669' : '#dc2626'}; font-weight:900;">${g.rangeCalls}</td>
+                    <td style="color:#0f766e; font-weight:800;">${avgText}</td>
                     <td style="color:#1e3a8a;">${g.allCalls}</td>
                     <td style="color:#dc2626;">${g.pending}</td>
                     <td style="font-weight:900;">${g.ach}%</td>
@@ -1042,15 +1055,17 @@
             });
 
             let gtAch = gt.total > 0 ? Math.round((gt.allCalls / gt.total) * 100) : 0;
+            let gtAvg = gt.rangeCalls > 0 ? formatSec(Math.round(gt.rangeDur / gt.rangeCalls)) : "-";
             document.getElementById("repKpiTotal").innerText = gt.total.toLocaleString();
             document.getElementById("repKpiActive").innerText = gt.act.toLocaleString();
             document.getElementById("repKpiRangeCalls").innerText = gt.rangeCalls.toLocaleString();
             document.getElementById("repKpiPending").innerText = gt.pending.toLocaleString();
 
-            document.getElementById("repTableBody").innerHTML = html || `<tr><td colspan="7" style="padding:20px;">No data</td></tr>`;
+            document.getElementById("repTableBody").innerHTML = html || `<tr><td colspan="8" style="padding:20px;">No data</td></tr>`;
             document.getElementById("repTableFoot").innerHTML = `<tr>
                 <td style="text-align:left; padding-left:14px;">GRAND TOTAL</td><td>-</td>
                 <td>${gt.total}</td><td style="color:#059669;">${gt.rangeCalls}</td>
+                <td style="color:#0f766e;">${gtAvg}</td>
                 <td style="color:#1e3a8a;">${gt.allCalls}</td><td style="color:#dc2626;">${gt.pending}</td><td>${gtAch}%</td>
             </tr>`;
         }
