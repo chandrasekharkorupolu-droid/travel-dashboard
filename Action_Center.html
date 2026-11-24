@@ -210,6 +210,18 @@
 
         .calling-deck-wrap { padding: 12px; display: none; flex-direction: column; gap: 10px; }
 
+        /* ✈️ TRAVEL SUB-FILTER BAR */
+        .sub-filter-bar {
+            display: flex; flex-wrap: wrap; gap: 6px; background: #ffffff;
+            padding: 9px 10px; border-radius: 12px; border: 1px solid #e2e8f0;
+        }
+        .sub-pill {
+            padding: 6px 11px; border-radius: 20px; border: 1px solid #cbd5e1;
+            background: #f8fafc; color: #1e293b; font-size: 11.5px; font-weight: 800;
+            cursor: pointer; transition: 0.15s;
+        }
+        .sub-pill.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+
         /* 📋 COMPACT SEARCHABLE VLE LIST */
         .vle-search-input {
             width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1;
@@ -231,6 +243,11 @@
             background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe;
             font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
         }
+        .vle-li-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .vle-li-wa {
+            background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; border-radius: 10px;
+            padding: 8px 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center;
+        }
         .vle-li-go {
             background: #1e3a8a; color: #ffffff; border-radius: 10px; padding: 8px 12px;
             font-size: 12px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 5px;
@@ -241,7 +258,22 @@
         .vle-card-body { padding: 18px; text-align: center; }
         .btn-row { display: flex; gap: 10px; margin: 12px 0; }
         .btn-call { flex: 1; background: #eff6ff; color: #1e3a8a; border: 1.5px solid #bfdbfe; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-wa { flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-wa { flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+
+        /* 💬 WHATSAPP TEMPLATE PREVIEW / EDIT BOX */
+        .wa-preview-box {
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+            padding: 9px 11px; margin-bottom: 10px; text-align: left;
+        }
+        .wa-preview-head {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 10.5px; font-weight: 800; color: #15803d; margin-bottom: 5px;
+        }
+        .wa-msg-textarea {
+            width: 100%; border: 1px solid #86efac; border-radius: 8px; padding: 7px 9px;
+            font-size: 11.5px; font-weight: 600; color: #0f172a; background: #ffffff;
+            resize: vertical; min-height: 62px; outline: none; line-height: 1.4;
+        }
 
         /* 🎯 MULTI-SERVICE REMARK ROWS */
         .master-rmk-box {
@@ -494,7 +526,7 @@
     </div>
 
     <!-- =========================================================
-         📱 DM MOBILE-APP VIEW (SEARCHABLE VLE LIST + TAP-TO-CALL)
+         📱 DM MOBILE-APP VIEW (SEARCHABLE VLE LIST + SUB-FILTERS)
          ========================================================= -->
     <div id="dmAppScreen" class="dm-app-shell" style="display:none;">
         <div class="dm-topbar">
@@ -521,8 +553,9 @@
                     <span style="font-size:12px; font-weight:800; color:#dc2626;" id="deckRemainCount">0 VLEs Left</span>
                 </div>
 
-                <!-- 1. SEARCHABLE VLE LIST -->
+                <!-- 1. SEARCHABLE VLE LIST + SUB-FILTER BUTTONS -->
                 <div id="vleListView" style="display:flex; flex-direction:column; gap:10px;">
+                    <div id="subServiceFilterBar" class="sub-filter-bar" style="display:none;"></div>
                     <input type="text" id="dmVleSearch" class="vle-search-input" placeholder="🔍 Search VLE Name, CSC ID, Mobile..." oninput="renderVleList()">
                     <div id="vleListHost" class="vle-list-container"></div>
                 </div>
@@ -542,7 +575,7 @@
                 <div class="mini-card" style="border-top:4px solid #16a34a;"><p style="font-size:11px; color:#64748b; font-weight:800;">CALLED TODAY</p><h3 id="dmHomeCalled" style="font-family:'Outfit'; font-size:26px; color:#16a34a;">0</h3></div>
             </div>
             <div class="mini-card">
-                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Vertical select cheyagane pending VLEs list kanipisthundi. Meeku nachina VLE ni search chesi tap chesi direct ga call & remarks submit cheyavachu.</p>
+                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Vertical select cheyagane pending VLEs list kanipisthundi. Meeku nachina VLE ni search chesi direct ga Call leda service-wise WhatsApp message pampavachu.</p>
             </div>
         </div>
 
@@ -644,6 +677,44 @@
         ];
         let VERTICALS = [...BASE_VERTICALS];
 
+        // 💬 SERVICE-WISE WHATSAPP TEMPLATES ({NAME}, {CSCID}, {SERVICE}, {DM})
+        const SERVICE_WA_TEMPLATES = {
+            "DIGIPAY": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nదయచేసి మీ *DigiPay / DigiPay Lite* పోర్టల్ లో వెంటనే AEPS / DMT లావాదేవీలు (Transactions) ప్రారంభించి మీ సెంటర్ ను యాక్టివ్ గా ఉంచుకోగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "CSC E STORE": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nదయచేసి మీ *CSC Grameen eStore* యాప్ లో లాగిన్ అయ్యి ఆర్డర్లు / లావాదేవీలు వెంటనే ప్రారంభించగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "IRCTC": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nమీ CSC ID పై *IRCTC* రైల్వే టికెట్ బుకింగ్ సేవలు యాక్టివ్ గా ఉన్నాయి. దయచేసి ఈరోజే కనీసం ఒక రైల్వే టికెట్ బుక్ చేసి మీ ఐడిని యాక్టివ్ చేసుకోగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "REDBUS": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nమీ Digital Seva Portal ద్వారా *RedBus* బస్సు టికెట్ బుకింగ్స్ పై మంచి కమిషన్ పొందవచ్చు. దయచేసి ఈరోజే RedBus బుకింగ్స్ ప్రారంభించగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "APSRTC": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nమీ Digital Seva Portal ద్వారా *APSRTC* బస్సు టికెట్ బుకింగ్ సేవలు అందుబాటులో ఉన్నాయి. దయచేసి వెంటనే APSRTC టికెట్ బుకింగ్స్ ప్రారంభించగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "AIRWAYS": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nమీ Digital Seva Portal ద్వారా *Flight / Airways* టికెట్ బుకింగ్ సేవలు అందుబాటులో ఉన్నాయి. దయచేసి విమాన టికెట్ బుకింగ్స్ ప్రారంభించగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "AMC": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nమీ *IRCTC Agent ID* నిరంతరాయంగా కొనసాగాలంటే పెండింగ్ లో ఉన్న *IRCTC AMC (Annual Maintenance Charge)* రెన్యువల్ ను వెంటనే పూర్తి చేయగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager.",
+            "DEFAULT": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nదయచేసి మీ పెండింగ్ లో ఉన్న *{SERVICE}* సేవలను వెంటనే ప్రారంభించి లావాదేవీలు చేయగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager."
+        };
+
+        function getServiceWaMessage(vObj, preferredSrv = "") {
+            let primary = (preferredSrv && preferredSrv !== "ALL")
+                ? preferredSrv.toUpperCase().trim()
+                : (vObj.services && vObj.services.length ? vObj.services[0].rawService : "SERVICE");
+
+            let tplKey = "DEFAULT";
+            if (primary.includes("IRCTC") && !primary.includes("AMC")) tplKey = "IRCTC";
+            else if (primary.includes("AMC")) tplKey = "AMC";
+            else if (primary.includes("REDBUS")) tplKey = "REDBUS";
+            else if (primary.includes("APSRTC") || primary.includes("RTC")) tplKey = "APSRTC";
+            else if (primary.includes("AIR")) tplKey = "AIRWAYS";
+            else if (primary.includes("DIGIPAY")) tplKey = "DIGIPAY";
+            else if (primary.includes("ESTORE") || primary.includes("E STORE") || primary.includes("E-STORE")) tplKey = "CSC E STORE";
+            else if (SERVICE_WA_TEMPLATES[primary]) tplKey = primary;
+
+            let allSrvList = (vObj.services && vObj.services.length)
+                ? vObj.services.map(s => s.rawService).join(", ")
+                : primary;
+
+            return SERVICE_WA_TEMPLATES[tplKey]
+                .replace(/\{NAME\}/g, vObj.name || "VLE")
+                .replace(/\{CSCID\}/g, vObj.cscId || "")
+                .replace(/\{SERVICE\}/g, allSrvList)
+                .replace(/\{DM\}/g, rawName || "CSC District Manager");
+        }
+
         const REMARK_OPTIONS = [
             "Activated",
             "Promised to do Today / Tomorrow",
@@ -662,7 +733,7 @@
         const isSpoc = rawRole.includes("SPOC") || rawRole.includes("STATE") || rawRole.includes("HEAD") || rawRole.includes("ADMIN") || rawName.toUpperCase().includes("CHANDRA SEKHARA");
 
         let parsedTargets = [], allLogs = [], vleOtherPending = {}, vleNameLookup = {}, vleMobileLookup = {}, vleDistrictLookup = {};
-        let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], activeVerticalKey = "ALL", activeSelectedVle = null, callStartTime = null;
+        let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], activeVerticalKey = "ALL", activeSubServiceFilter = "ALL", activeSelectedVle = null, callStartTime = null;
         let verifiedCallDuration = null;
         const isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid));
         let rawUploadJson = [];
@@ -1263,7 +1334,7 @@
         }
 
         // =========================================================
-        // 📱 DM FUNCTIONS (SEARCHABLE VLE LIST + TAP-TO-CALL)
+        // 📱 DM FUNCTIONS (SEARCHABLE VLE LIST + TRAVEL SUB-FILTERS)
         // =========================================================
         function initDMDashboard() {
             let todayFormats = getDateFormats();
@@ -1444,7 +1515,7 @@
             document.getElementById("dmAppScreen").classList.toggle("wide-mode", tab === "report" || tab === "data");
         }
 
-        // 🌟 SEARCHABLE VLE LIST + TAP-TO-CALL BUILDER 🌟
+        // 🌟 SEARCHABLE VLE LIST + TRAVEL SUB-FILTER BUILDER 🌟
         function buildQueueForVertical(vKey) {
             let matchingItems = vKey === "ALL" ? dmPendingList : dmPendingList.filter(x => x.service === vKey);
             let seenCsc = new Set();
@@ -1469,6 +1540,7 @@
 
         function openVerticalDeck(vKey) {
             activeVerticalKey = vKey;
+            activeSubServiceFilter = "ALL";
             buildQueueForVertical(vKey);
             if (!activeDeckQueue.length) { alert("No pending VLEs in this vertical!"); return; }
 
@@ -1476,7 +1548,40 @@
             document.getElementById("verticalGridView").style.display = "none";
             document.getElementById("callingDeckView").style.display = "flex";
             document.getElementById("activeVerticalLabel").innerText = vKey;
+            renderSubServiceFilterBar();
             showVleListView();
+        }
+
+        function renderSubServiceFilterBar() {
+            let bar = document.getElementById("subServiceFilterBar");
+            if (activeVerticalKey !== "TRAVEL") {
+                bar.style.display = "none";
+                return;
+            }
+            const TRAVEL_SUBS = ["IRCTC", "REDBUS", "APSRTC", "AIRWAYS", "AMC"];
+            let counts = { ALL: activeDeckQueue.length };
+            TRAVEL_SUBS.forEach(sub => counts[sub] = 0);
+
+            activeDeckQueue.forEach(v => {
+                TRAVEL_SUBS.forEach(sub => {
+                    if (v.services.some(s => s.rawService.includes(sub) || (sub === "AIRWAYS" && s.rawService.includes("AIR")))) {
+                        counts[sub]++;
+                    }
+                });
+            });
+
+            let html = `<button class="sub-pill ${activeSubServiceFilter === 'ALL' ? 'active' : ''}" onclick="setSubServiceFilter('ALL')">All (${counts.ALL})</button>`;
+            TRAVEL_SUBS.forEach(sub => {
+                html += `<button class="sub-pill ${activeSubServiceFilter === sub ? 'active' : ''}" onclick="setSubServiceFilter('${sub}')">${sub} (${counts[sub]})</button>`;
+            });
+            bar.innerHTML = html;
+            bar.style.display = "flex";
+        }
+
+        function setSubServiceFilter(sub) {
+            activeSubServiceFilter = sub;
+            renderSubServiceFilterBar();
+            renderVleList();
         }
 
         function showVleListView() {
@@ -1491,7 +1596,15 @@
 
         function renderVleList() {
             let q = (document.getElementById("dmVleSearch").value || "").toLowerCase().trim();
-            document.getElementById("deckRemainCount").innerText = `${activeDeckQueue.length} VLEs Left`;
+
+            let baseList = activeDeckQueue;
+            if (activeVerticalKey === "TRAVEL" && activeSubServiceFilter !== "ALL") {
+                baseList = baseList.filter(v =>
+                    v.services.some(s => s.rawService.includes(activeSubServiceFilter) || (activeSubServiceFilter === "AIRWAYS" && s.rawService.includes("AIR")))
+                );
+            }
+
+            document.getElementById("deckRemainCount").innerText = `${baseList.length} VLEs Left`;
 
             if (!activeDeckQueue.length) {
                 document.getElementById("vleListHost").innerHTML = `
@@ -1504,11 +1617,11 @@
             }
 
             let filtered = q
-                ? activeDeckQueue.filter(v =>
+                ? baseList.filter(v =>
                     v.name.toLowerCase().includes(q) ||
                     v.cscId.toLowerCase().includes(q) ||
                     v.mobile.includes(q))
-                : activeDeckQueue;
+                : baseList;
 
             if (!filtered.length) {
                 document.getElementById("vleListHost").innerHTML = `<div class="mini-card" style="text-align:center; color:#64748b; font-size:12.5px;">No matching VLE found.</div>`;
@@ -1518,6 +1631,10 @@
             let html = "";
             filtered.slice(0, 200).forEach(v => {
                 let chips = v.services.map(s => `<span class="vle-li-chip">${s.rawService}</span>`).join("");
+                let prefSrv = (activeSubServiceFilter !== "ALL") ? activeSubServiceFilter : activeVerticalKey;
+                let waMsg = getServiceWaMessage(v, prefSrv);
+                let waUrl = getWaLink(v.mobile, waMsg);
+
                 html += `
                 <div class="vle-list-item" onclick="openSingleVleCard('${v.cscId}')">
                     <div style="min-width:0;">
@@ -1525,7 +1642,10 @@
                         <div class="vle-li-sub">CSC ID: ${v.cscId} | 📞 ${v.mobile}</div>
                         <div class="vle-li-chips">${chips}</div>
                     </div>
-                    <div class="vle-li-go"><i class="fa-solid fa-phone"></i> Call</div>
+                    <div class="vle-li-actions">
+                        <a href="${waUrl}" target="_blank" class="vle-li-wa" onclick="event.stopPropagation();" title="Send WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <div class="vle-li-go"><i class="fa-solid fa-phone"></i> Call</div>
+                    </div>
                 </div>`;
             });
             document.getElementById("vleListHost").innerHTML = html;
@@ -1556,6 +1676,13 @@
                 REMARK_OPTIONS.map(opt => `<option value="${opt}">${opt === 'Others' ? 'Others (Type reason)' : opt}</option>`).join("");
         }
 
+        function sendCustomCardWa(cleanMob) {
+            let txt = document.getElementById("cardWaMessageBox").value;
+            let url = getWaLink(cleanMob, txt);
+            unlockCallSubmit(true, 0);
+            window.open(url, "_blank");
+        }
+
         function renderSelectedVleCard(v) {
             let srvNames = v.services.map(s => s.rawService);
             let isMulti = v.services.length > 1;
@@ -1564,7 +1691,8 @@
                 : `${srvNames[0]} FOLLOW-UP`;
 
             let cleanMob = v.mobile.replace(/\D/g, '');
-            let msg = `Dear ${v.name} గారు (CSC ID: ${v.cscId}),\n\nదయచేసి మీ పెండింగ్ లో ఉన్న *${srvNames.join(", ")}* సేవలను వెంటనే ప్రారంభించి లావాదేవీలు చేయగలరు.\n\nధన్యవాదాలు,\n*${rawName}*\nCSC District Manager.`;
+            let prefSrv = (activeSubServiceFilter !== "ALL") ? activeSubServiceFilter : activeVerticalKey;
+            let defaultWaMsg = getServiceWaMessage(v, prefSrv);
 
             let previewChipsHtml = v.services.map(s =>
                 `<span style="display:inline-flex; align-items:center; gap:5px; background:#eff6ff; color:#1e3a8a; border:1px solid #bfdbfe; padding:4px 10px; border-radius:8px; font-size:11.5px; font-weight:800;">
@@ -1606,9 +1734,18 @@
                     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:12px;">
                         ${previewChipsHtml}
                     </div>
+
+                    <div class="wa-preview-box">
+                        <div class="wa-preview-head">
+                            <span>💬 WhatsApp Message (Auto-selected for Service)</span>
+                            <span style="font-size:10px; color:#64748b;">Editable</span>
+                        </div>
+                        <textarea id="cardWaMessageBox" class="wa-msg-textarea">${defaultWaMsg}</textarea>
+                    </div>
+
                     <div class="btn-row">
                         <a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit(false)"><i class="fa-solid fa-phone"></i> Call</a>
-                        <a href="${getWaLink(cleanMob, msg)}" target="_blank" class="btn-wa" onclick="unlockCallSubmit(true, 0)"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                        <button type="button" class="btn-wa" onclick="sendCustomCardWa('${cleanMob}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                     </div>
                     <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">🔒 Tap Call or WhatsApp to unlock Remarks</div>
                     <div id="dmActionBox" style="display:none; margin-top:12px;">
@@ -1751,6 +1888,7 @@
 
             setTimeout(() => {
                 buildQueueForVertical(activeVerticalKey);
+                renderSubServiceFilterBar();
                 showVleListView();
                 refreshDMVerticalGrid();
                 renderDMReport();
