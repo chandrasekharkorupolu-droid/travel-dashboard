@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CSC AP | VLE Location & District Update</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            min-height: 100vh; padding: 16px; display: flex; align-items: center; justify-content: center;
+        }
+        .card {
+            background: #ffffff; width: 100%; max-width: 480px; border-radius: 20px;
+            overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .card-head {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #ffffff;
+            padding: 20px; text-align: center;
+        }
+        .card-head h2 { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; }
+        .card-head p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+        .card-body { padding: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block; font-size: 11.5px; font-weight: 800; color: #334155;
+            text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.3px;
+        }
+        .form-control {
+            width: 100%; padding: 11px 13px; border-radius: 10px; border: 1.5px solid #cbd5e1;
+            font-size: 13.5px; font-weight: 700; color: #0f172a; background: #f8fafc; outline: none;
+        }
+        .form-control:focus { border-color: #2563eb; background: #ffffff; }
+        .same-wa-wrap {
+            display: flex; align-items: center; gap: 7px; margin-bottom: 6px;
+            font-size: 12px; font-weight: 700; color: #15803d; cursor: pointer;
+        }
+        .same-wa-wrap input { width: 16px; height: 16px; accent-color: #16a34a; cursor: pointer; }
+        .area-radio-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .area-opt {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 10px; border-radius: 10px; border: 1.5px solid #cbd5e1;
+            background: #f8fafc; font-size: 13px; font-weight: 800; color: #334155; cursor: pointer;
+        }
+        .area-opt input { width: 16px; height: 16px; accent-color: #1e3a8a; cursor: pointer; }
+        .loc-box {
+            background: #eff6ff; border: 1.5px dashed #3b82f6; border-radius: 12px;
+            padding: 14px; text-align: center; margin-bottom: 14px;
+        }
+        .btn-loc {
+            background: #2563eb; color: #ffffff; border: none; border-radius: 10px;
+            padding: 11px 16px; font-size: 13.5px; font-weight: 800; width: 100%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-loc:disabled { opacity: 0.65; }
+        .coord-pill {
+            display: none; margin-top: 10px; background: #dcfce7; color: #15803d;
+            border: 1px solid #86efac; padding: 8px 10px; border-radius: 8px;
+            font-size: 12px; font-weight: 800;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #059669, #10b981); color: #ffffff;
+            border: none; border-radius: 12px; padding: 13px; width: 100%;
+            font-family: 'Outfit', sans-serif; font-size: 15.5px; font-weight: 800;
+            cursor: pointer; box-shadow: 0 6px 16px rgba(16,185,129,0.28);
+        }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .footer-note {
+            text-align: center; font-size: 11px; color: #64748b; font-weight: 700;
+            padding: 0 20px 18px 20px;
+        }
+
+        /* ✅ SUCCESS CONFIRMATION SCREEN */
+        .success-screen { display: none; text-align: center; padding: 10px 4px; }
+        .success-icon {
+            width: 68px; height: 68px; border-radius: 50%; background: #dcfce7; color: #16a34a;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 34px; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(22,163,74,0.2);
+        }
+        .success-title { font-family: 'Outfit', sans-serif; font-size: 21px; font-weight: 900; color: #15803d; }
+        .success-sub { font-size: 12.5px; color: #475569; font-weight: 600; margin-top: 4px; margin-bottom: 16px; }
+        .receipt-box {
+            background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
+            padding: 14px; text-align: left; margin-bottom: 16px; font-size: 12.5px;
+        }
+        .receipt-row {
+            display: flex; justify-content: space-between; gap: 10px;
+            padding: 6px 0; border-bottom: 1px dashed #cbd5e1;
+        }
+        .receipt-row:last-child { border-bottom: none; }
+        .receipt-lbl { color: #64748b; font-weight: 700; }
+        .receipt-val { color: #0f172a; font-weight: 800; text-align: right; }
+        .btn-new {
+            background: #1e3a8a; color: #ffffff; border: none; border-radius: 12px;
+            padding: 12px; width: 100%; font-family: 'Outfit', sans-serif;
+            font-size: 14.5px; font-weight: 800; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="card-head">
+            <h2>📍 CSC AP — VLE Location Update</h2>
+            <p>New District & CSC Center GPS Mapping Form</p>
+        </div>
+
+        <div class="card-body">
+            <!-- FORM CONTAINER -->
+            <div id="formContainer">
+                <div class="form-group">
+                    <label>CSC ID (12 Digits) *</label>
+                    <input type="tel" id="cscId" class="form-control" maxlength="12" placeholder="Enter 12-digit CSC ID">
+                </div>
+
+                <div class="form-group">
+                    <label>VLE Name *</label>
+                    <input type="text" id="vleName" class="form-control" placeholder="Enter VLE Full Name">
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number (10 Digits) *</label>
+                    <input type="tel" id="mobile" class="form-control" maxlength="10" placeholder="Enter 10-digit Mobile No" oninput="syncSameWhatsapp()">
+                </div>
+
+                <div class="form-group">
+                    <label>WhatsApp Number (10 Digits) *</label>
+                    <label class="same-wa-wrap">
+                        <input type="checkbox" id="sameAsMob" onchange="syncSameWhatsapp()">
+                        <span>Same as Mobile Number</span>
+                    </label>
+                    <input type="tel" id="whatsapp" class="form-control" maxlength="10" placeholder="Enter 10-digit WhatsApp No">
+                </div>
+
+                <div class="form-group">
+                    <label>Present New District (AP) *</label>
+                    <select id="district" class="form-control">
+                        <option value="">-- Select New District --</option>
+                        <option>Alluri Sitarama Raju</option>
+                        <option>Anakapalli</option>
+                        <option>Anantapur</option>
+                        <option>Annamayya</option>
+                        <option>Bapatla</option>
+                        <option>Chittoor</option>
+                        <option>Dr. B.R. Ambedkar Konaseema</option>
+                        <option>East Godavari</option>
+                        <option>Eluru</option>
+                        <option>Guntur</option>
+                        <option>Kakinada</option>
+                        <option>Krishna</option>
+                        <option>Kurnool</option>
+                        <option>Madanapalle</option>
+                        <option>Markapuram</option>
+                        <option>Nandyal</option>
+                        <option>NTR</option>
+                        <option>Palnadu</option>
+                        <option>Parvathipuram Manyam</option>
+                        <option>Polavaram</option>
+                        <option>Prakasam</option>
+                        <option>Sri Potti Sriramulu Nellore</option>
+                        <option>Sri Sathya Sai</option>
+                        <option>Srikakulam</option>
+                        <option>Tirupati</option>
+                        <option>Visakhapatnam</option>
+                        <option>Vizianagaram</option>
+                        <option>West Godavari</option>
+                        <option>YSR Kadapa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Area Type (Rural / Urban) *</label>
+                    <div class="area-radio-row">
+                        <label class="area-opt">
+                            <input type="radio" name="areaType" value="Rural"> 🌾 Rural
+                        </label>
+                        <label class="area-opt">
+                            <input type="radio" name="areaType" value="Urban"> 🏙️ Urban
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mandal / Town *</label>
+                    <input type="text" id="mandal" class="form-control" placeholder="Enter Mandal or Town Name">
+                </div>
+
+                <div class="loc-box">
+                    <p style="font-size:11.5px; color:#1e3a8a; font-weight:700; margin-bottom:9px;">
+                        ⚠️ దయచేసి మీ CSC సెంటర్ లో ఉండి, మొబైల్ లో GPS (Location) ON చేసి క్రింది బటన్ నొక్కండి.
+                    </p>
+                    <button type="button" id="btnCapture" class="btn-loc" onclick="captureLocation()">
+                        <i class="fa-solid fa-location-crosshairs"></i> Capture Current Location
+                    </button>
+                    <div id="coordDisplay" class="coord-pill"></div>
+                </div>
+
+                <div class="form-group" id="addrWrap" style="display:none;">
+                    <label>Auto-Picked Address (Editable)</label>
+                    <textarea id="autoAddress" class="form-control" rows="3" placeholder="Address will appear here..."></textarea>
+                </div>
+
+                <button type="button" id="btnSubmit" class="btn-submit" onclick="submitForm()">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Details
+                </button>
+            </div>
+
+            <!-- ✅ SUCCESS RECEIPT SCREEN -->
+            <div id="successScreen" class="success-screen">
+                <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+                <div class="success-title">Details Saved Successfully!</div>
+                <div class="success-sub">మీ వివరాలు CSC AP డేటాబేస్ లో విజయవంతంగా నమోదయ్యాయి.</div>
+
+                <div class="receipt-box" id="receiptDetails"></div>
+
+                <p style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:14px;">
+                    📸 అవసరమైతే ఈ స్క్రీన్ ని స్క్రీన్ షాట్ తీసుకోగలరు.
+                </p>
+
+                <button type="button" class="btn-new" onclick="resetForNewVle()">
+                    <i class="fa-solid fa-plus"></i> Submit Another VLE
+                </button>
+            </div>
+        </div>
+
+        <div class="footer-note">CSC e-Governance Services India Ltd — Andhra Pradesh</div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
+        let capturedLat = "", capturedLng = "";
+
+        function syncSameWhatsapp() {
+            const chk = document.getElementById("sameAsMob").checked;
+            const mob = document.getElementById("mobile").value;
+            const wa = document.getElementById("whatsapp");
+            if (chk) {
+                wa.value = mob;
+                wa.readOnly = true;
+                wa.style.background = "#e2e8f0";
+            } else {
+                wa.readOnly = false;
+                wa.style.background = "#f8fafc";
+            }
+        }
+
+        function captureLocation() {
+            const btn = document.getElementById("btnCapture");
+            const disp = document.getElementById("coordDisplay");
+            if (!navigator.geolocation) {
+                alert("Your browser does not support GPS Location.");
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Detecting GPS Location...`;
+
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    capturedLat = pos.coords.latitude.toFixed(6);
+                    capturedLng = pos.coords.longitude.toFixed(6);
+                    disp.style.display = "block";
+                    disp.innerHTML = `✅ Captured: Lat ${capturedLat}, Lng ${capturedLng}`;
+                    document.getElementById("addrWrap").style.display = "block";
+                    document.getElementById("autoAddress").value = "Fetching address...";
+
+                    try {
+                        let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${capturedLat}&lon=${capturedLng}`);
+                        let data = await res.json();
+                        document.getElementById("autoAddress").value = data.display_name || `Lat: ${capturedLat}, Lng: ${capturedLng}`;
+                    } catch (e) {
+                        document.getElementById("autoAddress").value = `Lat: ${capturedLat}, Lng: ${capturedLng}`;
+                    }
+
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Re-Capture Location`;
+                },
+                (err) => {
+                    alert("Location access denied or GPS is OFF. Please turn ON Location in your phone settings and try again.");
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> Capture Current Location`;
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        function submitForm() {
+            const cscId = document.getElementById("cscId").value.replace(/\D/g, "").trim();
+            const vleName = document.getElementById("vleName").value.trim();
+            const mobile = document.getElementById("mobile").value.replace(/\D/g, "").trim();
+            const whatsapp = document.getElementById("whatsapp").value.replace(/\D/g, "").trim();
+            const district = document.getElementById("district").value;
+            const areaRadio = document.querySelector('input[name="areaType"]:checked');
+            const areaType = areaRadio ? areaRadio.value : "";
+            const mandal = document.getElementById("mandal").value.trim();
+            const address = document.getElementById("autoAddress").value.trim();
+
+            if (cscId.length !== 12) { alert("Please enter valid 12-digit CSC ID!"); return; }
+            if (!vleName) { alert("Please enter VLE Name!"); return; }
+            if (mobile.length !== 10) { alert("Please enter valid 10-digit Mobile Number!"); return; }
+            if (whatsapp.length !== 10) { alert("Please enter valid 10-digit WhatsApp Number!"); return; }
+            if (!district) { alert("Please select Present New District!"); return; }
+            if (!areaType) { alert("Please select Area Type (Rural or Urban)!"); return; }
+            if (!mandal) { alert("Please enter Mandal / Town!"); return; }
+            if (!capturedLat || !capturedLng) { alert("Please tap 'Capture Current Location' first!"); return; }
+
+            const btn = document.getElementById("btnSubmit");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+            try {
+                fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    keepalive: true,
+                    body: JSON.stringify({
+                        action: "saveVleLocation",
+                        cscId, vleName, mobile, whatsapp, district, areaType, mandal,
+                        lat: capturedLat, lng: capturedLng, address
+                    })
+                });
+
+                setTimeout(() => {
+                    document.getElementById("receiptDetails").innerHTML = `
+                        <div class="receipt-row"><span class="receipt-lbl">CSC ID</span><span class="receipt-val">${cscId}</span></div>
+                        <div class="receipt-row"><span class="receipt-lbl">VLE Name</span><span class="receipt-val">${vleName}</span></div>
+                        <div class="receipt-row"><span class="receipt-lbl">Mobile / WA</span><span class="receipt-val">${mobile}</span></div>
+                        <div class="receipt-row"><span class="receipt-lbl">District</span><span class="receipt-val">${district} (${areaType})</span></div>
+                        <div class="receipt-row"><span class="receipt-lbl">Mandal</span><span class="receipt-val">${mandal}</span></div>
+                        <div class="receipt-row"><span class="receipt-lbl">GPS Location</span><span class="receipt-val" style="color:#15803d;">${capturedLat}, ${capturedLng}</span></div>
+                    `;
+                    document.getElementById("formContainer").style.display = "none";
+                    document.getElementById("successScreen").style.display = "block";
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Details`;
+                }, 600);
+            } catch (e) {
+                alert("Network error. Please try again.");
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submit Details`;
+            }
+        }
+
+        function resetForNewVle() {
+            document.getElementById("cscId").value = "";
+            document.getElementById("vleName").value = "";
+            document.getElementById("mobile").value = "";
+            document.getElementById("whatsapp").value = "";
+            document.getElementById("sameAsMob").checked = false;
+            syncSameWhatsapp();
+            document.getElementById("district").value = "";
+            document.querySelectorAll('input[name="areaType"]').forEach(r => r.checked = false);
+            document.getElementById("mandal").value = "";
+            capturedLat = "";
+            capturedLng = "";
+            document.getElementById("coordDisplay").style.display = "none";
+            document.getElementById("addrWrap").style.display = "none";
+            document.getElementById("autoAddress").value = "";
+            document.getElementById("btnCapture").innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> Capture Current Location`;
+
+            document.getElementById("successScreen").style.display = "none";
+            document.getElementById("formContainer").style.display = "block";
+        }
+    </script>
+</body>
+</html>
