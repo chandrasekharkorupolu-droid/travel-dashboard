@@ -266,13 +266,17 @@
             padding: 9px 11px; margin-bottom: 10px; text-align: left;
         }
         .wa-preview-head {
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 10.5px; font-weight: 800; color: #15803d; margin-bottom: 5px;
+            display: flex; justify-content: space-between; align-items: center; gap: 6px;
+            font-size: 10.5px; font-weight: 800; color: #15803d; margin-bottom: 6px;
+        }
+        .btn-save-tpl {
+            background: #15803d; color: #ffffff; border: none; border-radius: 6px;
+            padding: 4px 9px; font-size: 10.5px; font-weight: 800; cursor: pointer;
         }
         .wa-msg-textarea {
             width: 100%; border: 1px solid #86efac; border-radius: 8px; padding: 7px 9px;
             font-size: 11.5px; font-weight: 600; color: #0f172a; background: #ffffff;
-            resize: vertical; min-height: 62px; outline: none; line-height: 1.4;
+            resize: vertical; min-height: 66px; outline: none; line-height: 1.4;
         }
 
         /* 🎯 MULTI-SERVICE REMARK ROWS */
@@ -689,30 +693,57 @@
             "DEFAULT": "Dear {NAME} గారు (CSC ID: {CSCID}),\n\nదయచేసి మీ పెండింగ్ లో ఉన్న *{SERVICE}* సేవలను వెంటనే ప్రారంభించి లావాదేవీలు చేయగలరు.\n\nధన్యవాదాలు,\n*{DM}*\nCSC District Manager."
         };
 
-        function getServiceWaMessage(vObj, preferredSrv = "") {
+        let customWaTemplates = {};
+        try {
+            customWaTemplates = JSON.parse(localStorage.getItem("cscCustomWaTemplates") || "{}");
+        } catch (e) { customWaTemplates = {}; }
+
+        function resolveWaTemplateKey(vObj, preferredSrv = "") {
             let primary = (preferredSrv && preferredSrv !== "ALL")
                 ? preferredSrv.toUpperCase().trim()
                 : (vObj.services && vObj.services.length ? vObj.services[0].rawService : "SERVICE");
 
-            let tplKey = "DEFAULT";
-            if (primary.includes("IRCTC") && !primary.includes("AMC")) tplKey = "IRCTC";
-            else if (primary.includes("AMC")) tplKey = "AMC";
-            else if (primary.includes("REDBUS")) tplKey = "REDBUS";
-            else if (primary.includes("APSRTC") || primary.includes("RTC")) tplKey = "APSRTC";
-            else if (primary.includes("AIR")) tplKey = "AIRWAYS";
-            else if (primary.includes("DIGIPAY")) tplKey = "DIGIPAY";
-            else if (primary.includes("ESTORE") || primary.includes("E STORE") || primary.includes("E-STORE")) tplKey = "CSC E STORE";
-            else if (SERVICE_WA_TEMPLATES[primary]) tplKey = primary;
+            if (primary.includes("IRCTC") && !primary.includes("AMC")) return "IRCTC";
+            if (primary.includes("AMC")) return "AMC";
+            if (primary.includes("REDBUS")) return "REDBUS";
+            if (primary.includes("APSRTC") || primary.includes("RTC")) return "APSRTC";
+            if (primary.includes("AIR")) return "AIRWAYS";
+            if (primary.includes("DIGIPAY")) return "DIGIPAY";
+            if (primary.includes("ESTORE") || primary.includes("E STORE") || primary.includes("E-STORE")) return "CSC E STORE";
+            if (SERVICE_WA_TEMPLATES[primary]) return primary;
+            return "DEFAULT";
+        }
+
+        function getServiceWaMessage(vObj, preferredSrv = "") {
+            let tplKey = resolveWaTemplateKey(vObj, preferredSrv);
+            let tplStr = customWaTemplates[tplKey] || SERVICE_WA_TEMPLATES[tplKey] || SERVICE_WA_TEMPLATES["DEFAULT"];
 
             let allSrvList = (vObj.services && vObj.services.length)
                 ? vObj.services.map(s => s.rawService).join(", ")
-                : primary;
+                : tplKey;
 
-            return SERVICE_WA_TEMPLATES[tplKey]
+            return tplStr
                 .replace(/\{NAME\}/g, vObj.name || "VLE")
                 .replace(/\{CSCID\}/g, vObj.cscId || "")
                 .replace(/\{SERVICE\}/g, allSrvList)
                 .replace(/\{DM\}/g, rawName || "CSC District Manager");
+        }
+
+        function saveWaTemplateForAll(tplKey) {
+            let box = document.getElementById("cardWaMessageBox");
+            if (!box || !activeSelectedVle) return;
+            let txt = box.value.trim();
+            if (!txt) { alert("Message empty ga undi!"); return; }
+
+            // Convert current VLE details back to placeholders so it auto-fills for all other VLEs
+            let tpl = txt;
+            if (activeSelectedVle.name) tpl = tpl.split(activeSelectedVle.name).join("{NAME}");
+            if (activeSelectedVle.cscId) tpl = tpl.split(activeSelectedVle.cscId).join("{CSCID}");
+            if (rawName) tpl = tpl.split(rawName).join("{DM}");
+
+            customWaTemplates[tplKey] = tpl;
+            try { localStorage.setItem("cscCustomWaTemplates", JSON.stringify(customWaTemplates)); } catch (e) {}
+            alert(`✅ Saved! Ippati nunchi anni ${tplKey} VLEs ki ide kotha message automatic ga vasthundi.`);
         }
 
         const REMARK_OPTIONS = [
@@ -736,7 +767,7 @@
         let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], activeVerticalKey = "ALL", activeSubServiceFilter = "ALL", activeSelectedVle = null, callStartTime = null;
         let verifiedCallDuration = null;
         let isAndroidApp = false;
-	try { isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid)); } catch (e) { isAndroidApp = Boolean(window.CSCAndroid); }
+        try { isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid)); } catch (e) { isAndroidApp = Boolean(window.CSCAndroid); }
         let rawUploadJson = [];
 
         let activeModalDm = "", activeModalScope = "DATE", activeModalSrvFilter = "ALL", activeModalProjectLock = "ALL", activeModalFrom = "", activeModalTo = "";
@@ -1073,7 +1104,7 @@
                     <td><span class="status-pill ${stCls}">${t.status}</span></td>
                     <td>
                         <a href="tel:${t.mobile.replace(/\D/g,'')}" style="color:#1e3a8a; margin-right:8px;" title="Call"><i class="fa-solid fa-phone"></i></a>
-                        <a href="${waLink}" target="_blank" style="color:#16a34a;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="${waLink}" style="color:#16a34a;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                     </td>
                 </tr>`;
             });
@@ -1644,7 +1675,7 @@
                         <div class="vle-li-chips">${chips}</div>
                     </div>
                     <div class="vle-li-actions">
-                        <a href="${waUrl}" target="_blank" class="vle-li-wa" onclick="event.stopPropagation();" title="Send WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="${waUrl}" class="vle-li-wa" onclick="event.stopPropagation();" title="Send WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                         <div class="vle-li-go"><i class="fa-solid fa-phone"></i> Call</div>
                     </div>
                 </div>`;
@@ -1681,7 +1712,7 @@
             let txt = document.getElementById("cardWaMessageBox").value;
             let url = getWaLink(cleanMob, txt);
             unlockCallSubmit(true, 0);
-            window.open(url, "_blank");
+            window.location.href = url;
         }
 
         function renderSelectedVleCard(v) {
@@ -1693,6 +1724,7 @@
 
             let cleanMob = v.mobile.replace(/\D/g, '');
             let prefSrv = (activeSubServiceFilter !== "ALL") ? activeSubServiceFilter : activeVerticalKey;
+            let tplKey = resolveWaTemplateKey(v, prefSrv);
             let defaultWaMsg = getServiceWaMessage(v, prefSrv);
 
             let previewChipsHtml = v.services.map(s =>
@@ -1738,8 +1770,8 @@
 
                     <div class="wa-preview-box">
                         <div class="wa-preview-head">
-                            <span>💬 WhatsApp Message (Auto-selected for Service)</span>
-                            <span style="font-size:10px; color:#64748b;">Editable</span>
+                            <span>💬 WhatsApp (${tplKey})</span>
+                            <button type="button" class="btn-save-tpl" onclick="saveWaTemplateForAll('${tplKey}')">💾 Save for All</button>
                         </div>
                         <textarea id="cardWaMessageBox" class="wa-msg-textarea">${defaultWaMsg}</textarea>
                     </div>
