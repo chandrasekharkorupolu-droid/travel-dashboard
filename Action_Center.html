@@ -625,6 +625,8 @@
 
         let parsedTargets = [], allLogs = [], vleOtherPending = {}, vleNameLookup = {}, vleMobileLookup = {}, vleDistrictLookup = {};
         let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], deckIdx = 0, callStartTime = null;
+        let verifiedCallDuration = null;
+        const isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid));
         let rawUploadJson = [];
 
         let activeModalDm = "", activeModalScope = "DATE", activeModalSrvFilter = "ALL", activeModalProjectLock = "ALL", activeModalFrom = "", activeModalTo = "";
@@ -1498,8 +1500,8 @@
                         ${previewChipsHtml}
                     </div>
                     <div class="btn-row">
-                        <a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit()"><i class="fa-solid fa-phone"></i> Call</a>
-                        <a href="${getWaLink(cleanMob, msg)}" target="_blank" class="btn-wa" onclick="unlockCallSubmit()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                        <a href="tel:${cleanMob}" class="btn-call" onclick="unlockCallSubmit(false)"><i class="fa-solid fa-phone"></i> Call</a>
+                        <a href="${getWaLink(cleanMob, msg)}" target="_blank" class="btn-wa" onclick="unlockCallSubmit(true, 0)"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
                     </div>
                     <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">🔒 Tap Call or WhatsApp to unlock Remarks</div>
                     <div id="dmActionBox" style="display:none; margin-top:12px;">
@@ -1512,13 +1514,34 @@
                 </div>
             </div>`;
             callStartTime = null;
+            verifiedCallDuration = null;
         }
 
-        function unlockCallSubmit() {
-            document.getElementById("dmLockMsg").style.display = "none";
-            document.getElementById("dmActionBox").style.display = "block";
+        function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
+            if (isAndroidApp && !isVerifiedFromApp) {
+                let lockEl = document.getElementById("dmLockMsg");
+                if (lockEl) {
+                    lockEl.innerText = "📞 Calling... Call cut ayyaka Remarks automatic ga unlock avuthayi.";
+                }
+                return;
+            }
+            if (realDur !== null) verifiedCallDuration = realDur;
+            let lockEl = document.getElementById("dmLockMsg");
+            let boxEl = document.getElementById("dmActionBox");
+            if (lockEl) lockEl.style.display = "none";
+            if (boxEl) boxEl.style.display = "block";
             if (!callStartTime) callStartTime = new Date();
         }
+
+        // Android App Call Log Verification listeners (direct & iframe)
+        window.onAndroidCallVerified = function(phone, dur) {
+            unlockCallSubmit(true, parseInt(dur || 0));
+        };
+        window.addEventListener("message", function(event) {
+            if (event.data && event.data.type === "ANDROID_CALL_VERIFIED") {
+                unlockCallSubmit(true, parseInt(event.data.duration || 0));
+            }
+        });
 
         function toggleSrvCard(idx) {
             let chk = document.getElementById(`srvChk-${idx}`).checked;
@@ -1594,7 +1617,7 @@
             btn.innerText = `⏳ Saving ${toSubmit.length} service(s)...`;
             btn.disabled = true;
 
-            let dur = callStartTime ? Math.round((new Date() - callStartTime) / 1000) : 15;
+            let dur = (verifiedCallDuration !== null) ? verifiedCallDuration : (callStartTime ? Math.round((new Date() - callStartTime) / 1000) : 15);
             let nowStr = getDateFormats()[0] + " " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             toSubmit.forEach((item, i) => {
