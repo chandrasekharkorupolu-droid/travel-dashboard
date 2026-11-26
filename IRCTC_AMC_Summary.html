@@ -4,165 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMC Summary Report - CSC TravelCloud</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 🌟 Iframe Friendly Basic Settings 🌟 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
 
-        /* Controls Panel Form structure */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
+        body { background-color: var(--cream-bg); color: var(--charcoal); display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+
+        /* Controls Panel */
         .target-control-panel {
-            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            background-color: var(--cream-card); border-radius: 10px; border: 1.5px solid var(--forest); padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(27,67,50,0.08); flex-shrink: 0;
             flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
         }
-        .page-heading { font-size: 18px; color: #003366; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        .page-heading {
+            font-family: 'Cinzel', serif; font-size: 18px; color: var(--forest); font-weight: 800;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.6px;
+        }
         
-        .filter-group { display: flex; gap: 10px; align-items: center; }
-        .filter-group select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
-        .filter-group select#fyFilter { background-color: #eff6ff; border-color: #3b82f6; color: #1e40af; font-weight: 800; }
+        .filter-group { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+        .filter-group select {
+            padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+            outline: none; background-color: #ffffff; font-weight: 700; cursor: pointer; color: var(--charcoal); transition: 0.2s;
+        }
+        .filter-group select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
+        .filter-group select#fyFilter { background-color: var(--gold-soft); border-color: var(--gold); color: var(--forest-dark); font-weight: 800; }
 
-        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action {
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 6px 15px;
+            border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-action:hover { background-color: var(--forest); color: #ffffff; }
+        #downloadBtn { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        #downloadBtn:hover { background-color: #b08a42; color: #ffffff; }
 
         /* 🌟 Image Export Panels 🌟 */
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #ffffff; padding: 20px 10px 10px 10px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;}
+        #captureArea {
+            display: flex; flex-direction: column; flex: 1; overflow: visible;
+            background-color: var(--cream-bg); padding: 16px 12px 12px 12px; border-radius: 12px;
+            border: 1.5px solid var(--border);
+        }
         
-        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
-        .report-header h1 { font-size: 24px; color: #002244; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 5px;}
-        .report-header p { font-size: 13px; color: #666; font-weight: 600; margin-top: 0; }
+        .report-header { text-align: center; margin-bottom: 18px; flex-shrink: 0; }
+        .report-header h1 { font-family: 'Cinzel', serif; font-size: 22px; color: var(--forest-dark); font-weight: 800; letter-spacing: 0.8px; margin-bottom: 5px; text-transform: uppercase; }
+        .report-header p { font-size: 12.5px; color: var(--muted); font-weight: 700; margin-top: 0; }
 
         /* KPI Cards */
-        .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; flex-shrink: 0; justify-content: center; margin-bottom: 15px; }
-        .kpi-card { 
-            background-color: #ffffff; border-radius: 6px; padding: 10px 15px; 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.05); border-left: 4px solid; 
-            flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: space-between;
+        .kpi-grid { display: flex; flex-wrap: wrap; gap: 12px; flex-shrink: 0; justify-content: center; margin-bottom: 16px; }
+        .kpi-card {
+            background-color: var(--cream-card); border-radius: 8px; padding: 11px 16px;
+            box-shadow: 0 3px 8px rgba(27,67,50,0.06); border: 1px solid var(--border); border-left: 5px solid;
+            flex: 1; min-width: 165px; display: flex; align-items: center; justify-content: space-between;
         }
-        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
-        .kpi-value { font-size: 20px; font-weight: 800; margin: 0; }
+        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin: 0; letter-spacing: 0.4px; }
+        .kpi-value { font-size: 21px; font-weight: 900; margin: 0; font-variant-numeric: tabular-nums; }
 
-        .kpi-eligible { border-left-color: #1e3a8a; } .kpi-eligible .kpi-value { color: #1e3a8a; }
-        .kpi-premium { border-left-color: #8b5cf6; } .kpi-premium .kpi-value { color: #8b5cf6; }
-        .kpi-maxgain { border-left-color: #10b981; } .kpi-maxgain .kpi-value { color: #10b981; }
-        .kpi-revenue { border-left-color: #0b1120; } .kpi-revenue .kpi-value { color: #0b1120; }
-        .kpi-pending { border-left-color: #dc2626; } .kpi-pending .kpi-value { color: #dc2626; }
+        .kpi-eligible { border-left-color: var(--forest); } .kpi-eligible .kpi-value { color: var(--forest); }
+        .kpi-premium { border-left-color: #7c4a12; } .kpi-premium .kpi-value { color: #7c4a12; }
+        .kpi-maxgain { border-left-color: #15803d; } .kpi-maxgain .kpi-value { color: #15803d; }
+        .kpi-revenue { border-left-color: var(--gold); } .kpi-revenue .kpi-value { color: var(--forest-dark); }
+        .kpi-pending { border-left-color: #b91c1c; } .kpi-pending .kpi-value { color: #b91c1c; }
 
         /* Table Settings */
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #dcdcdc; position: relative; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; text-align: center; }
+        .table-container {
+            flex: 1; background-color: var(--cream-card); border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.08); overflow: auto;
+            border: 1.5px solid var(--forest); position: relative;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; text-align: center; }
         
         thead { position: sticky; top: 0; z-index: 20; }
         th, td { white-space: nowrap; }
 
-        th { font-size: 11px; text-transform: uppercase; padding: 14px 10px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 90; letter-spacing: 0.5px;}
-        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #eee; border-right: 1px solid #eee; font-weight: 700; }
-        
-        /* Custom Header Colors */
-        .th-dist { background-color: #0b1120; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;} 
-        .th-elig { background-color: #1e3a8a; } 
-        .th-prem { background-color: #8b5cf6; } 
-        .th-max { background-color: #10b981; } 
-        .th-rev { background-color: #0b1120; } 
-        .th-pend { background-color: #dc2626; } 
-        .th-comp { background-color: #475569; min-width: 140px; } 
-
-        tr:hover td { background-color: #f5f7f9; }
-        
-        .col-district { 
-            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
-            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
-            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05); user-select: none;
+        th {
+            font-size: 11px; text-transform: uppercase; padding: 14px 10px; font-weight: 800; color: #f8f5ec;
+            background-color: var(--forest); border-right: 1px solid rgba(255,255,255,0.14);
+            border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 90; letter-spacing: 0.5px;
         }
-        .col-district:hover { color: #0056b3; background-color: #f0f8ff !important; }
-        tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
+        td {
+            padding: 11px 10px; font-size: 13px; color: var(--charcoal); background-color: var(--cream-card);
+            border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3; font-weight: 700;
+        }
+        
+        /* Custom Royal Header Accents */
+        .th-dist { background-color: var(--forest-dark); min-width: 165px; position: sticky; left: 0; z-index: 95; border-right: 2px solid var(--gold) !important; }
+        .th-elig { background-color: var(--forest); }
+        .th-prem { background-color: #7c4a12; }
+        .th-max { background-color: #15803d; }
+        .th-rev { background-color: var(--forest-dark); }
+        .th-pend { background-color: #991b1b; }
+        .th-comp { background-color: #164e63; min-width: 150px; }
+
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
+        
+        .col-district {
+            font-weight: 800; text-align: left; padding-left: 20px; color: var(--forest-dark); background-color: var(--cream-card);
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid var(--border) !important;
+            cursor: pointer; transition: 0.2s; user-select: none;
+        }
+        tbody tr:nth-child(even) .col-district { background-color: var(--cream-alt); }
+        .col-district:hover { color: #7c4a12; }
         
         /* Data formatting colors */
-        .td-elig { color: #1e3a8a; }
-        .td-prem { color: #8b5cf6; }
-        .td-max { color: #10b981; }
-        .td-rev { color: #0b1120; font-size: 14px;}
-        .td-pend { color: #dc2626; }
+        .td-elig { color: var(--forest); }
+        .td-prem { color: #7c4a12; }
+        .td-max { color: #15803d; }
+        .td-rev { color: var(--forest-dark); font-size: 14px; font-weight: 800; }
+        .td-pend { color: #b91c1c; }
 
-        tfoot tr.total-row td { background-color: #f1f5f9; font-weight: 800; color: #111827; border-top: 3px solid #cbd5e1; font-size: 15px; position: sticky; bottom: 0; z-index: 20; }
-        tfoot tr.total-row td:first-child { text-align: right; padding-right: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+        /* Royal Grand Total Footer */
+        tfoot tr.total-row td {
+            background-color: var(--forest-dark) !important; font-weight: 900; color: #ffffff !important;
+            border-top: 2px solid var(--gold); font-size: 14.5px; position: sticky; bottom: 0; z-index: 20;
+            padding: 12px 10px; border-right: 1px solid rgba(255,255,255,0.12);
+        }
+        tfoot tr.total-row td:first-child {
+            text-align: right; padding-right: 20px; color: #e6c885 !important;
+            position: sticky; left: 0; border-right: 2px solid var(--gold) !important; z-index: 25;
+        }
+        tfoot tr.total-row td.td-elig { color: #ffffff !important; }
+        tfoot tr.total-row td.td-prem { color: #fbbf24 !important; }
+        tfoot tr.total-row td.td-max { color: #4ade80 !important; }
+        tfoot tr.total-row td.td-rev { color: #e6c885 !important; font-size: 15px; }
+        tfoot tr.total-row td.td-pend { color: #f87171 !important; }
 
         /* Loaders */
-        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%;}
-        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: var(--forest); font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%; }
+        .spinner { width: 35px; height: 35px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR AMC SUMMARY REPORT 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            body { 
-                padding: 10px; 
-                gap: 15px; 
-            }
-
-            .target-control-panel {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                position: relative;
-            }
-
-            .page-heading {
-                justify-content: center;
-                font-size: 16px;
-                text-align: center;
-                margin-bottom: 10px;
-            }
-
-            .filter-group {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-            }
-
-            .filter-group span {
-                text-align: left;
-                margin-left: 0 !important;
-                margin-bottom: 2px;
-            }
-
-            .filter-group select, .btn-action {
-                width: 100%;
-                margin-bottom: 5px;
-                justify-content: center;
-                text-align: center;
-            }
-
+            body { padding: 10px; gap: 15px; }
+            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; position: relative; }
+            .page-heading { justify-content: center; font-size: 16px; text-align: center; margin-bottom: 10px; }
+            .filter-group { flex-direction: column; width: 100%; align-items: stretch; }
+            .filter-group span { text-align: left; margin-left: 0 !important; margin-bottom: 2px; }
+            .filter-group select, .btn-action { width: 100%; margin-bottom: 5px; justify-content: center; text-align: center; }
             .report-header h1 { font-size: 18px; }
             .report-header p { font-size: 11px; }
-
             .kpi-grid { gap: 10px; }
-
-            .kpi-card {
-                flex: 1 1 calc(50% - 10px);
-                min-width: 120px;
-                flex-direction: column;
-                text-align: center;
-                padding: 10px;
-            }
-
+            .kpi-card { flex: 1 1 calc(50% - 10px); min-width: 120px; flex-direction: column; text-align: center; padding: 10px; }
             .kpi-title { font-size: 9px; margin-bottom: 5px; }
             .kpi-value { font-size: 16px; }
-
-            .table-container {
-                max-height: 450px;
-                -webkit-overflow-scrolling: touch;
-            }
-
+            .table-container { max-height: 450px; -webkit-overflow-scrolling: touch; }
             table { min-width: 800px; }
-
             th, td { font-size: 10px !important; padding: 10px 5px !important; }
-
             .col-district, .th-dist, tfoot tr.total-row td:first-child {
                 position: static !important;
-                border-right: 1px solid #e2e8f0 !important;
+                border-right: 1px solid var(--border) !important;
                 text-align: center !important;
                 padding-left: 5px !important;
             }
@@ -183,13 +191,13 @@
     <div class="target-control-panel">
         <div class="page-heading">📊 AMC Registration Summary</div>
         <div class="filter-group">
-            <span style="font-size: 12px; font-weight: 700; color: #555;">Filter by FY:</span>
+            <span style="font-size: 12px; font-weight: 700; color: var(--muted);">Filter by FY:</span>
             <select id="fyFilter" onchange="renderTable()">
                 <option value="All">All Financial Years</option>
                 <option value="25-26">FY 25-26</option>
                 <option value="26-27" selected>FY 26-27</option>
             </select>
-            <span style="font-size: 12px; font-weight: 700; color: #555; margin-left: 10px;">District:</span>
+            <span style="font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 6px;">District:</span>
             <select id="districtType" onchange="updateDistrictsDropdown()">
                 <option value="old" selected>Old Districts</option>
                 <option value="new">New Districts</option>
@@ -215,7 +223,6 @@
                 <span class="kpi-value" id="kpi-tot-elig">0</span>
             </div>
             <div class="kpi-card kpi-premium">
-                <!-- 🌟 (₹1000) అనే పదాన్ని ఇక్కడ తీసేసాను 🌟 -->
                 <span class="kpi-title">PREMIUM VLEs</span>
                 <span class="kpi-value" id="kpi-tot-prem">0</span>
             </div>
@@ -239,7 +246,6 @@
                     <tr>
                         <th class="th-dist">DISTRICT NAME ⇅</th>
                         <th class="th-elig">TOTAL ELIGIBLE</th>
-                        <!-- 🌟 హెడ్డింగ్ లో (₹1000) తీసేసాను 🌟 -->
                         <th class="th-prem">PREMIUM VLEs</th>
                         <th class="th-max">MAX GAIN VLEs</th>
                         <th class="th-rev">TOTAL REVENUE</th>
@@ -364,7 +370,7 @@
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='7' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='7' style='color:#b91c1c; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
             }
         }
 
@@ -529,7 +535,6 @@
                 let isMax = false;
                 let rev = 0;
 
-                // 🌟 DYNAMIC AMOUNT CALCULATION FIX 🌟
                 if (isActivated) {
                     isPrem = statusLower.includes('premium');
                     isMax = statusLower.includes('max gain') || statusLower.includes('maxgain');
@@ -571,11 +576,11 @@
                 if (pending < 0) pending = 0;
                 let compPercent = d.eligible > 0 ? Math.round(((d.premium + d.maxgain) / d.eligible) * 100) : 0;
 
-                let barColor = compPercent >= 75 ? "#10b981" : (compPercent >= 40 ? "#f59e0b" : "#ef4444");
+                let barColor = compPercent >= 75 ? "#15803d" : (compPercent >= 40 ? "#b45309" : "#b91c1c");
                 let compBarHtml = `
                     <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
                         <span style="font-weight: 800; min-width: 35px; text-align: right; color: ${barColor};">${compPercent}%</span>
-                        <div style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex; justify-content: flex-start;">
+                        <div style="width: 70px; height: 6px; background-color: #e6e1d3; border-radius: 3px; overflow: hidden; display: flex; justify-content: flex-start;">
                             <div style="height: 100%; width: ${compPercent}%; background-color: ${barColor}; border-radius: 3px;"></div>
                         </div>
                     </div>`;
@@ -591,17 +596,17 @@
                 </tr>`;
             });
 
-            document.getElementById("tableBody").innerHTML = tbodyHtml || "<tr><td colspan='7' style='padding: 30px; color: #d9534f; font-weight: bold;'>No Data Found</td></tr>";
+            document.getElementById("tableBody").innerHTML = tbodyHtml || "<tr><td colspan='7' style='padding: 30px; color: #b91c1c; font-weight: bold;'>No Data Found</td></tr>";
             
             let gtPending = gt.eligible - (gt.premium + gt.maxgain);
             if (gtPending < 0) gtPending = 0;
             let gtCompPercent = gt.eligible > 0 ? Math.round(((gt.premium + gt.maxgain) / gt.eligible) * 100) : 0;
 
-            let gtBarColor = gtCompPercent >= 75 ? "#10b981" : (gtCompPercent >= 40 ? "#f59e0b" : "#ef4444");
+            let gtBarColor = gtCompPercent >= 75 ? "#4ade80" : (gtCompPercent >= 40 ? "#fbbf24" : "#f87171");
             let gtCompBarHtml = `
                 <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
                     <span style="font-weight: 900; min-width: 35px; text-align: right; color: ${gtBarColor};">${gtCompPercent}%</span>
-                    <div style="width: 70px; height: 8px; background-color: #cbd5e1; border-radius: 4px; overflow: hidden; display: flex; justify-content: flex-start;">
+                    <div style="width: 70px; height: 8px; background-color: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; display: flex; justify-content: flex-start;">
                         <div style="height: 100%; width: ${gtCompPercent}%; background-color: ${gtBarColor}; border-radius: 4px;"></div>
                     </div>
                 </div>`;
@@ -641,7 +646,7 @@
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
                     btn.innerHTML = "✖ Exit Full Screen";
-                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                    btn.style.backgroundColor = "#991b1b"; btn.style.color = "#ffffff"; btn.style.borderColor = "#991b1b";
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
                 }
@@ -652,7 +657,7 @@
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+                btn.style.backgroundColor = "#ffffff"; btn.style.color = "#1b4332"; btn.style.borderColor = "#1b4332";
             }
         });
 
@@ -681,7 +686,7 @@
             setTimeout(() => {
                 html2canvas(captureArea, { 
                     scale: 2, 
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#f4f1e6",
                     useCORS: true,
                     windowWidth: captureArea.scrollWidth + 50
                 }).then(canvas => {

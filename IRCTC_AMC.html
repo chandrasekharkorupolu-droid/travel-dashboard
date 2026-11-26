@@ -233,6 +233,32 @@
         .btn-save:hover { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
         .btn-save:disabled { background-color: #9ca3af; color: #ffffff; border-color: #9ca3af; cursor: not-allowed; }
 
+        /* 🌟 COLORFUL DM NOTIFY CARD MODAL 🌟 */
+        .notify-modal-content {
+            background: var(--cream-card); width: 760px; max-width: 96vw; border-radius: 12px;
+            border: 2px solid var(--forest); box-shadow: 0 22px 45px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column; overflow: hidden; animation: slideDown 0.25s ease;
+        }
+        .notify-topbar {
+            background: var(--forest-dark); padding: 10px 16px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold);
+        }
+        .notify-topbar span { color: #e6c885; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; }
+        .notify-scroll-wrap { max-height: 74vh; overflow-y: auto; background: var(--cream-bg); padding: 14px; }
+        .notify-card-stage { position: relative; }
+        #notifyCardCaptureArea {
+            background: var(--cream-card); border: 2px solid var(--forest); border-radius: 10px;
+            overflow: visible; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        }
+        #notifyCardImgOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 20; cursor: context-menu; display: none;
+        }
+        .notify-footer {
+            background: #ece8dc; padding: 11px 16px; display: flex; justify-content: center;
+            gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border);
+        }
+
         /* 📱 MOBILE RESPONSIVENESS 📱 */
         @media (max-width: 992px) {
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -418,6 +444,27 @@
         </div>
     </div>
 
+    <!-- 🌟 COLORFUL DM NOTIFY IMAGE MODAL 🌟 -->
+    <div class="modal-overlay" id="notifyModal">
+        <div class="notify-modal-content">
+            <div class="notify-topbar">
+                <span>📢 DM WHATSAPP UPDATE CARD  |  RIGHT-CLICK CARD TO COPY IMAGE</span>
+                <button class="modal-close" style="position:static; color:#f87171;" onclick="closeNotifyModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="notify-scroll-wrap">
+                <div class="notify-card-stage">
+                    <div id="notifyCardCaptureArea"></div>
+                    <img id="notifyCardImgOverlay" alt="DM AMC Update Card" title="Right-click and select Copy image">
+                </div>
+            </div>
+            <div class="notify-footer">
+                <button class="btn-action" id="copyNotifyBtn" onclick="copyNotifyCard()" style="background:var(--gold); color:var(--charcoal); border-color:#a6823c;">📋 Copy Image</button>
+                <button class="btn-action" id="dlNotifyBtn" onclick="downloadNotifyCard()" style="background:var(--forest); color:#fff; border-color:var(--forest-dark);">📸 Download Image</button>
+                <button class="btn-action" onclick="openDmWhatsAppChat()" style="background:#1b6b3a; color:#fff; border-color:#14532d;"><i class="fa-brands fa-whatsapp"></i> Open DM WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast">✅ Action Successful!</div>
 
     <script>
@@ -425,6 +472,8 @@
         let oldDistrictsSet = new Set();
         let newDistrictsSet = new Set();
         let currentKpiFilter = 'all'; 
+        let currentNotifyData = null;
+        let latestNotifyCanvas = null;
 
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
@@ -1078,38 +1127,32 @@
 
             let dmName = "District Manager";
             let dmNumber = "";
-            
             try {
                 let usersDataStr = sessionStorage.getItem("cscUsersData");
                 if (usersDataStr) {
                     let usersData = JSON.parse(usersDataStr);
                     if (usersData && usersData.length > 0) {
-                        let isObjectArr = !Array.isArray(usersData[0]);
-                        
-                        if (isObjectArr) {
-                             for(let row of usersData) {
-                                 let cleanRow = {};
-                                 for(let key in row) cleanRow[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = row[key];
-                                 
-                                 let distVal = distType === 'old' ? (cleanRow.district || '') : (cleanRow.newdistrict || cleanRow.district || '');
-                                 if (distVal.toString().toLowerCase().replace(/\s+/g,'') === selectedDist.toLowerCase().replace(/\s+/g,'')) {
-                                     dmNumber = cleanRow.userid || cleanRow.user || cleanRow.mobile || "";
-                                     dmName = cleanRow.name || "District Manager";
-                                     break;
-                                 }
-                             }
+                        if (!Array.isArray(usersData[0])) {
+                            for (let row of usersData) {
+                                let cleanRow = {};
+                                for (let key in row) cleanRow[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = row[key];
+                                let distVal = distType === 'old' ? (cleanRow.district || '') : (cleanRow.newdistrict || cleanRow.district || '');
+                                if (distVal.toString().toLowerCase().replace(/\s+/g, '') === selectedDist.toLowerCase().replace(/\s+/g, '')) {
+                                    dmNumber = cleanRow.userid || cleanRow.user || cleanRow.mobile || "";
+                                    dmName = cleanRow.name || "District Manager";
+                                    break;
+                                }
+                            }
                         } else {
                             let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                             let idxUid = uHeaders.findIndex(h => h.includes('userid') || h.includes('user') || h.includes('mobile'));
                             let idxName = uHeaders.findIndex(h => h.includes('name'));
                             let idxDistCol = distType === 'old' ? uHeaders.findIndex(h => h === 'district') : uHeaders.findIndex(h => h.includes('newdistrict'));
                             if (idxDistCol === -1) idxDistCol = uHeaders.findIndex(h => h.includes('district'));
-                            
                             for (let i = 1; i < usersData.length; i++) {
                                 if (idxDistCol > -1) {
                                     let rowDist = (usersData[i][idxDistCol] || '').toString().toLowerCase().replace(/\s+/g, '');
-                                    let selDistClean = selectedDist.toLowerCase().replace(/\s+/g, '');
-                                    if (rowDist === selDistClean) {
+                                    if (rowDist === selectedDist.toLowerCase().replace(/\s+/g, '')) {
                                         if (idxUid > -1) dmNumber = (usersData[i][idxUid] || '').toString().trim();
                                         if (idxName > -1) dmName = (usersData[i][idxName] || '').toString().trim();
                                         break;
@@ -1121,11 +1164,7 @@
                 }
             } catch (e) { console.error("Error finding DM", e); }
 
-            let greeting = getGreeting();
-            let vleListText = "\n\n*📋 Pending & Expired VLEs List:*\n";
-            let expiredVles = [];
-            let pendingVles = [];
-            
+            let expiredVles = [], pendingVles = [];
             let fyFilter = document.getElementById('fyFilter').value;
             let monthFilter = document.getElementById("monthFilter").value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
@@ -1134,21 +1173,15 @@
             globalAllData.forEach((row) => {
                 if (isDM && distType === 'old' && !row.allowedForOld) return;
                 if (isDM && distType === 'new' && !row.allowedForNew) return;
-
                 let dist = row[distKey];
                 let statusText = row.status || 'ACTIVE';
-                if(statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) return; 
-                
-                if (dist !== selectedDist) return;
-                if (!row.isEligible) return;
+                if (statusText.includes("BLOCK") || statusText.includes("SUSPEND") || statusText.includes("BLACK")) return;
+                if (dist !== selectedDist || !row.isEligible) return;
 
                 let statusLower = (row.amcStatus || '').toLowerCase();
                 let isPaid = statusLower.includes('paid');
                 let isSheetExpired = statusLower.includes('expired');
-
-                let isExpired = false;
-                let isActivated = false;
-
+                let isExpired = false, isActivated = false;
                 let endDate = parseCustomDate(row.amcEnd);
                 let hasValidEndDate = !isNaN(endDate.getTime());
 
@@ -1156,83 +1189,181 @@
                     if (hasValidEndDate && endDate < currentDate) isExpired = true;
                     else if (hasValidEndDate && endDate >= currentDate) isActivated = true;
                     else if (isPaid) isActivated = true;
-                } else if (isSheetExpired) {
-                    isExpired = true;
-                }
-                
+                } else if (isSheetExpired) isExpired = true;
+
                 if (fyFilter !== 'All') {
-                    if (isActivated || isExpired) {
-                        if (row.amcFy !== fyFilter) return; 
-                    } else {
+                    if (isActivated || isExpired) { if (row.amcFy !== fyFilter) return; }
+                    else {
                         if (fyFilter === '25-26' && row.txns_25_26 < 100) return;
                         if (fyFilter === '26-27' && row.txns_26_27 < 100) return;
                     }
                 }
-
                 if (monthFilter !== 'All') {
-                    if (!isActivated && !isExpired) return; 
+                    if (!isActivated && !isExpired) return;
                     let amcStartDate = parseCustomDate(row.amcStart);
-                    if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) {
-                        return; 
-                    }
+                    if (isNaN(amcStartDate.getTime()) || amcStartDate.getMonth().toString() !== monthFilter) return;
                 }
-                
+
                 if (!isActivated) {
-                    let mobile = row.vlemob !== '-' ? row.vlemob : row.mobile;
-                    let textLine = `${row.cscid} - ${row.vlename} - ${mobile}`;
-                    
-                    if (isExpired) {
-                        expiredVles.push(`${textLine} (Expired 🟠)`);
-                    } else {
-                        pendingVles.push(`${textLine} (Pending 🔴)`);
-                    }
+                    let mob = row.vlemob !== '-' ? row.vlemob : row.mobile;
+		    let item = {
+                        cscid: row.cscid,
+                        vlename: row.vlename,
+                        mob: mob,
+                        fy25: row.txns_25_26 || 0,
+                        fy26: row.txns_26_27 || 0,
+                        type: isExpired ? 'EXPIRED' : 'PENDING'
+                    };
+                    if (isExpired) expiredVles.push(item);
+                    else pendingVles.push(item);
                 }
             });
 
-            let allInactiveVles = expiredVles.concat(pendingVles);
+            let allInactive = expiredVles.concat(pendingVles);
+            let dateStr = ("0" + currentDate.getDate()).slice(-2) + "-" + ("0" + (currentDate.getMonth() + 1)).slice(-2) + "-" + currentDate.getFullYear();
 
-            let counter = 1;
-            for (let i = 0; i < allInactiveVles.length; i++) {
-                if (counter > 75) { 
-                    vleListText += `\n... (ఇంకా చాలా VLEs ఉన్నాయి. దయచేసి పూర్తి లిస్ట్ కొరకు పోర్టల్ చూడండి) ...\n`;
-                    break;
-                }
-                vleListText += `${counter}. ${allInactiveVles[i]}\n`;
-                counter++;
-            }
+            currentNotifyData = { dmName, dmNumber, selectedDist, total, active, prem, max, expired, pending, actionReq, greeting: getGreeting(), dateStr };
 
-            let message = `గౌరవనీయులైన *${dmName}* గారికి,\n${greeting}\n\n🏢 *IRCTC AMC Business Update*\n📌 *District:* ${selectedDist}\n\n📊 *Total Eligible VLEs:* *${total}*\n🟢 *Activated:* *${active}* (Premium: ${prem} | MaxGain: ${max})\n🟠 *Expired:* *${expired}*\n🔴 *Pending:* *${pending}*\n\n⚡ *Action Required:*\nదయచేసి మీ జిల్లాలో ఉన్న పెండింగ్ మరియు గడువు ముగిసిన *${actionReq} VLE లతో* వెంటనే మాట్లాడి, వారందరిచేతా *IRCTC MaxGain Package (₹2000)* మాత్రమే తీసుకునేలా ఫాలో-అప్ చేయగలరు.${vleListText}\n\nThanks & Regards,\n*Chandra Sekhara Babu K*\nSPOC - AP CSC Travel 🚄`;
+            let rowsHtml = allInactive.slice(0, 50).map((v, i) => {
+                let bg = i % 2 === 0 ? '#faf8f2' : '#f0ece0';
+                let badge = v.type === 'EXPIRED'
+                    ? `<span style="background:#fef3c7; color:#b45309; border:1px solid #dfc48e; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:800;">EXPIRED</span>`
+                    : `<span style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:800;">PENDING</span>`;
+                let fy26Color = v.fy26 === 0 ? '#b91c1c' : '#164e63';
+                return `<tr style="background:${bg};">
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center; font-weight:700;">${i + 1}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center; font-weight:800; color:#1b4332;">${v.cscid}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:left; font-weight:700; color:#141a17;">${v.vlename}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center; font-weight:700;">${v.mob}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center; font-weight:800; color:#9a3412;">${v.fy25}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center; font-weight:800; color:${fy26Color};">${v.fy26}</td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #d5cfbe; text-align:center;">${badge}</td>
+                </tr>`;
+            }).join("");
 
-            if (!dmNumber || dmNumber.length < 10) {
-                let manualNum = prompt(`డేటాబేస్ లో మొబైల్ నంబర్ దొరకలేదు.\nదయచేసి ${dmName} గారి వాట్సాప్ నంబర్ (10 అంకెలు) ఇక్కడ ఎంటర్ చేయండి:`, "");
-                if (manualNum !== null && manualNum.trim().length >= 10) {
-                    dmNumber = manualNum.trim().replace(/\D/g, '');
-                } else if (manualNum !== null) {
-                    alert("దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ ఎంటర్ చేయండి.");
-                    return; 
-                } else {
-                    return; 
-                }
-            }
+            let moreNote = allInactive.length > 50
+                ? `<tr><td colspan="7" style="padding:8px; text-align:center; background:#f7efe0; color:#7c4a12; font-weight:800; font-size:11px;">... + ${allInactive.length - 50} more VLEs in Portal (Export Excel for full list)</td></tr>`
+                : "";
 
-            if (dmNumber && dmNumber.length >= 10) {
-                let cleanNumber = dmNumber.replace(/\D/g, '');
-                let url = `whatsapp://send?phone=91${cleanNumber}&text=${encodeURIComponent(message)}`;
+            document.getElementById("notifyCardCaptureArea").innerHTML = `
+                <div style="background:linear-gradient(135deg, #1b4332 0%, #122d22 100%); padding:16px 20px; border-bottom:4px solid #c5a059; color:#f8f5ec; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:10px; color:#e6c885; font-weight:800; letter-spacing:1px; text-transform:uppercase;">CSC ANDHRA PRADESH • TRAVEL TEAM</div>
+                        <div style="font-family:'Cinzel', serif; font-size:19px; font-weight:800; color:#ffffff; margin-top:2px;">IRCTC AMC FOLLOW-UP ALERT</div>
+                        <div style="font-size:12px; color:#d1fae5; font-weight:600; margin-top:3px;">To: <b>${dmName}</b> (DM – ${selectedDist})</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="background:#c5a059; color:#141a17; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:900;">${selectedDist}</div>
+                        <div style="font-size:11px; color:#e6c885; margin-top:5px; font-weight:700;">Date: ${dateStr}</div>
+                    </div>
+                </div>
+
+                <div style="padding:14px 18px; background:#f4f1e6;">
+                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px;">
+                        <div style="background:#faf8f2; border:1px solid #d5cfbe; border-top:4px solid #1b4332; border-radius:8px; padding:10px; text-align:center;">
+                            <div style="font-size:10px; color:#525d56; font-weight:800;">TOTAL ELIGIBLE</div>
+                            <div style="font-size:22px; color:#1b4332; font-weight:900;">${total}</div>
+                        </div>
+                        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-top:4px solid #15803d; border-radius:8px; padding:10px; text-align:center;">
+                            <div style="font-size:10px; color:#15803d; font-weight:800;">ACTIVATED</div>
+                            <div style="font-size:22px; color:#15803d; font-weight:900;">${active}</div>
+                            <div style="font-size:9.5px; color:#166534; font-weight:700;">Prem: ${prem} | Max: ${max}</div>
+                        </div>
+                        <div style="background:#fffbeb; border:1px solid #fde68a; border-top:4px solid #b45309; border-radius:8px; padding:10px; text-align:center;">
+                            <div style="font-size:10px; color:#b45309; font-weight:800;">EXPIRED</div>
+                            <div style="font-size:22px; color:#b45309; font-weight:900;">${expired}</div>
+                        </div>
+                        <div style="background:#fef2f2; border:1px solid #fecaca; border-top:4px solid #b91c1c; border-radius:8px; padding:10px; text-align:center;">
+                            <div style="font-size:10px; color:#b91c1c; font-weight:800;">PENDING</div>
+                            <div style="font-size:22px; color:#b91c1c; font-weight:900;">${pending}</div>
+                        </div>
+                    </div>
+
+                    <div style="background:#f7efe0; border-left:4px solid #c5a059; padding:8px 12px; border-radius:6px; font-size:12px; color:#141a17; font-weight:700; margin-bottom:12px;">
+                        ⚡ <b>Action Required (${actionReq} VLEs):</b> దయచేసి పెండింగ్ & గడువు ముగిసిన VLE లతో మాట్లాడి <b>IRCTC MaxGain (₹2000)</b> ప్యాకేజీ యాక్టివేట్ చేయించగలరు.
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; font-size:11.5px; border:1px solid #1b4332;">
+                        <thead>
+                            <tr style="background:#1b4332; color:#f8f5ec;">
+                                <th style="padding:7px; text-align:center; position:static;">#</th>
+                                <th style="padding:7px; text-align:center; position:static;">CSC ID</th>
+                                <th style="padding:7px; text-align:left; position:static;">VLE NAME</th>
+                                <th style="padding:7px; text-align:center; position:static;">MOBILE</th>
+                                <th style="padding:7px; text-align:center; position:static; background:#7c4a12;">FY 25-26</th>
+                                <th style="padding:7px; text-align:center; position:static; background:#164e63;">FY 26-27</th>
+                                <th style="padding:7px; text-align:center; position:static;">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}${moreNote}</tbody>
+                    </table>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed #c5a059; font-size:11px; color:#525d56; font-weight:700;">
+                        <span>CSC AP TravelCloud Analytics</span>
+                        <span style="color:#1b4332; font-weight:800;">Chandra Sekhara Babu K • CSC Travel SPOC</span>
+                    </div>
+                </div>`;
+
+            const imgOverlay = document.getElementById("notifyCardImgOverlay");
+            imgOverlay.style.display = "none";
+            latestNotifyCanvas = null;
+            document.getElementById("notifyModal").style.display = "flex";
+
+            setTimeout(() => {
+                html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(c => {
+                    latestNotifyCanvas = c;
+                    imgOverlay.src = c.toDataURL("image/png");
+                    imgOverlay.style.display = "block";
+                });
+            }, 150);
+        }
+
+        function closeNotifyModal() { document.getElementById("notifyModal").style.display = "none"; }
+
+        async function copyNotifyCard() {
+            const btn = document.getElementById("copyNotifyBtn");
+            btn.innerHTML = "⏳ Copying...";
+            try {
+                const canvas = latestNotifyCanvas || await html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" });
+                canvas.toBlob(async blob => {
+                    try {
+                        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                        showToast("✅ Image Copied! WhatsApp lo Ctrl+V paste cheyandi.");
+                        btn.innerHTML = "✅ Copied!";
+                    } catch (e) {
+                        showToast("ℹ️ Card meeda Right-Click chesi 'Copy image' nokkandi.");
+                        btn.innerHTML = "📋 Copy Image";
+                    }
+                    setTimeout(() => { btn.innerHTML = "📋 Copy Image"; }, 1800);
+                });
+            } catch (e) { btn.innerHTML = "📋 Copy Image"; }
+        }
+
+        function downloadNotifyCard() {
+            const save = c => {
                 let a = document.createElement('a');
-                a.href = url;
-                a.target = '_top'; 
-                document.body.appendChild(a); 
-                a.click(); 
-                document.body.removeChild(a);
-            } else {
-                let url = `whatsapp://send?text=${encodeURIComponent(message)}`;
-                let a = document.createElement('a');
-                a.href = url;
-                a.target = '_top'; 
-                document.body.appendChild(a); 
-                a.click(); 
-                document.body.removeChild(a);
+                a.download = `AMC_DM_Update_${currentNotifyData.selectedDist}_${currentNotifyData.dateStr}.png`;
+                a.href = c.toDataURL("image/png"); a.click();
+            };
+            if (latestNotifyCanvas) save(latestNotifyCanvas);
+            else html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(save);
+        }
+
+        function openDmWhatsAppChat() {
+            if (!currentNotifyData) return;
+            let d = currentNotifyData;
+            let dmNum = d.dmNumber;
+            if (!dmNum || dmNum.length < 10) {
+                let manual = prompt(`డేటాబేస్ లో మొబైల్ నంబర్ దొరకలేదు.\nదయచేసి ${d.dmName} గారి వాట్సాప్ నంబర్ (10 అంకెలు) ఎంటర్ చేయండి:`, "");
+                if (!manual || manual.trim().length < 10) return;
+                dmNum = manual.trim().replace(/\D/g, '');
             }
+            let cleanNum = dmNum.replace(/\D/g, '');
+            let shortMsg = `గౌరవనీయులైన *${d.dmName}* గారికి,\n${d.greeting}\n\n🏢 *IRCTC AMC Update – ${d.selectedDist}*\n📊 Eligible: *${d.total}* | 🟢 Active: *${d.active}* | 🟠 Expired: *${d.expired}* | 🔴 Pending: *${d.pending}*\n\n⚡ దయచేసి పైన ఉన్న *${d.actionReq} VLEs* తో మాట్లాడి *IRCTC MaxGain (₹2000)* యాక్టివేట్ చేయించగలరు.\n\n*Chandra Sekhara Babu K*\nCSC Travel SPOC 🚄`;
+            let url = `whatsapp://send?phone=91${cleanNum}&text=${encodeURIComponent(shortMsg)}`;
+            let a = document.createElement('a');
+            a.href = url; a.target = '_top';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
         function sendPromoWhatsApp(cscId, btnId) {
