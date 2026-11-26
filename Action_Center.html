@@ -1833,39 +1833,25 @@
             callInitiated = false;
         }
 
-        function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
+        
+function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
             if (!isMobileDevice) return;
             if (!callStartTime) callStartTime = new Date();
 
             if (isAndroidApp && !isVerifiedFromApp) {
-                callInitiated = true;
                 let lockEl = document.getElementById("dmLockMsg");
                 if (lockEl) {
-                    lockEl.innerHTML = `📞 Calling... Call cut ayyaka app loki tirigi raagane Remarks open avuthayi.<br>
-                    <button type="button" onclick="unlockCallSubmit(true, 0)" style="margin-top:8px; background:#1e3a8a; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer;">🔓 Call Cut / Not Lifted? Open Remarks</button>`;
+                    lockEl.innerText = "📞 Calling... Call cut ayyaka Call Log verify ayyi Remarks automatic ga unlock avuthayi.";
                 }
                 return;
             }
 
-            callInitiated = false;
             if (realDur !== null) verifiedCallDuration = realDur;
             let lockEl = document.getElementById("dmLockMsg");
             let boxEl = document.getElementById("dmActionBox");
             if (lockEl) lockEl.style.display = "none";
             if (boxEl) boxEl.style.display = "block";
         }
-
-        // Call cut chesina / VLE call lift cheyakapoyina app loki tirigi raagane Remarks unlock avuthayi
-        document.addEventListener("visibilitychange", function() {
-            if (document.visibilityState === "visible" && callInitiated) {
-                unlockCallSubmit(true);
-            }
-        });
-        window.addEventListener("focus", function() {
-            if (callInitiated) {
-                unlockCallSubmit(true);
-            }
-        });
 
         // Android App Call Log Verification listeners (direct & iframe)
         window.onAndroidCallVerified = function(phone, dur) {
@@ -1876,6 +1862,7 @@
                 unlockCallSubmit(true, parseInt(event.data.duration || 0));
             }
         });
+
 
         function toggleSrvCard(idx) {
             let chk = document.getElementById(`srvChk-${idx}`).checked;
