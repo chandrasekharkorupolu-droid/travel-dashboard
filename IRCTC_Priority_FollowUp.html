@@ -397,8 +397,7 @@
             let idxvlemob = hClean.findIndex(h => h.includes('vlemobile'));
             let idxempname = hClean.findIndex(h => h.includes('employeename') || h.includes('empname'));
             let idxstatus = hClean.findIndex(h => h.includes('horemarks'));
-            let idx25_total = hClean.findIndex(h => h.includes('25') && h.includes('txn') && !h.includes('target'));
-            if (idx25_total === -1) idx25_total = hClean.findIndex(h => h.includes('202526'));
+            
 
             const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
             let idx26Arr = months2627.map(m => hClean.findIndex(h => h === m));
@@ -422,13 +421,13 @@
                 let rawSt = idxstatus > -1 ? String(row[idxstatus] || '').toUpperCase() : '';
                 if (rawSt.includes("BLOCK") || rawSt.includes("SUSPEND") || rawSt.includes("BLACK")) continue;
 
-                let fy25Total = idx25_total > -1 ? (parseInt(row[idx25_total]) || 0) : 0;
-                let fy26Total = 0, ytd25 = 0, ytd26 = 0, m25 = [], m26 = [];
+                let fy25Total = 0, fy26Total = 0, ytd25 = 0, ytd26 = 0, m25 = [], m26 = [];
 
                 for (let m = 0; m < 12; m++) {
                     let v25 = idx25Arr[m] > -1 ? (parseInt(row[idx25Arr[m]]) || 0) : 0;
                     let v26 = idx26Arr[m] > -1 ? (parseInt(row[idx26Arr[m]]) || 0) : 0;
                     m25.push(v25); m26.push(v26);
+                    fy25Total += v25;
                     fy26Total += v26;
                     if (m <= currentMonthLimit) { ytd25 += v25; ytd26 += v26; }
                 }

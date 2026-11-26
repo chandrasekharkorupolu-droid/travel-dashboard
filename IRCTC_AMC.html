@@ -599,15 +599,26 @@
             let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
             let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
             
-            let fy26Indices = [];
+            let fy25Indices = [];
             let fy27Indices = [];
 
-            rawData[0].forEach((rawHeader, idx) => {
-                if (!rawHeader) return;
-                let cln = String(rawHeader).toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-                if (cln === 'fy202526' || cln === 'fy2526') if (!fy26Indices.includes(idx)) fy26Indices.push(idx);
-                let months27 = ['apr26','may26','jun26','jul26','aug26','sep26','oct26','nov26','dec26','jan27','feb27','mar27'];
-                if (months27.includes(cln)) if (!fy27Indices.includes(idx)) fy27Indices.push(idx);
+            const months25 = ['apr25','may25','jun25','jul25','aug25','sep25','oct25','nov25','dec25','jan26','feb26','mar26'];
+            const months27 = ['apr26','may26','jun26','jul26','aug26','sep26','oct26','nov26','dec26','jan27','feb27','mar27'];
+
+            months25.forEach(m => {
+                let mIdx = cleanHeaders.findIndex(h => h === m);
+                if (mIdx > -1 && !fy25Indices.includes(mIdx)) fy25Indices.push(mIdx);
+            });
+
+            // Fallback: sheet lo apr25..mar26 headers lekapothe matrame fy_2025_26 column teesukuntundi
+            if (fy25Indices.length === 0) {
+                let idxFy202526 = cleanHeaders.findIndex(h => h === 'fy202526');
+                if (idxFy202526 > -1) fy25Indices.push(idxFy202526);
+            }
+
+            months27.forEach(m => {
+                let mIdx = cleanHeaders.findIndex(h => h === m);
+                if (mIdx > -1 && !fy27Indices.includes(mIdx)) fy27Indices.push(mIdx);
             });
 
             let idxstatus = cleanHeaders.findIndex(h => h === 'status' || h.includes('horemarks'));            
@@ -623,7 +634,9 @@
                 let cscId = idxcscid > -1 ? row[idxcscid] : '';
                 if(!cscId || cscId === '-') continue;
 
-                let fy26 = 0; fy26Indices.forEach(colIdx => fy26 += (Number(String(row[colIdx]||'0').replace(/,/g, '')) || 0)); fy26 = Math.round(fy26); 
+                let fy26 = 0;
+                fy25Indices.forEach(colIdx => fy26 += (Number(String(row[colIdx]||'0').replace(/,/g, '')) || 0));
+                fy26 = Math.round(fy26);
                 let fy27Total = 0; fy27Indices.forEach(colIdx => fy27Total += (Number(String(row[colIdx]||'0').replace(/,/g, '')) || 0)); fy27Total = Math.round(fy27Total); 
 
                 let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').trim() : 'Unknown';
