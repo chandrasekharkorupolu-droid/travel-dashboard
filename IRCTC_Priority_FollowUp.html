@@ -785,9 +785,30 @@
         }
 
         function toggleFullScreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else if (document.exitFullscreen) document.exitFullscreen();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
         }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById("fullscreenBtn");
+            if (!btn) return;
+            if (document.fullscreenElement) {
+                btn.innerHTML = "✖ Exit Full Screen";
+                btn.style.backgroundColor = "#ea580c";
+                btn.style.color = "#ffffff";
+                btn.style.borderColor = "#ea580c";
+            } else {
+                btn.innerHTML = "⛶ Full Screen";
+                btn.style.backgroundColor = "#f1f5f9";
+                btn.style.color = "#334155";
+                btn.style.borderColor = "#cbd5e1";
+            }
+        });
+
+
 
         // Report Card Modal
         function openMomModal(cscId) {
