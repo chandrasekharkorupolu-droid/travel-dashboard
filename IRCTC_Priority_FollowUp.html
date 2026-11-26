@@ -4,150 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRCTC Target Shortfall & Follow-Up - CSC TravelCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
+        body { background-color: var(--cream-bg); color: var(--charcoal); display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
 
         /* Controls Panel */
         .target-control-panel {
-            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 18px;
-            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background-color: var(--cream-card); border-radius: 10px; border: 1.5px solid var(--forest); padding: 10px 18px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(27,67,50,0.08);
             flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
         }
-        .page-heading { font-size: 17px; color: #ea580c; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .page-heading {
+            font-family: 'Cinzel', serif; font-size: 17px; color: var(--forest); font-weight: 800;
+            display: flex; align-items: center; gap: 8px; letter-spacing: 0.6px;
+        }
         
         .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .filter-group select, .filter-group input {
-            padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;
-            outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b;
+            padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px;
+            outline: none; background-color: #ffffff; font-weight: 700; cursor: pointer; color: var(--charcoal);
         }
-        .filter-group input { background-color: #ffffff; cursor: text; min-width: 215px; }
-        .filter-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        .filter-group input { cursor: text; min-width: 215px; }
+        .filter-group input:focus, .filter-group select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27, 67, 50, 0.15); }
 
         .btn-action {
-            background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 13px;
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 6px 13px;
             border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
             display: inline-flex; align-items: center; gap: 5px;
         }
-        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action:hover { background-color: var(--forest); color: #ffffff; }
+        .btn-gold { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        .btn-gold:hover { background-color: #b08a42; color: #ffffff; }
+        .btn-forest { background-color: var(--forest); color: #ffffff; border-color: var(--forest-dark); }
+        .btn-forest:hover { background-color: var(--forest-dark); }
 
-        #captureArea { display: flex; flex-direction: column; flex: 1; background-color: #f8f9fc; padding: 8px 4px; border-radius: 8px; }
+        #captureArea { display: flex; flex-direction: column; flex: 1; background-color: var(--cream-bg); padding: 6px 4px; border-radius: 8px; }
 
         .report-header { text-align: center; margin-bottom: 16px; }
-        .report-header h1 { font-size: 19px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 4px; }
-        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; }
+        .report-header h1 { font-family: 'Cinzel', serif; font-size: 21px; font-weight: 800; color: var(--forest-dark); letter-spacing: 0.8px; margin-bottom: 4px; }
+        .report-header p { font-size: 12px; color: var(--muted); font-weight: 700; }
 
         /* 4 KPI Cards */
         .kpi-grid { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
         .kpi-card {
-            background-color: #ffffff; border-radius: 8px; padding: 10px 16px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid;
+            background-color: var(--cream-card); border-radius: 8px; padding: 11px 16px;
+            box-shadow: 0 3px 8px rgba(27,67,50,0.06); border: 1px solid var(--border); border-left: 5px solid;
             min-width: 195px; flex: 1; max-width: 260px; display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; transition: 0.2s;
         }
-        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #475569; }
-        .kpi-value { font-size: 22px; font-weight: 900; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(27,67,50,0.12); }
+        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.4px; }
+        .kpi-value { font-size: 23px; font-weight: 900; font-variant-numeric: tabular-nums; }
 
-        .kpi-total { border-left-color: #2563eb; } .kpi-total .kpi-value { color: #2563eb; }
-        .kpi-reached { border-left-color: #10b981; } .kpi-reached .kpi-value { color: #10b981; }
-        .kpi-lagging { border-left-color: #f59e0b; } .kpi-lagging .kpi-value { color: #d97706; }
-        .kpi-zero { border-left-color: #ef4444; } .kpi-zero .kpi-value { color: #dc2626; }
-        .selected-filter { outline: 2px solid #0f172a; background-color: #f8fafc; }
+        .kpi-total { border-left-color: var(--forest); } .kpi-total .kpi-value { color: var(--forest); }
+        .kpi-reached { border-left-color: #15803d; } .kpi-reached .kpi-value { color: #15803d; }
+        .kpi-lagging { border-left-color: #b45309; } .kpi-lagging .kpi-value { color: #b45309; }
+        .kpi-zero { border-left-color: #b91c1c; } .kpi-zero .kpi-value { color: #b91c1c; }
+        .selected-filter { outline: 2px solid var(--forest); background-color: var(--gold-soft); }
 
         /* Table Settings */
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%; max-height: 68vh; }
+        .table-container {
+            flex: 1; background-color: var(--cream-card); border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.08); overflow: auto; border: 1.5px solid var(--forest);
+            width: 100%; max-height: 68vh;
+        }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
         th, td { white-space: nowrap; }
 
         th {
-            font-size: 11px; text-transform: uppercase; padding: 12px 10px; font-weight: 800; color: white;
-            border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15);
-            position: sticky; top: 0; z-index: 90;
+            font-size: 11px; text-transform: uppercase; padding: 12px 10px; font-weight: 800; color: #f8f5ec;
+            background-color: var(--forest); border-right: 1px solid rgba(255,255,255,0.14);
+            border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 90; letter-spacing: 0.4px;
         }
-        td { padding: 9px 10px; font-size: 12.5px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; vertical-align: middle; }
+        td {
+            padding: 9px 10px; font-size: 12.5px; color: var(--charcoal);
+            border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3;
+            font-weight: 600; vertical-align: middle; background-color: var(--cream-card);
+        }
 
-        .th-dist { background-color: #0b1120; min-width: 140px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important; }
-        .th-vle { background-color: #1e3a8a; }
-        .th-csc { background-color: #2563eb; }
-        .th-irctc { background-color: #7c3aed; }
-        .th-mob { background-color: #475569; }
-        .th-fy25 { background-color: #ea580c; }
-        .th-fy26 { background-color: #0284c7; }
-        .th-gap { background-color: #dc2626; }
-        .th-ach { background-color: #0f766e; }
-        .th-status { background-color: #6d28d9; }
-        .th-rmk { background-color: #1e293b; min-width: 260px; }
-        .th-act { background-color: #059669; }
+        .th-dist { background-color: var(--forest-dark); min-width: 140px; position: sticky; left: 0; z-index: 95; border-right: 2px solid var(--gold) !important; }
+        .th-fy25 { background-color: #7c4a12; }
+        .th-fy26 { background-color: #164e63; }
+        .th-gap { background-color: #991b1b; }
+        .th-rmk { background-color: var(--forest-dark); min-width: 260px; }
 
-        tr:hover td { background-color: #f8fafc; }
+        tbody tr:nth-child(even) td { background-color: #f0ece0; }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
+
         .col-district {
-            font-weight: 800; text-align: left; padding-left: 14px; color: #1e293b; background: #ffffff;
-            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; cursor: pointer;
+            font-weight: 800; text-align: left; padding-left: 14px; color: var(--forest-dark);
+            background-color: var(--cream-card); position: sticky; left: 0; z-index: 5;
+            border-right: 2px solid var(--border) !important; cursor: pointer;
         }
-        tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
+        tbody tr:nth-child(even) .col-district { background-color: #f0ece0; }
 
         /* Manual Remark Box */
         .rmk-wrap { display: flex; gap: 5px; align-items: center; }
         .rmk-input {
-            flex: 1; min-width: 185px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 5px;
-            font-size: 12px; font-weight: 600; color: #0f172a; outline: none;
+            flex: 1; min-width: 185px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px;
+            font-size: 12px; font-weight: 600; color: var(--charcoal); background: #ffffff; outline: none;
         }
-        .rmk-input:focus { border-color: #2563eb; background: #eff6ff; }
+        .rmk-input:focus { border-color: var(--forest); background: #ffffff; }
         .btn-save-rmk {
-            background: #1e3a8a; color: #fff; border: none; padding: 6px 10px; border-radius: 5px;
-            font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
+            background: var(--forest); color: #f8f5ec; border: 1px solid var(--forest-dark); padding: 6px 10px;
+            border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
         }
-        .btn-save-rmk:hover { background: #1d4ed8; }
-        .rmk-meta { font-size: 10px; color: #059669; font-weight: 700; text-align: left; margin-top: 3px; white-space: normal; }
+        .btn-save-rmk:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        .rmk-meta { font-size: 10px; color: #15803d; font-weight: 700; text-align: left; margin-top: 3px; white-space: normal; }
 
         .btn-whatsapp {
-            background-color: #25d366; color: white; border: none; padding: 6px 11px; border-radius: 5px;
+            background-color: #1b6b3a; color: #ffffff; border: none; padding: 6px 11px; border-radius: 5px;
             font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
         }
-        .btn-done { background-color: #10b981; color: white; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .btn-whatsapp:hover { background-color: #14532d; }
+        .btn-done { background-color: var(--forest-soft); color: var(--forest); border: 1px solid #a7ccb8; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; display: inline-block; }
 
-        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: var(--forest); font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .spinner { width: 35px; height: 35px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 700; z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: var(--forest-dark); color: #f8f5ec; border: 1px solid var(--gold); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 700; z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        /* Report Card Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 2000; }
-        .modal-content { background: transparent; border-radius: 12px; width: 500px; max-width: 95vw; display: flex; flex-direction: column; position: absolute; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
-        .modal-drag-handle { background: #0f172a; display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0; }
-        .modal-drag-handle span { color: #94a3b8; font-size: 11px; font-weight: bold; }
-        .modal-close { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; }
-        .card-stage { position: relative; background: #ffffff; overflow: hidden; }
-        #reportCardCaptureArea { background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
-        #reportCardImgOverlay {
-            position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0;
-            z-index: 20; cursor: context-menu; display: none;
-        }
-        .vle-info-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 5px solid #ea580c; color: white; }
-        .info-item span { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: block; }
+        /* Royal Report Card Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 45, 34, 0.72); align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: transparent; border-radius: 12px; width: 510px; max-width: 95vw; display: flex; flex-direction: column; position: absolute; box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
+        .modal-drag-handle { background: var(--forest-dark); display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0; border-bottom: 1px solid var(--gold); }
+        .modal-drag-handle span { color: #e6c885; font-size: 10.5px; font-weight: 800; letter-spacing: 0.6px; }
+        .modal-close { background: none; border: none; color: #f87171; font-size: 18px; cursor: pointer; }
+        .card-stage { position: relative; background: var(--cream-card); overflow: hidden; }
+        #reportCardCaptureArea { background: var(--cream-card); display: flex; flex-direction: column; overflow: hidden; border-left: 4px solid var(--forest); border-right: 4px solid var(--forest); }
+        #reportCardImgOverlay { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; z-index: 20; cursor: context-menu; display: none; }
+        .vle-info-card { background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%); padding: 13px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 4px solid var(--gold); color: #f8f5ec; }
+        .info-item span { font-size: 10px; color: #e6c885; text-transform: uppercase; font-weight: 800; display: block; letter-spacing: 0.4px; }
         .info-item h3 { font-size: 14px; color: #ffffff; font-weight: 800; }
-        .modal-body { padding: 0 15px 15px 15px; background: #ffffff; }
+        .modal-body { padding: 0 15px 15px 15px; background: var(--cream-card); }
         .modal-table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 10px; }
-        .modal-table th { background: #f8fafc; color: #475569; padding: 7px; font-size: 11px; border-bottom: 2px solid #cbd5e1; position: static; }
-        .modal-table td { padding: 6px; font-size: 12.5px; color: #1e293b; border-bottom: 1px dashed #e2e8f0; font-weight: 700; }
-        .growth-pos { background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
-        .growth-neg { background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
-        .growth-neu { background: #f8fafc; color: #64748b; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
-        .modal-footer { background: #f1f5f9; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .btn-download-card { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .btn-copy-card { background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .modal-table th { background: var(--forest-soft); color: var(--forest-dark); padding: 7px; font-size: 11px; border-bottom: 2px solid var(--forest); position: static; }
+        .modal-table td { padding: 6px; font-size: 12.5px; color: var(--charcoal); border-bottom: 1px dashed var(--border); font-weight: 700; background: transparent !important; }
+        .growth-pos { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .growth-neg { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .growth-neu { background: #ece8dc; color: var(--muted); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .modal-footer { background: #ece8dc; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; border-top: 1px solid var(--border); }
+        .btn-download-card { background: var(--forest); color: #ffffff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-copy-card { background: var(--gold); color: var(--charcoal); border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="target-control-panel">
-        <div class="page-heading">🎯 IRCTC Shortfall Follow-Up</div>
+        <div class="page-heading">🎯 IRCTC SHORTFALL FOLLOW-UP</div>
         <div class="filter-group">
-            <select id="compMode" onchange="renderTable()" style="background:#eff6ff; border-color:#93c5fd; color:#1e3a8a;">
+            <select id="compMode" onchange="renderTable()" style="background:var(--gold-soft); border-color:var(--gold); color:var(--forest-dark);">
                 <option value="ytd" selected>📅 YTD vs YTD</option>
                 <option value="full">📊 Full Year (FY 25-26 vs 26-27)</option>
             </select>
@@ -158,7 +180,7 @@
             <select id="districtName" onchange="renderTable()">
                 <option value="All">All Districts</option>
             </select>
-            <select id="priorityLevel" onchange="renderTable()" style="background:#fff7ed; border-color:#fdba74; color:#c2410c;">
+            <select id="priorityLevel" onchange="renderTable()">
                 <option value="all">All Targets (>= 1)</option>
                 <option value="super">Super Priority (>= 100)</option>
                 <option value="high">High Priority (50 to 99)</option>
@@ -168,17 +190,17 @@
             <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 Search VLE, CSC ID, IRCTC ID, Mobile...">
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
-            <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color:#047857; border-color:#6ee7b7; background:#ecfdf5;">📊 Summary Image</button>
-            <button class="btn-action" onclick="downloadExcel()" style="color:#1d4ed8; border-color:#93c5fd; background:#eff6ff;">📗 HO Excel</button>
+            <button class="btn-action btn-gold" id="summaryImgBtn" onclick="downloadSummaryImage()">📊 Summary Image</button>
+            <button class="btn-action btn-forest" onclick="downloadExcel()">📗 HO Excel</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
     </div>
 
     <div id="captureArea">
         <div class="report-header">
-            <h1 id="mainTitle">CSC AP – IRCTC Target Shortfall Report</h1>
+            <h1 id="mainTitle">CSC AP – IRCTC TARGET SHORTFALL REPORT</h1>
             <p id="reportDate">Report Generated on: </p>
-            <p id="subTitle" style="color:#dc2626; font-size:12.5px; margin-top:4px; font-weight:800;">Showing: Not Reached VLEs (Lagging + Zero Txns) sorted by Highest FY 25-26 Txns</p>
+            <p id="subTitle" style="color:#991b1b; font-size:12.5px; margin-top:4px; font-weight:800;">Showing: Not Reached VLEs (Lagging + Zero Txns) sorted by Highest FY 25-26 Txns</p>
         </div>
 
         <div class="kpi-grid">
@@ -205,17 +227,17 @@
                 <thead>
                     <tr>
                         <th class="th-dist">DISTRICT</th>
-                        <th class="th-vle">VLE NAME</th>
-                        <th class="th-csc">CSC ID</th>
-                        <th class="th-irctc">IRCTC ID</th>
-                        <th class="th-mob">MOBILE NO</th>
+                        <th>VLE NAME</th>
+                        <th>CSC ID</th>
+                        <th>IRCTC ID</th>
+                        <th>MOBILE NO</th>
                         <th class="th-fy25" id="thBase">FY 25-26 YTD</th>
                         <th class="th-fy26" id="thCurr">FY 26-27 YTD</th>
                         <th class="th-gap">SHORTFALL (GAP)</th>
-                        <th class="th-ach">ACH %</th>
-                        <th class="th-status">STATUS</th>
+                        <th>ACH %</th>
+                        <th>STATUS</th>
                         <th class="th-rmk">VLE FEEDBACK / REMARK (MANUAL)</th>
-                        <th class="th-act">ACTION</th>
+                        <th>ACTION</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -225,7 +247,7 @@
         </div>
     </div>
 
-    <!-- Report Card Modal (Right-Click Copy Image + Copy Button + Download Button) -->
+    <!-- Report Card Modal -->
     <div class="modal-overlay" id="momModal">
         <div class="modal-content" id="momModalContent">
             <div class="modal-drag-handle" onmousedown="dragStart(event)">
@@ -248,7 +270,6 @@
                         </table>
                     </div>
                 </div>
-                <!-- Transparent Image Overlay for Native Right-Click -> Copy Image -->
                 <img id="reportCardImgOverlay" alt="VLE Performance Report Card" title="Right-click and select Copy image">
             </div>
             <div class="modal-footer">
@@ -264,7 +285,7 @@
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         const monthNamesArrFull = ['APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JANUARY', 'FEBRUARY', 'MARCH'];
         const monthShortArr = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-        const currentMonthLimit = (new Date().getMonth() + 9) % 12; // Auto: Apr=0 ... Nov=7, Dec=8 ... Mar=11
+        const currentMonthLimit = (new Date().getMonth() + 9) % 12;
         const ytdRangeText = currentMonthLimit === 0 ? 'Apr' : `Apr–${monthShortArr[currentMonthLimit]}`;
 
         let globalFollowUpData = [];
@@ -273,7 +294,7 @@
         let currentKpiFilter = 'not_reached';
         let latestCardCanvas = null;
 
-        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State SPOC";
         let loggedInUserId = (localStorage.getItem("userId") || "").trim();
         let loggedInUserName = localStorage.getItem("userName") || "Chandra Sekhara Babu";
         let isDM = loggedInDesig.toUpperCase().includes("DISTRICT MANAGER");
@@ -361,7 +382,7 @@
                 else throw new Error("No data");
             } catch (err) {
                 console.error(err);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='12' style='color:red; padding:20px;'>❌ Error loading data.</td></tr>";
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='12' style='color:#b91c1c; padding:20px;'>❌ Error loading data.</td></tr>";
             }
         }
 
@@ -513,8 +534,8 @@
             const { list, counts, mode } = getFilteredRows();
 
             document.getElementById('mainTitle').innerText = mode === 'ytd'
-                ? `CSC AP – IRCTC Target Shortfall Report (YTD ${ytdRangeText})`
-                : 'CSC AP – IRCTC Target Shortfall Report (Full Year FY 25-26 vs 26-27)';
+                ? `CSC AP – IRCTC TARGET SHORTFALL REPORT (YTD ${ytdRangeText.toUpperCase()})`
+                : 'CSC AP – IRCTC TARGET SHORTFALL REPORT (FULL YEAR FY 25-26 VS 26-27)';
             document.getElementById('thBase').innerText = mode === 'ytd' ? 'FY 25-26 YTD' : 'FY 25-26 FULL';
             document.getElementById('thCurr').innerText = mode === 'ytd' ? 'FY 26-27 YTD' : 'FY 26-27 TOTAL';
 
@@ -526,10 +547,10 @@
             let html = "";
             list.slice(0, 500).forEach(r => {
                 let stBadge = r.st === 'reached'
-                    ? `<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">REACHED</span>`
+                    ? `<span style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">REACHED</span>`
                     : (r.st === 'zero'
-                        ? `<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">ZERO TXNS</span>`
-                        : `<span style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">LAGGING</span>`);
+                        ? `<span style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">ZERO TXNS</span>`
+                        : `<span style="background:#f7efe0; color:#92400e; border:1px solid #dfc48e; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">LAGGING</span>`);
 
                 let saved = savedRemarksMap[r.cscid];
                 let rmkVal = saved ? saved.remark.replace(/"/g, '"') : "";
@@ -541,13 +562,13 @@
 
                 html += `<tr>
                     <td class="col-district" ondblclick="filterByDistrict('${r.dist}')">${r.dist}</td>
-                    <td style="text-align:left; color:#1e3a8a; font-weight:700;">${r.vlename}</td>
-                    <td style="color:#2563eb;">${r.cscid}</td>
-                    <td style="color:#7c3aed; cursor:pointer; text-decoration:underline;" onclick="openMomModal('${r.cscid}')">${r.irctcid}</td>
+                    <td style="text-align:left; color:#122d22; font-weight:700;">${r.vlename}</td>
+                    <td style="color:#1b4332; font-weight:700;">${r.cscid}</td>
+                    <td style="color:#7c4a12; font-weight:800; cursor:pointer; text-decoration:underline;" onclick="openMomModal('${r.cscid}')">${r.irctcid}</td>
                     <td>${r.mobile}</td>
-                    <td style="color:#ea580c; font-weight:800;">${r.baseVal}</td>
-                    <td style="color:${r.currVal === 0 ? '#dc2626' : '#0284c7'}; font-weight:800;">${r.currVal}</td>
-                    <td style="color:${r.gap > 0 ? '#dc2626' : '#10b981'}; font-weight:900;">${r.gap > 0 ? '-' + r.gap : '0'}</td>
+                    <td style="color:#9a3412; font-weight:800;">${r.baseVal}</td>
+                    <td style="color:${r.currVal === 0 ? '#b91c1c' : '#164e63'}; font-weight:800;">${r.currVal}</td>
+                    <td style="color:${r.gap > 0 ? '#b91c1c' : '#15803d'}; font-weight:900;">${r.gap > 0 ? '-' + r.gap : '0'}</td>
                     <td style="font-weight:800;">${r.ach}%</td>
                     <td>${stBadge}</td>
                     <td>
@@ -561,8 +582,8 @@
                 </tr>`;
             });
 
-            if (!list.length) html = `<tr><td colspan="12" style="padding:35px; color:#64748b; font-weight:bold;">No matching VLEs found.</td></tr>`;
-            else if (list.length > 500) html += `<tr><td colspan="12" style="padding:12px; color:#2563eb; font-weight:800;">Showing top 500 VLEs. Click 'HO Excel' to download all ${list.length} records.</td></tr>`;
+            if (!list.length) html = `<tr><td colspan="12" style="padding:35px; color:var(--muted); font-weight:bold;">No matching VLEs found.</td></tr>`;
+            else if (list.length > 500) html += `<tr><td colspan="12" style="padding:12px; color:var(--forest); font-weight:800;">Showing top 500 VLEs. Click 'HO Excel' to download all ${list.length} records.</td></tr>`;
 
             document.getElementById("tableBody").innerHTML = html;
         }
@@ -592,9 +613,9 @@
                 savedRemarksMap[cscId] = { date: todayStr, by: loggedInUserName, remark: txt };
                 let metaEl = document.getElementById("meta_" + cscId);
                 if (metaEl) metaEl.innerText = `✅ ${loggedInUserName} (${todayStr})`;
-                btn.innerText = "Saved"; btn.style.background = "#10b981";
+                btn.innerText = "Saved"; btn.style.background = "#15803d";
                 showToast("✅ Remark saved to Google Sheet!");
-                setTimeout(() => { btn.innerText = "Save"; btn.style.background = "#1e3a8a"; btn.disabled = false; }, 1200);
+                setTimeout(() => { btn.innerText = "Save"; btn.style.background = "#1b4332"; btn.disabled = false; }, 1200);
             }, 500);
         }
 
@@ -635,31 +656,31 @@
             <head><meta charset="utf-8">
             <style>
                 table { border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; }
-                th, td { border: 1px solid #cbd5e1; padding: 7px 10px; vertical-align: middle; }
+                th, td { border: 1px solid #d5cfbe; padding: 7px 10px; vertical-align: middle; }
             </style>
             </head><body>
             <table>
                 <thead>
                     <tr>
-                        <th colspan="14" style="background:#1e3a8a; color:#ffffff; font-size:15pt; font-weight:bold; text-align:center; padding:12px;">
+                        <th colspan="14" style="background:#1b4332; color:#f8f5ec; font-size:15pt; font-weight:bold; text-align:center; padding:12px;">
                             CSC AP — IRCTC SHORTFALL REPORT (${label}) | ${selDist} (${dateStr})
                         </th>
                     </tr>
-                    <tr style="background:#0f172a; color:#ffffff; font-weight:bold; text-align:center;">
+                    <tr style="background:#122d22; color:#f8f5ec; font-weight:bold; text-align:center;">
                         <th style="width:45px;">S.No</th>
                         <th style="width:140px;">District</th>
                         <th style="width:210px;">VLE Name</th>
                         <th style="width:125px;">CSC ID</th>
                         <th style="width:125px;">IRCTC ID</th>
                         <th style="width:110px;">Mobile</th>
-                        <th style="width:85px; background:#ea580c;">FY 25-26</th>
-                        <th style="width:85px; background:#0284c7;">FY 26-27</th>
-                        <th style="width:95px; background:#dc2626;">Shortfall</th>
-                        <th style="width:70px; background:#0f766e;">Ach %</th>
+                        <th style="width:85px; background:#7c4a12;">FY 25-26</th>
+                        <th style="width:85px; background:#164e63;">FY 26-27</th>
+                        <th style="width:95px; background:#991b1b;">Shortfall</th>
+                        <th style="width:70px; background:#1b4332;">Ach %</th>
                         <th style="width:95px;">Status</th>
-                        <th style="width:280px; background:#1e293b;">VLE Feedback / Remark</th>
-                        <th style="width:160px; background:#1e293b;">Updated By</th>
-                        <th style="width:105px; background:#1e293b;">Updated Date</th>
+                        <th style="width:280px; background:#122d22;">VLE Feedback / Remark</th>
+                        <th style="width:160px; background:#122d22;">Updated By</th>
+                        <th style="width:105px; background:#122d22;">Updated Date</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -670,10 +691,10 @@
                 let rmkBy = saved ? saved.by : "";
                 let rmkDate = saved ? saved.date : "";
 
-                let rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
-                let stBg = r.st === 'reached' ? "#dcfce7" : (r.st === 'zero' ? "#fee2e2" : "#fef3c7");
-                let stCol = r.st === 'reached' ? "#15803d" : (r.st === 'zero' ? "#dc2626" : "#b45309");
-                let currStyle = r.currVal === 0 ? "color:#dc2626; background:#fef2f2; font-weight:bold;" : "color:#0284c7; font-weight:bold;";
+                let rowBg = idx % 2 === 0 ? "#faf8f2" : "#f0ece0";
+                let stBg = r.st === 'reached' ? "#dcfce7" : (r.st === 'zero' ? "#fee2e2" : "#f7efe0");
+                let stCol = r.st === 'reached' ? "#15803d" : (r.st === 'zero' ? "#b91c1c" : "#92400e");
+                let currStyle = r.currVal === 0 ? "color:#b91c1c; background:#fef2f2; font-weight:bold;" : "color:#164e63; font-weight:bold;";
 
                 html += `<tr style="background:${rowBg};">
                     <td style="text-align:center;">${idx + 1}</td>
@@ -682,9 +703,9 @@
                     <td style="text-align:center; mso-number-format:'\\@';">${r.cscid}</td>
                     <td style="text-align:center; mso-number-format:'\\@';">${r.irctcid}</td>
                     <td style="text-align:center; mso-number-format:'\\@';">${r.mobile}</td>
-                    <td style="text-align:center; font-weight:bold; color:#ea580c;">${r.baseVal}</td>
+                    <td style="text-align:center; font-weight:bold; color:#9a3412;">${r.baseVal}</td>
                     <td style="text-align:center; ${currStyle}">${r.currVal}</td>
-                    <td style="text-align:center; font-weight:bold; color:${r.gap > 0 ? '#dc2626' : '#15803d'};">${r.gap}</td>
+                    <td style="text-align:center; font-weight:bold; color:${r.gap > 0 ? '#b91c1c' : '#15803d'};">${r.gap}</td>
                     <td style="text-align:center; font-weight:bold;">${r.ach}%</td>
                     <td style="text-align:center; font-weight:bold; background:${stBg}; color:${stCol};">${r.st.toUpperCase()}</td>
                     <td style="text-align:left; white-space:normal;">${rmkText}</td>
@@ -730,43 +751,44 @@
 
             let dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
             let div = document.createElement("div");
-            div.style.cssText = "position:fixed; top:0; left:0; width:880px; z-index:-9999; background:#fff; padding:24px; font-family:Segoe UI, sans-serif;";
-            let rowsHtml = Object.keys(stats).sort().map(d => {
+            div.style.cssText = "position:fixed; top:0; left:0; width:880px; z-index:-9999; background:#f4f1e6; padding:24px; font-family:'Plus Jakarta Sans', Segoe UI, sans-serif;";
+            let rowsHtml = Object.keys(stats).sort().map((d, i) => {
                 let s = stats[d];
-                return `<tr>
-                    <td style="padding:6px; border:1px solid #cbd5e1; font-weight:700; text-align:left;">${d}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${s.tot}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#059669; font-weight:700;">${s.reach}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#d97706; font-weight:700;">${s.lag}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#dc2626; font-weight:700;">${s.zero}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; background:#fff7ed; color:#c2410c; font-weight:800;">${s.lag + s.zero}</td>
-                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#1e3a8a; font-weight:700;">${s.rmk}</td>
+                let bg = i % 2 === 0 ? "#faf8f2" : "#f0ece0";
+                return `<tr style="background:${bg};">
+                    <td style="padding:7px; border:1px solid #d5cfbe; font-weight:700; text-align:left; color:#122d22;">${d}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; color:#141a17;">${s.tot}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; color:#15803d; font-weight:700;">${s.reach}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; color:#b45309; font-weight:700;">${s.lag}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; color:#b91c1c; font-weight:700;">${s.zero}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; background:#f7efe0; color:#92400e; font-weight:800;">${s.lag + s.zero}</td>
+                    <td style="padding:7px; border:1px solid #d5cfbe; text-align:center; color:#1b4332; font-weight:700;">${s.rmk}</td>
                 </tr>`;
             }).join("");
 
-            div.innerHTML = `<div style="border:2px solid #e2e8f0; border-radius:12px; padding:20px; background:#f8fafc;">
-                <h2 style="text-align:center; color:#ea580c; margin-bottom:4px;">🎯 IRCTC SHORTFALL SUMMARY (${mode === 'ytd' ? 'YTD ' + ytdRangeText : 'Full Year'})</h2>
-                <p style="text-align:center; font-size:12px; color:#475569; margin-bottom:14px; font-weight:700;">Date: ${dateStr} | CSC AP Travel Team</p>
-                <table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff;">
-                    <thead><tr style="background:#0f172a; color:#fff;">
-                        <th style="padding:8px; text-align:left;">DISTRICT</th><th>TARGET</th><th style="background:#059669;">REACHED</th>
-                        <th style="background:#d97706;">LAGGING</th><th style="background:#dc2626;">ZERO</th><th style="background:#b45309;">NOT REACHED</th><th style="background:#1e3a8a;">REMARKS</th>
+            div.innerHTML = `<div style="border:2px solid #1b4332; border-radius:12px; padding:20px; background:#faf8f2;">
+                <h2 style="text-align:center; color:#122d22; margin-bottom:4px; font-family:'Cinzel', serif;">🎯 IRCTC SHORTFALL SUMMARY (${mode === 'ytd' ? 'YTD ' + ytdRangeText.toUpperCase() : 'FULL YEAR'})</h2>
+                <p style="text-align:center; font-size:12px; color:#525d56; margin-bottom:14px; font-weight:700;">Date: ${dateStr} | CSC AP Travel Team</p>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead><tr style="background:#1b4332; color:#f8f5ec; border-bottom:2px solid #c5a059;">
+                        <th style="padding:8px; text-align:left; background:#122d22;">DISTRICT</th><th>TARGET</th><th style="background:#15803d;">REACHED</th>
+                        <th style="background:#b45309;">LAGGING</th><th style="background:#991b1b;">ZERO</th><th style="background:#7c4a12;">NOT REACHED</th><th style="background:#122d22;">REMARKS</th>
                     </tr></thead>
                     <tbody>${rowsHtml}
-                        <tr style="background:#0f172a; color:#ffffff; font-weight:900;">
-                            <td style="padding:8px; text-align:right; color:#ffffff !important;">GRAND TOTAL</td>
-                            <td style="text-align:center; color:#ffffff !important;">${gt.tot}</td>
-                            <td style="text-align:center; color:#4ade80 !important;">${gt.reach}</td>
-                            <td style="text-align:center; color:#fbbf24 !important;">${gt.lag}</td>
-                            <td style="text-align:center; color:#f87171 !important;">${gt.zero}</td>
-                            <td style="text-align:center; color:#fb923c !important;">${gt.lag + gt.zero}</td>
-                            <td style="text-align:center; color:#93c5fd !important;">${gt.rmk}</td>
+                        <tr style="background:#122d22; color:#ffffff; font-weight:900; border-top:2px solid #c5a059;">
+                            <td style="padding:9px; text-align:right; color:#e6c885 !important; background:#122d22 !important;">GRAND TOTAL</td>
+                            <td style="text-align:center; color:#ffffff !important; background:#122d22 !important;">${gt.tot}</td>
+                            <td style="text-align:center; color:#4ade80 !important; background:#122d22 !important;">${gt.reach}</td>
+                            <td style="text-align:center; color:#fbbf24 !important; background:#122d22 !important;">${gt.lag}</td>
+                            <td style="text-align:center; color:#f87171 !important; background:#122d22 !important;">${gt.zero}</td>
+                            <td style="text-align:center; color:#e6c885 !important; background:#122d22 !important;">${gt.lag + gt.zero}</td>
+                            <td style="text-align:center; color:#93c5fd !important; background:#122d22 !important;">${gt.rmk}</td>
                         </tr>
                     </tbody>
                 </table></div>`;
             document.body.appendChild(div);
 
-            html2canvas(div, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            html2canvas(div, { scale: 2, backgroundColor: "#f4f1e6" }).then(canvas => {
                 let a = document.createElement('a');
                 a.download = `IRCTC_Shortfall_Summary_${dateStr}.png`;
                 a.href = canvas.toDataURL("image/png");
@@ -810,14 +832,14 @@
             if (!btn) return;
             if (document.fullscreenElement) {
                 btn.innerHTML = "✖ Exit Full Screen";
-                btn.style.backgroundColor = "#ea580c";
+                btn.style.backgroundColor = "#991b1b";
                 btn.style.color = "#ffffff";
-                btn.style.borderColor = "#ea580c";
+                btn.style.borderColor = "#991b1b";
             } else {
                 btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9";
-                btn.style.color = "#334155";
-                btn.style.borderColor = "#cbd5e1";
+                btn.style.backgroundColor = "#ffffff";
+                btn.style.color = "#1b4332";
+                btn.style.borderColor = "#1b4332";
             }
         });
 
@@ -842,21 +864,21 @@
                     let cls = pct > 0 ? "growth-pos" : (pct < 0 ? "growth-neg" : "growth-neu");
                     gHtml = (v25 === 0 && v26 === 0) ? "-" : `<span class="${cls}">${pct > 0 ? '+' : ''}${pct}%</span>`;
                 }
-                body += `<tr><td style="text-align:left;">${monthNamesArrFull[i]}</td><td>${v25}</td><td style="color:#0284c7;">${v26}</td><td>${gHtml}</td></tr>`;
+                body += `<tr><td style="text-align:left;">${monthNamesArrFull[i]}</td><td>${v25}</td><td style="color:#164e63;">${v26}</td><td>${gHtml}</td></tr>`;
             }
             document.getElementById("modalBody").innerHTML = body;
             document.getElementById("modalFooter").innerHTML = `
-                <tr><td colspan="4" style="padding:4px; background:#ffffff; border:none;"></td></tr>
-                <tr style="background:#fff7ed; border-top:2px solid #ea580c; border-bottom:1px solid #fed7aa;">
-                    <td style="text-align:left; font-weight:800; color:#9a3412; padding:8px 6px;">FULL YEAR TOTAL</td>
-                    <td style="font-weight:800; color:#9a3412;">${f25}</td>
-                    <td style="font-weight:800; color:#0284c7;">${f26}</td>
-                    <td style="font-weight:800; color:#64748b;">${f25 > 0 ? Math.round((f26 / f25) * 100) + '%' : '-'}</td>
+                <tr><td colspan="4" style="padding:4px; background:#faf8f2; border:none;"></td></tr>
+                <tr style="background:#f7efe0 !important; border-top:2px solid #c5a059; border-bottom:1px solid #d5cfbe;">
+                    <td style="text-align:left; font-weight:800; color:#7c4a12; padding:8px 6px;">FULL YEAR TOTAL</td>
+                    <td style="font-weight:800; color:#7c4a12;">${f25}</td>
+                    <td style="font-weight:800; color:#164e63;">${f26}</td>
+                    <td style="font-weight:800; color:#525d56;">${f25 > 0 ? Math.round((f26 / f25) * 100) + '%' : '-'}</td>
                 </tr>
-                <tr style="background:#1e3a8a; border-top:2px solid #0f172a;">
+                <tr style="background:#1b4332 !important; border-top:2px solid #122d22;">
                     <td style="text-align:left; font-weight:900; color:#ffffff; padding:9px 6px;">YTD (${ytdRangeText.toUpperCase()})</td>
-                    <td style="font-weight:900; color:#fde68a;">${y25}</td>
-                    <td style="font-weight:900; color:#38bdf8;">${y26}</td>
+                    <td style="font-weight:900; color:#e6c885;">${y25}</td>
+                    <td style="font-weight:900; color:#7dd3fc;">${y26}</td>
                     <td style="font-weight:900; color:#4ade80;">${y25 > 0 ? Math.round((y26 / y25) * 100) + '%' : '-'}</td>
                 </tr>`;
 
@@ -868,9 +890,8 @@
 
             document.getElementById("momModal").style.display = "flex";
 
-            // Generate crisp image in background so Right-Click -> Copy Image works instantly
             setTimeout(() => {
-                html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#ffffff" }).then(c => {
+                html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(c => {
                     latestCardCanvas = c;
                     imgOverlay.src = c.toDataURL("image/png");
                     imgOverlay.style.display = "block";
@@ -884,7 +905,7 @@
             const btn = document.getElementById("copyCardBtn");
             btn.innerText = "⏳ Copying...";
             try {
-                const canvas = latestCardCanvas || await html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#ffffff" });
+                const canvas = latestCardCanvas || await html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" });
                 canvas.toBlob(async blob => {
                     try {
                         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
@@ -908,7 +929,7 @@
                 a.href = c.toDataURL("image/png"); a.click();
             };
             if (latestCardCanvas) saveCanvas(latestCardCanvas);
-            else html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#fff" }).then(saveCanvas);
+            else html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(saveCanvas);
         }
 
         let isDragging = false, sX, sY, iL, iT;
