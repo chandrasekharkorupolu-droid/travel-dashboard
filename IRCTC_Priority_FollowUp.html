@@ -3,209 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Priority Follow Up - CSC TravelCloud</title>
+    <title>IRCTC Target Shortfall & Follow-Up - CSC TravelCloud</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 🌟 Iframe Friendly Basic Settings 🌟 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
 
         /* Controls Panel */
         .target-control-panel {
-            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 18px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
         }
-        .page-heading { font-size: 18px; color: #ea580c; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase;}
+        .page-heading { font-size: 17px; color: #ea580c; font-weight: 800; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
         
-        .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .filter-group select, .filter-group input { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
-        .filter-group input { background-color: #ffffff; cursor: text; min-width: 220px; }
+        .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .filter-group select, .filter-group input {
+            padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;
+            outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b;
+        }
+        .filter-group input { background-color: #ffffff; cursor: text; min-width: 200px; }
         .filter-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
-        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action {
+            background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 13px;
+            border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
         .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
 
-        /* 🌟 Image Export Panels 🌟 */
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
-        
-        .capture-compact { 
-            width: max-content !important; min-width: 1000px !important; margin: 0; 
-            background-color: #ffffff !important; padding: 30px !important; 
-            display: inline-block !important; height: auto !important; overflow: visible !important; 
-        }
-        .capture-compact .table-container { 
-            height: auto !important; overflow: visible !important; display: block !important; 
-            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
-        }
-        .capture-compact table { width: 100% !important; }
-        .capture-compact thead, .capture-compact th { position: static !important; }
-        .capture-compact .col-district { position: static !important; }
+        #captureArea { display: flex; flex-direction: column; flex: 1; background-color: #f8f9fc; padding: 8px 4px; border-radius: 8px; }
 
-        /* Report Header */
-        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
-        .report-header h1 { font-size: 20px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 0; }
+        .report-header { text-align: center; margin-bottom: 16px; }
+        .report-header h1 { font-size: 19px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 4px; }
+        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; }
 
-        /* KPI Cards */
-        .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 20px; }
-        .kpi-card { 
-            background-color: #ffffff; border-radius: 6px; padding: 8px 20px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid; 
-            min-width: 220px; display: flex; align-items: center; justify-content: space-between; 
+        /* 4 KPI Cards */
+        .kpi-grid { display: flex; gap: 12px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .kpi-card {
+            background-color: #ffffff; border-radius: 8px; padding: 10px 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid;
+            min-width: 195px; flex: 1; max-width: 260px; display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; transition: 0.2s;
         }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #555; margin: 0; }
-        .kpi-value { font-size: 22px; font-weight: 800; margin: 0; }
+        .kpi-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #475569; }
+        .kpi-value { font-size: 22px; font-weight: 900; }
 
-        .kpi-total { border-left-color: #3b82f6; } .kpi-total .kpi-value { color: #3b82f6; }
-        .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #10b981; }
-        .kpi-inactive { border-left-color: #ef4444; } .kpi-inactive .kpi-value { color: #ef4444; }
-        
-        .selected-filter { border: 2px solid #333; border-left-width: 5px; }
+        .kpi-total { border-left-color: #2563eb; } .kpi-total .kpi-value { color: #2563eb; }
+        .kpi-reached { border-left-color: #10b981; } .kpi-reached .kpi-value { color: #10b981; }
+        .kpi-lagging { border-left-color: #f59e0b; } .kpi-lagging .kpi-value { color: #d97706; }
+        .kpi-zero { border-left-color: #ef4444; } .kpi-zero .kpi-value { color: #dc2626; }
+        .selected-filter { outline: 2px solid #0f172a; background-color: #f8fafc; }
 
         /* Table Settings */
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%; max-height: 68vh; }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
-        
-        thead { position: sticky; top: 0; z-index: 20; }
         th, td { white-space: nowrap; }
 
-        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
-        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; }
-        
-        /* Custom Header Colors */
-        .th-dist { background-color: #0b1120; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;} 
-        .th-vle { background-color: #1e3a8a; } 
-        .th-csc { background-color: #2563eb; } 
-        .th-irctc { background-color: #7c3aed; } 
-        .th-mob1 { background-color: #475569; } 
-        .th-mob2 { background-color: #64748b; } 
-        .th-fy25 { background-color: #ea580c; } 
-        .th-fy26 { background-color: #dc2626; } 
-        .th-status { background-color: #8b5cf6; } 
+        th {
+            font-size: 11px; text-transform: uppercase; padding: 12px 10px; font-weight: 800; color: white;
+            border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15);
+            position: sticky; top: 0; z-index: 90;
+        }
+        td { padding: 9px 10px; font-size: 12.5px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; vertical-align: middle; }
+
+        .th-dist { background-color: #0b1120; min-width: 140px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important; }
+        .th-vle { background-color: #1e3a8a; }
+        .th-csc { background-color: #2563eb; }
+        .th-irctc { background-color: #7c3aed; }
+        .th-mob { background-color: #475569; }
+        .th-fy25 { background-color: #ea580c; }
+        .th-fy26 { background-color: #0284c7; }
+        .th-gap { background-color: #dc2626; }
+        .th-ach { background-color: #0f766e; }
+        .th-status { background-color: #6d28d9; }
+        .th-rmk { background-color: #1e293b; min-width: 260px; }
         .th-act { background-color: #059669; }
 
         tr:hover td { background-color: #f8fafc; }
-        
-        .col-district { 
-            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
-            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
-            cursor: pointer; transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        .col-district {
+            font-weight: 800; text-align: left; padding-left: 14px; color: #1e293b; background: #ffffff;
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; cursor: pointer;
         }
-        .col-district:hover { background-color: #e0f2fe !important; color: #0369a1; }
         tbody tr:nth-child(even) .col-district { background-color: #f8fafc; }
-        
-        /* Action Buttons */
-        .btn-whatsapp { background-color: #25d366; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0 auto; box-shadow: 0 2px 0 #1b9c4b; transition: 0.2s;}
-        .btn-whatsapp:active { transform: translateY(2px); box-shadow: 0 0 0 #1b9c4b; }
-        .btn-done { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: default; display: inline-block; }
 
-        /* Loaders and Toasts */
-        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%;}
+        /* Manual Remark Box */
+        .rmk-wrap { display: flex; gap: 5px; align-items: center; }
+        .rmk-input {
+            flex: 1; min-width: 185px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 5px;
+            font-size: 12px; font-weight: 600; color: #0f172a; outline: none;
+        }
+        .rmk-input:focus { border-color: #2563eb; background: #eff6ff; }
+        .btn-save-rmk {
+            background: #1e3a8a; color: #fff; border: none; padding: 6px 10px; border-radius: 5px;
+            font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
+        }
+        .btn-save-rmk:hover { background: #1d4ed8; }
+        .rmk-meta { font-size: 10px; color: #059669; font-weight: 700; text-align: left; margin-top: 3px; white-space: normal; }
+
+        .btn-whatsapp {
+            background-color: #25d366; color: white; border: none; padding: 6px 11px; border-radius: 5px;
+            font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-done { background-color: #10b981; color: white; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 700; display: inline-block; }
+
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background-color: #d9534f; color: white; padding: 12px 25px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: #0f172a; color: white; padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 700; z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        /* 🌟 BEAUTIFUL REPORT CARD MODAL STYLES 🌟 */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 2000;
-        }
-        .modal-content {
-            background: transparent; border-radius: 12px; width: 500px; max-width: 95vw; 
-            display: flex; flex-direction: column; animation: popIn 0.3s ease-out; position: absolute;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-        }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .modal-drag-handle {
-            background: #0f172a; display: flex; justify-content: space-between; align-items: center; 
-            padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0;
-        }
-        .modal-drag-handle:active { cursor: grabbing; }
-        .modal-drag-handle span { color: #94a3b8; font-size: 11px; font-weight: bold; letter-spacing: 1px; user-select: none;}
-        .modal-close { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; transition: 0.2s; line-height: 1; }
-        .modal-close:hover { color: #fca5a5; }
-
-        #reportCardCaptureArea {
-            background: #ffffff; border-radius: 0 0 0 0; display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .vle-info-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-            border-bottom: 5px solid #ea580c; color: white;
-        }
-        .info-item { display: flex; flex-direction: column; text-align: left; }
-        .info-item span { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px;}
-        .info-item h3 { font-size: 15px; margin: 0; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .highlight-text { color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2); }
-
+        /* Report Card Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: transparent; border-radius: 12px; width: 500px; max-width: 95vw; display: flex; flex-direction: column; position: absolute; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+        .modal-drag-handle { background: #0f172a; display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0; }
+        .modal-drag-handle span { color: #94a3b8; font-size: 11px; font-weight: bold; }
+        .modal-close { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; }
+        #reportCardCaptureArea { background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+        .vle-info-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 5px solid #ea580c; color: white; }
+        .info-item span { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: block; }
+        .info-item h3 { font-size: 14px; color: #ffffff; font-weight: 800; }
         .modal-body { padding: 0 15px 15px 15px; background: #ffffff; }
-        
-        .modal-table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 10px;}
-        .modal-table th, .modal-table td { white-space: nowrap; } 
-        .modal-table th { background: #f8fafc; color: #475569; padding: 8px 10px; font-size: 11px; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; position: sticky; top: 0; z-index: 10;}
-        .modal-table td { padding: 6px 10px; font-size: 13px; color: #1e293b; border-bottom: 1px dashed #e2e8f0; font-weight: 700;}
-        
-        .modal-table tr:hover td { background-color: #f8fafc; }
-        .modal-table .th-dist { text-align: left; padding-left: 15px;}
-        .modal-table .td-dist { text-align: left; font-weight: 800; color: #334155; padding-left: 15px;}
-        
-        /* 🌟 BADGE STYLES FOR GROWTH (+/-) 🌟 */
-        .growth-pos { background-color: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px; }
-        .growth-neg { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px;}
-        .growth-neu { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 3px 10px; border-radius: 6px; font-weight: 900; display: inline-block; min-width: 65px; text-align: center; font-size: 12px;}
-
-        .modal-footer {
-            background: #f1f5f9; padding: 12px; text-align: center; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px;
-        }
-        .btn-download-card {
-            background-color: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; 
-            font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(37,99,235,0.3); transition: 0.2s;
-        }
-        .btn-download-card:hover { background-color: #1d4ed8; }
-
-        /* 📱 MOBILE RESPONSIVE STYLES 📱 */
-        @media (max-width: 768px) {
-            body { height: auto; overflow-y: auto; padding: 10px; }
-            .target-control-panel { flex-direction: column; gap: 12px; padding: 15px; align-items: stretch; position: relative; }
-            .page-heading { font-size: 16px; justify-content: center; text-align: center; }
-            .filter-group { width: 100%; flex-direction: column; gap: 10px; }
-            .filter-group select, .filter-group input, .btn-action { width: 100%; text-align: center; justify-content: center; padding: 12px 10px; font-size: 13px; min-width: unset; }
-            #fullscreenBtn { display: none; } 
-            .report-header h1 { font-size: 16px; white-space: normal; line-height: 1.4; }
-            .kpi-grid { flex-direction: column; gap: 10px; }
-            .kpi-card { width: 100%; min-width: unset; padding: 15px 20px; }
-            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            th, td { padding: 10px 8px; font-size: 11px; white-space: nowrap; }
-            th { top: 0 !important; } 
-            .th-dist, .col-district { left: 0 !important; min-width: 100px; }
-            .btn-whatsapp, .btn-done { padding: 8px 10px; font-size: 11px; width: 100%; justify-content: center; }
-            
-            .vle-info-card { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
-        }
+        .modal-table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 10px; }
+        .modal-table th { background: #f8fafc; color: #475569; padding: 7px; font-size: 11px; border-bottom: 2px solid #cbd5e1; position: static; }
+        .modal-table td { padding: 6px; font-size: 12.5px; color: #1e293b; border-bottom: 1px dashed #e2e8f0; font-weight: 700; }
+        .growth-pos { background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .growth-neg { background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .growth-neu { background: #f8fafc; color: #64748b; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
+        .modal-footer { background: #f1f5f9; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; }
+        .btn-download-card { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
     </style>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
     <div class="target-control-panel">
-        <div class="page-heading">🎯 Priority Follow Up</div>
-        
+        <div class="page-heading">🎯 IRCTC Shortfall Follow-Up</div>
         <div class="filter-group">
-            <span style="font-size: 13px; font-weight: 700; color: #555;">Filter:</span>
+            <select id="compMode" onchange="renderTable()" style="background:#eff6ff; border-color:#93c5fd; color:#1e3a8a;">
+                <option value="ytd" selected>📅 YTD vs YTD (Apr–Nov)</option>
+                <option value="full">📊 Full Year (FY 25-26 vs 26-27)</option>
+            </select>
             <select id="districtType" onchange="updateDistrictsDropdown()">
                 <option value="old" selected>Old Districts</option>
                 <option value="new">New Districts</option>
@@ -213,82 +152,80 @@
             <select id="districtName" onchange="renderTable()">
                 <option value="All">All Districts</option>
             </select>
-            
-            <select id="priorityLevel" onchange="renderTable()" style="background-color: #fff7ed; border-color: #fdba74; color: #c2410c;">
+            <select id="priorityLevel" onchange="renderTable()" style="background:#fff7ed; border-color:#fdba74; color:#c2410c;">
                 <option value="all">All Targets (>= 1)</option>
                 <option value="super">Super Priority (>= 100)</option>
                 <option value="high">High Priority (50 to 99)</option>
                 <option value="medium">Medium Priority (10 to 49)</option>
                 <option value="basic">Basic Priority (1 to 9)</option>
             </select>
-
-            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="🔍 Search VLE Name, CSC ID, Mobile...">
+<input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 Search VLE, CSC ID, IRCTC ID, Mobile...">
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
-            <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color: #047857; border-color: #6ee7b7; background-color: #ecfdf5;">📊 District Summary</button>
-            <button class="btn-action" id="downloadExcelBtn" onclick="downloadExcel()" style="color: #1d4ed8; border-color: #93c5fd; background-color: #eff6ff;">📗 Download Excel</button>
-            <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
+            <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color:#047857; border-color:#6ee7b7; background:#ecfdf5;">📊 Summary Image</button>
+            <button class="btn-action" onclick="downloadExcel()" style="color:#1d4ed8; border-color:#93c5fd; background:#eff6ff;">📗 HO Excel</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
     </div>
 
     <div id="captureArea">
         <div class="report-header">
-            <h1>CSC AP – IRCTC Priority Follow Up Report (FY 26-27)</h1>
+            <h1 id="mainTitle">CSC AP – IRCTC Target Shortfall Report (YTD Apr–Nov)</h1>
             <p id="reportDate">Report Generated on: </p>
-            <p style="color: #dc2626; font-size: 13px; margin-top: 5px; font-weight: 800;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</p>
+            <p id="subTitle" style="color:#dc2626; font-size:12.5px; margin-top:4px; font-weight:800;">Showing: Not Reached VLEs (Lagging + Zero Txns) sorted by Highest Shortfall</p>
         </div>
 
         <div class="kpi-grid">
             <div class="kpi-card kpi-total" id="kpi-all" onclick="setKpiFilter('all')">
-                <span class="kpi-title">TOTAL TARGET VLEs</span>
+                <span class="kpi-title">Total Target VLEs</span>
                 <span class="kpi-value" id="val-total">0</span>
             </div>
-            <div class="kpi-card kpi-active" id="kpi-active" onclick="setKpiFilter('active')">
-                <span class="kpi-title">ACTIVATED</span>
-                <span class="kpi-value" id="val-active">0</span>
+            <div class="kpi-card kpi-reached" id="kpi-reached" onclick="setKpiFilter('reached')">
+                <span class="kpi-title">Target Reached</span>
+                <span class="kpi-value" id="val-reached">0</span>
             </div>
-            <div class="kpi-card kpi-inactive selected-filter" id="kpi-inactive" onclick="setKpiFilter('pending')">
-                <span class="kpi-title">STILL PENDING</span>
-                <span class="kpi-value" id="val-pending">0</span>
+            <div class="kpi-card kpi-lagging selected-filter" id="kpi-lagging" onclick="setKpiFilter('lagging')">
+                <span class="kpi-title">Lagging (Not Reached)</span>
+                <span class="kpi-value" id="val-lagging">0</span>
+            </div>
+            <div class="kpi-card kpi-zero selected-filter" id="kpi-zero" onclick="setKpiFilter('zero')">
+                <span class="kpi-title">Zero Txns (Inactive)</span>
+                <span class="kpi-value" id="val-zero">0</span>
             </div>
         </div>
 
         <div class="table-container">
             <table id="dataTable">
-               <thead>
+                <thead>
                     <tr>
                         <th class="th-dist">DISTRICT</th>
                         <th class="th-vle">VLE NAME</th>
                         <th class="th-csc">CSC ID</th>
                         <th class="th-irctc">IRCTC ID</th>
-                        <th class="th-mob1">MOBILE NO</th>
-                        <th class="th-mob2">VLE MOBILE NO</th>
-                        <th class="th-fy25" title="Transactions done in FY 25-26">FY 25-26 TXNS</th>
-                        <th class="th-fy26" title="Transactions done in current FY 26-27">FY 26-27 TXNS</th>
+                        <th class="th-mob">MOBILE NO</th>
+                        <th class="th-fy25" id="thBase">FY 25-26 YTD</th>
+                        <th class="th-fy26" id="thCurr">FY 26-27 YTD</th>
+                        <th class="th-gap">SHORTFALL (GAP)</th>
+                        <th class="th-ach">ACH %</th>
                         <th class="th-status">STATUS</th>
-                        <th class="th-act">ACTION (FOLLOW-UP)</th>
+                        <th class="th-rmk">VLE FEEDBACK / REMARK (MANUAL)</th>
+                        <th class="th-act">ACTION</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="10">
-                        <div class="loader"><div class="spinner"></div> Loading Target Data & DM Details... Please wait.</div>
-                    </td></tr>
+                    <tr><td colspan="12"><div class="loader"><div class="spinner"></div> Loading Data & Saved Remarks... Please wait.</div></td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- 🌟 NEW: BEAUTIFUL REPORT CARD MODAL 🌟 -->
+    <!-- Report Card Modal -->
     <div class="modal-overlay" id="momModal">
         <div class="modal-content" id="momModalContent">
-            <!-- Drag Handle (Not visible in downloaded image) -->
-            <div class="modal-drag-handle" id="momModalHeader" onmousedown="dragStart(event)">
+            <div class="modal-drag-handle" onmousedown="dragStart(event)">
                 <span>:: DRAG TO MOVE</span>
                 <button class="modal-close" onclick="closeModalClick()">✖</button>
             </div>
-            
-            <!-- Exact Area that gets Downloaded as Report Card -->
             <div id="reportCardCaptureArea">
                 <div class="vle-info-card">
                     <div class="info-item"><span>VLE Name</span><h3 id="mc-name">-</h3></div>
@@ -296,32 +233,16 @@
                     <div class="info-item"><span>CSC ID & IRCTC ID</span><h3 id="mc-ids">-</h3></div>
                     <div class="info-item"><span>Mobile No</span><h3 id="mc-mob">-</h3></div>
                 </div>
-                
                 <div class="modal-body">
                     <table class="modal-table">
-                        <thead>
-                            <tr>
-                                <th class="th-dist">MONTH</th>
-                                <th>FY 25-26</th>
-                                <th>FY 26-27</th>
-                                <th>GROWTH (+/-)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modalBody">
-                        </tbody>
-                        <tfoot id="modalFooter">
-                        </tfoot>
+                        <thead><tr><th style="text-align:left;">MONTH</th><th>FY 25-26</th><th>FY 26-27</th><th>GROWTH</th></tr></thead>
+                        <tbody id="modalBody"></tbody>
+                        <tfoot id="modalFooter"></tfoot>
                     </table>
                 </div>
-                
-                <div style="background: #ffffff; padding: 5px 15px 10px 15px; text-align: right; font-size: 9px; color: #94a3b8; font-weight: bold;">
-                    Generated by CSC AP TravelCloud Analytics
-                </div>
             </div>
-
-            <!-- Footer Action (Not visible in downloaded image) -->
             <div class="modal-footer">
-                <button class="btn-download-card" id="dlCardBtn" onclick="downloadReportCard()">📸 Download as Report Card</button>
+                <button class="btn-download-card" id="dlCardBtn" onclick="downloadReportCard()">📸 Download Report Card</button>
             </div>
         </div>
     </div>
@@ -329,21 +250,20 @@
     <div id="toast"></div>
 
     <script>
-        let globalFollowUpData = [];
-        let oldDistrictsSet = new Set();
-        let newDistrictsSet = new Set();
-
-        let currentKpiFilter = 'pending'; 
-
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
-
-        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
-        let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
-        let loggedInUserName = localStorage.getItem("userName") || ""; 
-        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
-        let dmAssignedOldDistrict = "";
-
         const monthNamesArrFull = ['APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JANUARY', 'FEBRUARY', 'MARCH'];
+        const currentMonthLimit = 7; // Nov (0=Apr ... 7=Nov)
+
+        let globalFollowUpData = [];
+        let savedRemarksMap = {};
+        let oldDistrictsSet = new Set(), newDistrictsSet = new Set();
+        let currentKpiFilter = 'not_reached'; // Default: Lagging + Zero
+
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
+        let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+        let loggedInUserName = localStorage.getItem("userName") || "Chandra Sekhara Babu";
+        let isDM = loggedInDesig.toUpperCase().includes("DISTRICT MANAGER");
+        let dmAssignedOldDistrict = "";
 
         const fallbackDmMap = {
             "ravi kumar yepuri": "9581013300", "chandra sekhara babu k": "9440115828", "golla pandu rangaiah": "7989690495",
@@ -356,918 +276,573 @@
             "eerla hema sekhar": "7048966080", "siga subramanyam": "9908969975"
         };
 
-        function isNameMatch(sheetName, loginName) {
-            if (!sheetName || !loginName) return false;
-            let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
-            let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
-            if (sClean === lClean) return true;
-            if (lClean.length > 5 && sClean.includes(lClean)) return true;
-            if (sClean.length > 5 && lClean.includes(sClean)) return true;
-            return false;
+        function isNameMatch(a, b) {
+            if (!a || !b) return false;
+            let x = a.toLowerCase().replace(/\s+/g, ' ').trim(), y = b.toLowerCase().replace(/\s+/g, ' ').trim();
+            return x === y || (y.length > 5 && x.includes(y)) || (x.length > 5 && y.includes(x));
         }
 
-        window.onload = function() {
-            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', dateOptions);
-            fetchSheetData(); 
+        window.onload = function () {
+            const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', opts);
+            fetchSheetData();
         };
 
         async function fetchSheetData() {
             try {
-                // Changed cache keys slightly to force fresh load and avoid corrupt data
                 let cachedData = sessionStorage.getItem("cscTravelData_YTD_v1");
                 let cachedUsers = sessionStorage.getItem("cscUsersData_YTD_v1");
-                
                 let rawData = cachedData ? JSON.parse(cachedData) : null;
                 let usersData = cachedUsers ? JSON.parse(cachedUsers) : null;
+                let remarksData = null;
 
                 let promises = [];
                 if (!rawData) {
                     promises.push(fetch(apiURL).then(r => r.json()).then(d => {
                         rawData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData_YTD_v1", JSON.stringify(d));
+                        if (d && d.length) sessionStorage.setItem("cscTravelData_YTD_v1", JSON.stringify(d));
                     }).catch(() => null));
                 }
-                
                 if (!usersData) {
                     promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
                         usersData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData_YTD_v1", JSON.stringify(d));
+                        if (d && d.length) sessionStorage.setItem("cscUsersData_YTD_v1", JSON.stringify(d));
                     }).catch(() => null));
                 }
+                // Always fetch fresh remarks
+                promises.push(fetch(apiURL + "?sheet=IRCTC_Shortfall_Remarks").then(r => r.json()).then(d => { remarksData = d; }).catch(() => null));
 
-                if (promises.length > 0) await Promise.all(promises);
+                await Promise.all(promises);
+
+                // Parse saved remarks
+                savedRemarksMap = {};
+                if (Array.isArray(remarksData) && remarksData.length > 1) {
+                    for (let i = 1; i < remarksData.length; i++) {
+                        let r = remarksData[i];
+                        if (r && r[1]) {
+                            savedRemarksMap[String(r[1]).trim()] = {
+                                date: String(r[0] || "").split(" ")[0],
+                                by: String(r[3] || ""),
+                                remark: String(r[4] || "")
+                            };
+                        }
+                    }
+                }
 
                 let dmMobileMap = { ...fallbackDmMap };
-
-                try {
-                    if(usersData && usersData.length > 0) {
-                        let uHeaders = usersData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
-                        let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
-                        let idxDist = uHeaders.findIndex(h => h === 'district'); 
-
-                        if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
-                            for(let i=1; i<usersData.length; i++) {
-                                let sheetUid = (usersData[i][idxUid] || '').toString().trim();
-                                if (sheetUid === loggedInUserId) {
-                                    dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
-                                    break; 
-                                }
-                            }
-                        }
-
-                        if (uHeaders.includes('userid') || uHeaders.includes('password') || uHeaders.includes('emailids')) {
-                            let nIdx = uHeaders.findIndex(h => h === 'name' || h.includes('employee'));
-                            let mIdx = uHeaders.findIndex(h => h === 'userid' || h.includes('user'));
-                            
-                            if (nIdx === -1) nIdx = 4;
-                            if (mIdx === -1) mIdx = 0;
-                            
-                            if(nIdx > -1 && mIdx > -1) {
-                                for(let i=1; i<usersData.length; i++) {
-                                    let empName = (usersData[i][nIdx] || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
-                                    let empMob = (usersData[i][mIdx] || '').toString().replace(/\D/g, ''); 
-                                    if(empName && empMob.length >= 10) dmMobileMap[empName] = empMob; 
-                                }
+                if (usersData && usersData.length > 0) {
+                    let uH = usersData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+                    let idxUid = uH.findIndex(h => h === 'userid' || h === 'user');
+                    let idxDist = uH.findIndex(h => h === 'district');
+                    if (isDM && loggedInUserId && idxUid > -1 && idxDist > -1) {
+                        for (let i = 1; i < usersData.length; i++) {
+                            if (String(usersData[i][idxUid] || '').trim() === loggedInUserId) {
+                                dmAssignedOldDistrict = String(usersData[i][idxDist] || '').trim();
+                                break;
                             }
                         }
                     }
-                } catch(e) {
-                    console.warn("Could not parse Users sheet", e);
                 }
 
-                if(rawData && rawData.length > 0) {
-                    processFollowUpData(rawData, dmMobileMap);
-                } else {
-                    throw new Error("No data found");
-                }
-            } catch (error) {
-                console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='10' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Data.</td></tr>";
+                if (rawData && rawData.length > 0) processFollowUpData(rawData, dmMobileMap);
+                else throw new Error("No data");
+            } catch (err) {
+                console.error(err);
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='12' style='color:red; padding:20px;'>❌ Error loading data.</td></tr>";
             }
         }
 
         function processFollowUpData(rawData, dmMobileMap) {
-            let cleanHeaders = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
-            
-            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
-            let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
-            let idxvlename = cleanHeaders.findIndex(h => h.includes('vlename'));
-            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
-            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
-            let idxmob = cleanHeaders.findIndex(h => h === 'mobile');
-            let idxvlemob = cleanHeaders.findIndex(h => h.includes('vlemobile'));
-            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
-            let idxstatus = cleanHeaders.findIndex(h => h.includes('horemarks'));
-
-            let idx25_total = cleanHeaders.findIndex(h => (h.includes('25') && h.includes('txn') && !h.includes('target')));
-            if(idx25_total === -1) idx25_total = cleanHeaders.findIndex(h => h.includes('202526'));
+            let hClean = rawData[0].map(h => h ? h.toString().toLowerCase().replace(/[^a-z0-9]/g, '') : '');
+            let idxcscid = hClean.findIndex(h => h.includes('cscid'));
+            let idxirctc = hClean.findIndex(h => h.includes('irctcid'));
+            let idxvlename = hClean.findIndex(h => h.includes('vlename'));
+            let idxolddist = hClean.findIndex(h => h.includes('olddistrict'));
+            let idxnewdist = hClean.findIndex(h => h.includes('newdistrict'));
+            let idxmob = hClean.findIndex(h => h === 'mobile');
+            let idxvlemob = hClean.findIndex(h => h.includes('vlemobile'));
+            let idxempname = hClean.findIndex(h => h.includes('employeename') || h.includes('empname'));
+            let idxstatus = hClean.findIndex(h => h.includes('horemarks'));
+            let idx25_total = hClean.findIndex(h => h.includes('25') && h.includes('txn') && !h.includes('target'));
+            if (idx25_total === -1) idx25_total = hClean.findIndex(h => h.includes('202526'));
 
             const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
-            let indices2627 = months2627.map(m => cleanHeaders.findIndex(h => h === m));
+            let idx26Arr = months2627.map(m => hClean.findIndex(h => h === m));
 
-            // Fetch FY 25-26 Months for Popup Comparison
-            let fallback25 = [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48];
-            let indices2526 = [];
-            let months2526 = ['apr25', 'may25', 'jun25', 'jul25', 'aug25', 'sep25', 'oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26'];
-            months2526.forEach((mSearch, i) => {
-                let foundIdx = cleanHeaders.findIndex(h => h === mSearch || h.replace(/[^a-z0-9]/g, '') === mSearch);
-                indices2526.push(foundIdx > -1 ? foundIdx : fallback25[i]);
+            const fallback25 = [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48];
+            const months2526 = ['apr25', 'may25', 'jun25', 'jul25', 'aug25', 'sep25', 'oct25', 'nov25', 'dec25', 'jan26', 'feb26', 'mar26'];
+            let idx25Arr = months2526.map((m, i) => {
+                let f = hClean.findIndex(h => h === m);
+                return f > -1 ? f : fallback25[i];
             });
 
             globalFollowUpData = [];
-            oldDistrictsSet.clear();
-            newDistrictsSet.clear();
+            oldDistrictsSet.clear(); newDistrictsSet.clear();
 
-            for(let i=1; i<rawData.length; i++) {
+            for (let i = 1; i < rawData.length; i++) {
                 let row = rawData[i];
                 if (!row || !Array.isArray(row)) continue;
+                let cscId = idxcscid > -1 ? String(row[idxcscid] || '').trim() : '';
+                if (!cscId || cscId === '-') continue;
 
-                let cscId = idxcscid > -1 ? (row[idxcscid] || '') : '';
-                if(!cscId || cscId === '-') continue;
+                let rawSt = idxstatus > -1 ? String(row[idxstatus] || '').toUpperCase() : '';
+                if (rawSt.includes("BLOCK") || rawSt.includes("SUSPEND") || rawSt.includes("BLACK")) continue;
 
-                let rawStatus = idxstatus > -1 ? (row[idxstatus] || '').toString().toUpperCase().trim() : '';
-                let isBlocked = rawStatus.includes("BLOCK") || rawStatus.includes("SUSPEND") || rawStatus.includes("BLACK");
-                
-                if (isBlocked) {
-                    continue; 
+                let fy25Total = idx25_total > -1 ? (parseInt(row[idx25_total]) || 0) : 0;
+                let fy26Total = 0, ytd25 = 0, ytd26 = 0, m25 = [], m26 = [];
+
+                for (let m = 0; m < 12; m++) {
+                    let v25 = idx25Arr[m] > -1 ? (parseInt(row[idx25Arr[m]]) || 0) : 0;
+                    let v26 = idx26Arr[m] > -1 ? (parseInt(row[idx26Arr[m]]) || 0) : 0;
+                    m25.push(v25); m26.push(v26);
+                    fy26Total += v26;
+                    if (m <= currentMonthLimit) { ytd25 += v25; ytd26 += v26; }
                 }
 
-                let fy26_txns = idx25_total > -1 ? (parseInt(row[idx25_total]) || 0) : 0;
-                
-                if(fy26_txns > 0) { 
-                    
-                    let fy27Total = 0;
-                    let monthsData25 = [];
-                    let monthsData26 = [];
+                if (fy25Total <= 0 && ytd25 <= 0) continue;
 
-                    for (let m = 0; m < 12; m++) {
-                        let val26 = 0, val25 = 0;
-                        let col26 = indices2627[m];
-                        if (col26 !== undefined && col26 > -1) val26 = parseInt(row[col26]) || 0;
-                        
-                        let col25 = indices2526[m];
-                        if (col25 !== undefined && col25 > -1) val25 = parseInt(row[col25]) || 0;
+                let oldDist = idxolddist > -1 ? String(row[idxolddist] || 'Unknown').trim() : 'Unknown';
+                let newDist = idxnewdist > -1 ? String(row[idxnewdist] || 'Unknown').trim() : 'Unknown';
+                let dmNameStr = idxempname > -1 ? String(row[idxempname] || 'District Manager').trim() : 'District Manager';
 
-                        monthsData26.push(val26);
-                        monthsData25.push(val25);
-                        fy27Total += val26;
-                    }
+                let allowedOld = !isDM || (dmAssignedOldDistrict && oldDist.toLowerCase() === dmAssignedOldDistrict.toLowerCase());
+                let allowedNew = !isDM || isNameMatch(dmNameStr, loggedInUserName);
 
-                    let oldDist = idxolddist > -1 ? (row[idxolddist] || 'Unknown').toString().trim() : 'Unknown';
-                    let newDist = idxnewdist > -1 ? (row[idxnewdist] || 'Unknown').toString().trim() : 'Unknown';
-                    let dmNameStr = idxempname > -1 ? (row[idxempname] || 'District Manager').toString().trim() : 'District Manager';
+                if (allowedOld && oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
+                if (allowedNew && newDist !== 'Unknown') newDistrictsSet.add(newDist);
 
-                    let oldKey = oldDist.toLowerCase();
-                    let newKey = newDist.toLowerCase();
-
-                    let allowedForOld = true;
-                    let allowedForNew = true;
-                    
-                    if (isDM) {
-                        allowedForOld = (dmAssignedOldDistrict && oldKey === dmAssignedOldDistrict.toLowerCase());
-                        allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
-                    }
-
-                    if (allowedForOld && oldDist !== 'Unknown') oldDistrictsSet.add(oldDist);
-                    if (allowedForNew && newDist !== 'Unknown') newDistrictsSet.add(newDist);
-
-                    let dmNameKey = dmNameStr.toLowerCase().replace(/\s+/g, ' ').trim();
-                    let finalDmMobile = "";
-                    
-                    if (dmMobileMap[dmNameKey]) {
-                        finalDmMobile = dmMobileMap[dmNameKey];
-                    } else if (dmNameKey !== 'district manager' && dmNameKey !== '') {
-                        let mapKeys = Object.keys(dmMobileMap);
-                        let matchedKey = mapKeys.find(k => k.includes(dmNameKey) || dmNameKey.includes(k));
-                        if (!matchedKey) {
-                            let firstName = dmNameKey.split(' ')[0];
-                            if (firstName.length > 3) matchedKey = mapKeys.find(k => k.startsWith(firstName));
-                        }
-                        if (matchedKey) finalDmMobile = dmMobileMap[matchedKey];
-                    }
-
-                    globalFollowUpData.push({
-                        district_old: oldDist,
-                        district_new: newDist,
-                        vlename: idxvlename > -1 ? (row[idxvlename] || '-') : '-',
-                        cscid: cscId,
-                        irctcid: idxirctc > -1 ? (row[idxirctc] || '-') : '-',
-                        mobile: idxmob > -1 ? (row[idxmob] || '-') : '-',
-                        vlemob: idxvlemob > -1 ? (row[idxvlemob] || '-') : '-',
-                        dmname: dmNameStr,
-                        dmmob: finalDmMobile, 
-                        txns_25_26: fy26_txns,
-                        txns_26_27: fy27Total, 
-                        allowedForOld: allowedForOld,
-                        allowedForNew: allowedForNew,
-                        monthsData25: monthsData25,
-                        monthsData26: monthsData26
-                    });
-                }
+                globalFollowUpData.push({
+                    district_old: oldDist, district_new: newDist,
+                    vlename: idxvlename > -1 ? String(row[idxvlename] || '-').trim() : '-',
+                    cscid: cscId,
+                    irctcid: idxirctc > -1 ? String(row[idxirctc] || '-').trim() : '-',
+                    mobile: (idxvlemob > -1 && row[idxvlemob] && row[idxvlemob] !== '-') ? String(row[idxvlemob]).trim() : (idxmob > -1 ? String(row[idxmob] || '-').trim() : '-'),
+                    dmname: dmNameStr,
+                    txns_25_26: fy25Total, txns_26_27: fy26Total,
+                    ytd_25: ytd25, ytd_26: ytd26,
+                    allowedForOld: allowedOld, allowedForNew: allowedNew,
+                    monthsData25: m25, monthsData26: m26
+                });
             }
-            
-            globalFollowUpData.sort((a, b) => b.txns_25_26 - a.txns_25_26);
             updateDistrictsDropdown();
         }
 
         function updateDistrictsDropdown() {
-            const type = document.getElementById("districtType").value || "old"; 
-            const distDropdown = document.getElementById("districtName");
-            
-            distDropdown.innerHTML = '<option value="All">All Districts</option>';
-            
+            const type = document.getElementById("districtType").value;
+            const sel = document.getElementById("districtName");
             let arr = type === "old" ? Array.from(oldDistrictsSet).sort() : Array.from(newDistrictsSet).sort();
-            arr.forEach(dist => { if(dist) distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
-            
-            if(globalFollowUpData.length >= 0) {
-                renderTable(); 
-            }
+            sel.innerHTML = '<option value="All">All Districts</option>' + arr.map(d => `<option value="${d}">${d}</option>`).join("");
+            renderTable();
         }
 
         function setKpiFilter(status) {
             currentKpiFilter = status;
-            document.querySelectorAll('.kpi-card').forEach(card => card.classList.remove('selected-filter'));
-            
-            if(status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
-            else if(status === 'active') document.getElementById('kpi-active').classList.add('selected-filter');
-            else if(status === 'pending') document.getElementById('kpi-inactive').classList.add('selected-filter');
-            
+            document.querySelectorAll('.kpi-card').forEach(c => c.classList.remove('selected-filter'));
+            if (status === 'all') document.getElementById('kpi-all').classList.add('selected-filter');
+            else if (status === 'reached') document.getElementById('kpi-reached').classList.add('selected-filter');
+            else if (status === 'lagging') document.getElementById('kpi-lagging').classList.add('selected-filter');
+            else if (status === 'zero') document.getElementById('kpi-zero').classList.add('selected-filter');
+            else if (status === 'not_reached') {
+                document.getElementById('kpi-lagging').classList.add('selected-filter');
+                document.getElementById('kpi-zero').classList.add('selected-filter');
+            }
             renderTable();
+        }
+
+        function getFilteredRows() {
+            let mode = document.getElementById('compMode').value;
+            let distType = document.getElementById('districtType').value;
+            let selectedDist = document.getElementById('districtName').value;
+            let distKey = distType === 'old' ? 'district_old' : 'district_new';
+            let pLvl = document.getElementById('priorityLevel').value;
+            let q = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            let counts = { total: 0, reached: 0, lagging: 0, zero: 0 };
+            let list = [];
+
+            globalFollowUpData.forEach(r => {
+                if (isDM && distType === 'old' && !r.allowedForOld) return;
+                if (isDM && distType === 'new' && !r.allowedForNew) return;
+                let dist = r[distKey];
+                if (selectedDist !== "All" && dist !== selectedDist) return;
+
+                let baseVal = mode === 'ytd' ? r.ytd_25 : r.txns_25_26;
+                let currVal = mode === 'ytd' ? r.ytd_26 : r.txns_26_27;
+                if (baseVal <= 0) return;
+
+                if (pLvl === 'super' && baseVal < 100) return;
+                if (pLvl === 'high' && (baseVal < 50 || baseVal >= 100)) return;
+                if (pLvl === 'medium' && (baseVal < 10 || baseVal >= 50)) return;
+                if (pLvl === 'basic' && (baseVal < 1 || baseVal >= 10)) return;
+
+                let st = currVal >= baseVal ? 'reached' : (currVal === 0 ? 'zero' : 'lagging');
+                counts.total++;
+                counts[st]++;
+
+                if (!q) {
+    if (currentKpiFilter === 'not_reached' && st === 'reached') return;
+    if (currentKpiFilter !== 'all' && currentKpiFilter !== 'not_reached' && st !== currentKpiFilter) return;
+} else {
+    let searchStr = `${r.vlename} ${r.cscid} ${r.irctcid} ${r.mobile} ${dist}`.toLowerCase();
+    if (!searchStr.includes(q)) return;
+}
+
+                let gap = Math.max(0, baseVal - currVal);
+                let ach = Math.round((currVal / baseVal) * 100);
+                list.push({ ...r, dist, baseVal, currVal, gap, ach, st });
+            });
+
+            list.sort((a, b) => b.baseVal - a.baseVal || b.gap - a.gap);
+            return { list, counts, mode };
         }
 
         function renderTable() {
-            let distType = document.getElementById('districtType').value;
-            let selectedDist = document.getElementById('districtName').value;
-            let distKey = distType === 'old' ? 'district_old' : 'district_new';
-            let priorityLevel = document.getElementById('priorityLevel').value;
-            
-            let searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+            const { list, counts, mode } = getFilteredRows();
 
-            let tbodyHtml = "";
-            let counts = { total: 0, active: 0, pending: 0 };
+            document.getElementById('mainTitle').innerText = mode === 'ytd'
+                ? 'CSC AP – IRCTC Target Shortfall Report (YTD Apr–Nov)'
+                : 'CSC AP – IRCTC Target Shortfall Report (Full Year FY 25-26 vs 26-27)';
+            document.getElementById('thBase').innerText = mode === 'ytd' ? 'FY 25-26 YTD' : 'FY 25-26 FULL';
+            document.getElementById('thCurr').innerText = mode === 'ytd' ? 'FY 26-27 YTD' : 'FY 26-27 TOTAL';
 
-            globalFollowUpData.forEach((row) => {
-                if (isDM && distType === 'old' && !row.allowedForOld) return;
-                if (isDM && distType === 'new' && !row.allowedForNew) return;
+            document.getElementById("val-total").innerText = counts.total.toLocaleString();
+            document.getElementById("val-reached").innerText = counts.reached.toLocaleString();
+            document.getElementById("val-lagging").innerText = counts.lagging.toLocaleString();
+            document.getElementById("val-zero").innerText = counts.zero.toLocaleString();
 
-                let dist = row[distKey];
-                if (selectedDist !== "All" && dist !== selectedDist) return;
-                
-                if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
-                if (priorityLevel === 'high' && (row.txns_25_26 < 50 || row.txns_25_26 >= 100)) return;
-                if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
-                if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
+            let html = "";
+            list.slice(0, 500).forEach(r => {
+                let stBadge = r.st === 'reached'
+                    ? `<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">REACHED</span>`
+                    : (r.st === 'zero'
+                        ? `<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">ZERO TXNS</span>`
+                        : `<span style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:800;">LAGGING</span>`);
 
-                let isActivated = (row.txns_26_27 > 0);
+                let saved = savedRemarksMap[r.cscid];
+                let rmkVal = saved ? saved.remark.replace(/"/g, '"') : "";
+                let metaHtml = saved ? `<div class="rmk-meta" id="meta_${r.cscid}">✅ ${saved.by} (${saved.date})</div>` : `<div class="rmk-meta" id="meta_${r.cscid}"></div>`;
 
-                counts.total++;
-                if(isActivated) {
-                    counts.active++;
-                } else {
-                    counts.pending++;
-                }
+                let actBtn = r.st === 'reached'
+                    ? `<span class="btn-done">✅ Reached</span>`
+                    : `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${r.cscid}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>`;
 
-                if (currentKpiFilter === 'pending' && isActivated) return;
-                if (currentKpiFilter === 'active' && !isActivated) return;
-
-                if (searchValue !== "") {
-                    let searchableText = `${row.vlename} ${row.cscid} ${row.mobile} ${row.vlemob} ${dist}`.toLowerCase();
-                    if (!searchableText.includes(searchValue)) return; 
-                }
-
-                let fy26Color = isActivated ? '#10b981' : '#ef4444'; 
-                
-                let statusText = isActivated ? "ACTIVATED" : "PENDING";
-                let statusColor = isActivated ? "#10b981" : "#ea580c"; 
-                let statusBg = isActivated ? "#d1fae5" : "#ffedd5";
-                
-                let statusHtml = `<span style="background-color: ${statusBg}; color: ${statusColor}; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap;">${statusText}</span>`;
-
-                let actionBtn = isActivated 
-                    ? `<span class="btn-done">✅ Activated</span>` 
-                    : `<button class="btn-whatsapp" onclick="sendFollowUpWhatsApp('${row.cscid}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>`;
-
-                tbodyHtml += `<tr>
-                    <td class="col-district" ondblclick="filterByDistrict('${dist}')" style="font-weight:700;">${dist}</td>
-                    <td style="text-align:left; color: #1e3a8a; font-weight:700;">${row.vlename}</td>
-                    <td style="color: #2563eb; font-weight: 700;">${row.cscid}</td>
-                    <td style="color: #7c3aed; font-weight: 700; cursor: pointer; text-decoration: underline;" onclick="openMomModal('${row.cscid}')" title="Click to view Report Card">${row.irctcid}</td>
-                    <td style="color: #475569;">${row.mobile}</td>
-                    <td style="color: #64748b;">${row.vlemob}</td>
-                    <td style="font-size: 14px; font-weight: 800; color: #ea580c;">${row.txns_25_26}</td>
-                    <td style="font-size: 14px; font-weight: 800; color: ${fy26Color};">${row.txns_26_27}</td>
-                    <td>${statusHtml}</td>
-                    <td>${actionBtn}</td>
+                html += `<tr>
+                    <td class="col-district" ondblclick="filterByDistrict('${r.dist}')">${r.dist}</td>
+                    <td style="text-align:left; color:#1e3a8a; font-weight:700;">${r.vlename}</td>
+                    <td style="color:#2563eb;">${r.cscid}</td>
+                    <td style="color:#7c3aed; cursor:pointer; text-decoration:underline;" onclick="openMomModal('${r.cscid}')">${r.irctcid}</td>
+                    <td>${r.mobile}</td>
+                    <td style="color:#ea580c; font-weight:800;">${r.baseVal}</td>
+                    <td style="color:${r.currVal === 0 ? '#dc2626' : '#0284c7'}; font-weight:800;">${r.currVal}</td>
+                    <td style="color:${r.gap > 0 ? '#dc2626' : '#10b981'}; font-weight:900;">${r.gap > 0 ? '-' + r.gap : '0'}</td>
+                    <td style="font-weight:800;">${r.ach}%</td>
+                    <td>${stBadge}</td>
+                    <td>
+                        <div class="rmk-wrap">
+                            <input type="text" id="rmk_${r.cscid}" class="rmk-input" value="${rmkVal}" placeholder="Enter VLE feedback...">
+                            <button class="btn-save-rmk" onclick="saveShortfallRemark('${r.cscid}', '${r.irctcid}', this)">Save</button>
+                        </div>
+                        ${metaHtml}
+                    </td>
+                    <td>${actBtn}</td>
                 </tr>`;
             });
 
-            if(counts.total === 0) {
-                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #d9534f; font-weight: bold; font-size: 16px;">No VLEs Found matching the current criteria!</td></tr>`;
-            } else if (tbodyHtml === "") {
-                 tbodyHtml = `<tr><td colspan="10" style="padding: 40px; color: #10b981; font-weight: bold; font-size: 16px;">No Records Found for the selected KPI filter! 🎉</td></tr>`;
-            }
+            if (!list.length) html = `<tr><td colspan="12" style="padding:35px; color:#64748b; font-weight:bold;">No matching VLEs found.</td></tr>`;
+            else if (list.length > 500) html += `<tr><td colspan="12" style="padding:12px; color:#2563eb; font-weight:800;">Showing top 500 highest shortfall VLEs. Click 'HO Excel' to download all ${list.length} records.</td></tr>`;
 
-            document.getElementById("tableBody").innerHTML = tbodyHtml;
-            
-            document.getElementById("val-total").innerText = counts.total;
-            document.getElementById("val-active").innerText = counts.active;
-            document.getElementById("val-pending").innerText = counts.pending;
+            document.getElementById("tableBody").innerHTML = html;
         }
 
-        function filterByDistrict(distName) {
-            let distDropdown = document.getElementById("districtName");
-            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
-            else { distDropdown.value = distName; }
-            renderTable();
-        }
+        function saveShortfallRemark(cscId, irctcId, btn) {
+            let inputEl = document.getElementById("rmk_" + cscId);
+            let txt = (inputEl.value || "").trim();
+            if (!txt) { showToast("⚠️ Please type VLE feedback before saving!"); inputEl.focus(); return; }
 
-        // 🌟 NEW: YTD COMPARISON LOGIC FOR REPORT CARD 🌟
-        function openMomModal(cscId) {
-            let rowData = globalFollowUpData.find(r => r.cscid.toString().trim() === cscId.toString().trim());
-            if (!rowData) return;
+            btn.disabled = true; btn.innerText = "...";
+            let todayStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 
-            let distType = document.getElementById("districtType").value;
-            let dist = distType === "old" ? rowData.district_old : rowData.district_new;
-
-            // Update VLE Info Header
-            document.getElementById("mc-name").innerText = rowData.vlename || '-';
-            document.getElementById("mc-dist").innerText = dist || '-';
-            document.getElementById("mc-ids").innerHTML = `<span style="color:#e2e8f0;">${rowData.cscid}</span> <span style="color:#64748b; margin:0 5px;">|</span> <span class="highlight-text">${rowData.irctcid}</span>`;
-            let mobile = (rowData.vlemob && rowData.vlemob !== '-') ? rowData.vlemob : rowData.mobile;
-            document.getElementById("mc-mob").innerText = mobile || '-';
-            
-            let modalBody = "";
-            let ytd25 = 0; // Year To Date Total for FY25
-            let ytd26 = 0; // Year To Date Total for FY26
-            let fullYear25 = 0; // Complete 12-month total for FY25
-            let fullYear26 = 0; // Complete 12-month total for FY26
-            
-            let currentMonthLimit = 7; // November (0-indexed)
-            
-            for(let i=0; i<12; i++) {
-                let v25 = rowData.monthsData25[i] || 0;
-                let v26 = rowData.monthsData26[i] || 0;
-                fullYear25 += v25;
-                fullYear26 += v26;
-                
-                let growthDisplay = "-";
-
-                if (i <= currentMonthLimit) {
-                    ytd25 += v25;
-                    ytd26 += v26;
-                    
-                    let mGrowthPct = v25 > 0 ? (((v26 - v25) / v25) * 100).toFixed(1) : (v26 > 0 ? 100 : (v25 > 0 ? -100 : 0));
-                    let gClass = mGrowthPct > 0 ? "growth-pos" : (mGrowthPct < 0 ? "growth-neg" : "growth-neu");
-                    let gSign = mGrowthPct > 0 ? "+" : "";
-                    
-                    growthDisplay = (v25 === 0 && v26 === 0) ? "-" : `<span class="${gClass}">${gSign}${mGrowthPct}%</span>`;
-                }
-
-                modalBody += `<tr>
-                    <td class="td-dist" style="text-align:left; font-weight:bold; color:#334155; padding-left:25px;">${monthNamesArrFull[i]}</td>
-                    <td style="color:#64748b; font-weight:700;">${v25}</td>
-                    <td style="color:#0284c7; font-weight:800; font-size:15px;">${v26}</td>
-                    <td style="text-align:center;">${growthDisplay}</td>
-                </tr>`;
-            }
-            
-            // 🌟 Full Year Growth Calculation 🌟
-            let fyGrowthPct = fullYear25 > 0 ? (((fullYear26 - fullYear25) / fullYear25) * 100).toFixed(1) : (fullYear26 > 0 ? 100 : (fullYear25 > 0 ? -100 : 0));
-            let fyClass = fyGrowthPct > 0 ? "growth-pos" : (fyGrowthPct < 0 ? "growth-neg" : "growth-neu");
-            let fySign = fyGrowthPct > 0 ? "+" : "";
-            let fyDisplay = (fullYear25 === 0 && fullYear26 === 0) ? "-" : `<span class="${fyClass}" style="font-size:12px; padding: 2px 8px;">${fySign}${fyGrowthPct}%</span>`;
-
-            // 🌟 YTD Grand Total for Modal 🌟
-            let gtGrowthPct = ytd25 > 0 ? (((ytd26 - ytd25) / ytd25) * 100).toFixed(1) : (ytd26 > 0 ? 100 : (ytd25 > 0 ? -100 : 0));
-            let gtClass = gtGrowthPct > 0 ? "growth-pos" : (gtGrowthPct < 0 ? "growth-neg" : "growth-neu");
-            let gtSign = gtGrowthPct > 0 ? "+" : "";
-            let gtDisplay = (ytd25 === 0 && ytd26 === 0) ? "-" : `<span class="${gtClass}" style="font-size:14px;">${gtSign}${gtGrowthPct}%</span>`;
-
-            document.getElementById("modalBody").innerHTML = modalBody;
-            
-            // 🌟 Add Two Footer Rows (Full Year Reference and YTD) 🌟
-            document.getElementById("modalFooter").innerHTML = `
-                <tr style="background: #f8fafc; border-top: 1px dashed #cbd5e1;">
-                    <td class="td-dist" style="text-align:left; font-weight:800; color:#64748b; padding-left:25px; font-size: 11px;">FULL YEAR TOTAL</td>
-                    <td style="color:#64748b; font-weight:800; font-size:13px;">${fullYear25}</td>
-                    <td style="color:#0ea5e9; font-weight:800; font-size:14px;">${fullYear26}</td>
-                    <td style="text-align:center;">${fyDisplay}</td>
-                </tr>
-                <tr style="background: #e2e8f0; border-top: 2px solid #cbd5e1;">
-                    <td style="text-align:left; padding-left:20px; color:#1e293b; font-size: 13px; font-weight: 900; padding-top: 15px; padding-bottom: 15px;">YTD TOTAL (APR-NOV)</td>
-                    <td style="color:#1e293b; font-size: 15px; font-weight: 900;">${ytd25}</td>
-                    <td style="color:#0ea5e9; font-size: 16px; font-weight: 900;">${ytd26}</td>
-                    <td style="text-align:center;">${gtDisplay}</td>
-                </tr>
-            `;
-
-            // Reset position to center of screen when opening
-            const modalContent = document.getElementById("momModalContent");
-            modalContent.style.top = "50%";
-            modalContent.style.left = "50%";
-            modalContent.style.transform = "translate(-50%, -50%)";
-
-            document.getElementById("momModal").style.display = "flex"; 
-        }
-
-        // 🌟 DOWNLOAD REPORT CARD AS IMAGE 🌟
-        function downloadReportCard() {
-            const captureDiv = document.getElementById("reportCardCaptureArea");
-            const btn = document.getElementById("dlCardBtn");
-            let origText = btn.innerHTML;
-            btn.innerHTML = "⏳ Generating Card..."; 
-            btn.disabled = true;
-            
-            html2canvas(captureDiv, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
-                let link = document.createElement('a');
-                let vleName = document.getElementById("mc-name").innerText.replace(/[^a-zA-Z0-9]/g, '_');
-                link.download = `VLE_Performance_Card_${vleName}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-                
-                btn.innerHTML = "✅ Downloaded!";
-                setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
-            }).catch(err => {
-                console.error(err);
-                btn.innerHTML = "❌ Failed";
-                setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 2000);
+            fetch(apiURL, {
+                method: "POST",
+                mode: "no-cors",
+                keepalive: true,
+                body: JSON.stringify({
+                    action: "saveShortfallRemark",
+                    cscId: cscId,
+                    irctcId: irctcId,
+                    updatedBy: loggedInUserName,
+                    remark: txt
+                })
             });
-        }
 
-        // Safe Close Logic
-        let overlayMouseDown = false;
-        document.getElementById("momModal").addEventListener('mousedown', function(e) {
-            if (e.target === this) overlayMouseDown = true;
-            else overlayMouseDown = false;
-        });
-        
-        document.getElementById("momModal").addEventListener('mouseup', function(e) {
-            if (overlayMouseDown && e.target === this) {
-                closeModalClick();
-            }
-            overlayMouseDown = false;
-        });
-
-        function closeModalClick() {
-            document.getElementById("momModal").style.display = "none";
-        }
-        
-        // ESC key to close modal
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") closeModalClick();
-        });
-
-        // 🌟 DRAGGABLE MODAL LOGIC 🌟
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        function dragStart(e) {
-            if (e.target.classList.contains('modal-close')) return;
-            
-            isDragging = true;
-            const modalContent = document.getElementById("momModalContent");
-            
-            const rect = modalContent.getBoundingClientRect();
-            
-            modalContent.style.transform = 'none';
-            modalContent.style.left = rect.left + 'px';
-            modalContent.style.top = rect.top + 'px';
-            
-            startX = e.clientX;
-            startY = e.clientY;
-            initialLeft = rect.left;
-            initialTop = rect.top;
-
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', dragEnd);
-        }
-
-        function drag(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            
-            const modalContent = document.getElementById("momModalContent");
-            let dx = e.clientX - startX;
-            let dy = e.clientY - startY;
-            
-            modalContent.style.left = (initialLeft + dx) + 'px';
-            modalContent.style.top = (initialTop + dy) + 'px';
-        }
-
-        function dragEnd() {
-            isDragging = false;
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', dragEnd);
+            setTimeout(() => {
+                savedRemarksMap[cscId] = { date: todayStr, by: loggedInUserName, remark: txt };
+                let metaEl = document.getElementById("meta_" + cscId);
+                if (metaEl) metaEl.innerText = `✅ ${loggedInUserName} (${todayStr})`;
+                btn.innerText = "Saved"; btn.style.background = "#10b981";
+                showToast("✅ Remark saved to Google Sheet!");
+                setTimeout(() => { btn.innerText = "Save"; btn.style.background = "#1e3a8a"; btn.disabled = false; }, 1200);
+            }, 500);
         }
 
         function sendFollowUpWhatsApp(cscId) {
-            let rowData = globalFollowUpData.find(r => r.cscid.toString().trim() === cscId.toString().trim());
-            if(!rowData) {
-                console.error("VLE data not found");
-                return;
-            }
-            
-            let distType = document.getElementById("districtType").value;
-            let dist = distType === "old" ? rowData.district_old : rowData.district_new;
-            let vleName = rowData.vlename || '';
-            let irctcId = rowData.irctcid || '';
-            
-            let mobileNumber = (rowData.vlemob && rowData.vlemob !== '-' && rowData.vlemob !== '') ? rowData.vlemob : rowData.mobile; 
-            
-            let dmName = rowData.dmname && rowData.dmname !== '-' ? rowData.dmname : 'District Manager';
-            let dmMobile = rowData.dmmob && rowData.dmmob !== '-' ? rowData.dmmob : '';
+            const { list, mode } = getFilteredRows();
+            let r = list.find(x => x.cscid === cscId);
+            if (!r) return;
+            let mob = r.mobile.replace(/\D/g, '');
+            if (mob.length < 10) { showToast("❌ Valid Mobile Number not available!"); return; }
+            if (mob.length === 10) mob = "91" + mob;
 
-            let loggedInUser = localStorage.getItem("userName") || "చంద్ర శేఖర బాబు";
-            let loggedInRole = localStorage.getItem("userDesignation") || "ట్రావెల్ టీం – ఆంధ్రప్రదేశ్";
-            let loggedInMobile = localStorage.getItem("userMobile") || "9440115828";
+            let periodText = mode === 'ytd' ? 'గత ఏడాది ఇదే సమయానికి (Apr–Nov)' : 'గత ఫైనాన్షియల్ ఇయర్ (FY 25-26) లో';
+            let statusLine = r.currVal === 0
+                ? `🚨 కానీ ఈ సంవత్సరం (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.`
+                : `📉 కానీ ఈ సంవత్సరం (FY 26-27) లో ఇప్పటివరకు *${r.currVal}* టికెట్లు మాత్రమే బుక్ చేసారు. మీ గత ఏడాది మార్క్ చేరుకోవడానికి ఇంకా *${r.gap}* టికెట్లు తక్కువగా ఉన్నాయి.`;
 
-            let isDMLoggedIn = false;
-            if(loggedInUser !== "చంద్ర శేఖర బాబు" && (dmName.toLowerCase().includes(loggedInUser.toLowerCase()) || loggedInUser.toLowerCase().includes(dmName.toLowerCase()))) {
-                isDMLoggedIn = true;
-            }
+            let msg = `Dear *${r.vlename}* గారు,\n\n` +
+                      `మీ IRCTC ID: *${r.irctcid}* | జిల్లా: *${r.dist}*\n\n` +
+                      `🌟 ${periodText} మీరు IRCTC ద్వారా *${r.baseVal}* టికెట్లు బుక్ చేసారు.\n` +
+                      `${statusLine}\n\n` +
+                      `⚠️ దయచేసి వెంటనే టికెట్ బుకింగ్స్ పెంచి మీ టార్గెట్ రీచ్ అవ్వగలరు.\n\n` +
+                      `ధన్యవాదాలు,\n*${loggedInUserName}*\n${loggedInDesig}`;
 
-            let contactInfo = "";
-            if (isDMLoggedIn) {
-                contactInfo = `ఏమైనా సందేహాలు ఉంటే, దయచేసి నన్ను సంప్రదించండి.\n`;
-            } else {
-                let dmInfo = `*${dmName}*\n`;
-                if(dmMobile) dmInfo += `*${dmMobile}*\n`;
-                contactInfo = `ఏమైనా సందేహాలు ఉంటే, దయచేసి మీ జిల్లా మేనేజర్‌ని సంప్రదించండి:\n${dmInfo}\n`;
-            }
-
-            let cleanMobile = mobileNumber ? mobileNumber.toString().replace(/\D/g, '') : '';
-
-            if(cleanMobile.length >= 10) {
-                if(cleanMobile.length === 10) cleanMobile = "91" + cleanMobile;
-                let message = `Dear *${vleName}* గారు,\n\n` +
-                              `మీ IRCTC ID: *${irctcId}*\n` +
-                              `మీ జిల్లా: *${dist}*\n\n` +
-                              `🌟 గత ఫైనాన్షియల్ ఇయర్‌ (FY 25-26) లో మీరు IRCTC ద్వారా *${rowData.txns_25_26}* టికెట్లు బుక్ చేసారు. అందుకు మా ధన్యవాదాలు!\n\n` +
-                              `🚨 కానీ ఈ ఫైనాన్షియల్ ఇయర్‌ (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.\n\n` +
-                              `⚠️ దయచేసి వెంటనే ఒక టికెట్ బుక్ చేసి, మీ ID ను యాక్టివ్‌గా ఉంచుకోండి.\n\n` +
-                              `${contactInfo}\n` +
-                              `🙏 ధన్యవాదాలు\n` +
-                              `*${loggedInUser}*\n` +
-                              `${loggedInRole}\n` +
-                              `📞 Mobile: ${loggedInMobile}`;
-                let whatsappUrl = `whatsapp://send?phone=${cleanMobile}&text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
-            } else {
-                showToast("❌ VLE Mobile Number is missing or invalid!");
-            }
+            window.open(`whatsapp://send?phone=${mob}&text=${encodeURIComponent(msg)}`, '_blank');
         }
-
-        function showToast(msg) {
-            let toast = document.getElementById("toast");
-            if(toast) {
-                toast.innerText = msg;
-                toast.style.display = "block";
-                setTimeout(() => { toast.style.display = "none"; }, 3000);
-            }
-        }
-
-        function resetFilters() {
-            document.getElementById("districtType").value = "old";
-            document.getElementById("districtName").value = "All";
-            document.getElementById("priorityLevel").value = "all";
-            document.getElementById("searchInput").value = ""; 
-            setKpiFilter('pending'); 
-            updateDistrictsDropdown();
-        }
-
-        function toggleFullScreen() {
-            let btn = document.getElementById("fullscreenBtn");
-            try {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                    btn.innerHTML = "✖ Exit Full Screen";
-                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
-                } else {
-                    if (document.exitFullscreen) document.exitFullscreen();
-                }
-            } catch (e) { console.log("Fullscreen not supported"); }
-        }
-
-        document.addEventListener('fullscreenchange', (event) => {
-            let btn = document.getElementById("fullscreenBtn");
-            if (!document.fullscreenElement) {
-                btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
-            }
-        });
 
         function downloadExcel() {
-            let exportData = [];
-            let distType = document.getElementById('districtType').value;
-            let selectedDist = document.getElementById('districtName').value;
-            let distKey = distType === 'old' ? 'district_old' : 'district_new';
-            let priorityLevel = document.getElementById('priorityLevel').value;
-            let searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
-
-            globalFollowUpData.forEach((row) => {
-                if (isDM && distType === 'old' && !row.allowedForOld) return;
-                if (isDM && distType === 'new' && !row.allowedForNew) return;
-                
-                let dist = row[distKey];
-                if (selectedDist !== "All" && dist !== selectedDist) return;
-                
-                if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
-                if (priorityLevel === 'high' && (row.txns_25_26 < 50 || row.txns_25_26 >= 100)) return;
-                if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
-                if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
-
-                let isActivated = (row.txns_26_27 > 0);
-                if (currentKpiFilter === 'pending' && isActivated) return;
-                if (currentKpiFilter === 'active' && !isActivated) return;
-
-                if (searchValue !== "") {
-                    let searchableText = `${row.vlename} ${row.cscid} ${row.mobile} ${row.vlemob} ${dist}`.toLowerCase();
-                    if (!searchableText.includes(searchValue)) return;
-                }
-
-                exportData.push({
-                    "District": dist,
-                    "VLE Name": row.vlename,
-                    "CSC ID": row.cscid,
-                    "IRCTC ID": row.irctcid,
-                    "Mobile": row.mobile,
-                    "VLE Mobile": row.vlemob,
-                    "FY 25-26 Txns": row.txns_25_26,
-                    "FY 26-27 Txns": row.txns_26_27,
-                    "Status": isActivated ? "ACTIVATED" : "PENDING"
-                });
-            });
-
-            if (exportData.length === 0) {
-                alert("No data available to download!");
-                return;
-            }
+            const { list, mode } = getFilteredRows();
+            if (!list.length) { alert("No data to download!"); return; }
 
             let d = new Date();
-            let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
-            let colCount = Object.keys(exportData[0]).length;
+            let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+            let selDist = document.getElementById('districtName').value || "All";
+            let distLabel = selDist === "All" ? "All_Districts" : selDist.replace(/\s+/g, "_");
+            let label = mode === 'ytd' ? 'YTD (Apr-Nov)' : 'Full Year';
 
-            let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>`;
-            tableHtml += `<table border="1" style="border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; width: 100%;">`;
-            
-            tableHtml += `<thead>`;
-            tableHtml += `<tr><th colspan="${colCount}" style="background-color:#ea580c; color:white; font-size:16px; padding:10px; text-align:center;">PRIORITY FOLLOW-UP REPORT (${dateStr})</th></tr>`;
-            tableHtml += `<tr><th colspan="${colCount}" style="background-color:#fef2f2; color:#dc2626; font-size:13px; padding:8px; text-align:center;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</th></tr>`;
-            
-            tableHtml += `<tr style="background-color:#0f172a; color:white; font-weight:bold; text-align:center;">`;
-            Object.keys(exportData[0]).forEach(k => tableHtml += `<th style="padding: 10px; border: 1px solid #cbd5e1;">${k}</th>`);
-            tableHtml += `</tr></thead><tbody>`;
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8">
+            <style>
+                table { border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; }
+                th, td { border: 1px solid #cbd5e1; padding: 7px 10px; vertical-align: middle; }
+            </style>
+            </head><body>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="14" style="background:#1e3a8a; color:#ffffff; font-size:15pt; font-weight:bold; text-align:center; padding:12px;">
+                            CSC AP — IRCTC SHORTFALL REPORT (${label}) | ${selDist} (${dateStr})
+                        </th>
+                    </tr>
+                    <tr style="background:#0f172a; color:#ffffff; font-weight:bold; text-align:center;">
+                        <th style="width:45px;">S.No</th>
+                        <th style="width:140px;">District</th>
+                        <th style="width:210px;">VLE Name</th>
+                        <th style="width:125px;">CSC ID</th>
+                        <th style="width:125px;">IRCTC ID</th>
+                        <th style="width:110px;">Mobile</th>
+                        <th style="width:85px; background:#ea580c;">FY 25-26</th>
+                        <th style="width:85px; background:#0284c7;">FY 26-27</th>
+                        <th style="width:95px; background:#dc2626;">Shortfall</th>
+                        <th style="width:70px; background:#0f766e;">Ach %</th>
+                        <th style="width:95px;">Status</th>
+                        <th style="width:280px; background:#1e293b;">VLE Feedback / Remark</th>
+                        <th style="width:160px; background:#1e293b;">Updated By</th>
+                        <th style="width:105px; background:#1e293b;">Updated Date</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-            exportData.forEach((row, i) => {
-                let bg = i % 2 === 0 ? '#f8fafc' : '#ffffff';
-                tableHtml += `<tr style="background-color: ${bg}; text-align: center;">`;
-                Object.values(row).forEach(v => tableHtml += `<td style="padding: 8px; border: 1px solid #cbd5e1; mso-number-format:'\\@';">${v}</td>`);
-                tableHtml += `</tr>`;
+            list.forEach((r, idx) => {
+                let saved = savedRemarksMap[r.cscid];
+                let rmkText = saved ? saved.remark : "";
+                let rmkBy = saved ? saved.by : "";
+                let rmkDate = saved ? saved.date : "";
+
+                let rowBg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+                let stBg = r.st === 'reached' ? "#dcfce7" : (r.st === 'zero' ? "#fee2e2" : "#fef3c7");
+                let stCol = r.st === 'reached' ? "#15803d" : (r.st === 'zero' ? "#dc2626" : "#b45309");
+                let currStyle = r.currVal === 0 ? "color:#dc2626; background:#fef2f2; font-weight:bold;" : "color:#0284c7; font-weight:bold;";
+
+                html += `<tr style="background:${rowBg};">
+                    <td style="text-align:center;">${idx + 1}</td>
+                    <td style="text-align:left; font-weight:bold;">${r.dist}</td>
+                    <td style="text-align:left;">${r.vlename}</td>
+                    <td style="text-align:center; mso-number-format:'\\@';">${r.cscid}</td>
+                    <td style="text-align:center; mso-number-format:'\\@';">${r.irctcid}</td>
+                    <td style="text-align:center; mso-number-format:'\\@';">${r.mobile}</td>
+                    <td style="text-align:center; font-weight:bold; color:#ea580c;">${r.baseVal}</td>
+                    <td style="text-align:center; ${currStyle}">${r.currVal}</td>
+                    <td style="text-align:center; font-weight:bold; color:${r.gap > 0 ? '#dc2626' : '#15803d'};">${r.gap}</td>
+                    <td style="text-align:center; font-weight:bold;">${r.ach}%</td>
+                    <td style="text-align:center; font-weight:bold; background:${stBg}; color:${stCol};">${r.st.toUpperCase()}</td>
+                    <td style="text-align:left; white-space:normal;">${rmkText}</td>
+                    <td style="text-align:left;">${rmkBy}</td>
+                    <td style="text-align:center; mso-number-format:'\\@';">${rmkDate}</td>
+                </tr>`;
             });
-            tableHtml += `</tbody></table></body></html>`;
 
-            let blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+            html += `</tbody></table></body></html>`;
+
             let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Priority_FollowUp_${dateStr}.xls`;
+            link.href = URL.createObjectURL(new Blob([html], { type: "application/vnd.ms-excel" }));
+            link.download = `IRCTC_Shortfall_HO_${distLabel}_${dateStr}.xls`;
             link.click();
         }
 
-        // 🌟 FUNCTION: Download District Summary Image 🌟
         function downloadSummaryImage() {
+            let mode = document.getElementById('compMode').value;
             let distType = document.getElementById('districtType').value;
-            let selectedDist = document.getElementById('districtName').value;
             let distKey = distType === 'old' ? 'district_old' : 'district_new';
-            let priorityLevel = document.getElementById('priorityLevel').value;
+            let pLvl = document.getElementById('priorityLevel').value;
 
-            let distStats = {};
-            let totalTarget = 0, totalActive = 0, totalPending = 0;
+            let stats = {}, gt = { tot: 0, reach: 0, lag: 0, zero: 0, rmk: 0 };
+            globalFollowUpData.forEach(r => {
+                if (isDM && distType === 'old' && !r.allowedForOld) return;
+                if (isDM && distType === 'new' && !r.allowedForNew) return;
+                let baseVal = mode === 'ytd' ? r.ytd_25 : r.txns_25_26;
+                let currVal = mode === 'ytd' ? r.ytd_26 : r.txns_26_27;
+                if (baseVal <= 0) return;
+                if (pLvl === 'super' && baseVal < 100) return;
+                if (pLvl === 'high' && (baseVal < 50 || baseVal >= 100)) return;
+                if (pLvl === 'medium' && (baseVal < 10 || baseVal >= 50)) return;
+                if (pLvl === 'basic' && (baseVal < 1 || baseVal >= 10)) return;
 
-            globalFollowUpData.forEach((row) => {
-                if (isDM && distType === 'old' && !row.allowedForOld) return;
-                if (isDM && distType === 'new' && !row.allowedForNew) return;
-                
-                let dist = row[distKey];
-                if (selectedDist !== "All" && dist !== selectedDist) return;
-                
-                if (priorityLevel === 'super' && row.txns_25_26 < 100) return;
-                if (priorityLevel === 'high' && (row.txns_25_26 < 50 || row.txns_25_26 >= 100)) return;
-                if (priorityLevel === 'medium' && (row.txns_25_26 < 10 || row.txns_25_26 >= 50)) return;
-                if (priorityLevel === 'basic' && (row.txns_25_26 < 1 || row.txns_25_26 >= 10)) return;
-
-                let isActivated = (row.txns_26_27 > 0);
-                let txns2526 = row.txns_25_26;
-
-                if (!distStats[dist]) {
-                    distStats[dist] = { target: 0, active: 0, pending: 0, pendSuper: 0, pendHigh: 0, pendMed: 0, pendBasic: 0 };
-                }
-                
-                distStats[dist].target++;
-                totalTarget++;
-                
-                if (isActivated) { 
-                    distStats[dist].active++; 
-                    totalActive++; 
-                } else { 
-                    distStats[dist].pending++; 
-                    totalPending++; 
-                    
-                    if (txns2526 >= 100) distStats[dist].pendSuper++;
-                    else if (txns2526 >= 50) distStats[dist].pendHigh++;
-                    else if (txns2526 >= 10) distStats[dist].pendMed++;
-                    else if (txns2526 >= 1) distStats[dist].pendBasic++;
-                }
+                let d = r[distKey];
+                if (!stats[d]) stats[d] = { tot: 0, reach: 0, lag: 0, zero: 0, rmk: 0 };
+                stats[d].tot++; gt.tot++;
+                if (currVal >= baseVal) { stats[d].reach++; gt.reach++; }
+                else if (currVal === 0) { stats[d].zero++; gt.zero++; }
+                else { stats[d].lag++; gt.lag++; }
+                if (savedRemarksMap[r.cscid] && savedRemarksMap[r.cscid].remark) { stats[d].rmk++; gt.rmk++; }
             });
 
-            if (totalTarget === 0) {
-                alert("No data available for the summary!");
-                return;
-            }
+            let dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+            let div = document.createElement("div");
+            div.style.cssText = "position:fixed; top:0; left:0; width:880px; z-index:-9999; background:#fff; padding:24px; font-family:Segoe UI, sans-serif;";
+            let rowsHtml = Object.keys(stats).sort().map(d => {
+                let s = stats[d];
+                return `<tr>
+                    <td style="padding:6px; border:1px solid #cbd5e1; font-weight:700; text-align:left;">${d}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${s.tot}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#059669; font-weight:700;">${s.reach}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#d97706; font-weight:700;">${s.lag}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#dc2626; font-weight:700;">${s.zero}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; background:#fff7ed; color:#c2410c; font-weight:800;">${s.lag + s.zero}</td>
+                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; color:#1e3a8a; font-weight:700;">${s.rmk}</td>
+                </tr>`;
+            }).join("");
 
-            let d = new Date();
-            let dateStr = ("0"+d.getDate()).slice(-2)+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+d.getFullYear();
-            let reportTitle = selectedDist === "All" ? "Andhra Pradesh (All Districts)" : selectedDist;
-            
-            let priorityText = "All Targets (>= 1)";
-            let pSelect = document.getElementById("priorityLevel");
-            if(pSelect) priorityText = pSelect.options[pSelect.selectedIndex].text;
-
-            let exportDiv = document.createElement("div");
-            exportDiv.style.position = "fixed"; exportDiv.style.top = "0"; exportDiv.style.left = "0";
-            exportDiv.style.width = "900px"; exportDiv.style.zIndex = "-9999"; exportDiv.style.background = "#ffffff";
-            exportDiv.style.padding = "30px"; exportDiv.style.fontFamily = "'Segoe UI', Tahoma, sans-serif";
-            document.body.appendChild(exportDiv);
-
-            let html = `
-            <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; background: #f8fafc;">
-                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px;">
-                    <h1 style="color: #ea580c; font-size: 24px; margin-bottom: 5px;">🎯 PRIORITY FOLLOW-UP SUMMARY</h1>
-                    <p style="color: #475569; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;">Date: ${dateStr}  |  Region: ${reportTitle}</p>
-                    <p style="color: #dc2626; font-size: 13px; margin: 0 0 5px 0; font-weight: 800;">Target: VLEs Active in FY 25-26 but Inactive in FY 26-27</p>
-                    <p style="color: #3b82f6; font-size: 13px; margin: 0; font-weight: bold;">Filter: ${priorityText}</p>
-                </div>
-                
-                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="font-size:12px; color:#64748b; font-weight:bold;">TOTAL TARGET VLEs</div>
-                        <div style="font-size:24px; color:#1e293b; font-weight:900;">${totalTarget}</div>
-                    </div>
-                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="font-size:12px; color:#15803d; font-weight:bold;">ACTIVATED</div>
-                        <div style="font-size:24px; color:#15803d; font-weight:900;">${totalActive}</div>
-                    </div>
-                    <div style="flex:1; background: #ffffff; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #ea580c; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="font-size:12px; color:#c2410c; font-weight:bold;">STILL PENDING</div>
-                        <div style="font-size:24px; color:#c2410c; font-weight:900;">${totalPending}</div>
-                    </div>
-                </div>
-
-                <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #ea580c; padding-left: 10px;">🏆 DISTRICT-WISE TARGET BREAKDOWN</h3>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px;">
-                    <thead>
-                        <tr style="background: #1e293b; color: white;">
-                            <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1;">DISTRICT</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #3b82f6;">TOTAL TARGET</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #047857;">ACTIVATED</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #b45309; font-size: 13px;">STILL PENDING</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #7c3aed;" title="Pending >= 100 Txns">PENDING<br>(>=100)</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #db2777;" title="Pending 50-99 Txns">PENDING<br>(50-99)</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #d97706;" title="Pending 10-49 Txns">PENDING<br>(10-49)</th>
-                            <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; background: #475569;" title="Pending 1-9 Txns">PENDING<br>(1-9)</th>
+            div.innerHTML = `<div style="border:2px solid #e2e8f0; border-radius:12px; padding:20px; background:#f8fafc;">
+                <h2 style="text-align:center; color:#ea580c; margin-bottom:4px;">🎯 IRCTC SHORTFALL SUMMARY (${mode === 'ytd' ? 'YTD Apr-Nov' : 'Full Year'})</h2>
+                <p style="text-align:center; font-size:12px; color:#475569; margin-bottom:14px; font-weight:700;">Date: ${dateStr} | CSC AP Travel Team</p>
+                <table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff;">
+                    <thead><tr style="background:#0f172a; color:#fff;">
+                        <th style="padding:8px; text-align:left;">DISTRICT</th><th>TARGET</th><th style="background:#059669;">REACHED</th>
+                        <th style="background:#d97706;">LAGGING</th><th style="background:#dc2626;">ZERO</th><th style="background:#b45309;">NOT REACHED</th><th style="background:#1e3a8a;">REMARKS</th>
+                    </tr></thead>
+                    <tbody>${rowsHtml}
+                        <tr style="background:#0f172a; color:#ffffff; font-weight:900;">
+                            <td style="padding:8px; text-align:right; color:#ffffff !important;">GRAND TOTAL</td>
+                            <td style="text-align:center; color:#ffffff !important;">${gt.tot}</td>
+                            <td style="text-align:center; color:#4ade80 !important;">${gt.reach}</td>
+                            <td style="text-align:center; color:#fbbf24 !important;">${gt.lag}</td>
+                            <td style="text-align:center; color:#f87171 !important;">${gt.zero}</td>
+                            <td style="text-align:center; color:#fb923c !important;">${gt.lag + gt.zero}</td>
+                            <td style="text-align:center; color:#93c5fd !important;">${gt.rmk}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            let grandTotals = { tar: 0, act: 0, pen: 0, pSup: 0, pHigh: 0, pMed: 0, pBas: 0 };
-            
-            Object.keys(distStats).sort().forEach(dName => {
-                let st = distStats[dName];
-                grandTotals.tar += st.target; grandTotals.act += st.active; grandTotals.pen += st.pending;
-                grandTotals.pSup += st.pendSuper; grandTotals.pHigh += st.pendHigh; grandTotals.pMed += st.pendMed; grandTotals.pBas += st.pendBasic;
-                
-                html += `
-                    <tr>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; background:#ffffff;">${dName}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #1e3a8a; background:#eff6ff;">${st.target}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #059669; background:#ecfdf5;">${st.active}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #ea580c; background:#fff7ed; font-size:14px;">${st.pending}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #6d28d9; background:#f5f3ff;">${st.pendSuper}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #be185d; background:#fdf2f8;">${st.pendHigh}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #b45309; background:#fffbeb;">${st.pendMed}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 600; color: #334155; background:#f1f5f9;">${st.pendBasic}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                    <tr style="background:#0f172a; font-size: 14px;">
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: right; color: #ffffff;">GRAND TOTAL</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.tar}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #4ade80;">${grandTotals.act}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #fbbf24; font-size:16px;">${grandTotals.pen}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pSup}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pHigh}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pMed}</td>
-                        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 900; text-align: center; color: #ffffff;">${grandTotals.pBas}</td>
-                    </tr>
-                `;
-            
-            html += `
                     </tbody>
-                </table>
-                <div style="text-align: right; margin-top: 15px; font-weight: bold; color: #475569; font-size: 12px;">
-                    - CSC AP Travel Team
-                </div>
-            </div>
-            `;
+                </table></div>`;
+            document.body.appendChild(div);
 
-            exportDiv.innerHTML = html;
-
-            const btn = document.getElementById("summaryImgBtn");
-            let originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Generating...";
-            btn.disabled = true;
-
-            html2canvas(exportDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
-                let link = document.createElement('a');
-                link.download = `Priority_Summary_Breakdown_${dateStr}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-
-                btn.innerHTML = "✅ Downloaded";
-                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-                
-                document.body.removeChild(exportDiv);
-            }).catch(err => {
-                console.error("Error capturing image:", err);
-                btn.innerHTML = "❌ Failed";
-                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-                document.body.removeChild(exportDiv);
+            html2canvas(div, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                let a = document.createElement('a');
+                a.download = `IRCTC_Shortfall_Summary_${dateStr}.png`;
+                a.href = canvas.toDataURL("image/png");
+                a.click();
+                document.body.removeChild(div);
             });
         }
 
-        function downloadImage() {
-            const btn = document.getElementById("downloadBtn");
-            let originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Generating...";
-            btn.disabled = true;
+        function filterByDistrict(d) {
+            let sel = document.getElementById("districtName");
+            sel.value = sel.value === d ? "All" : d;
+            renderTable();
+        }
 
-            const captureArea = document.getElementById("captureArea");
-            const tableWrapper = document.querySelector(".table-container");
-            
-            const origAreaOverflow = captureArea.style.overflow;
-            const origWrapperOverflow = tableWrapper.style.overflow;
-            const origWrapperHeight = tableWrapper.style.height;
+        function resetFilters() {
+            document.getElementById("compMode").value = "ytd";
+            document.getElementById("districtType").value = "old";
+            document.getElementById("districtName").value = "All";
+            document.getElementById("priorityLevel").value = "all";
+            document.getElementById("searchInput").value = "";
+            setKpiFilter('not_reached');
+            updateDistrictsDropdown();
+        }
 
-            captureArea.style.overflow = "visible";
-            tableWrapper.style.overflow = "visible";
-            tableWrapper.style.height = "auto";
-            
-            const stickyEls = captureArea.querySelectorAll('th, td.col-district');
-            stickyEls.forEach(el => {
-                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
-                el.style.position = 'static';
-            });
+        function showToast(msg) {
+            let t = document.getElementById("toast");
+            t.innerText = msg; t.style.display = "block";
+            setTimeout(() => t.style.display = "none", 2600);
+        }
 
-            setTimeout(() => { 
-                html2canvas(captureArea, { 
-                    scale: 2, 
-                    backgroundColor: "#ffffff",
-                    useCORS: true,
-                    windowWidth: captureArea.scrollWidth + 50
-                }).then(canvas => {
-                    let link = document.createElement('a');
-                    let d = new Date();
-                    let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
-                    
-                    let typeSelect = document.getElementById("districtType");
-                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
-                    
-                    link.download = `IRCTC_Priority_FollowUp_${typeText}_${dateStr}.png`;
-                    link.href = canvas.toDataURL("image/png");
-                    link.click();
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
 
-                    restoreStyles();
-                    btn.innerHTML = "✅ Downloaded";
-                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-                }).catch(err => {
-                    console.error("Error capturing image:", err);
-                    restoreStyles();
-                    btn.innerHTML = "❌ Failed";
-                    setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-                });
-            }, 500); 
+        // Report Card Modal
+        function openMomModal(cscId) {
+            let r = globalFollowUpData.find(x => x.cscid === cscId);
+            if (!r) return;
+            let dist = document.getElementById("districtType").value === "old" ? r.district_old : r.district_new;
+            document.getElementById("mc-name").innerText = r.vlename;
+            document.getElementById("mc-dist").innerText = dist;
+            document.getElementById("mc-ids").innerText = `${r.cscid} | ${r.irctcid}`;
+            document.getElementById("mc-mob").innerText = r.mobile;
 
-            function restoreStyles() {
-                captureArea.style.overflow = origAreaOverflow;
-                tableWrapper.style.overflow = origWrapperOverflow;
-                tableWrapper.style.height = origWrapperHeight;
-                stickyEls.forEach(el => {
-                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
-                });
+            let body = "", y25 = 0, y26 = 0, f25 = 0, f26 = 0;
+            for (let i = 0; i < 12; i++) {
+                let v25 = r.monthsData25[i] || 0, v26 = r.monthsData26[i] || 0;
+                f25 += v25; f26 += v26;
+                let gHtml = "-";
+                if (i <= currentMonthLimit) {
+                    y25 += v25; y26 += v26;
+                    let pct = v25 > 0 ? (((v26 - v25) / v25) * 100).toFixed(1) : (v26 > 0 ? 100 : 0);
+                    let cls = pct > 0 ? "growth-pos" : (pct < 0 ? "growth-neg" : "growth-neu");
+                    gHtml = (v25 === 0 && v26 === 0) ? "-" : `<span class="${cls}">${pct > 0 ? '+' : ''}${pct}%</span>`;
+                }
+                body += `<tr><td style="text-align:left;">${monthNamesArrFull[i]}</td><td>${v25}</td><td style="color:#0284c7;">${v26}</td><td>${gHtml}</td></tr>`;
             }
+            document.getElementById("modalBody").innerHTML = body;
+            document.getElementById("modalFooter").innerHTML = `
+                <tr style="background:#f8fafc;"><td style="text-align:left; font-weight:800;">FULL YEAR</td><td>${f25}</td><td>${f26}</td><td>-</td></tr>
+                <tr style="background:#e2e8f0; font-weight:900;"><td style="text-align:left;">YTD (APR–NOV)</td><td>${y25}</td><td style="color:#0284c7;">${y26}</td><td>${y25 > 0 ? Math.round((y26 / y25) * 100) + '%' : '-'}</td></tr>`;
+
+            const mc = document.getElementById("momModalContent");
+            mc.style.top = "50%"; mc.style.left = "50%"; mc.style.transform = "translate(-50%, -50%)";
+            document.getElementById("momModal").style.display = "flex";
+        }
+        function closeModalClick() { document.getElementById("momModal").style.display = "none"; }
+        function downloadReportCard() {
+            html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#fff" }).then(c => {
+                let a = document.createElement('a');
+                a.download = `VLE_Card_${document.getElementById("mc-name").innerText.replace(/\W+/g, '_')}.png`;
+                a.href = c.toDataURL("image/png"); a.click();
+            });
+        }
+        let isDragging = false, sX, sY, iL, iT;
+        function dragStart(e) {
+            if (e.target.classList.contains('modal-close')) return;
+            isDragging = true;
+            const mc = document.getElementById("momModalContent"), rect = mc.getBoundingClientRect();
+            mc.style.transform = 'none'; mc.style.left = rect.left + 'px'; mc.style.top = rect.top + 'px';
+            sX = e.clientX; sY = e.clientY; iL = rect.left; iT = rect.top;
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('mouseup', () => { isDragging = false; document.removeEventListener('mousemove', dragMove); }, { once: true });
+        }
+        function dragMove(e) {
+            if (!isDragging) return;
+            const mc = document.getElementById("momModalContent");
+            mc.style.left = (iL + e.clientX - sX) + 'px'; mc.style.top = (iT + e.clientY - sY) + 'px';
         }
     </script>
 </body>
