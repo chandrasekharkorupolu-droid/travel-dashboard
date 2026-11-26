@@ -4,26 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CSC AP | Action Center</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
         :root {
-            --navy: #0f172a; --royal: #1e3a8a; --blue: #2563eb;
-            --bg: #f1f5f9; --border: #e2e8f0; --text: #0f172a; --muted: #64748b;
+            --navy: #122d22; --royal: #1b4332; --blue: #164e63;
+            --bg: #f4f1e6; --card: #faf8f2; --alt: #f0ece0;
+            --forest-soft: #e9f2ed; --gold: #c5a059; --gold-soft: #f7efe0;
+            --border: #d5cfbe; --text: #141a17; --muted: #525d56;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
         /* 🌟 LOADER 🌟 */
         .loader-box {
-            position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff;
+            position: fixed; inset: 0; background: linear-gradient(135deg, #122d22, #1b4332);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #f8f5ec;
         }
         .spinner {
             width: 42px; height: 42px; border: 4px solid rgba(255,255,255,0.2);
-            border-top-color: #fcd34d; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px;
+            border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -32,288 +35,296 @@
            ========================================================= */
         .spoc-layout { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
         .spoc-topbar {
-            background: #ffffff; padding: 10px 22px; border-bottom: 1px solid var(--border);
+            background: var(--card); padding: 10px 22px; border-bottom: 2px solid var(--royal);
             display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
-            position: sticky; top: 0; z-index: 40; box-shadow: 0 2px 10px rgba(15,23,42,0.03);
+            position: sticky; top: 0; z-index: 40; box-shadow: 0 3px 10px rgba(27,67,50,0.08);
         }
         .spoc-nav-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .snav-pill {
             display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 9px;
-            border: 1px solid transparent; background: #f8fafc; color: #475569; font-size: 13px; font-weight: 700;
+            border: 1px solid var(--border); background: #ffffff; color: var(--royal); font-size: 13px; font-weight: 700;
             cursor: pointer; transition: 0.2s;
         }
-        .snav-pill:hover { background: #eff6ff; color: #1e3a8a; }
-        .snav-pill.active { background: #1e3a8a; color: #ffffff; font-weight: 800; box-shadow: 0 4px 12px rgba(30,58,138,0.22); }
+        .snav-pill:hover { background: var(--gold-soft); border-color: var(--gold); color: var(--navy); }
+        .snav-pill.active { background: var(--royal); color: #f8f5ec; border-color: var(--navy); font-weight: 800; box-shadow: 0 4px 12px rgba(27,67,50,0.24); }
         .spoc-body { padding: 18px 22px 35px 22px; flex: 1; max-width: 1500px; width: 100%; margin: 0 auto; }
 
         /* 🏆 TOP 5 PERFORMERS BAR */
         .top5-bar {
-            background: linear-gradient(90deg, #020617 0%, #1e1b4b 55%, #1e3a8a 100%);
-            color: #fcd34d; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px;
+            background: linear-gradient(90deg, #122d22 0%, #1b4332 60%, #245741 100%);
+            color: #e6c885; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px;
+            border-bottom: 3px solid var(--gold);
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-            box-shadow: 0 6px 18px rgba(15,23,42,0.14);
+            box-shadow: 0 6px 18px rgba(18,45,34,0.18);
         }
-        .top5-label { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.6px; display: flex; align-items: center; gap: 8px; }
+        .top5-label { font-family: 'Cinzel', 'Outfit', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.6px; display: flex; align-items: center; gap: 8px; }
         .top5-list { display: flex; gap: 8px; flex-wrap: wrap; }
         .top5-chip {
-            background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.12); color: #f8f5ec; border: 1px solid rgba(197,160,89,0.45);
             padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
         }
-        .top5-chip b { color: #34d399; margin-left: 5px; }
+        .top5-chip b { color: #4ade80; margin-left: 5px; }
 
         /* 📊 KPI CARDS */
         .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
         .kpi-white {
-            background: #ffffff; border: 1px solid var(--border); border-left: 4px solid #1e3a8a;
-            border-radius: 12px; padding: 15px 18px; box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+            background: var(--card); border: 1px solid var(--border); border-left: 5px solid var(--royal);
+            border-radius: 10px; padding: 15px 18px; box-shadow: 0 3px 8px rgba(27,67,50,0.06);
         }
-        .kpi-white span { display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-white strong { display: block; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .kpi-white span { display: block; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-white strong { display: block; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; margin-top: 4px; color: var(--navy); font-variant-numeric: tabular-nums; }
 
-        .kpi-solid { border-radius: 12px; padding: 16px 20px; color: #ffffff; box-shadow: 0 6px 16px rgba(15,23,42,0.1); }
-        .kpi-solid span { display: block; font-size: 11px; font-weight: 800; opacity: 0.88; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-solid { border-radius: 12px; padding: 16px 20px; color: #f8f5ec; box-shadow: 0 6px 16px rgba(18,45,34,0.15); border-bottom: 3px solid var(--gold); }
+        .kpi-solid span { display: block; font-size: 11px; font-weight: 800; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
         .kpi-solid strong { display: block; font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; }
-        .ks-navy { background: linear-gradient(135deg, #1e3a8a, #1d4ed8); }
-        .ks-green { background: linear-gradient(135deg, #059669, #10b981); }
-        .ks-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); }
-        .ks-red { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+        .ks-navy { background: linear-gradient(135deg, #122d22, #1b4332); }
+        .ks-green { background: linear-gradient(135deg, #14532d, #15803d); }
+        .ks-teal { background: linear-gradient(135deg, #164e63, #0f766e); }
+        .ks-red { background: linear-gradient(135deg, #7f1d1d, #b91c1c); }
 
         /* 🔍 FILTER TOOLBAR */
         .filter-bar {
-            background: #ffffff; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--card); padding: 12px 16px; border-radius: 10px; border: 1.5px solid var(--royal);
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 16px; box-shadow: 0 2px 8px rgba(27,67,50,0.06);
         }
         .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .f-input, .f-select {
-            padding: 7px 11px; border-radius: 8px; border: 1px solid #cbd5e1;
-            font-size: 12.5px; font-weight: 700; color: #0f172a; background: #f8fafc; outline: none;
+            padding: 7px 11px; border-radius: 8px; border: 1px solid var(--border);
+            font-size: 12.5px; font-weight: 700; color: var(--text); background: #ffffff; outline: none;
         }
-        .f-input:focus, .f-select:focus { border-color: #2563eb; background: #fff; }
+        .f-input:focus, .f-select:focus { border-color: var(--royal); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
         .btn-sm-corp {
-            padding: 8px 14px; border-radius: 8px; border: none; font-size: 12.5px; font-weight: 800;
+            padding: 8px 14px; border-radius: 8px; border: 1px solid transparent; font-size: 12.5px; font-weight: 800;
             cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
         }
-        .btn-green { background: #10b981; color: #fff; }
-        .btn-amber { background: #f59e0b; color: #fff; }
-        .btn-navy { background: #1e3a8a; color: #fff; }
-        .btn-light { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-green { background: #1b6b3a; color: #ffffff; border-color: #14532d; }
+        .btn-green:hover { background: #14532d; }
+        .btn-amber { background: var(--gold); color: var(--text); border-color: #a6823c; }
+        .btn-amber:hover { background: #b08a42; color: #ffffff; }
+        .btn-navy { background: var(--royal); color: #f8f5ec; border-color: var(--navy); }
+        .btn-navy:hover { background: var(--navy); }
+        .btn-light { background: #ffffff; color: var(--royal); border: 1.5px solid var(--royal); }
+        .btn-light:hover { background: var(--royal); color: #ffffff; }
 
         /* 📋 CORPORATE DATA TABLE */
         .table-card {
-            background: #ffffff; border-radius: 14px; border: 1px solid var(--border);
-            overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+            background: var(--card); border-radius: 12px; border: 1.5px solid var(--royal);
+            overflow: hidden; box-shadow: 0 4px 16px rgba(27,67,50,0.08);
         }
         .table-scroll { overflow-x: auto; max-height: 560px; }
         .corp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: center; min-width: 820px; }
         .corp-table thead th {
-            position: sticky; top: 0; background: #f8fafc; color: #1e3a8a; padding: 12px 10px;
+            position: sticky; top: 0; background: var(--royal); color: #f8f5ec; padding: 12px 10px;
             font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
-            border-bottom: 2px solid #e2e8f0; z-index: 5; white-space: nowrap;
+            border-bottom: 2px solid var(--gold); border-right: 1px solid rgba(255,255,255,0.12); z-index: 5; white-space: nowrap;
         }
         .corp-table tbody td {
-            padding: 11px 10px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;
-            font-variant-numeric: tabular-nums;
+            padding: 11px 10px; border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3;
+            font-weight: 700; color: var(--text); background: var(--card); font-variant-numeric: tabular-nums;
         }
-        .corp-table tbody tr:hover { background: #f8fafc; }
+        .corp-table tbody tr:nth-child(even) td { background: var(--alt); }
+        .corp-table tbody tr:hover td { background: var(--gold-soft) !important; }
         .corp-table tfoot td {
-            background: #f1f5f9; color: #0f172a; font-weight: 900; padding: 12px 10px;
-            border-top: 2px solid #cbd5e1; position: sticky; bottom: 0;
+            background: var(--navy); color: #f8f5ec; font-weight: 900; padding: 12px 10px;
+            border-top: 2px solid var(--gold); position: sticky; bottom: 0;
         }
+        .corp-table tfoot td:first-child { color: #e6c885; }
         .rep-row-dbl { cursor: pointer; user-select: none; }
-        .rep-row-dbl:hover { background: #eff6ff !important; }
+        .rep-row-dbl:hover td { background: var(--gold-soft) !important; }
         .also-pending-pill {
-            display: inline-block; margin-top: 4px; background: #fef2f2; color: #b91c1c;
+            display: inline-block; margin-top: 4px; background: #fee2e2; color: #b91c1c;
             border: 1px solid #fecaca; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 800;
         }
         .status-pill { padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; }
-        .st-pending { background: #fef3c7; color: #b45309; }
-        .st-active { background: #dcfce7; color: #15803d; }
+        .st-pending { background: var(--gold-soft); color: #92400e; border: 1px solid #dfc48e; }
+        .st-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
         /* 🪟 SHARED CALL LOGS & REMARKS MODAL */
         .modal-backdrop-custom {
-            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65);
+            display: none; position: fixed; inset: 0; background: rgba(18,45,34,0.72);
             z-index: 9998; align-items: center; justify-content: center; padding: 16px;
             backdrop-filter: blur(4px);
         }
         .modal-card-custom {
-            background: #ffffff; width: 100%; max-width: 1140px; max-height: 86vh;
-            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.28); border: 1px solid #cbd5e1;
+            background: var(--card); width: 100%; max-width: 1140px; max-height: 86vh;
+            border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.32); border: 2px solid var(--royal);
         }
         .modal-head-custom {
-            background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #ffffff;
+            background: linear-gradient(135deg, #122d22, #1b4332); color: #f8f5ec;
             padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+            border-bottom: 3px solid var(--gold);
         }
-        .modal-body-custom { padding: 14px 20px 20px 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
+        .modal-body-custom { padding: 14px 20px 20px 20px; overflow-y: auto; flex: 1; background: var(--bg); }
         .srv-summary-bar {
             display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
-            background: #ffffff; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
+            background: var(--card); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
         }
         .srv-pill-btn {
-            padding: 5px 12px; border-radius: 20px; border: 1px solid #cbd5e1;
-            background: #f8fafc; color: #1e293b; font-size: 12px; font-weight: 800;
+            padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+            background: #ffffff; color: var(--royal); font-size: 12px; font-weight: 800;
             cursor: pointer; transition: 0.15s; display: inline-flex; align-items: center; gap: 6px;
         }
-        .srv-pill-btn:hover { border-color: #2563eb; background: #eff6ff; }
-        .srv-pill-btn.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .srv-pill-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+        .srv-pill-btn.active { background: var(--royal); color: #f8f5ec; border-color: var(--navy); }
         .srv-pill-btn b { font-family: 'Outfit', sans-serif; font-size: 13px; }
         .rmk-badge { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 800; }
 
         /* 📤 DATA MANAGEMENT UPLOAD CARD */
         .upload-center-card {
-            background: #ffffff; max-width: 560px; margin: 20px auto; padding: 30px 26px;
-            border-radius: 18px; border: 1px solid var(--border); text-align: center;
-            box-shadow: 0 12px 30px rgba(15,23,42,0.06);
+            background: var(--card); max-width: 560px; margin: 20px auto; padding: 30px 26px;
+            border-radius: 16px; border: 2px solid var(--royal); text-align: center;
+            box-shadow: 0 12px 30px rgba(27,67,50,0.1);
         }
         .upload-drop {
-            border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 12px;
+            border: 2px dashed var(--gold); background: #ffffff; border-radius: 12px;
             padding: 24px 16px; margin: 18px 0; cursor: pointer; transition: 0.2s;
         }
-        .upload-drop:hover { border-color: #2563eb; background: #eff6ff; }
-        .prog-bg { height: 9px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-top: 12px; display: none; }
-        .prog-fill { height: 100%; background: linear-gradient(90deg, #1e3a8a, #10b981); width: 0%; transition: width 0.3s; }
+        .upload-drop:hover { border-color: var(--royal); background: var(--gold-soft); }
+        .prog-bg { height: 9px; background: var(--border); border-radius: 6px; overflow: hidden; margin-top: 12px; display: none; }
+        .prog-fill { height: 100%; background: linear-gradient(90deg, var(--royal), var(--gold)); width: 0%; transition: width 0.3s; }
 
         /* =========================================================
            📱 2. DM APP SHELL (SEARCHABLE VLE LIST + TAP-TO-CALL)
            ========================================================= */
         .dm-app-shell {
-            max-width: 560px; margin: 0 auto; min-height: 100vh; background: #f8fafc;
+            max-width: 560px; margin: 0 auto; min-height: 100vh; background: var(--bg);
             display: flex; flex-direction: column; padding-bottom: 78px;
-            box-shadow: 0 0 30px rgba(15,23,42,0.08); transition: max-width 0.25s ease;
+            box-shadow: 0 0 30px rgba(27,67,50,0.1); transition: max-width 0.25s ease;
         }
         .dm-app-shell.wide-mode { max-width: 1140px; }
         .dm-topbar {
-            background: #ffffff; padding: 14px 18px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100;
+            background: var(--card); padding: 14px 18px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 2px solid var(--royal); position: sticky; top: 0; z-index: 100;
         }
-        .dm-topbar-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .dm-topbar-title { font-family: 'Cinzel', 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 8px; }
         .vertical-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 12px 16px 12px; }
         .v-card {
-            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
             padding: 14px 8px; text-align: center; cursor: pointer; position: relative;
-            box-shadow: 0 3px 10px rgba(15,23,42,0.04); transition: 0.2s;
+            box-shadow: 0 3px 10px rgba(27,67,50,0.06); transition: 0.2s;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; min-height: 98px;
         }
-        .v-card:hover { transform: translateY(-2px); border-color: #93c5fd; }
-        .v-card.v-all { background: linear-gradient(135deg, #0f172a, #1e3a8a, #1d4ed8); color: #fff; border: none; }
-        .v-card.v-all .v-name { color: #fff; }
+        .v-card:hover { transform: translateY(-2px); border-color: var(--gold); background: var(--gold-soft); }
+        .v-card.v-all { background: linear-gradient(135deg, #122d22, #1b4332, #245741); color: #f8f5ec; border: 1.5px solid var(--gold); }
+        .v-card.v-all .v-name { color: #f8f5ec; }
         .v-card.v-zero { opacity: 0.52; }
         .v-icon { font-size: 26px; }
-        .v-name { font-size: 11.5px; font-weight: 800; color: #1e293b; word-break: break-word; }
+        .v-name { font-size: 11.5px; font-weight: 800; color: var(--navy); word-break: break-word; }
         .v-badge {
-            position: absolute; top: 6px; right: 6px; background: #ef4444; color: #fff;
+            position: absolute; top: 6px; right: 6px; background: #b91c1c; color: #fff;
             font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 10px; font-family: 'Outfit';
         }
-        .v-card.v-all .v-badge { background: #fcd34d; color: #0f172a; }
-        .v-badge.b-zero { background: #cbd5e1; color: #475569; }
+        .v-card.v-all .v-badge { background: var(--gold); color: var(--text); }
+        .v-badge.b-zero { background: var(--border); color: var(--muted); }
 
         .calling-deck-wrap { padding: 12px; display: none; flex-direction: column; gap: 10px; }
 
         /* ✈️ TRAVEL SUB-FILTER BAR */
         .sub-filter-bar {
-            display: flex; flex-wrap: wrap; gap: 6px; background: #ffffff;
-            padding: 9px 10px; border-radius: 12px; border: 1px solid #e2e8f0;
+            display: flex; flex-wrap: wrap; gap: 6px; background: var(--card);
+            padding: 9px 10px; border-radius: 12px; border: 1px solid var(--border);
         }
         .sub-pill {
-            padding: 6px 11px; border-radius: 20px; border: 1px solid #cbd5e1;
-            background: #f8fafc; color: #1e293b; font-size: 11.5px; font-weight: 800;
+            padding: 6px 11px; border-radius: 20px; border: 1px solid var(--border);
+            background: #ffffff; color: var(--royal); font-size: 11.5px; font-weight: 800;
             cursor: pointer; transition: 0.15s;
         }
-        .sub-pill.active { background: #1e3a8a; color: #ffffff; border-color: #1e3a8a; }
+        .sub-pill.active { background: var(--royal); color: #f8f5ec; border-color: var(--navy); }
 
         /* 📋 COMPACT SEARCHABLE VLE LIST */
         .vle-search-input {
-            width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1;
-            font-size: 13px; font-weight: 700; color: #0f172a; background: #ffffff; outline: none;
-            box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+            width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+            font-size: 13px; font-weight: 700; color: var(--text); background: #ffffff; outline: none;
+            box-shadow: 0 2px 8px rgba(27,67,50,0.04);
         }
-        .vle-search-input:focus { border-color: #2563eb; }
+        .vle-search-input:focus { border-color: var(--royal); }
         .vle-list-container { display: flex; flex-direction: column; gap: 8px; }
         .vle-list-item {
-            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 13px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 13px;
             padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
-            cursor: pointer; transition: 0.15s; box-shadow: 0 2px 6px rgba(15,23,42,0.03);
+            cursor: pointer; transition: 0.15s; box-shadow: 0 2px 6px rgba(27,67,50,0.05);
         }
-        .vle-list-item:hover { border-color: #93c5fd; background: #f8fafc; transform: translateY(-1px); }
-        .vle-li-name { font-family: 'Outfit', sans-serif; font-size: 14.5px; font-weight: 800; color: #0f172a; }
-        .vle-li-sub { font-size: 11px; font-weight: 700; color: #64748b; margin-top: 2px; }
+        .vle-list-item:hover { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-1px); }
+        .vle-li-name { font-family: 'Outfit', sans-serif; font-size: 14.5px; font-weight: 800; color: var(--navy); }
+        .vle-li-sub { font-size: 11px; font-weight: 700; color: var(--muted); margin-top: 2px; }
         .vle-li-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
         .vle-li-chip {
-            background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe;
+            background: var(--forest-soft); color: var(--royal); border: 1px solid #b7d4c4;
             font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
         }
         .vle-li-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .vle-li-wa {
-            background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; border-radius: 10px;
+            background: #e6f4ea; color: #15803d; border: 1px solid #a7ccb8; border-radius: 10px;
             padding: 8px 10px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center;
         }
         .vle-li-go {
-            background: #1e3a8a; color: #ffffff; border-radius: 10px; padding: 8px 12px;
+            background: var(--royal); color: #f8f5ec; border-radius: 10px; padding: 8px 12px;
             font-size: 12px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 5px;
         }
 
-        .vle-call-card { background: #fff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
-        .vle-card-head { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff; padding: 14px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .vle-call-card { background: var(--card); border-radius: 16px; border: 2px solid var(--royal); overflow: hidden; box-shadow: 0 10px 24px rgba(27,67,50,0.12); }
+        .vle-card-head { background: linear-gradient(135deg, #122d22, #1b4332); color: #f8f5ec; padding: 14px; text-align: center; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 3px solid var(--gold); }
         .vle-card-body { padding: 18px; text-align: center; }
         .btn-row { display: flex; gap: 10px; margin: 12px 0; }
-        .btn-call { flex: 1; background: #eff6ff; color: #1e3a8a; border: 1.5px solid #bfdbfe; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-wa { flex: 1; background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+        .btn-call { flex: 1; background: var(--forest-soft); color: var(--royal); border: 1.5px solid var(--royal); padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-wa { flex: 1; background: #1b6b3a; color: #ffffff; border: 1.5px solid #14532d; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
 
         /* 💬 WHATSAPP TEMPLATE PREVIEW / EDIT BOX */
         .wa-preview-box {
-            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+            background: var(--forest-soft); border: 1px solid #a7ccb8; border-radius: 10px;
             padding: 9px 11px; margin-bottom: 10px; text-align: left;
         }
         .wa-preview-head {
             display: flex; justify-content: space-between; align-items: center; gap: 6px;
-            font-size: 10.5px; font-weight: 800; color: #15803d; margin-bottom: 6px;
+            font-size: 10.5px; font-weight: 800; color: var(--royal); margin-bottom: 6px;
         }
         .btn-save-tpl {
-            background: #15803d; color: #ffffff; border: none; border-radius: 6px;
+            background: var(--royal); color: #f8f5ec; border: none; border-radius: 6px;
             padding: 4px 9px; font-size: 10.5px; font-weight: 800; cursor: pointer;
         }
         .wa-msg-textarea {
-            width: 100%; border: 1px solid #86efac; border-radius: 8px; padding: 7px 9px;
-            font-size: 11.5px; font-weight: 600; color: #0f172a; background: #ffffff;
+            width: 100%; border: 1px solid #b7d4c4; border-radius: 8px; padding: 7px 9px;
+            font-size: 11.5px; font-weight: 600; color: var(--text); background: #ffffff;
             resize: vertical; min-height: 66px; outline: none; line-height: 1.4;
         }
 
         /* 🎯 MULTI-SERVICE REMARK ROWS */
         .master-rmk-box {
-            background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px;
+            background: var(--gold-soft); border: 1.5px solid var(--gold); border-radius: 12px;
             padding: 10px 12px; margin-bottom: 12px; text-align: left;
         }
-        .master-rmk-label { font-size: 11px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .master-rmk-label { font-size: 11px; font-weight: 800; color: #7c4a12; text-transform: uppercase; margin-bottom: 6px; display: block; }
         .srv-rmk-card {
-            background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px;
+            background: #ffffff; border: 1px solid var(--border); border-radius: 12px;
             padding: 10px 12px; margin-bottom: 9px; text-align: left; transition: 0.2s;
         }
-        .srv-rmk-card.unchecked { opacity: 0.45; background: #f1f5f9; }
+        .srv-rmk-card.unchecked { opacity: 0.45; background: var(--alt); }
         .srv-rmk-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 7px; }
-        .srv-chk-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 800; font-size: 13px; color: #0f172a; }
-        .srv-chk-wrap input { width: 17px; height: 17px; accent-color: #1e3a8a; cursor: pointer; }
-        .srv-stat-mini { font-size: 10.5px; font-weight: 800; color: #475569; background: #ffffff; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .srv-chk-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 800; font-size: 13px; color: var(--navy); }
+        .srv-chk-wrap input { width: 17px; height: 17px; accent-color: var(--royal); cursor: pointer; }
+        .srv-stat-mini { font-size: 10.5px; font-weight: 800; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border); }
 
         .rmk-select, .rmk-input {
-            width: 100%; padding: 9px 11px; border-radius: 8px; border: 1.5px solid #cbd5e1;
-            font-size: 12.5px; font-weight: 700; outline: none; background: #ffffff; color: #0f172a;
+            width: 100%; padding: 9px 11px; border-radius: 8px; border: 1.5px solid var(--border);
+            font-size: 12.5px; font-weight: 700; outline: none; background: #ffffff; color: var(--text);
         }
-        .rmk-select:focus, .rmk-input:focus { border-color: #2563eb; }
+        .rmk-select:focus, .rmk-input:focus { border-color: var(--royal); }
         .rmk-input { margin-top: 7px; border-style: dashed; }
 
         .dm-bottom-nav {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 560px; background: #fff; border-top: 1px solid #e2e8f0;
+            width: 100%; max-width: 560px; background: var(--card); border-top: 2px solid var(--royal);
             display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 4px 10px 4px; z-index: 200;
-            box-shadow: 0 -4px 16px rgba(15,23,42,0.06); transition: max-width 0.25s ease;
+            box-shadow: 0 -4px 16px rgba(27,67,50,0.1); transition: max-width 0.25s ease;
         }
         .dm-app-shell.wide-mode .dm-bottom-nav { max-width: 1140px; }
-        .bnav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #64748b; font-size: 11px; font-weight: 700; }
+        .bnav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 700; }
         .bnav-item i { font-size: 18px; }
-        .bnav-item.active { color: #1e3a8a; font-weight: 800; }
+        .bnav-item.active { color: var(--royal); font-weight: 900; }
         .dm-subpage { padding: 14px 16px; display: none; }
-        .mini-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+        .mini-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
 
         @media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
 
@@ -330,8 +341,8 @@
 
     <div id="loader" class="loader-box">
         <div class="spinner"></div>
-        <h3 style="font-family:'Outfit'; font-size:19px;">Syncing Live Data...</h3>
-        <p id="loaderText" style="font-size:12px; color:#cbd5e1; margin-top:6px;">Connecting to server...</p>
+        <h3 style="font-family:'Cinzel','Outfit',sans-serif; font-size:19px;">Syncing Live Data...</h3>
+        <p id="loaderText" style="font-size:12px; color:#e6c885; margin-top:6px;">Connecting to server...</p>
     </div>
 
     <!-- =========================================================
@@ -359,10 +370,10 @@
                 </div>
 
                 <div class="kpi-row">
-                    <div class="kpi-white" style="border-left-color:#1e3a8a;"><span>Assigned</span><strong id="cdAssigned">0</strong></div>
-                    <div class="kpi-white" style="border-left-color:#10b981;"><span>Active / Activated (Sheet)</span><strong id="cdActive" style="color:#10b981;">0</strong></div>
-                    <div class="kpi-white" style="border-left-color:#2563eb;"><span>Answered / Msg (Date)</span><strong id="cdAnswered" style="color:#1e3a8a;">0</strong></div>
-                    <div class="kpi-white" style="border-left-color:#ef4444;"><span>Pending / Busy</span><strong id="cdPending" style="color:#ef4444;">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#1b4332;"><span>Assigned</span><strong id="cdAssigned">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#15803d;"><span>Active / Activated (Sheet)</span><strong id="cdActive" style="color:#15803d;">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#c5a059;"><span>Answered / Msg (Date)</span><strong id="cdAnswered" style="color:#7c4a12;">0</strong></div>
+                    <div class="kpi-white" style="border-left-color:#b91c1c;"><span>Pending / Busy</span><strong id="cdPending" style="color:#b91c1c;">0</strong></div>
                 </div>
 
                 <div class="filter-bar">
@@ -421,18 +432,18 @@
                     </div>
                     <div class="filter-group">
                         <input type="date" id="repFromDate" class="f-input" onchange="renderReportsModule()">
-                        <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                        <span style="font-size:11px; font-weight:800; color:var(--muted);">TO</span>
                         <input type="date" id="repToDate" class="f-input" onchange="renderReportsModule()">
                     </div>
                 </div>
 
-                <div id="reportCaptureCard" style="background:#fff; padding:22px; border-radius:16px; border:1px solid var(--border);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-left:4px solid #1e3a8a; padding-left:12px;">
+                <div id="reportCaptureCard" style="background:var(--card); padding:22px; border-radius:14px; border:1.5px solid var(--royal);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-left:4px solid var(--gold); padding-left:12px; flex-wrap:wrap; gap:8px;">
                         <div>
-                            <h3 style="font-family:'Outfit'; font-weight:900; font-size:17px; color:#1e3a8a;">OVERALL PERFORMANCE</h3>
-                            <p style="font-size:11.5px; color:#64748b; font-weight:700;" id="repRangeText">Range: Today</p>
+                            <h3 style="font-family:'Cinzel','Outfit',sans-serif; font-weight:800; font-size:18px; color:var(--navy);">OVERALL PERFORMANCE</h3>
+                            <p style="font-size:11.5px; color:#7c4a12; font-weight:700;" id="repRangeText">Range: Today</p>
                         </div>
-                        <span style="font-size:11px; font-weight:700; color:#2563eb; background:#eff6ff; padding:5px 10px; border-radius:6px; border:1px solid #bfdbfe;">💡 Double-click any row to view VLE Remarks</span>
+                        <span style="font-size:11px; font-weight:700; color:var(--royal); background:var(--gold-soft); padding:5px 10px; border-radius:6px; border:1px solid var(--gold);">💡 Double-click any row to view VLE Remarks</span>
                     </div>
 
                     <div class="kpi-row">
@@ -450,10 +461,10 @@
                                         <th style="text-align:left; padding-left:14px;" id="repCol1Head">DM Name</th>
                                         <th style="text-align:left;">District</th>
                                         <th>Total Target</th>
-                                        <th style="color:#059669;">Calling Report<br><span style="font-size:9px; color:#64748b;">(Selected Date)</span></th>
-                                        <th style="color:#0f766e;">Avg Talk Time<br><span style="font-size:9px; color:#64748b;">(Selected Date)</span></th>
-                                        <th style="color:#1e3a8a;">Overall Called<br><span style="font-size:9px; color:#64748b;">(All Time)</span></th>
-                                        <th style="color:#dc2626;">Pending<br><span style="font-size:9px; color:#64748b;">(To Call)</span></th>
+                                        <th style="color:#4ade80;">Calling Report<br><span style="font-size:9px; color:#d5cfbe;">(Selected Date)</span></th>
+                                        <th style="color:#7dd3fc;">Avg Talk Time<br><span style="font-size:9px; color:#d5cfbe;">(Selected Date)</span></th>
+                                        <th style="color:#e6c885;">Overall Called<br><span style="font-size:9px; color:#d5cfbe;">(All Time)</span></th>
+                                        <th style="color:#fca5a5;">Pending<br><span style="font-size:9px; color:#d5cfbe;">(To Call)</span></th>
                                         <th>ACH %</th>
                                     </tr>
                                 </thead>
@@ -469,19 +480,19 @@
             <section id="spocMod-data" style="display:none;">
                 <div class="upload-center-card">
                     <div style="font-size:38px; margin-bottom:8px;">📊</div>
-                    <h3 style="font-family:'Outfit'; font-weight:900; font-size:21px; color:#1e3a8a;">Upload Calling Data</h3>
-                    <p style="font-size:12.5px; color:#64748b; margin-top:4px;">Select an existing Project or add a New Vertical, then upload your Excel file. New verticals appear automatically in all screens.</p>
+                    <h3 style="font-family:'Cinzel','Outfit',sans-serif; font-weight:800; font-size:21px; color:var(--navy);">Upload Calling Data</h3>
+                    <p style="font-size:12.5px; color:var(--muted); margin-top:4px;">Select an existing Project or add a New Vertical, then upload your Excel file. New verticals appear automatically in all screens.</p>
 
                     <div style="text-align:left; margin-top:20px;">
-                        <label style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; display:block; margin-bottom:6px;">Select Project Type</label>
+                        <label style="font-size:11px; font-weight:800; color:var(--navy); text-transform:uppercase; display:block; margin-bottom:6px;">Select Project Type</label>
                         <select id="uploadVerticalSelect" class="f-select" style="width:100%; padding:11px 14px; font-size:13.5px;" onchange="onUploadVerticalChange()"></select>
-                        <input type="text" id="newVerticalInput" class="f-input" style="width:100%; margin-top:10px; padding:11px 14px; font-size:13.5px; display:none; border-color:#2563eb; background:#eff6ff; text-transform:uppercase;" placeholder="Type New Vertical Name (e.g., FASTAG, E-STAMPING, NFDP)">
+                        <input type="text" id="newVerticalInput" class="f-input" style="width:100%; margin-top:10px; padding:11px 14px; font-size:13.5px; display:none; border-color:var(--gold); background:var(--gold-soft); text-transform:uppercase;" placeholder="Type New Vertical Name (e.g., FASTAG, E-STAMPING, NFDP)">
                     </div>
 
                     <div class="upload-drop" onclick="document.getElementById('excelFileInput').click()">
-                        <i class="fa-solid fa-file-excel" style="font-size:26px; color:#10b981; margin-bottom:6px;"></i>
-                        <div style="font-size:13.5px; font-weight:800; color:#1e3a8a;" id="uploadFileLabel">Click to Browse Excel</div>
-                        <div style="font-size:11px; color:#64748b; margin-top:4px;">CSC ID, District Name, VLE Name, Mobile, DM Name, Service, Last Year, This Year, Status</div>
+                        <i class="fa-solid fa-file-excel" style="font-size:26px; color:#15803d; margin-bottom:6px;"></i>
+                        <div style="font-size:13.5px; font-weight:800; color:var(--royal);" id="uploadFileLabel">Click to Browse Excel</div>
+                        <div style="font-size:11px; color:var(--muted); margin-top:4px;">CSC ID, District Name, VLE Name, Mobile, DM Name, Service, Last Year, This Year, Status</div>
                         <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelSelect(event)">
                     </div>
 
@@ -502,8 +513,8 @@
         <div class="modal-card-custom">
             <div class="modal-head-custom">
                 <div>
-                    <h4 id="modalDmTitle" style="font-family:'Outfit'; font-size:17px; font-weight:800;">Call Logs & Remarks</h4>
-                    <span id="modalDmSub" style="font-size:11.5px; color:#cbd5e1;">Showing VLE call details & remarks</span>
+                    <h4 id="modalDmTitle" style="font-family:'Cinzel','Outfit',sans-serif; font-size:17px; font-weight:800;">Call Logs & Remarks</h4>
+                    <span id="modalDmSub" style="font-size:11.5px; color:#e6c885;">Showing VLE call details & remarks</span>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <button class="btn-sm-corp btn-light" id="btnModalDate" onclick="switchModalScope('DATE')">Selected Date</button>
@@ -542,7 +553,7 @@
          ========================================================= -->
     <div id="dmAppScreen" class="dm-app-shell" style="display:none;">
         <div class="dm-topbar">
-            <div class="dm-topbar-title"><i class="fa-solid fa-phone" style="color:#1e3a8a;"></i> CALLING DESK</div>
+            <div class="dm-topbar-title"><i class="fa-solid fa-phone" style="color:var(--gold);"></i> CALLING DESK</div>
             <div style="display:flex; gap:8px;">
                 <button class="btn-sm-corp btn-light" onclick="reloadAllData()" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
                 <button class="btn-sm-corp btn-green" onclick="exportDMDataExcel()"><i class="fa-solid fa-file-excel"></i> Export</button>
@@ -559,10 +570,10 @@
             <div id="verticalGridView" class="vertical-grid"></div>
 
             <div id="callingDeckView" class="calling-deck-wrap">
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 14px; border-radius:12px; border:1px solid #e2e8f0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:10px 14px; border-radius:12px; border:1px solid var(--border);">
                     <button class="btn-sm-corp btn-light" id="deckBackBtn" onclick="backToVerticalGrid()"><i class="fa-solid fa-arrow-left"></i> Verticals</button>
-                    <span style="font-size:12.5px; font-weight:800; color:#1e3a8a;" id="activeVerticalLabel">ALL</span>
-                    <span style="font-size:12px; font-weight:800; color:#dc2626;" id="deckRemainCount">0 VLEs Left</span>
+                    <span style="font-size:12.5px; font-weight:800; color:var(--royal);" id="activeVerticalLabel">ALL</span>
+                    <span style="font-size:12px; font-weight:800; color:#b91c1c;" id="deckRemainCount">0 VLEs Left</span>
                 </div>
 
                 <!-- 1. SEARCHABLE VLE LIST + SUB-FILTER BUTTONS -->
@@ -581,27 +592,27 @@
 
         <!-- TAB 2: HOME -->
         <div id="dmTab-home" class="dm-subpage">
-            <h4 style="font-family:'Outfit'; font-weight:800; margin-bottom:12px;">🏠 My Daily Overview</h4>
+            <h4 style="font-family:'Cinzel','Outfit',sans-serif; font-weight:800; color:var(--navy); margin-bottom:12px;">🏠 My Daily Overview</h4>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-                <div class="mini-card" style="border-top:4px solid #dc2626;"><p style="font-size:11px; color:#64748b; font-weight:800;">PENDING TARGETS</p><h3 id="dmHomePending" style="font-family:'Outfit'; font-size:26px; color:#dc2626;">0</h3></div>
-                <div class="mini-card" style="border-top:4px solid #16a34a;"><p style="font-size:11px; color:#64748b; font-weight:800;">CALLED TODAY</p><h3 id="dmHomeCalled" style="font-family:'Outfit'; font-size:26px; color:#16a34a;">0</h3></div>
+                <div class="mini-card" style="border-top:4px solid #b91c1c;"><p style="font-size:11px; color:var(--muted); font-weight:800;">PENDING TARGETS</p><h3 id="dmHomePending" style="font-family:'Outfit'; font-size:26px; color:#b91c1c;">0</h3></div>
+                <div class="mini-card" style="border-top:4px solid #15803d;"><p style="font-size:11px; color:var(--muted); font-weight:800;">CALLED TODAY</p><h3 id="dmHomeCalled" style="font-family:'Outfit'; font-size:26px; color:#15803d;">0</h3></div>
             </div>
             <div class="mini-card">
-                <p style="font-size:12.5px; color:#475569; line-height:1.5;">Vertical select cheyagane pending VLEs list kanipisthundi. Meeku nachina VLE ni search chesi direct ga Call leda service-wise WhatsApp message pampavachu.</p>
+                <p style="font-size:12.5px; color:var(--muted); line-height:1.5;">Vertical select cheyagane pending VLEs list kanipisthundi. Meeku nachina VLE ni search chesi direct ga Call leda service-wise WhatsApp message pampavachu.</p>
             </div>
         </div>
 
         <!-- TAB 3: DM REPORT -->
         <div id="dmTab-report" class="dm-subpage">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-                <h4 style="font-family:'Outfit'; font-weight:800;">📊 My Vertical-Wise Report</h4>
+                <h4 style="font-family:'Cinzel','Outfit',sans-serif; font-weight:800; color:var(--navy);">📊 My Vertical-Wise Report</h4>
                 <div class="filter-group">
                     <input type="date" id="dmRepFromDate" class="f-input" onchange="renderDMReport()">
-                    <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                    <span style="font-size:11px; font-weight:800; color:var(--muted);">TO</span>
                     <input type="date" id="dmRepToDate" class="f-input" onchange="renderDMReport()">
                 </div>
             </div>
-            <p style="font-size:11.5px; color:#2563eb; font-weight:700; margin-bottom:10px;">💡 Double-click any Vertical row to view VLE Call Details & Remarks</p>
+            <p style="font-size:11.5px; color:#7c4a12; font-weight:700; margin-bottom:10px;">💡 Double-click any Vertical row to view VLE Call Details & Remarks</p>
             <div class="table-card">
                 <div class="table-scroll">
                     <table class="corp-table" style="min-width:540px;">
@@ -609,9 +620,9 @@
                             <tr>
                                 <th style="text-align:left; padding-left:14px;">Vertical</th>
                                 <th>Target</th>
-                                <th style="color:#059669;">Called<br><span style="font-size:9px; color:#64748b;">(Date Range)</span></th>
-                                <th style="color:#1e3a8a;">Overall<br><span style="font-size:9px; color:#64748b;">(All Time)</span></th>
-                                <th style="color:#dc2626;">Pending</th>
+                                <th style="color:#4ade80;">Called<br><span style="font-size:9px; color:#d5cfbe;">(Date Range)</span></th>
+                                <th style="color:#e6c885;">Overall<br><span style="font-size:9px; color:#d5cfbe;">(All Time)</span></th>
+                                <th style="color:#fca5a5;">Pending</th>
                                 <th>ACH %</th>
                             </tr>
                         </thead>
@@ -626,11 +637,11 @@
         <div id="dmTab-data" class="dm-subpage">
             <div class="filter-bar" style="margin-bottom:12px;">
                 <div class="filter-group">
-                    <h4 style="font-family:'Outfit'; font-weight:800; font-size:15px;">📁 My Call Remarks</h4>
+                    <h4 style="font-family:'Cinzel','Outfit',sans-serif; font-weight:800; font-size:15px; color:var(--navy);">📁 My Call Remarks</h4>
                 </div>
                 <div class="filter-group">
                     <input type="date" id="dmDataFromDate" class="f-input" onchange="renderDMDataLogs()">
-                    <span style="font-size:11px; font-weight:800; color:#64748b;">TO</span>
+                    <span style="font-size:11px; font-weight:800; color:var(--muted);">TO</span>
                     <input type="date" id="dmDataToDate" class="f-input" onchange="renderDMDataLogs()">
                     <button class="btn-sm-corp btn-light" id="btnDmDataDate" onclick="switchDMDataScope('DATE')">Selected Date</button>
                     <button class="btn-sm-corp btn-light" id="btnDmDataAll" onclick="switchDMDataScope('ALL')">All Time</button>
@@ -669,7 +680,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
         const BASE_VERTICALS = [
@@ -872,8 +883,8 @@
         function getRemarkStyle(rmk) {
             let s = String(rmk || "");
             if (s.includes("Activated")) return "background:#dcfce7; color:#15803d;";
-            if (s.includes("Not Reachable") || s.includes("lift") || s.includes("Closed") || s.includes("Problem") || s.includes("not working")) return "background:#fef2f2; color:#b91c1c;";
-            return "background:#eff6ff; color:#1e3a8a;";
+            if (s.includes("Not Reachable") || s.includes("lift") || s.includes("Closed") || s.includes("Problem") || s.includes("not working")) return "background:#fee2e2; color:#b91c1c;";
+            return "background:#f7efe0; color:#7c4a12;";
         }
 
         function normalizeTargetRows(rawRows) {
@@ -910,7 +921,7 @@
                 if (cscId && vMob && !vleMobileLookup[cscId]) vleMobileLookup[cscId] = vMob;
                 if (cscId && vDist && vDist !== "-" && !vleDistrictLookup[cscId]) vleDistrictLookup[cscId] = vDist;
 
-                let isAct = (sheetStat === "ACTIVATED" || sheetStat === "ACTIVE");
+                let isAct = (sheetStat === "ACTIVATED" || sheetStat === "ACTIVE" || sheetStat === "DONE");
                 let finalStat = isAct ? "ACTIVATED" : "PENDING";
 
                 if (!isAct) {
@@ -1033,7 +1044,7 @@
             let uSel = document.getElementById("uploadVerticalSelect");
             if (assignedVertical === "ALL") {
                 uSel.innerHTML = VERTICALS.map(v => `<option value="${v.key}">${v.label} Calling</option>`).join("") +
-                    `<option value="__NEW__" style="font-weight:800; color:#2563eb;">➕ Add New Vertical...</option>`;
+                    `<option value="__NEW__" style="font-weight:800; color:#1b4332;">➕ Add New Vertical...</option>`;
                 uSel.disabled = false;
             } else {
                 uSel.innerHTML = `<option value="${assignedVertical}">${assignedVertical} Calling (Locked)</option>`;
@@ -1117,20 +1128,20 @@
 
                 html += `<tr>
                     <td style="text-align:left; padding-left:14px;">${t.name}</td>
-                    <td style="color:#1e3a8a;">${t.cscId}</td>
+                    <td style="color:#1b4332;">${t.cscId}</td>
                     <td>${t.mobile}</td>
                     <td>${t.district}</td>
                     <td><b>${t.rawService}</b>${alsoBadge}</td>
                     <td>${t.lastYr}</td>
-                    <td style="color:${t.thisYr > 0 ? '#16a34a' : '#dc2626'};">${t.thisYr}</td>
+                    <td style="color:${t.thisYr > 0 ? '#15803d' : '#b91c1c'};">${t.thisYr}</td>
                     <td><span class="status-pill ${stCls}">${t.status}</span></td>
                     <td>
-                        <a href="tel:${t.mobile.replace(/\D/g,'')}" style="color:#1e3a8a; margin-right:8px;" title="Call"><i class="fa-solid fa-phone"></i></a>
-                        <a href="${waLink}" style="color:#16a34a;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="tel:${t.mobile.replace(/\D/g,'')}" style="color:#1b4332; margin-right:8px;" title="Call"><i class="fa-solid fa-phone"></i></a>
+                        <a href="${waLink}" style="color:#15803d;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                     </td>
                 </tr>`;
             });
-            document.getElementById("cdTableBody").innerHTML = html || `<tr><td colspan="9" style="padding:24px; color:#64748b;">No matching records found.</td></tr>`;
+            document.getElementById("cdTableBody").innerHTML = html || `<tr><td colspan="9" style="padding:24px; color:#525d56;">No matching records found.</td></tr>`;
         }
 
         function renderReportsModule() {
@@ -1205,12 +1216,12 @@
                 let avgText = g.rangeCalls > 0 ? formatSec(g.avgDur) : "-";
                 html += `<tr class="rep-row-dbl" ondblclick="openDmLogsModal('${safeName}', 'DATE', '${proj}', '${fDate}', '${tDate}')" title="Double-click to view VLE Call Details">
                     <td style="text-align:left; padding-left:14px;">👤 ${g.name}</td>
-                    <td style="text-align:left; color:#1e3a8a; font-size:11.5px;">${distStr}</td>
+                    <td style="text-align:left; color:#1b4332; font-size:11.5px;">${distStr}</td>
                     <td>${g.total}</td>
-                    <td style="color:${g.rangeCalls > 0 ? '#059669' : '#dc2626'}; font-weight:900;">${g.rangeCalls}</td>
-                    <td style="color:#0f766e; font-weight:800;">${avgText}</td>
-                    <td style="color:#1e3a8a;">${g.allCalls}</td>
-                    <td style="color:#dc2626;">${g.pending}</td>
+                    <td style="color:${g.rangeCalls > 0 ? '#15803d' : '#b91c1c'}; font-weight:900;">${g.rangeCalls}</td>
+                    <td style="color:#164e63; font-weight:800;">${avgText}</td>
+                    <td style="color:#1b4332;">${g.allCalls}</td>
+                    <td style="color:#b91c1c;">${g.pending}</td>
                     <td style="font-weight:900;">${g.ach}%</td>
                 </tr>`;
             });
@@ -1225,9 +1236,9 @@
             document.getElementById("repTableBody").innerHTML = html || `<tr><td colspan="8" style="padding:20px;">No data</td></tr>`;
             document.getElementById("repTableFoot").innerHTML = `<tr>
                 <td style="text-align:left; padding-left:14px;">GRAND TOTAL</td><td>-</td>
-                <td>${gt.total}</td><td style="color:#059669;">${gt.rangeCalls}</td>
-                <td style="color:#0f766e;">${gtAvg}</td>
-                <td style="color:#1e3a8a;">${gt.allCalls}</td><td style="color:#dc2626;">${gt.pending}</td><td>${gtAch}%</td>
+                <td>${gt.total}</td><td style="color:#4ade80;">${gt.rangeCalls}</td>
+                <td style="color:#7dd3fc;">${gtAvg}</td>
+                <td style="color:#e6c885;">${gt.allCalls}</td><td style="color:#fca5a5;">${gt.pending}</td><td>${gtAch}%</td>
             </tr>`;
         }
 
@@ -1249,8 +1260,10 @@
         function setModalSrvFilter(srv) { activeModalSrvFilter = srv; renderModalDmLogs(); }
 
         function renderModalDmLogs() {
-            document.getElementById("btnModalDate").style.background = activeModalScope === "DATE" ? "#fcd34d" : "#f1f5f9";
-            document.getElementById("btnModalAll").style.background = activeModalScope === "ALL" ? "#fcd34d" : "#f1f5f9";
+            document.getElementById("btnModalDate").style.background = activeModalScope === "DATE" ? "#c5a059" : "#ffffff";
+            document.getElementById("btnModalDate").style.color = activeModalScope === "DATE" ? "#141a17" : "#1b4332";
+            document.getElementById("btnModalAll").style.background = activeModalScope === "ALL" ? "#c5a059" : "#ffffff";
+            document.getElementById("btnModalAll").style.color = activeModalScope === "ALL" ? "#141a17" : "#1b4332";
 
             let matched = [], srvCounts = {};
             for (let i = allLogs.length - 1; i >= 1; i--) {
@@ -1296,17 +1309,17 @@
             let html = "";
             filteredRows.slice(0, 500).forEach(m => {
                 html += `<tr>
-                    <td style="font-size:11.5px; color:#475569;">${m.date}</td>
-                    <td style="color:#1e3a8a;">${m.cscId}</td>
+                    <td style="font-size:11.5px; color:#525d56;">${m.date}</td>
+                    <td style="color:#1b4332;">${m.cscId}</td>
                     <td style="text-align:left;">${m.vleName}</td>
-                    <td style="color:#0f172a;">${m.vleMobile}</td>
-                    <td style="color:#1e3a8a; font-size:11.5px;">${m.vleDistrict}</td>
+                    <td style="color:#141a17;">${m.vleMobile}</td>
+                    <td style="color:#1b4332; font-size:11.5px;">${m.vleDistrict}</td>
                     <td><b>${m.service}</b></td>
                     <td style="text-align:left;"><span class="rmk-badge" style="${getRemarkStyle(m.remark)}">${m.remark}</span></td>
-                    <td style="color:#059669;">${m.dur}</td>
+                    <td style="color:#15803d;">${m.dur}</td>
                 </tr>`;
             });
-            document.getElementById("modalLogsBody").innerHTML = html || `<tr><td colspan="8" style="padding:28px; color:#64748b;">No calls found for ${projLabel}.</td></tr>`;
+            document.getElementById("modalLogsBody").innerHTML = html || `<tr><td colspan="8" style="padding:28px; color:#525d56;">No calls found for ${projLabel}.</td></tr>`;
         }
 
         function exportModalDmLogs() {
@@ -1314,7 +1327,7 @@
             XLSX.writeFile(wb, `${activeModalDm}_Call_Logs.xlsx`);
         }
         function downloadReportJPG() {
-            html2canvas(document.getElementById("reportCaptureCard"), { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            html2canvas(document.getElementById("reportCaptureCard"), { scale: 2, backgroundColor: "#faf8f2" }).then(canvas => {
                 let link = document.createElement("a");
                 link.download = `CSC_AP_Performance_Report.jpg`;
                 link.href = canvas.toDataURL("image/jpeg", 0.95);
@@ -1380,9 +1393,9 @@
                     if (!res.success) throw new Error(res.message || "Failed");
                     pFill.style.width = `${Math.round(((c + 1) / total) * 100)}%`;
                 }
-                msg.innerHTML = `<span style="color:#059669;">✅ Successfully synced ${uploadRows.length.toLocaleString()} rows for ${chosenV}! Click Refresh to view updated screens.</span>`;
+                msg.innerHTML = `<span style="color:#15803d;">✅ Successfully synced ${uploadRows.length.toLocaleString()} rows for ${chosenV}! Click Refresh to view updated screens.</span>`;
             } catch (err) {
-                msg.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`;
+                msg.innerHTML = `<span style="color:#b91c1c;">❌ ${err.message}</span>`;
             }
             btn.disabled = false;
         }
@@ -1400,9 +1413,9 @@
                 let r = allLogs[i]; if (!r) continue;
                 let lDate = String(r[0] || ""), lCsc = String(r[1] || "").trim(), lRawSrv = String(r[2] || "").toUpperCase().trim(), lDm = String(r[3] || "").trim(), lRmk = String(r[4] || "");
                 if (isToday(lDate) && lDm) dmCallCounts[lDm] = (dmCallCounts[lDm] || 0) + 1;
-                if (isNameMatch(lDm, rawName)) {
+                if (isNameMatch(lDm, rawName) && isToday(lDate)) {
                     calledSet.add(lCsc + "_" + lRawSrv);
-                    if (isToday(lDate)) dmTodayLogs.push({ date: lDate, cscId: lCsc, service: lRawSrv, remark: lRmk });
+                    dmTodayLogs.push({ date: lDate, cscId: lCsc, service: lRawSrv, remark: lRmk });
                 }
             }
 
@@ -1484,21 +1497,21 @@
                 html += `<tr class="rep-row-dbl" ondblclick="openDmLogsModal('${safeDm}', 'DATE', '${safeKey}', '${fDate}', '${tDate}')" title="Double-click to view VLE Remarks">
                     <td style="text-align:left; padding-left:14px;">${v.icon} ${v.label}</td>
                     <td>${tot}</td>
-                    <td style="color:${rCalls > 0 ? '#059669' : '#dc2626'}; font-weight:900;">${rCalls}</td>
-                    <td style="color:#1e3a8a;">${ov}</td>
-                    <td style="color:#dc2626;">${pend}</td>
+                    <td style="color:${rCalls > 0 ? '#15803d' : '#b91c1c'}; font-weight:900;">${rCalls}</td>
+                    <td style="color:#1b4332;">${ov}</td>
+                    <td style="color:#b91c1c;">${pend}</td>
                     <td style="font-weight:900;">${ach}%</td>
                 </tr>`;
             });
 
             let gtAch = gt.total > 0 ? Math.round((gt.overall / gt.total) * 100) : 0;
-            document.getElementById("dmReportBody").innerHTML = html || `<tr><td colspan="6" style="padding:20px; color:#64748b;">No targets assigned.</td></tr>`;
+            document.getElementById("dmReportBody").innerHTML = html || `<tr><td colspan="6" style="padding:20px; color:#525d56;">No targets assigned.</td></tr>`;
             document.getElementById("dmReportFoot").innerHTML = `<tr>
                 <td style="text-align:left; padding-left:14px;">GRAND TOTAL</td>
                 <td>${gt.total}</td>
-                <td style="color:#059669;">${gt.range}</td>
-                <td style="color:#1e3a8a;">${gt.overall}</td>
-                <td style="color:#dc2626;">${gt.pending}</td>
+                <td style="color:#4ade80;">${gt.range}</td>
+                <td style="color:#e6c885;">${gt.overall}</td>
+                <td style="color:#fca5a5;">${gt.pending}</td>
                 <td>${gtAch}%</td>
             </tr>`;
         }
@@ -1509,8 +1522,10 @@
         function renderDMDataLogs() {
             let fDate = document.getElementById("dmDataFromDate").value;
             let tDate = document.getElementById("dmDataToDate").value;
-            document.getElementById("btnDmDataDate").style.background = dmDataScope === "DATE" ? "#fcd34d" : "#f1f5f9";
-            document.getElementById("btnDmDataAll").style.background = dmDataScope === "ALL" ? "#fcd34d" : "#f1f5f9";
+            document.getElementById("btnDmDataDate").style.background = dmDataScope === "DATE" ? "#c5a059" : "#ffffff";
+            document.getElementById("btnDmDataDate").style.color = dmDataScope === "DATE" ? "#141a17" : "#1b4332";
+            document.getElementById("btnDmDataAll").style.background = dmDataScope === "ALL" ? "#c5a059" : "#ffffff";
+            document.getElementById("btnDmDataAll").style.color = dmDataScope === "ALL" ? "#141a17" : "#1b4332";
 
             let matched = [], srvCounts = {};
             for (let i = allLogs.length - 1; i >= 1; i--) {
@@ -1548,17 +1563,17 @@
             let html = "";
             filtered.slice(0, 500).forEach(m => {
                 html += `<tr>
-                    <td style="font-size:11.5px; color:#475569;">${m.date}</td>
-                    <td style="color:#1e3a8a;">${m.cscId}</td>
+                    <td style="font-size:11.5px; color:#525d56;">${m.date}</td>
+                    <td style="color:#1b4332;">${m.cscId}</td>
                     <td style="text-align:left;">${m.vleName}</td>
                     <td>${m.vleMobile}</td>
-                    <td style="color:#1e3a8a; font-size:11.5px;">${m.vleDistrict}</td>
+                    <td style="color:#1b4332; font-size:11.5px;">${m.vleDistrict}</td>
                     <td><b>${m.service}</b></td>
                     <td style="text-align:left;"><span class="rmk-badge" style="${getRemarkStyle(m.remark)}">${m.remark}</span></td>
-                    <td style="color:#059669;">${m.dur}</td>
+                    <td style="color:#15803d;">${m.dur}</td>
                 </tr>`;
             });
-            document.getElementById("dmDataBody").innerHTML = html || `<tr><td colspan="8" style="padding:26px; color:#64748b;">No calls found for selected date.</td></tr>`;
+            document.getElementById("dmDataBody").innerHTML = html || `<tr><td colspan="8" style="padding:26px; color:#525d56;">No calls found for selected date.</td></tr>`;
         }
 
         function switchDMTab(tab) {
@@ -1665,7 +1680,7 @@
                 document.getElementById("vleListHost").innerHTML = `
                     <div class="mini-card" style="text-align:center; padding:30px;">
                         <h3 style="font-family:'Outfit'; color:#15803d;">🎉 Completed!</h3>
-                        <p style="font-size:12.5px; color:#64748b; margin-top:6px;">All VLEs in this list have been called.</p>
+                        <p style="font-size:12.5px; color:#525d56; margin-top:6px;">All VLEs in this list have been called.</p>
                         <button class="btn-sm-corp btn-navy" style="margin-top:14px;" onclick="backToVerticalGrid()">Back to Verticals</button>
                     </div>`;
                 return;
@@ -1679,7 +1694,7 @@
                 : baseList;
 
             if (!filtered.length) {
-                document.getElementById("vleListHost").innerHTML = `<div class="mini-card" style="text-align:center; color:#64748b; font-size:12.5px;">No matching VLE found.</div>`;
+                document.getElementById("vleListHost").innerHTML = `<div class="mini-card" style="text-align:center; color:#525d56; font-size:12.5px;">No matching VLE found.</div>`;
                 return;
             }
 
@@ -1758,8 +1773,8 @@
             let defaultWaMsg = getServiceWaMessage(v, prefSrv);
 
             let previewChipsHtml = v.services.map(s =>
-                `<span style="display:inline-flex; align-items:center; gap:5px; background:#eff6ff; color:#1e3a8a; border:1px solid #bfdbfe; padding:4px 10px; border-radius:8px; font-size:11.5px; font-weight:800;">
-                    ${s.rawService} <span style="color:#64748b; font-weight:700;">(LY: ${s.lastYr} | TY: ${s.thisYr})</span>
+                `<span style="display:inline-flex; align-items:center; gap:5px; background:#e9f2ed; color:#1b4332; border:1px solid #b7d4c4; padding:4px 10px; border-radius:8px; font-size:11.5px; font-weight:800;">
+                    ${s.rawService} <span style="color:#525d56; font-weight:700;">(LY: ${s.lastYr} | TY: ${s.thisYr})</span>
                 </span>`
             ).join("");
 
@@ -1781,7 +1796,7 @@
                             <input type="checkbox" id="srvChk-${idx}" checked onchange="toggleSrvCard(${idx})">
                             <span>${s.rawService}</span>
                         </label>
-                        <span class="srv-stat-mini">LY: ${s.lastYr} | TY: <b style="color:#dc2626;">${s.thisYr}</b></span>
+                        <span class="srv-stat-mini">LY: ${s.lastYr} | TY: <b style="color:#b91c1c;">${s.thisYr}</b></span>
                     </div>
                     <select id="srvRmk-${idx}" class="rmk-select" onchange="toggleSrvOther(${idx})">${optHtml}</select>
                     <input type="text" id="srvOther-${idx}" class="rmk-input" style="display:none;" placeholder="Type specific reason for ${s.rawService}...">
@@ -1800,8 +1815,8 @@
             <div class="vle-call-card">
                 <div class="vle-card-head">${headerTitle}</div>
                 <div class="vle-card-body">
-                    <h3 style="font-family:'Outfit'; font-size:20px; font-weight:800; color:#0f172a;">${v.name}</h3>
-                    <p style="font-size:12px; color:#64748b; font-weight:700; margin:4px 0 10px 0;">CSC ID: ${v.cscId} ${v.district && v.district !== '-' ? '| ' + v.district : ''}</p>
+                    <h3 style="font-family:'Outfit'; font-size:20px; font-weight:800; color:#122d22;">${v.name}</h3>
+                    <p style="font-size:12px; color:#525d56; font-weight:700; margin:4px 0 10px 0;">CSC ID: ${v.cscId} ${v.district && v.district !== '-' ? '| ' + v.district : ''}</p>
                     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:12px;">
                         ${previewChipsHtml}
                     </div>
@@ -1818,7 +1833,7 @@
                         ${callBtnHtml}
                         <button type="button" class="btn-wa" onclick="sendCustomCardWa('${cleanMob}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                     </div>
-                    <div id="dmLockMsg" style="background:#fffbeb; border:1px dashed #f59e0b; color:#b45309; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">${lockMsgText}</div>
+                    <div id="dmLockMsg" style="background:#f7efe0; border:1px dashed #c5a059; color:#7c4a12; padding:10px; border-radius:10px; font-size:12px; font-weight:700;">${lockMsgText}</div>
                     <div id="dmActionBox" style="display:none; margin-top:12px;">
                         ${masterBoxHtml}
                         ${srvRowsHtml}
@@ -1833,8 +1848,7 @@
             callInitiated = false;
         }
 
-        
-function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
+        function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
             if (!isMobileDevice) return;
             if (!callStartTime) callStartTime = new Date();
 
@@ -1862,7 +1876,6 @@ function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
                 unlockCallSubmit(true, parseInt(event.data.duration || 0));
             }
         });
-
 
         function toggleSrvCard(idx) {
             let chk = document.getElementById(`srvChk-${idx}`).checked;

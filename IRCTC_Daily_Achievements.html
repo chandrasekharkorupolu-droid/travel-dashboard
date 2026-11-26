@@ -4,213 +4,196 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Achievements - CSC TravelCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         /* 🌟 పేజీ స్క్రోల్ లాక్ & లేఅవుట్ 🌟 */
-        html, body { height: 100vh; overflow: hidden; background-color: #f8f9fc; }
+        html, body { height: 100vh; overflow: hidden; background-color: var(--cream-bg); color: var(--charcoal); }
         body { display: flex; flex-direction: column; padding: 12px 15px; gap: 12px; }
 
         .target-control-panel {
-            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            background-color: var(--cream-card); border-radius: 10px; border: 1.5px solid var(--forest); padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(27,67,50,0.08); flex-shrink: 0;
             flex-wrap: wrap; gap: 10px; z-index: 1000;
         }
         
-        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
-        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group-custom { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+        .filter-group-custom select {
+            padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+            outline: none; background-color: #ffffff; font-weight: 700; cursor: pointer; color: var(--charcoal); transition: 0.2s;
+        }
+        .filter-group-custom select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
 
-        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action {
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 6px 15px;
+            border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-action:hover { background-color: var(--forest); color: #ffffff; }
+        #downloadBtn { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        #downloadBtn:hover { background-color: #b08a42; color: #ffffff; }
 
         /* 🌟 టేబుల్ ఏరియా స్క్రోలింగ్ 🌟 */
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: var(--cream-bg); padding: 10px 5px; border-radius: 8px; }
         
         /* 📸 ఇమేజ్ పర్ఫెక్ట్ గా సెంటర్ లో రావడానికి Compact క్లాస్ 📸 */
         .capture-compact { 
             width: max-content !important; min-width: auto !important; margin: 0 auto !important; 
-            background-color: #ffffff !important; padding: 30px !important; 
+            background-color: var(--cream-bg) !important; padding: 30px !important; 
             display: inline-flex !important; flex-direction: column !important; align-items: center !important; 
             height: auto !important; overflow: visible !important; 
         }
         .capture-compact .table-container { 
             width: max-content !important; height: auto !important; overflow: visible !important; 
-            display: block !important; flex: none !important; border: 2px solid #cbd5e1 !important; 
+            display: block !important; flex: none !important; border: 2px solid var(--forest) !important; 
             box-shadow: none !important; margin: 0 auto !important;
         }
         .capture-compact table { width: auto !important; min-width: auto !important; margin: 0 auto !important; }
         .capture-compact th { padding: 12px 10px !important; font-size: 11px !important; position: static !important; }
         .capture-compact td { padding: 12px 10px !important; font-size: 13px !important; position: static !important; }
-        .capture-compact .td-district { position: static !important; box-shadow: none !important; border-right: 2px solid #cbd5e1 !important; }
+        .capture-compact .td-district { position: static !important; box-shadow: none !important; border-right: 2px solid var(--border) !important; }
         .capture-compact tfoot td { position: static !important; }
         
         .capture-compact .kpi-display-row { width: max-content !important; margin: 0 auto 20px auto !important; gap: 12px !important; }
         
-        .kpi-display-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-shrink: 0; flex-wrap: nowrap;}
+        .kpi-display-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 18px; flex-shrink: 0; flex-wrap: nowrap; }
         .kpi-box-clean { 
-            background-color: #ffffff; border-radius: 8px; padding: 12px 20px; border: 1px solid #cbd5e1; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            background-color: var(--cream-card); border-radius: 8px; padding: 12px 20px; border: 1px solid var(--border); 
+            box-shadow: 0 3px 8px rgba(27,67,50,0.06); 
             display: flex; flex-direction: row; align-items: center; gap: 10px; min-width: max-content; 
         }
-        .kpi-box-clean.t-color { border-left: 5px solid #1e3a8a; }
-        .kpi-box-clean.a-color { border-left: 5px solid #10b981; }
-        .kpi-box-clean.b-color { border-left: 5px solid #ef4444; }
-        .kpi-box-clean.p-color { border-left: 5px solid #f59e0b; }
+        .kpi-box-clean.t-color { border-left: 5px solid var(--forest); }
+        .kpi-box-clean.a-color { border-left: 5px solid #15803d; }
+        .kpi-box-clean.b-color { border-left: 5px solid #b91c1c; }
+        .kpi-box-clean.p-color { border-left: 5px solid var(--gold); }
         
-        .kpi-box-clean .lbl { font-size: 13px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; white-space: nowrap;}
-        .kpi-box-clean .val { font-size: 22px; font-weight: 800; color: #1e293b; margin: 0; line-height: 1; white-space: nowrap;}
+        .kpi-box-clean .lbl { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0; white-space: nowrap; }
+        .kpi-box-clean .val { font-size: 22px; font-weight: 900; color: var(--forest-dark); margin: 0; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .kpi-box-clean.a-color .val { color: #15803d; }
+        .kpi-box-clean.b-color .val { color: #b91c1c; }
 
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%; position: relative;}
+        .table-container { flex: 1; background-color: var(--cream-card); border-radius: 10px; box-shadow: 0 4px 16px rgba(27,67,50,0.08); overflow: auto; border: 1.5px solid var(--forest); width: 100%; position: relative; }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
         
         thead { position: sticky; top: 0; z-index: 20; }
         th, td { white-space: nowrap; }
 
-        th { font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(0,0,0,0.15); letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;}
-        td { padding: 12px 10px; font-size: 13px; color: #333; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; font-weight: 600; }
+        th {
+            font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: #f8f5ec;
+            border-right: 1px solid rgba(255,255,255,0.14); border-bottom: 2px solid var(--gold);
+            letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;
+        }
+        td {
+            padding: 11px 10px; font-size: 13px; color: var(--charcoal); background-color: var(--cream-card);
+            border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3; font-weight: 600;
+        }
         
-        .th-dist { background-color: #0f172a; min-width: 160px; position: sticky; left: 0; z-index: 95; border-right: 2px solid #cbd5e1 !important;}
-        .th-ids { background-color: #334155; }
-        .th-act { background-color: #475569; }
-        .th-act-new { background-color: #6366f1; } 
-        .th-part { background-color: #8b5cf6; }     
-        .th-tar { background-color: #1e3a8a; }
-        .th-ach { background-color: #10b981; }
-        .th-bal { background-color: #be123c; }
-        .th-per { background-color: #d97706; }
+        .th-dist { background-color: var(--forest-dark); min-width: 165px; position: sticky; left: 0; z-index: 95; border-right: 2px solid var(--gold) !important; }
+        .th-ids { background-color: #344e41; }
+        .th-act { background-color: #4b5d54; }
+        .th-act-new { background-color: #164e63; } 
+        .th-part { background-color: #7c4a12; }     
+        .th-tar { background-color: var(--forest); }
+        .th-ach { background-color: #15803d; }
+        .th-bal { background-color: #991b1b; }
+        .th-per { background-color: #92400e; }
 
-        tr:hover td { background-color: #f8fafc; }
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
         
         .td-district { 
-            font-weight: 800; text-align: left; padding-left: 20px; color: #1e293b; background: #ffffff; 
-            position: sticky; left: 0; z-index: 5; border-right: 2px solid #cbd5e1 !important; 
-            transition: 0.2s; box-shadow: 2px 0 5px rgba(0,0,0,0.05); cursor: pointer;
+            font-weight: 800; text-align: left; padding-left: 20px; color: var(--forest-dark); background-color: var(--cream-card); 
+            position: sticky; left: 0; z-index: 5; border-right: 2px solid var(--border) !important; 
+            transition: 0.2s; cursor: pointer;
         }
+        tbody tr:nth-child(even) .td-district { background-color: var(--cream-alt); }
+        .td-district:hover { color: #7c4a12; }
 
-        tbody tr:nth-child(even) .td-district { background-color: #f8fafc; }
-
-        .td-ids { color: #334155; font-weight: 700; }
-        .td-act { color: #0f766e; font-weight: 800; }
-        .td-act-new { color: #4338ca; font-weight: 800; background-color: #eef2ff;}  
-        .td-part { color: #6d28d9; font-weight: 800; background-color: #f5f3ff;}     
-        .td-tar { color: #1e3a8a; font-weight: 800; background-color: #eff6ff;}
-        .td-ach { color: #047857; font-weight: 800; background-color: #f0fdf4;}
-        .td-bal { color: #be123c; font-weight: 800; background-color: #fff1f2;}
+        .td-ids { color: var(--charcoal); font-weight: 700; }
+        .td-act { color: #1b4332; font-weight: 800; }
+        .td-act-new { color: #164e63; font-weight: 800; background-color: #eef5f7 !important; }  
+        .td-part { color: #7c4a12; font-weight: 800; background-color: var(--gold-soft) !important; }     
+        .td-tar { color: var(--forest-dark); font-weight: 800; background-color: var(--forest-soft) !important; }
+        .td-ach { color: #15803d; font-weight: 800; background-color: #e6f4ea !important; }
+        .td-bal { color: #b91c1c; font-weight: 800; background-color: #fef2f2 !important; }
         
         .pct-high { color: #15803d; font-weight: 900; }
         .pct-med { color: #b45309; font-weight: 900; }
         .pct-low { color: #b91c1c; font-weight: 900; }
 
-        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
-        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+        /* Royal Grand Total Footer */
+        tfoot tr.total-row td {
+            background-color: var(--forest-dark) !important; font-weight: 900; color: #ffffff !important;
+            border-top: 2px solid var(--gold); font-size: 14px; position: sticky; bottom: 0; z-index: 20;
+            border-right: 1px solid rgba(255,255,255,0.12);
+        }
+        tfoot tr.total-row td:first-child {
+            text-align: left; padding-left: 20px; color: #e6c885 !important;
+            position: sticky; left: 0; border-right: 2px solid var(--gold) !important; z-index: 25;
+        }
+        tfoot tr.total-row td.td-ids { color: #ffffff !important; }
+        tfoot tr.total-row td.td-act { color: #d5cfbe !important; }
+        tfoot tr.total-row td.td-act-new { color: #7dd3fc !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.td-part { color: #fbbf24 !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.td-tar { color: #e6c885 !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.td-ach { color: #4ade80 !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.td-bal { color: #f87171 !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.pct-high { color: #4ade80 !important; }
+        tfoot tr.total-row td.pct-med { color: #fbbf24 !important; }
+        tfoot tr.total-row td.pct-low { color: #f87171 !important; }
 
-        .header-title-bar { font-size: 20px; font-weight: 800; color: #1e293b; text-transform: uppercase; text-align: center; padding: 8px 0; letter-spacing: 0.5px; flex-shrink: 0;}
+        .header-title-bar { font-family: 'Cinzel', serif; font-size: 21px; font-weight: 800; color: var(--forest-dark); text-transform: uppercase; text-align: center; padding: 6px 0; letter-spacing: 0.8px; flex-shrink: 0; }
 
-        .loader { text-align: center; padding: 50px; font-size: 16px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px;}
-        .spinner { width: 30px; height: 30px; border: 4px solid #ccc; border-top-color: #e65c00; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { text-align: center; padding: 50px; font-size: 16px; color: var(--forest); font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .spinner { width: 32px; height: 32px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        body.fullscreen-mode { padding: 0; gap: 0;}
-        body.fullscreen-mode .target-control-panel { border-radius: 0; border-left: none; border-right: none; border-top: none;}
+        body.fullscreen-mode { padding: 0; gap: 0; }
+        body.fullscreen-mode .target-control-panel { border-radius: 0; border-left: none; border-right: none; border-top: none; }
 
-
-/* ========================================================================= */
+        /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR DAILY ACHIEVEMENTS (Added by Chandra) 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            
-            /* 1. పేజీ స్క్రోల్ లాక్ తీసేయడం */
-            html, body {
-                height: auto;
-                overflow: auto !important; /* మొబైల్ లో ఫ్రీగా స్క్రోల్ అవ్వడానికి */
-            }
-            
-            body { 
-                padding: 10px; 
-            }
+            html, body { height: auto; overflow: auto !important; }
+            body { padding: 10px; }
 
-            /* 2. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .target-control-panel {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                position: relative; /* స్టికీ ఎఫెక్ట్ తీసేసాను */
-                gap: 12px;
-            }
+            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; position: relative; gap: 12px; }
+            .filter-group-custom { flex-direction: column; width: 100%; align-items: stretch; }
+            .filter-group-custom span { margin-bottom: 3px; text-align: left; }
+            .filter-group-custom select, .btn-action { width: 100%; margin-left: 0 !important; margin-bottom: 5px; justify-content: center; text-align: center; }
 
-            .filter-group-custom {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-            }
+            .header-title-bar { font-size: 15px; line-height: 1.4; margin-bottom: 5px; }
+            .kpi-display-row { flex-wrap: wrap; gap: 10px !important; margin-bottom: 15px !important; }
+            .kpi-box-clean { flex: 1 1 calc(50% - 10px); min-width: 130px; flex-direction: column; text-align: center; padding: 10px; gap: 5px; }
+            .kpi-box-clean .lbl { font-size: 9px; white-space: normal; }
+            .kpi-box-clean .val { font-size: 18px; }
 
-            .filter-group-custom span {
-                margin-bottom: 3px;
-                text-align: left;
-            }
+            #captureArea { overflow: visible; }
+            .table-container { max-height: 450px; -webkit-overflow-scrolling: touch; }
+            table { min-width: 750px; }
+            th, td { font-size: 10px !important; padding: 10px 5px !important; }
 
-            .filter-group-custom select, .btn-action {
-                width: 100%;
-                margin-left: 0 !important;
-                margin-bottom: 5px;
-                justify-content: center;
-                text-align: center;
-            }
-
-            /* 3. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
-            .header-title-bar {
-                font-size: 15px;
-                line-height: 1.4;
-                margin-bottom: 5px;
-            }
-
-            .kpi-display-row {
-                flex-wrap: wrap; /* పక్కపక్కన సరిపోకపోతే కిందకి వస్తాయి */
-                gap: 10px !important;
-                margin-bottom: 15px !important;
-            }
-
-            .kpi-box-clean {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
-                min-width: 130px;
-                flex-direction: column; /* లేబుల్ పైన, వాల్యూ కింద */
-                text-align: center;
-                padding: 10px;
-                gap: 5px;
-            }
-
-            .kpi-box-clean .lbl { 
-                font-size: 9px; 
-                white-space: normal; /* పెద్ద పదాలు ఉంటే కిందకి వస్తాయి */
-            }
-            .kpi-box-clean .val { 
-                font-size: 18px; 
-            }
-
-            /* 4. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            #captureArea {
-                overflow: visible;
-            }
-
-            .table-container {
-                max-height: 450px;
-                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ */
-            }
-
-            table {
-                min-width: 750px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా సెట్ చేయడం */
-            }
-
-            th, td {
-                font-size: 10px !important;
-                padding: 10px 5px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
             .td-district, .th-dist, tfoot tr.total-row td:first-child {
                 position: static !important;
-                border-right: 1px solid #e2e8f0 !important;
+                border-right: 1px solid var(--border) !important;
                 text-align: center !important;
                 padding-left: 5px !important;
             }
@@ -230,15 +213,15 @@
 
     <div class="target-control-panel">
         <div class="filter-group-custom">
-            <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
-            <select id="reportType" onchange="calculateDailyData()" style="border-color: #10b981; color: #047857; font-weight: 800; background-color: #f0fdf4;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Report Type:</span>
+            <select id="reportType" onchange="calculateDailyData()" style="border-color: var(--gold); color: var(--forest-dark); font-weight: 800; background-color: var(--gold-soft);">
                 <option value="txns" selected>🎫 Daily Transactions</option>
                 <option value="regs">📋 Daily Registrations</option>
             </select>
         </div>
 
         <div class="filter-group-custom" style="margin-left: auto;">
-            <span style="font-size: 13px; font-weight: 700; color: #475569;">Filter:</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Filter:</span>
             <select id="districtType" onchange="updateDistrictsDropdown()">
                 <option value="old" selected>Old Districts</option>
                 <option value="new">New Districts</option>
@@ -247,8 +230,8 @@
                 <option value="All">All Districts</option>
             </select>
             
-            <button class="btn-action" onclick="resetFilters()" style="color: #4b5563; border-color: #d1d5db; background-color: #f3f4f6;">🔄 Reset Filters</button>
-            <button class="btn-action" onclick="refreshData(event)" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Fetch Latest Data</button>
+            <button class="btn-action" onclick="resetFilters()">🔄 Reset Filters</button>
+            <button class="btn-action" onclick="refreshData(event)" style="background: var(--forest); color: #f8f5ec; border-color: var(--forest-dark);">🔄 Fetch Latest Data</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
         </div>
@@ -256,7 +239,7 @@
 
     <div id="captureArea">
         <div class="header-title-bar" id="dynamicTitle">IRCTC DAILY ACHIEVEMENTS REPORT (YESTERDAY)</div>
-        <div style="font-size: 12px; color: #64748b; text-align: center; margin-top: -5px; margin-bottom: 25px; font-weight: bold; flex-shrink: 0;" id="reportDate">Report Generated on: </div>
+        <div style="font-size: 12.5px; color: #7c4a12; text-align: center; margin-top: -4px; margin-bottom: 20px; font-weight: 700; flex-shrink: 0;" id="reportDate">Report Generated on: </div>
 
         <div class="kpi-display-row">
             <div class="kpi-box-clean t-color">
@@ -368,7 +351,7 @@
             setTimeout(() => { 
                 html2canvas(captureArea, { 
                     scale: 3.5, 
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#f4f1e6",
                     useCORS: true,
                     windowWidth: captureArea.scrollWidth + 50
                 }).then(canvas => {
@@ -403,7 +386,7 @@
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().then(() => {
                     btn.innerHTML = "✖ Exit Full Screen";
-                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                    btn.style.backgroundColor = "#991b1b"; btn.style.color = "#ffffff"; btn.style.borderColor = "#991b1b";
                 }).catch(err => {
                     alert(`Error attempting to enable fullscreen mode: ${err.message}`);
                 });
@@ -412,7 +395,7 @@
                 if (document.exitFullscreen) {
                     document.exitFullscreen().then(() => {
                         btn.innerHTML = "⛶ Full Screen";
-                        btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+                        btn.style.backgroundColor = "#ffffff"; btn.style.color = "#1b4332"; btn.style.borderColor = "#1b4332";
                     });
                     document.body.classList.remove("fullscreen-mode");
                 }
@@ -423,7 +406,7 @@
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+                btn.style.backgroundColor = "#ffffff"; btn.style.color = "#1b4332"; btn.style.borderColor = "#1b4332";
                 document.body.classList.remove("fullscreen-mode");
             }
         });
@@ -465,7 +448,6 @@
                 let cacheTime = localStorage.getItem("cscCacheTime");
                 
                 let now = new Date().getTime();
-                // 4 గంటల లోపు పాత డేటా ఉంటే దాన్ని వాడుకుంటుంది
                 let isCacheValid = cachedData && cachedConfig && cacheTime && (now - parseInt(cacheTime) < 14400000);
                 
                 let rawData = null, usersData = null, confData = null;
@@ -550,7 +532,7 @@
 
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = `<tr><td colspan='9' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ Error loading data. Please wait and click Fetch Latest Data.</td></tr>`;
+                document.getElementById("tableBody").innerHTML = `<tr><td colspan='9' style='color:#b91c1c; text-align:center; padding: 20px; font-weight:bold;'>❌ Error loading data. Please wait and click Fetch Latest Data.</td></tr>`;
             }
         }
 
@@ -831,7 +813,7 @@
             });
 
             if (distList.length === 0 || bodyHtml === "") {
-                bodyHtml = `<tr><td colspan="9" style="padding: 30px; color: #d9534f; font-weight: bold; font-size: 15px;">No Target / Live Data found for your account!</td></tr>`;
+                bodyHtml = `<tr><td colspan="9" style="padding: 30px; color: #b91c1c; font-weight: bold; font-size: 15px;">No Target / Live Data found for your account!</td></tr>`;
             }
 
             document.getElementById("tableBody").innerHTML = bodyHtml;

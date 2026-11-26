@@ -4,183 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Progress - CSC TravelCloud</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
         
-        html, body { height: 100vh; overflow: hidden; background-color: #f8fafc; }
+        html, body { height: 100vh; overflow: hidden; background-color: var(--cream-bg); color: var(--charcoal); }
         body { display: flex; flex-direction: column; padding: 12px 15px; gap: 12px; }
 
         .target-control-panel {
-            background-color: #fff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); flex-shrink: 0;
-            flex-wrap: wrap;
+            background-color: var(--cream-card); border-radius: 10px; border: 1.5px solid var(--forest); padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            box-shadow: 0 3px 10px rgba(27,67,50,0.08); flex-shrink: 0; flex-wrap: wrap;
         }
 
-        .filter-group-custom { display: flex; gap: 10px; align-items: center; }
-        .filter-group-custom select { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b; transition: 0.2s; }
+        .filter-group-custom { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+        .filter-group-custom select {
+            padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+            outline: none; background-color: #ffffff; font-weight: 700; cursor: pointer; color: var(--charcoal); transition: 0.2s;
+        }
+        .filter-group-custom select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
         
-        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action {
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 6px 14px;
+            border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-action:hover { background-color: var(--forest); color: #ffffff; }
+        #downloadBtn { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        #downloadBtn:hover { background-color: #b08a42; color: #ffffff; }
 
         body.fullscreen-mode { padding: 10px; }
-        body.fullscreen-mode .target-control-panel { border-radius: 0; border: none; border-bottom: 1px solid #cbd5e1; }
+        body.fullscreen-mode .target-control-panel { border-radius: 0; border: none; border-bottom: 1.5px solid var(--forest); }
 
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-
-        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
-        .report-header h1 { font-size: 22px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .report-header span { font-size: 12px; color: #64748b; font-weight: 600; }
-
-        .summary-cards-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin: 0 auto 20px auto; width: 100%; flex-shrink: 0; }
-        .card { 
-            background-color: #ffffff; border-radius: 6px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); 
-            display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
-            border: 1px solid #e2e8f0; border-left: 6px solid; min-width: 220px;
+        #captureArea {
+            display: flex; flex-direction: column; flex: 1; overflow: hidden;
+            background-color: var(--cream-card); padding: 18px; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.08); border: 1.5px solid var(--forest);
         }
-        .card-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
-        .card-value { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0; }
+
+        .report-header { text-align: center; margin-bottom: 16px; flex-shrink: 0; }
+        .report-header h1 { font-family: 'Cinzel', serif; font-size: 21px; font-weight: 800; color: var(--forest-dark); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+        .report-header span { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+
+        .summary-cards-container { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 0 auto 18px auto; width: 100%; flex-shrink: 0; }
+        .card { 
+            background-color: #ffffff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 3px 8px rgba(27,67,50,0.06); 
+            display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;
+            border: 1px solid var(--border); border-left: 5px solid; min-width: 220px;
+        }
+        .card-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+        .card-value { font-size: 20px; font-weight: 900; color: var(--forest-dark); margin: 0; font-variant-numeric: tabular-nums; }
         
-        .card-target { border-left-color: #1e3a8a; } 
-        .card-achieved { border-left-color: #10b981; } 
-        .card-yday { border-left-color: #f59e0b; } 
-        .card-balance { border-left-color: #ef4444; } 
+        .card-target { border-left-color: var(--forest); } .card-target .card-value { color: var(--forest); }
+        .card-achieved { border-left-color: #15803d; } .card-achieved .card-value { color: #15803d; }
+        .card-yday { border-left-color: var(--gold); } .card-yday .card-value { color: #92400e; }
+        .card-balance { border-left-color: #b91c1c; } .card-balance .card-value { color: #b91c1c; }
 
-        .table-wrapper { flex: 1; border-radius: 8px; overflow: auto; border: 1px solid #cbd5e1; position: relative; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; table-layout: fixed; }
+        .table-wrapper { flex: 1; border-radius: 10px; overflow: auto; border: 1.5px solid var(--forest); position: relative; background-color: var(--cream-card); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; table-layout: fixed; }
 
-        th { color: #ffffff; font-size: 10px; text-transform: uppercase; padding: 10px 6px; text-align: center; font-weight: 800; position: sticky; top: 0; z-index: 90; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.2); line-height: 1.3; }
-        th.col-1 { background-color: #0f172a; left: 0; z-index: 95; border-right: 1px solid #cbd5e1; } 
-        th.col-2 { background-color: #334155; } 
-        th.col-3 { background-color: #475569; } 
-        th.col-4 { background-color: #1e3a8a; } 
-        th.col-5 { background-color: #2563eb; } 
-        th.col-6 { background-color: #ef4444; } 
-        th.col-7 { background-color: #6d28d9; } 
-        th.col-8 { background-color: #10b981; } 
-        th.col-9 { background-color: #d97706; } 
-        th.col-10 { background-color: #f59e0b; } 
-        th.col-11 { background-color: #be185d; } 
-        th.col-12 { background-color: #8b5cf6; border-right: none; } 
+        th {
+            color: #f8f5ec; font-size: 10px; text-transform: uppercase; padding: 11px 6px; text-align: center;
+            font-weight: 800; position: sticky; top: 0; z-index: 90; letter-spacing: 0.4px;
+            border-right: 1px solid rgba(255,255,255,0.14); border-bottom: 2px solid var(--gold); line-height: 1.3;
+        }
+        th.col-1 { background-color: var(--forest-dark); left: 0; z-index: 95; border-right: 2px solid var(--gold); } 
+        th.col-2 { background-color: #344e41; } 
+        th.col-3 { background-color: #4b5d54; } 
+        th.col-4 { background-color: var(--forest); } 
+        th.col-5 { background-color: #164e63; } 
+        th.col-6 { background-color: #991b1b; } 
+        th.col-7 { background-color: #7c4a12; } 
+        th.col-8 { background-color: #15803d; } 
+        th.col-9 { background-color: #92400e; } 
+        th.col-10 { background-color: #a16207; } 
+        th.col-11 { background-color: #881337; } 
+        th.col-12 { background-color: var(--forest-dark); border-right: none; } 
 
-        td { padding: 8px 6px; font-size: 12px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; vertical-align: middle; text-align: center; font-weight: 700; white-space: nowrap; color: #475569; }
-        tr:nth-child(even) td { background-color: #f8fafc; }
-        tr:hover td { background-color: #eff6ff; }
+        td {
+            padding: 9px 6px; font-size: 12px; border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3;
+            vertical-align: middle; text-align: center; font-weight: 700; white-space: nowrap;
+            color: var(--charcoal); background-color: var(--cream-card);
+        }
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
 
-        td.col-dist { text-align: left; padding-left: 15px; color: #0f172a; font-weight: 800; position: sticky; left: 0; background-color: white; z-index: 5; border-right: 1px solid #cbd5e1; box-shadow: 2px 0 5px rgba(0,0,0,0.05); cursor: pointer; }
-        tr:nth-child(even) td.col-dist { background-color: #f8fafc; }
-        tr:hover td.col-dist { background-color: #eff6ff; color: #2563eb; }
+        td.col-dist {
+            text-align: left; padding-left: 15px; color: var(--forest-dark); font-weight: 800;
+            position: sticky; left: 0; background-color: var(--cream-card); z-index: 5;
+            border-right: 2px solid var(--border); cursor: pointer;
+        }
+        tbody tr:nth-child(even) td.col-dist { background-color: var(--cream-alt); }
+        tbody tr:hover td.col-dist { background-color: var(--gold-soft) !important; color: #7c4a12; }
 
-        .text-green { color: #059669; }
-        .text-blue { color: #2563eb; }
-        .text-purple { color: #6d28d9; }
-        .text-orange { color: #ea580c; }
-        .text-darkred { color: #be185d; }
-        .td-prev-pending { background-color: #fff1f2 !important; color: #be123c !important; font-weight: 800; border-right: 1px solid #fecdd3 !important;}
+        .text-green { color: #15803d; }
+        .text-blue { color: #164e63; }
+        .text-purple { color: #7c4a12; }
+        .text-orange { color: #92400e; }
+        .text-darkred { color: #b91c1c; }
+        .td-prev-pending { background-color: #fef2f2 !important; color: #b91c1c !important; font-weight: 800; border-right: 1px solid #fecaca !important; }
 
-        tfoot tr td { background-color: #f1f5f9; color: #0f172a; font-weight: 900; font-size: 13px; padding: 12px 6px; border-top: 2px solid #cbd5e1; position: sticky; bottom: 0; z-index: 20; }
-        tfoot td.col-dist { background-color: #e2e8f0; z-index: 25; text-align: left; padding-left: 15px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important;}
+        /* Royal Grand Total Footer */
+        tfoot tr td {
+            background-color: var(--forest-dark) !important; color: #ffffff !important; font-weight: 900;
+            font-size: 13px; padding: 12px 6px; border-top: 2px solid var(--gold);
+            border-right: 1px solid rgba(255,255,255,0.12) !important; position: sticky; bottom: 0; z-index: 20;
+        }
+        tfoot td.col-dist {
+            background-color: var(--forest-dark) !important; color: #e6c885 !important; z-index: 25;
+            text-align: left; padding-left: 15px; position: sticky; left: 0; border-right: 2px solid var(--gold) !important;
+        }
+        tfoot td.text-green { color: #4ade80 !important; }
+        tfoot td.text-blue { color: #7dd3fc !important; }
+        tfoot td.td-prev-pending { background-color: var(--forest-dark) !important; color: #f87171 !important; }
+        tfoot td.text-purple { color: #e6c885 !important; }
+        tfoot td.text-orange { color: #fbbf24 !important; }
+        tfoot td.text-darkred { color: #f87171 !important; }
 
-        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; height: 100%;}
-        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: var(--forest); font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; height: 100%; }
+        .spinner { width: 35px; height: 35px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ========================================================================= */
+        /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR MONTHLY PROGRESS (Added by Chandra) 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            
-            /* 1. పేజీ స్క్రోల్ లాక్ తీసేయడం */
-            html, body {
-                height: auto;
-                overflow: auto !important; /* మొబైల్ లో ఫ్రీగా స్క్రోల్ అవ్వడానికి */
-            }
-            
-            body { 
-                padding: 10px; 
-                gap: 15px; 
-            }
+            html, body { height: auto; overflow: auto !important; }
+            body { padding: 10px; gap: 15px; }
 
-            /* 2. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .target-control-panel {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                position: relative; /* స్టికీ ఎఫెక్ట్ తీసేసాను */
-                gap: 12px;
-            }
+            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; position: relative; gap: 12px; }
+            .filter-group-custom { flex-direction: column; width: 100%; align-items: stretch; gap: 5px; }
+            .filter-group-custom span { margin-bottom: 2px; text-align: left; }
+            .filter-group-custom select, .btn-action { width: 100%; margin-left: 0 !important; margin-bottom: 5px; justify-content: center; text-align: center; }
 
-            .filter-group-custom {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-                gap: 5px;
-            }
-
-            .filter-group-custom span {
-                margin-bottom: 2px;
-                text-align: left;
-            }
-
-            .filter-group-custom select, .btn-action {
-                width: 100%;
-                margin-left: 0 !important;
-                margin-bottom: 5px;
-                justify-content: center;
-                text-align: center;
-            }
-
-            /* 3. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
             .report-header h1 { font-size: 16px; line-height: 1.4; margin-bottom: 5px; }
             .report-header span { font-size: 11px; }
 
-            .summary-cards-container {
-                gap: 10px;
-                margin-bottom: 15px;
-            }
+            .summary-cards-container { gap: 10px; margin-bottom: 15px; }
+            .card { flex: 1 1 calc(50% - 10px); min-width: 130px; flex-direction: column; text-align: center; padding: 10px; gap: 5px; }
+            .card-label { font-size: 9px; white-space: normal; }
+            .card-value { font-size: 18px; }
 
-            .card {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
-                min-width: 130px;
-                flex-direction: column; /* లేబుల్ పైన, వాల్యూ కింద */
-                text-align: center;
-                padding: 10px;
-                gap: 5px;
-            }
+            #captureArea { overflow: visible; padding: 10px 5px; }
+            .table-wrapper { max-height: 450px; -webkit-overflow-scrolling: touch; }
+            table { min-width: 900px; }
+            th, td { font-size: 10px !important; padding: 10px 5px !important; }
 
-            .card-label { 
-                font-size: 9px; 
-                white-space: normal; /* పెద్ద పదాలు ఉంటే కిందకి వస్తాయి */
-            }
-            .card-value { 
-                font-size: 18px; 
-            }
-
-            /* 4. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            #captureArea {
-                overflow: visible;
-                padding: 10px 5px;
-            }
-
-            .table-wrapper {
-                max-height: 450px;
-                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ */
-            }
-
-            table {
-                min-width: 900px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా సెట్ చేయడం */
-            }
-
-            th, td {
-                font-size: 10px !important;
-                padding: 10px 5px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
             .col-dist, th.col-1, tfoot tr td:first-child {
                 position: static !important;
-                border-right: 1px solid #e2e8f0 !important;
+                border-right: 1px solid var(--border) !important;
                 text-align: center !important;
                 padding-left: 5px !important;
             }
@@ -200,16 +188,16 @@
 
     <div class="target-control-panel">
         <div class="filter-group-custom">
-            <span style="font-size: 13px; font-weight: 700; color: #475569;">Report Type:</span>
-            <select id="reportType" onchange="processRawDataToReport()" style="border-color: #10b981; color: #047857; font-weight: 800; background-color: #f0fdf4;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Report Type:</span>
+            <select id="reportType" onchange="processRawDataToReport()" style="border-color: var(--forest); color: var(--forest-dark); font-weight: 800; background-color: var(--forest-soft);">
                 <option value="txns" selected>🎫 Transactions</option>
                 <option value="regs">📋 New Registrations</option>
             </select>
         </div>
         
-        <div class="filter-group-custom" style="margin-left: 15px;">
-            <span style="font-size: 13px; font-weight: 700; color: #475569;">Month:</span>
-            <select id="monthFilter" onchange="processRawDataToReport()" style="border-color: #3b82f6; color: #1e3a8a; font-weight: 800; background-color: #eff6ff;">
+        <div class="filter-group-custom" style="margin-left: 10px;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Month:</span>
+            <select id="monthFilter" onchange="processRawDataToReport()" style="border-color: var(--gold); color: var(--forest-dark); font-weight: 800; background-color: var(--gold-soft);">
                 <option value="current" selected>Current Month</option>
                 <option value="0">April</option>
                 <option value="1">May</option>
@@ -227,7 +215,7 @@
         </div>
 
         <div class="filter-group-custom" style="margin-left: auto;">
-            <span style="font-size: 13px; font-weight: 700; color: #475569;">Filter:</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Filter:</span>
             <select id="districtType" onchange="updateDistrictsDropdown()">
                 <option value="old" selected>Old Districts</option>
                 <option value="new">New Districts</option>
@@ -238,14 +226,14 @@
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Image</button>
             <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
-            <button class="btn-action" onclick="forceRefresh(event)" style="color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff;">🔄 Fetch Latest Data</button>
+            <button class="btn-action" onclick="forceRefresh(event)" style="background: var(--forest); color: #f8f5ec; border-color: var(--forest-dark);">🔄 Fetch Latest Data</button>
         </div>
     </div>
 
     <div id="captureArea">
         <header class="report-header">
             <h1 id="dynamicTitle">IRCTC DAILY & MONTHLY PROGRESS REPORT (TRANSACTIONS)</h1>
-            <span>Report based on data from: <span id="reportDate" style="color:#0f172a; font-weight:800;">Loading...</span></span>
+            <span>Report based on data from: <span id="reportDate" style="color:#7c4a12; font-weight:800;">Loading...</span></span>
         </header>
 
         <div class="summary-cards-container">
@@ -328,7 +316,6 @@
             let text2 = resUsers ? await resUsers.text() : "[]";
             let text3 = resConfig ? await resConfig.text() : "[]";
 
-            // గూగుల్ సర్వర్ ఒక్కోసారి ఎర్రర్ పేజీ (HTML) పంపుతుంది, దాన్ని పట్టుకోవడానికి ఈ చెక్
             if(text1.includes("Invalid") || text1.includes("<html")) {
                 throw new Error("Google Server Busy");
             }
@@ -349,7 +336,7 @@
                 let cacheTime = localStorage.getItem("cscCacheTime");
                 
                 let now = new Date().getTime();
-                let isCacheValid = cachedData && cachedConfig && cacheTime && (now - parseInt(cacheTime) < 14400000); // 4 గంటల క్యాచె
+                let isCacheValid = cachedData && cachedConfig && cacheTime && (now - parseInt(cacheTime) < 14400000);
                 
                 let rawData = null, usersData = null, confData = null;
 
@@ -369,7 +356,6 @@
                         localStorage.setItem("cscTargetConfig", JSON.stringify(confData));
                         localStorage.setItem("cscCacheTime", now.toString());
                     } catch (fetchError) {
-                        // నెట్‌వర్క్ లేదా గూగుల్ ఫెయిల్ అయితే, పాత డేటాతో ఓపెన్ చేయడానికి ఫాల్‌బ్యాక్
                         if (cachedData) {
                             console.warn("Using old cache due to fetch error.");
                             rawData = JSON.parse(cachedData);
@@ -435,7 +421,7 @@
 
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='color:red; text-align:center; padding: 20px; font-weight:bold;'>❌ " + error.message + "</td></tr>";
+                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='color:#b91c1c; text-align:center; padding: 20px; font-weight:bold;'>❌ " + error.message + "</td></tr>";
             }
         }
 
@@ -455,7 +441,7 @@
                 fetchData(); 
             } catch (e) {
                 alert("Google Server is currently busy (Rate Limit). Displaying previously saved data.");
-                fetchData(); // పాత డేటానే మళ్ళీ లోడ్ చేస్తుంది, ఎర్రర్ రాదు
+                fetchData();
             }
             btn.innerHTML = originalText;
         }
@@ -527,7 +513,7 @@
         function processRawDataToReport() {
             let rawData = window.globalRawData;
             if (!rawData || rawData.length < 2) {
-                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='text-align:center; padding:20px; color:red; font-weight:bold;'>No Data Found.</td></tr>";
+                document.getElementById("dataTableBody").innerHTML = "<tr><td colspan='12' style='text-align:center; padding:20px; color:#b91c1c; font-weight:bold;'>No Data Found.</td></tr>";
                 return;
             }
 
@@ -680,7 +666,6 @@
                         annualTarget = isTxns ? window.rawOldTargets[key].txns : window.rawOldTargets[key].regs;
                     }
                 } else {
-                    // పాత జిల్లా టార్గెట్ ని కొత్త జిల్లా యాక్టివ్ రేషియో ప్రకారం పంచడం
                     for (let oldKey in window.vleDistributionMap) {
                         let parentObj = window.vleDistributionMap[oldKey];
                         if (parentObj.children && parentObj.children[key]) {
@@ -707,7 +692,7 @@
                 totals.ids += s.ids; totals.active += s.active25; totals.annualTarget += annualTarget; totals.monthTarget += monthTarget; totals.prevPending += prevPending; totals.adjTarget += adjustedTarget; 
                 totals.monthAchieved += s.monthAchieved; totals.ydayPart += s.ydayPart; totals.ydayAchieved += s.ydayAchieved; totals.balance += balance;
 
-                let pctColor = pct >= 100 ? "#059669" : (pct >= 50 ? "#ea580c" : "#dc2626");
+                let pctColor = pct >= 100 ? "#15803d" : (pct >= 50 ? "#b45309" : "#b91c1c");
 
                 rowHtml += `<tr>
                     <td class="col-dist" onclick="filterByDistrict('${dist}')">${dist}</td>
@@ -725,7 +710,7 @@
                 </tr>`;
             });
 
-            document.getElementById("dataTableBody").innerHTML = rowHtml || "<tr><td colspan='12' style='text-align:center; padding:20px; color:red; font-weight:bold;'>No Data Matches Filter.</td></tr>";
+            document.getElementById("dataTableBody").innerHTML = rowHtml || "<tr><td colspan='12' style='text-align:center; padding:20px; color:#b91c1c; font-weight:bold;'>No Data Matches Filter.</td></tr>";
             
             processTotals(totals, selectedDist, userDesignation, isTxns, mIdx, isCurrentMonth, allowedDistsForDM);
         }
@@ -739,7 +724,7 @@
             document.getElementById("val-card-yday").innerText = isCurrentMonth ? totals.ydayAchieved.toLocaleString('en-IN') : "-";
             document.getElementById("val-card-balance").innerText = totals.balance.toLocaleString('en-IN');
 
-            let grandPctColor = grandPct >= 100 ? "#059669" : (grandPct >= 50 ? "#ea580c" : "#dc2626");
+            let grandPctColor = grandPct >= 100 ? "#4ade80" : (grandPct >= 50 ? "#fbbf24" : "#f87171");
 
             let tfootHtml = `
                 <td class="col-dist">GRAND TOTAL</td>
@@ -753,7 +738,7 @@
                 <td class="text-orange">${isCurrentMonth ? totals.ydayPart.toLocaleString('en-IN') : '-'}</td>
                 <td class="text-orange">${isCurrentMonth ? totals.ydayAchieved.toLocaleString('en-IN') : '-'}</td>
                 <td class="text-darkred">${totals.balance.toLocaleString('en-IN')}</td>
-                <td style="color: ${grandPctColor}; font-weight:900;">${grandPct.toFixed(1)}%</td>
+                <td style="color: ${grandPctColor} !important; font-weight:900;">${grandPct.toFixed(1)}%</td>
             `;
             document.getElementById("grandTotalRow").innerHTML = tfootHtml;
         }
@@ -771,7 +756,7 @@
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
                     btn.innerHTML = "✖ Exit Full Screen";
-                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                    btn.style.backgroundColor = "#991b1b"; btn.style.color = "#ffffff"; btn.style.borderColor = "#991b1b";
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
                 }
@@ -782,7 +767,7 @@
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+                btn.style.backgroundColor = "#ffffff"; btn.style.color = "#1b4332"; btn.style.borderColor = "#1b4332";
             }
         });
 
@@ -812,7 +797,7 @@
             setTimeout(() => { 
                 html2canvas(captureArea, { 
                     scale: 2, 
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#faf8f2",
                     useCORS: true,
                     windowWidth: captureArea.scrollWidth + 50
                 }).then(canvas => {

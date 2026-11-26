@@ -4,204 +4,195 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRCTC Employee Performance - CSC TravelCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 🌟 Iframe Friendly Basic Settings 🌟 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f8f9fc; display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--cream-bg); color: var(--charcoal); display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
 
         /* Controls Panel Form structure */
         .top-controls {
-            background-color: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0;
+            background-color: var(--cream-card); border-radius: 10px; border: 1.5px solid var(--forest); padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(27,67,50,0.08); flex-shrink: 0;
             flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000;
         }
-        .page-heading { font-size: 18px; color: #003366; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .page-heading {
+            font-family: 'Cinzel', serif; font-size: 18px; color: var(--forest); font-weight: 800;
+            display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; text-transform: uppercase;
+        }
         
-        .filter-group { display: flex; gap: 12px; align-items: center; }
-        .search-box { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; min-width: 220px; background-color: #f8fafc; font-weight: 600; color: #1e293b; transition: 0.2s;}
-        .search-box:focus { border-color: #3b82f6; background-color: #ffffff; }
+        .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-box {
+            padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+            outline: none; min-width: 225px; background-color: #ffffff; font-weight: 600; color: var(--charcoal); transition: 0.2s;
+        }
+        .search-box:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
 
-        .btn-action { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-action:hover { background-color: #e2e8f0; color: #0f172a; }
+        .btn-action {
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 6px 15px;
+            border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-action:hover { background-color: var(--forest); color: #ffffff; }
+        #downloadBtn { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        #downloadBtn:hover { background-color: #b08a42; color: #ffffff; }
 
         /* 🌟 Image Export Panels */
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: #f8f9fc; padding: 10px 5px; border-radius: 8px;}
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: var(--cream-bg); padding: 10px 5px; border-radius: 8px; }
         
         .capture-compact { 
             width: max-content !important; min-width: 1000px !important; margin: 0; 
-            background-color: #ffffff !important; padding: 30px !important; 
+            background-color: var(--cream-bg) !important; padding: 30px !important; 
             display: inline-block !important; height: auto !important; overflow: visible !important; 
         }
         .capture-compact .table-container { 
             height: auto !important; overflow: visible !important; display: block !important; 
-            flex: none !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; 
+            flex: none !important; border: 1.5px solid var(--forest) !important; box-shadow: none !important; 
         }
         .capture-compact table { width: 100% !important; }
         .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
 
         /* Report Header */
-        .report-header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
-        .report-header h1 { font-size: 22px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .report-header p { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 0; }
+        .report-header { text-align: center; margin-bottom: 18px; flex-shrink: 0; }
+        .report-header h1 { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 800; color: var(--forest-dark); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+        .report-header p { font-size: 12.5px; color: #7c4a12; font-weight: 700; margin-top: 0; }
 
         /* KPI Cards */
-        .kpi-grid { display: flex; gap: 15px; flex-shrink: 0; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;}
+        .kpi-grid { display: flex; gap: 14px; flex-shrink: 0; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
         .kpi-card { 
-            background-color: #ffffff; border-radius: 6px; padding: 12px 20px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06); border-left: 5px solid; 
-            cursor: pointer; transition: 0.2s; min-width: 200px;
+            background-color: var(--cream-card); border-radius: 8px; padding: 12px 20px; 
+            box-shadow: 0 3px 8px rgba(27,67,50,0.06); border-left: 5px solid; 
+            cursor: pointer; transition: 0.2s; min-width: 205px;
             display: flex; align-items: center; justify-content: space-between; 
-            border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+            border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
-        .kpi-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin: 0; }
-        .kpi-value { font-size: 24px; font-weight: 900; margin: 0; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(27,67,50,0.12); }
+        .kpi-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin: 0; letter-spacing: 0.4px; }
+        .kpi-value { font-size: 24px; font-weight: 900; margin: 0; font-variant-numeric: tabular-nums; }
 
-        .kpi-total { border-left-color: #1e293b; } .kpi-total .kpi-value { color: #0f172a; }
-        .kpi-yday { border-left-color: #2563eb; } .kpi-yday .kpi-value { color: #1d4ed8; }
-        .kpi-active { border-left-color: #10b981; } .kpi-active .kpi-value { color: #047857; }
-        .kpi-inactive { border-left-color: #0ea5e9; } .kpi-inactive .kpi-value { color: #0369a1; }
+        .kpi-total { border-left-color: var(--forest); } .kpi-total .kpi-value { color: var(--forest); }
+        .kpi-yday { border-left-color: var(--gold); } .kpi-yday .kpi-value { color: #7c4a12; }
+        .kpi-active { border-left-color: #15803d; } .kpi-active .kpi-value { color: #15803d; }
+        .kpi-inactive { border-left-color: #164e63; } .kpi-inactive .kpi-value { color: #164e63; }
 
         /* Table Settings */
-        .table-container { flex: 1; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: auto; border: 1px solid #cbd5e1; width: 100%;}
+        .table-container {
+            flex: 1; background-color: var(--cream-card); border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(27,67,50,0.08); overflow: auto; border: 1.5px solid var(--forest); width: 100%;
+        }
         table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
         
         thead { position: sticky; top: 0; z-index: 20; }
         thead tr:nth-child(1) th { position: sticky; top: 0; z-index: 21; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        thead tr:nth-child(2) th { position: sticky; top: 41px; z-index: 20; border-bottom: 2px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        thead tr:nth-child(2) th { position: sticky; top: 41px; z-index: 20; border-bottom: 2px solid var(--gold); box-shadow: 0 2px 4px rgba(27,67,50,0.08); }
 
-        th { font-size: 11px; text-transform: uppercase; padding: 12px 8px; font-weight: 800; color: white; border-right: 1px solid rgba(255,255,255,0.15); letter-spacing: 0.5px;}
-        td { padding: 10px 10px; font-size: 13px; color: #334155; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; font-weight: 600; vertical-align: middle; }
+        th { font-size: 11px; text-transform: uppercase; padding: 12px 8px; font-weight: 800; color: #f8f5ec; border-right: 1px solid rgba(255,255,255,0.14); letter-spacing: 0.5px; }
+        td { padding: 10px 10px; font-size: 13px; color: var(--charcoal); background-color: var(--cream-card); border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3; font-weight: 600; vertical-align: middle; }
         
-        /* 🌟 Corporate Header Colors 🌟 */
-        .th-emp { background-color: #0f172a; min-width: 180px; position: sticky; left: 0; z-index: 95 !important; border-right: 2px solid #cbd5e1 !important;} 
-        .th-ids { background-color: #334155; } 
-        .th-act25 { background-color: #475569; } 
-        .th-tot26 { background-color: #2563eb; } 
-        .th-pend { background-color: #e11d48; } 
-        .th-inact { background-color: #64748b; } 
-        .th-yday { background-color: #0d9488; } 
+        /* 🌟 Royal Header Colors 🌟 */
+        .th-emp { background-color: var(--forest-dark); min-width: 185px; position: sticky; left: 0; z-index: 95 !important; border-right: 2px solid var(--gold) !important; border-bottom: 2px solid var(--gold) !important; } 
+        .th-ids { background-color: #344e41; border-bottom: 2px solid var(--gold) !important; } 
+        .th-act25 { background-color: #4b5d54; border-bottom: 2px solid var(--gold) !important; } 
+        .th-tot26 { background-color: var(--forest); } 
+        .th-pend { background-color: #991b1b; border-bottom: 2px solid var(--gold) !important; } 
+        .th-inact { background-color: #525d56; border-bottom: 2px solid var(--gold) !important; } 
+        .th-yday { background-color: #164e63; } 
 
-        .th-sub-tot26 { background-color: #eff6ff; color: #1e3a8a; border-right: 1px solid #bfdbfe; font-size: 11px; border-bottom: 3px solid #3b82f6 !important;}
-        .th-sub-yday { background-color: #f0fdfa; color: #115e59; border-right: 1px solid #ccfbf1; font-size: 11px; border-bottom: 3px solid #14b8a6 !important;}
+        .th-sub-tot26 { background-color: var(--forest-soft); color: var(--forest-dark); border-right: 1px solid #b7d4c4; font-size: 11px; border-bottom: 2px solid var(--gold) !important; }
+        .th-sub-yday { background-color: var(--gold-soft); color: #7c4a12; border-right: 1px solid #dfc48e; font-size: 11px; border-bottom: 2px solid var(--gold) !important; }
 
-        tr:nth-child(even) td { background-color: #f8fafc; }
-        tr:hover td { background-color: #eff6ff; }
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
         
-        /* Corporate Data Colors & Effects */
+        /* Royal Data Colors & Effects */
         .td-emp { 
-            text-align: left; padding-left: 15px; color: #1e293b; font-weight: 800; 
-            position: sticky; left: 0; background-color: #ffffff; z-index: 5; 
-            border-right: 2px solid #cbd5e1 !important; cursor: pointer; transition: 0.2s; user-select: none;
+            text-align: left; padding-left: 15px; color: var(--forest-dark); font-weight: 800; 
+            position: sticky; left: 0; background-color: var(--cream-card); z-index: 5; 
+            border-right: 2px solid var(--border) !important; cursor: pointer; transition: 0.2s; user-select: none;
         }
-        tr:nth-child(even) .td-emp { background-color: #f8fafc; }
-        .td-emp:hover { color: #2563eb; background-color: #e0f2fe !important; }
+        tbody tr:nth-child(even) .td-emp { background-color: var(--cream-alt); }
+        .td-emp:hover { color: #7c4a12; background-color: var(--gold-soft) !important; }
         
-        .td-ids { color: #334155; font-weight: 700; }
-        .td-act25 { color: #059669; font-weight: 700; }
-        .td-tot26-old { color: #2563eb; font-weight: 700; background-color: #f8fafc;}
-        .td-tot26-new { color: #0ea5e9; font-weight: 700; background-color: #f8fafc;}
-        .td-tot26-all { color: #1e3a8a; font-weight: 800; background-color: #eff6ff; }
-        .td-pend { color: #e11d48; font-weight: 700; }
-        .td-inact { color: #64748b; font-weight: 700; }
-        .td-yday-old { color: #0f766e; font-weight: 800; background-color: #f8fafc;}
-        .td-yday-new { color: #115e59; font-weight: 800; background-color: #f8fafc;}
+        .td-ids { color: var(--charcoal); font-weight: 700; }
+        .td-act25 { color: #15803d; font-weight: 700; }
+        .td-tot26-old { color: #1b4332; font-weight: 700; }
+        .td-tot26-new { color: #164e63; font-weight: 700; }
+        .td-tot26-all { color: var(--forest-dark); font-weight: 800; background-color: var(--forest-soft) !important; }
+        .td-pend { color: #b91c1c; font-weight: 700; }
+        .td-inact { color: var(--muted); font-weight: 700; }
+        .td-yday-old { color: #15803d; font-weight: 800; }
+        .td-yday-new { color: #164e63; font-weight: 800; }
 
         /* 🌟 Zero Highlight Class (Warning Red) 🌟 */
-        .zero-val { color: #dc2626 !important; background-color: #fef2f2 !important; font-weight: 800 !important; }
+        .zero-val { color: #b91c1c !important; background-color: #fee2e2 !important; font-weight: 800 !important; }
 
-        /* Total Row Design */
-        tfoot tr.total-row td { background-color: #e2e8f0; font-weight: 900; color: #0f172a; border-top: 3px solid #94a3b8; font-size: 14px; position: sticky; bottom: 0; z-index: 20; }
-        tfoot tr.total-row td:first-child { text-align: left; padding-left: 20px; position: sticky; left: 0; border-right: 2px solid #cbd5e1 !important; z-index: 25;}
+        /* Royal Total Row Design */
+        tfoot tr.total-row td {
+            background-color: var(--forest-dark) !important; font-weight: 900; color: #ffffff !important;
+            border-top: 2px solid var(--gold); font-size: 14px; position: sticky; bottom: 0; z-index: 20;
+            border-right: 1px solid rgba(255,255,255,0.12);
+        }
+        tfoot tr.total-row td:first-child {
+            text-align: left; padding-left: 20px; color: #e6c885 !important;
+            position: sticky; left: 0; border-right: 2px solid var(--gold) !important; z-index: 25;
+        }
+        tfoot tr.total-row td.td-ids { color: #ffffff !important; }
+        tfoot tr.total-row td.td-act25 { color: #4ade80 !important; }
+        tfoot tr.total-row td.td-tot26-old { color: #d1fae5 !important; }
+        tfoot tr.total-row td.td-tot26-new { color: #7dd3fc !important; }
+        tfoot tr.total-row td.td-tot26-all { color: #e6c885 !important; background-color: var(--forest-dark) !important; }
+        tfoot tr.total-row td.td-pend { color: #f87171 !important; }
+        tfoot tr.total-row td.td-inact { color: #d5cfbe !important; }
+        tfoot tr.total-row td.td-yday-old { color: #4ade80 !important; }
+        tfoot tr.total-row td.td-yday-new { color: #fbbf24 !important; }
 
         /* Loaders */
-        .loader { text-align: center; padding: 50px; font-size: 15px; color: #555; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%;}
-        .spinner { width: 35px; height: 35px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { text-align: center; padding: 50px; font-size: 15px; color: var(--forest); font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%; }
+        .spinner { width: 35px; height: 35px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ========================================================================= */
+        /* ========================================================================= */
         /* 📱 MOBILE RESPONSIVENESS FOR EMPLOYEE PERFORMANCE (Added by Chandra) 📱 */
         /* ========================================================================= */
         @media (max-width: 768px) {
-            body { 
-                padding: 10px; 
-                gap: 15px; 
-            }
+            body { padding: 10px; gap: 15px; }
 
-            /* 1. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .top-controls {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                position: relative; /* స్టికీ ఎఫెక్ట్ తీసేసాను */
-                gap: 12px;
-            }
+            .top-controls { flex-direction: column; align-items: stretch; padding: 15px; position: relative; gap: 12px; }
+            .page-heading { justify-content: center; font-size: 16px; text-align: center; margin-bottom: 5px; }
+            .filter-group { flex-direction: column; width: 100%; align-items: stretch; }
+            .search-box { width: 100%; min-width: 100%; margin-bottom: 5px; }
+            .btn-action { width: 100%; justify-content: center; text-align: center; }
 
-            .page-heading {
-                justify-content: center;
-                font-size: 16px;
-                text-align: center;
-                margin-bottom: 5px;
-            }
-
-            .filter-group {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-            }
-
-            .search-box {
-                width: 100%;
-                min-width: 100%;
-                margin-bottom: 5px;
-            }
-
-            .btn-action {
-                width: 100%;
-                justify-content: center;
-                text-align: center;
-            }
-
-            /* 2. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
-            .report-header h1 { font-size: 16px; margin-bottom: 8px; line-height: 1.4;}
+            .report-header h1 { font-size: 16px; margin-bottom: 8px; line-height: 1.4; }
             .report-header p { font-size: 11px; }
 
-            .kpi-grid {
-                gap: 10px;
-                margin-bottom: 15px;
-            }
-
-            .kpi-card {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
-                min-width: 120px;
-                flex-direction: column;
-                text-align: center;
-                padding: 12px;
-                gap: 5px;
-            }
-
+            .kpi-grid { gap: 10px; margin-bottom: 15px; }
+            .kpi-card { flex: 1 1 calc(50% - 10px); min-width: 120px; flex-direction: column; text-align: center; padding: 12px; gap: 5px; }
             .kpi-title { font-size: 9px; margin: 0; }
-            .kpi-value { font-size: 18px; margin: 0;}
+            .kpi-value { font-size: 18px; margin: 0; }
 
-            /* 3. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            .table-container {
-                max-height: 450px;
-                -webkit-overflow-scrolling: touch;
-            }
+            .table-container { max-height: 450px; -webkit-overflow-scrolling: touch; }
+            table { min-width: 900px; }
+            th, td { font-size: 10px !important; padding: 8px 5px !important; }
 
-            table {
-                min-width: 900px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా ఉండేలా కనీస వెడల్పు */
-            }
-
-            th, td {
-                font-size: 10px !important;
-                padding: 8px 5px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
             .td-emp, .th-emp, tfoot tr.total-row td:first-child {
                 position: static !important;
-                border-right: 1px solid #e2e8f0 !important;
+                border-right: 1px solid var(--border) !important;
                 text-align: center !important;
                 padding-left: 5px !important;
             }
@@ -309,7 +300,7 @@
                 processEmployeeData(rawData);
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='10' style='color:red; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='10' style='color:#b91c1c; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
             }
         }
 
@@ -451,7 +442,7 @@
             gt.emps = sortedEmployees.length;
 
             if(gt.emps === 0) {
-                tbodyHtml = `<tr><td colspan="10" style="padding: 30px; color: #d9534f; font-weight: bold;">No Employee Record Found!</td></tr>`;
+                tbodyHtml = `<tr><td colspan="10" style="padding: 30px; color: #b91c1c; font-weight: bold;">No Employee Record Found!</td></tr>`;
                 document.getElementById("tableFooter").innerHTML = "";
             } else {
                 document.getElementById("tableFooter").innerHTML = `<tr class="total-row">
@@ -498,7 +489,7 @@
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
                     btn.innerHTML = "✖ Exit Full Screen";
-                    btn.style.backgroundColor = "#ea580c"; btn.style.color = "white"; btn.style.borderColor = "#ea580c";
+                    btn.style.backgroundColor = "#991b1b"; btn.style.color = "#ffffff"; btn.style.borderColor = "#991b1b";
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
                 }
@@ -509,7 +500,7 @@
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
-                btn.style.backgroundColor = "#f1f5f9"; btn.style.color = "#334155"; btn.style.borderColor = "#cbd5e1";
+                btn.style.backgroundColor = "#ffffff"; btn.style.color = "#1b4332"; btn.style.borderColor = "#1b4332";
             }
         });
 
@@ -539,7 +530,7 @@
             setTimeout(() => {
                 html2canvas(captureArea, { 
                     scale: 2, 
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#f4f1e6",
                     useCORS: true,
                     windowWidth: captureArea.scrollWidth + 50
                 }).then(canvas => {
