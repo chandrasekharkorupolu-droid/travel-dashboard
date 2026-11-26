@@ -315,7 +315,7 @@
         .dm-subpage { padding: 14px 16px; display: none; }
         .mini-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
 
-@media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
 
         @media (min-width: 768px) {
             .dm-app-shell, .dm-app-shell.wide-mode { max-width: 1360px; width: 100%; }
@@ -773,6 +773,7 @@
         let parsedTargets = [], allLogs = [], vleOtherPending = {}, vleNameLookup = {}, vleMobileLookup = {}, vleDistrictLookup = {};
         let dmPendingList = [], dmTodayLogs = [], activeDeckQueue = [], activeVerticalKey = "ALL", activeSubServiceFilter = "ALL", activeSelectedVle = null, callStartTime = null;
         let verifiedCallDuration = null;
+        let callInitiated = false;
         let isAndroidApp = false;
         try { isAndroidApp = Boolean(window.CSCAndroid || (window.parent && window.parent.CSCAndroid)); } catch (e) { isAndroidApp = Boolean(window.CSCAndroid); }
         const isMobileDevice = isAndroidApp || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
@@ -980,6 +981,19 @@
                     document.getElementById("dmDataFromDate").value = localISO;
                     document.getElementById("dmDataToDate").value = localISO;
                     initDMDashboard();
+
+                    if (!sessionStorage.getItem("loginLogged")) {
+                        sessionStorage.setItem("loginLogged", "1");
+                        fetch(SCRIPT_URL, {
+                            method: "POST",
+                            mode: "no-cors",
+                            body: JSON.stringify({
+                                action: "recordLogin",
+                                dmName: rawName || "Unknown DM",
+                                role: isAndroidApp ? "Android APK" : (isMobileDevice ? "Mobile Browser" : "Desktop")
+                            })
+                        });
+                    }
                 }
             } catch (e) {
                 console.error("Load error:", e);
@@ -1626,6 +1640,7 @@
 
         function showVleListView() {
             activeSelectedVle = null;
+            callInitiated = false;
             document.getElementById("vleSingleCardView").style.display = "none";
             document.getElementById("vleListView").style.display = "flex";
             let backBtn = document.getElementById("deckBackBtn");
@@ -1706,6 +1721,7 @@
         }
 
         function backToVerticalGrid() {
+            callInitiated = false;
             document.getElementById("callingDeckView").style.display = "none";
             document.getElementById("verticalGridView").style.display = "grid";
             refreshDMVerticalGrid();
@@ -1814,24 +1830,42 @@
             </div>`;
             callStartTime = null;
             verifiedCallDuration = null;
+            callInitiated = false;
         }
 
         function unlockCallSubmit(isVerifiedFromApp = false, realDur = null) {
             if (!isMobileDevice) return;
+            if (!callStartTime) callStartTime = new Date();
+
             if (isAndroidApp && !isVerifiedFromApp) {
+                callInitiated = true;
                 let lockEl = document.getElementById("dmLockMsg");
                 if (lockEl) {
-                    lockEl.innerText = "📞 Calling... Call cut ayyaka Remarks automatic ga unlock avuthayi.";
+                    lockEl.innerHTML = `📞 Calling... Call cut ayyaka app loki tirigi raagane Remarks open avuthayi.<br>
+                    <button type="button" onclick="unlockCallSubmit(true, 0)" style="margin-top:8px; background:#1e3a8a; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer;">🔓 Call Cut / Not Lifted? Open Remarks</button>`;
                 }
                 return;
             }
+
+            callInitiated = false;
             if (realDur !== null) verifiedCallDuration = realDur;
             let lockEl = document.getElementById("dmLockMsg");
             let boxEl = document.getElementById("dmActionBox");
             if (lockEl) lockEl.style.display = "none";
             if (boxEl) boxEl.style.display = "block";
-            if (!callStartTime) callStartTime = new Date();
         }
+
+        // Call cut chesina / VLE call lift cheyakapoyina app loki tirigi raagane Remarks unlock avuthayi
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "visible" && callInitiated) {
+                unlockCallSubmit(true);
+            }
+        });
+        window.addEventListener("focus", function() {
+            if (callInitiated) {
+                unlockCallSubmit(true);
+            }
+        });
 
         // Android App Call Log Verification listeners (direct & iframe)
         window.onAndroidCallVerified = function(phone, dur) {
