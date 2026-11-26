@@ -23,7 +23,7 @@
             padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;
             outline: none; background-color: #f8fafc; font-weight: 600; cursor: pointer; color: #1e293b;
         }
-        .filter-group input { background-color: #ffffff; cursor: text; min-width: 200px; }
+        .filter-group input { background-color: #ffffff; cursor: text; min-width: 215px; }
         .filter-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
         .btn-action {
@@ -121,7 +121,12 @@
         .modal-drag-handle { background: #0f172a; display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; cursor: grab; border-radius: 12px 12px 0 0; }
         .modal-drag-handle span { color: #94a3b8; font-size: 11px; font-weight: bold; }
         .modal-close { background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; }
+        .card-stage { position: relative; background: #ffffff; overflow: hidden; }
         #reportCardCaptureArea { background: #ffffff; display: flex; flex-direction: column; overflow: hidden; }
+        #reportCardImgOverlay {
+            position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0;
+            z-index: 20; cursor: context-menu; display: none;
+        }
         .vle-info-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 5px solid #ea580c; color: white; }
         .info-item span { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: block; }
         .info-item h3 { font-size: 14px; color: #ffffff; font-weight: 800; }
@@ -132,8 +137,9 @@
         .growth-pos { background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
         .growth-neg { background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
         .growth-neu { background: #f8fafc; color: #64748b; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 11.5px; }
-        .modal-footer { background: #f1f5f9; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; }
-        .btn-download-card { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .modal-footer { background: #f1f5f9; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .btn-download-card { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-copy-card { background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -142,7 +148,7 @@
         <div class="page-heading">🎯 IRCTC Shortfall Follow-Up</div>
         <div class="filter-group">
             <select id="compMode" onchange="renderTable()" style="background:#eff6ff; border-color:#93c5fd; color:#1e3a8a;">
-                <option value="ytd" selected>📅 YTD vs YTD (Apr–Nov)</option>
+                <option value="ytd" selected>📅 YTD vs YTD</option>
                 <option value="full">📊 Full Year (FY 25-26 vs 26-27)</option>
             </select>
             <select id="districtType" onchange="updateDistrictsDropdown()">
@@ -159,7 +165,7 @@
                 <option value="medium">Medium Priority (10 to 49)</option>
                 <option value="basic">Basic Priority (1 to 9)</option>
             </select>
-<input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 Search VLE, CSC ID, IRCTC ID, Mobile...">
+            <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 Search VLE, CSC ID, IRCTC ID, Mobile...">
 
             <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
             <button class="btn-action" id="summaryImgBtn" onclick="downloadSummaryImage()" style="color:#047857; border-color:#6ee7b7; background:#ecfdf5;">📊 Summary Image</button>
@@ -170,9 +176,9 @@
 
     <div id="captureArea">
         <div class="report-header">
-            <h1 id="mainTitle">CSC AP – IRCTC Target Shortfall Report (YTD Apr–Nov)</h1>
+            <h1 id="mainTitle">CSC AP – IRCTC Target Shortfall Report</h1>
             <p id="reportDate">Report Generated on: </p>
-            <p id="subTitle" style="color:#dc2626; font-size:12.5px; margin-top:4px; font-weight:800;">Showing: Not Reached VLEs (Lagging + Zero Txns) sorted by Highest Shortfall</p>
+            <p id="subTitle" style="color:#dc2626; font-size:12.5px; margin-top:4px; font-weight:800;">Showing: Not Reached VLEs (Lagging + Zero Txns) sorted by Highest FY 25-26 Txns</p>
         </div>
 
         <div class="kpi-grid">
@@ -219,29 +225,34 @@
         </div>
     </div>
 
-    <!-- Report Card Modal -->
+    <!-- Report Card Modal (Right-Click Copy Image + Copy Button + Download Button) -->
     <div class="modal-overlay" id="momModal">
         <div class="modal-content" id="momModalContent">
             <div class="modal-drag-handle" onmousedown="dragStart(event)">
-                <span>:: DRAG TO MOVE</span>
+                <span>:: DRAG TO MOVE  |  RIGHT-CLICK CARD TO COPY IMAGE</span>
                 <button class="modal-close" onclick="closeModalClick()">✖</button>
             </div>
-            <div id="reportCardCaptureArea">
-                <div class="vle-info-card">
-                    <div class="info-item"><span>VLE Name</span><h3 id="mc-name">-</h3></div>
-                    <div class="info-item"><span>District</span><h3 id="mc-dist">-</h3></div>
-                    <div class="info-item"><span>CSC ID & IRCTC ID</span><h3 id="mc-ids">-</h3></div>
-                    <div class="info-item"><span>Mobile No</span><h3 id="mc-mob">-</h3></div>
+            <div class="card-stage">
+                <div id="reportCardCaptureArea">
+                    <div class="vle-info-card">
+                        <div class="info-item"><span>VLE Name</span><h3 id="mc-name">-</h3></div>
+                        <div class="info-item"><span>District</span><h3 id="mc-dist">-</h3></div>
+                        <div class="info-item"><span>CSC ID & IRCTC ID</span><h3 id="mc-ids">-</h3></div>
+                        <div class="info-item"><span>Mobile No</span><h3 id="mc-mob">-</h3></div>
+                    </div>
+                    <div class="modal-body">
+                        <table class="modal-table">
+                            <thead><tr><th style="text-align:left;">MONTH</th><th>FY 25-26</th><th>FY 26-27</th><th>GROWTH</th></tr></thead>
+                            <tbody id="modalBody"></tbody>
+                            <tfoot id="modalFooter"></tfoot>
+                        </table>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <table class="modal-table">
-                        <thead><tr><th style="text-align:left;">MONTH</th><th>FY 25-26</th><th>FY 26-27</th><th>GROWTH</th></tr></thead>
-                        <tbody id="modalBody"></tbody>
-                        <tfoot id="modalFooter"></tfoot>
-                    </table>
-                </div>
+                <!-- Transparent Image Overlay for Native Right-Click -> Copy Image -->
+                <img id="reportCardImgOverlay" alt="VLE Performance Report Card" title="Right-click and select Copy image">
             </div>
             <div class="modal-footer">
+                <button class="btn-copy-card" id="copyCardBtn" onclick="copyReportCardImage()">📋 Copy Image</button>
                 <button class="btn-download-card" id="dlCardBtn" onclick="downloadReportCard()">📸 Download Report Card</button>
             </div>
         </div>
@@ -252,12 +263,15 @@
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
         const monthNamesArrFull = ['APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JANUARY', 'FEBRUARY', 'MARCH'];
-        const currentMonthLimit = 7; // Nov (0=Apr ... 7=Nov)
+        const monthShortArr = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+        const currentMonthLimit = (new Date().getMonth() + 9) % 12; // Auto: Apr=0 ... Nov=7, Dec=8 ... Mar=11
+        const ytdRangeText = currentMonthLimit === 0 ? 'Apr' : `Apr–${monthShortArr[currentMonthLimit]}`;
 
         let globalFollowUpData = [];
         let savedRemarksMap = {};
         let oldDistrictsSet = new Set(), newDistrictsSet = new Set();
-        let currentKpiFilter = 'not_reached'; // Default: Lagging + Zero
+        let currentKpiFilter = 'not_reached';
+        let latestCardCanvas = null;
 
         let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
         let loggedInUserId = (localStorage.getItem("userId") || "").trim();
@@ -285,6 +299,7 @@
         window.onload = function () {
             const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('reportDate').innerText = 'Report Generated on: ' + new Date().toLocaleDateString('en-US', opts);
+            document.querySelector('#compMode option[value="ytd"]').innerText = `📅 YTD vs YTD (${ytdRangeText})`;
             fetchSheetData();
         };
 
@@ -309,12 +324,10 @@
                         if (d && d.length) sessionStorage.setItem("cscUsersData_YTD_v1", JSON.stringify(d));
                     }).catch(() => null));
                 }
-                // Always fetch fresh remarks
                 promises.push(fetch(apiURL + "?sheet=IRCTC_Shortfall_Remarks").then(r => r.json()).then(d => { remarksData = d; }).catch(() => null));
 
                 await Promise.all(promises);
 
-                // Parse saved remarks
                 savedRemarksMap = {};
                 if (Array.isArray(remarksData) && remarksData.length > 1) {
                     for (let i = 1; i < remarksData.length; i++) {
@@ -480,12 +493,12 @@
                 counts[st]++;
 
                 if (!q) {
-    if (currentKpiFilter === 'not_reached' && st === 'reached') return;
-    if (currentKpiFilter !== 'all' && currentKpiFilter !== 'not_reached' && st !== currentKpiFilter) return;
-} else {
-    let searchStr = `${r.vlename} ${r.cscid} ${r.irctcid} ${r.mobile} ${dist}`.toLowerCase();
-    if (!searchStr.includes(q)) return;
-}
+                    if (currentKpiFilter === 'not_reached' && st === 'reached') return;
+                    if (currentKpiFilter !== 'all' && currentKpiFilter !== 'not_reached' && st !== currentKpiFilter) return;
+                } else {
+                    let searchStr = `${r.vlename} ${r.cscid} ${r.irctcid} ${r.mobile} ${dist}`.toLowerCase();
+                    if (!searchStr.includes(q)) return;
+                }
 
                 let gap = Math.max(0, baseVal - currVal);
                 let ach = Math.round((currVal / baseVal) * 100);
@@ -500,7 +513,7 @@
             const { list, counts, mode } = getFilteredRows();
 
             document.getElementById('mainTitle').innerText = mode === 'ytd'
-                ? 'CSC AP – IRCTC Target Shortfall Report (YTD Apr–Nov)'
+                ? `CSC AP – IRCTC Target Shortfall Report (YTD ${ytdRangeText})`
                 : 'CSC AP – IRCTC Target Shortfall Report (Full Year FY 25-26 vs 26-27)';
             document.getElementById('thBase').innerText = mode === 'ytd' ? 'FY 25-26 YTD' : 'FY 25-26 FULL';
             document.getElementById('thCurr').innerText = mode === 'ytd' ? 'FY 26-27 YTD' : 'FY 26-27 TOTAL';
@@ -549,7 +562,7 @@
             });
 
             if (!list.length) html = `<tr><td colspan="12" style="padding:35px; color:#64748b; font-weight:bold;">No matching VLEs found.</td></tr>`;
-            else if (list.length > 500) html += `<tr><td colspan="12" style="padding:12px; color:#2563eb; font-weight:800;">Showing top 500 highest shortfall VLEs. Click 'HO Excel' to download all ${list.length} records.</td></tr>`;
+            else if (list.length > 500) html += `<tr><td colspan="12" style="padding:12px; color:#2563eb; font-weight:800;">Showing top 500 VLEs. Click 'HO Excel' to download all ${list.length} records.</td></tr>`;
 
             document.getElementById("tableBody").innerHTML = html;
         }
@@ -593,7 +606,7 @@
             if (mob.length < 10) { showToast("❌ Valid Mobile Number not available!"); return; }
             if (mob.length === 10) mob = "91" + mob;
 
-            let periodText = mode === 'ytd' ? 'గత ఏడాది ఇదే సమయానికి (Apr–Nov)' : 'గత ఫైనాన్షియల్ ఇయర్ (FY 25-26) లో';
+            let periodText = mode === 'ytd' ? `గత ఏడాది ఇదే సమయానికి (${ytdRangeText})` : 'గత ఫైనాన్షియల్ ఇయర్ (FY 25-26) లో';
             let statusLine = r.currVal === 0
                 ? `🚨 కానీ ఈ సంవత్సరం (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.`
                 : `📉 కానీ ఈ సంవత్సరం (FY 26-27) లో ఇప్పటివరకు *${r.currVal}* టికెట్లు మాత్రమే బుక్ చేసారు. మీ గత ఏడాది మార్క్ చేరుకోవడానికి ఇంకా *${r.gap}* టికెట్లు తక్కువగా ఉన్నాయి.`;
@@ -616,7 +629,7 @@
             let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
             let selDist = document.getElementById('districtName').value || "All";
             let distLabel = selDist === "All" ? "All_Districts" : selDist.replace(/\s+/g, "_");
-            let label = mode === 'ytd' ? 'YTD (Apr-Nov)' : 'Full Year';
+            let label = mode === 'ytd' ? `YTD (${ytdRangeText})` : 'Full Year';
 
             let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head><meta charset="utf-8">
@@ -732,7 +745,7 @@
             }).join("");
 
             div.innerHTML = `<div style="border:2px solid #e2e8f0; border-radius:12px; padding:20px; background:#f8fafc;">
-                <h2 style="text-align:center; color:#ea580c; margin-bottom:4px;">🎯 IRCTC SHORTFALL SUMMARY (${mode === 'ytd' ? 'YTD Apr-Nov' : 'Full Year'})</h2>
+                <h2 style="text-align:center; color:#ea580c; margin-bottom:4px;">🎯 IRCTC SHORTFALL SUMMARY (${mode === 'ytd' ? 'YTD ' + ytdRangeText : 'Full Year'})</h2>
                 <p style="text-align:center; font-size:12px; color:#475569; margin-bottom:14px; font-weight:700;">Date: ${dateStr} | CSC AP Travel Team</p>
                 <table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff;">
                     <thead><tr style="background:#0f172a; color:#fff;">
@@ -808,9 +821,7 @@
             }
         });
 
-
-
-        // Report Card Modal
+        // Report Card Modal + Right-Click Copy Image Overlay
         function openMomModal(cscId) {
             let r = globalFollowUpData.find(x => x.cscid === cscId);
             if (!r) return;
@@ -835,21 +846,71 @@
             }
             document.getElementById("modalBody").innerHTML = body;
             document.getElementById("modalFooter").innerHTML = `
-                <tr style="background:#f8fafc;"><td style="text-align:left; font-weight:800;">FULL YEAR</td><td>${f25}</td><td>${f26}</td><td>-</td></tr>
-                <tr style="background:#e2e8f0; font-weight:900;"><td style="text-align:left;">YTD (APR–NOV)</td><td>${y25}</td><td style="color:#0284c7;">${y26}</td><td>${y25 > 0 ? Math.round((y26 / y25) * 100) + '%' : '-'}</td></tr>`;
+                <tr><td colspan="4" style="padding:4px; background:#ffffff; border:none;"></td></tr>
+                <tr style="background:#fff7ed; border-top:2px solid #ea580c; border-bottom:1px solid #fed7aa;">
+                    <td style="text-align:left; font-weight:800; color:#9a3412; padding:8px 6px;">FULL YEAR TOTAL</td>
+                    <td style="font-weight:800; color:#9a3412;">${f25}</td>
+                    <td style="font-weight:800; color:#0284c7;">${f26}</td>
+                    <td style="font-weight:800; color:#64748b;">${f25 > 0 ? Math.round((f26 / f25) * 100) + '%' : '-'}</td>
+                </tr>
+                <tr style="background:#1e3a8a; border-top:2px solid #0f172a;">
+                    <td style="text-align:left; font-weight:900; color:#ffffff; padding:9px 6px;">YTD (${ytdRangeText.toUpperCase()})</td>
+                    <td style="font-weight:900; color:#fde68a;">${y25}</td>
+                    <td style="font-weight:900; color:#38bdf8;">${y26}</td>
+                    <td style="font-weight:900; color:#4ade80;">${y25 > 0 ? Math.round((y26 / y25) * 100) + '%' : '-'}</td>
+                </tr>`;
 
             const mc = document.getElementById("momModalContent");
             mc.style.top = "50%"; mc.style.left = "50%"; mc.style.transform = "translate(-50%, -50%)";
+            const imgOverlay = document.getElementById("reportCardImgOverlay");
+            imgOverlay.style.display = "none";
+            latestCardCanvas = null;
+
             document.getElementById("momModal").style.display = "flex";
+
+            // Generate crisp image in background so Right-Click -> Copy Image works instantly
+            setTimeout(() => {
+                html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#ffffff" }).then(c => {
+                    latestCardCanvas = c;
+                    imgOverlay.src = c.toDataURL("image/png");
+                    imgOverlay.style.display = "block";
+                });
+            }, 120);
         }
+
         function closeModalClick() { document.getElementById("momModal").style.display = "none"; }
+
+        async function copyReportCardImage() {
+            const btn = document.getElementById("copyCardBtn");
+            btn.innerText = "⏳ Copying...";
+            try {
+                const canvas = latestCardCanvas || await html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#ffffff" });
+                canvas.toBlob(async blob => {
+                    try {
+                        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                        showToast("✅ Image copied! WhatsApp lo Ctrl+V paste cheyandi.");
+                        btn.innerText = "✅ Copied!";
+                    } catch (e) {
+                        showToast("ℹ️ Card meeda Right-Click chesi 'Copy image' nokkandi.");
+                        btn.innerText = "📋 Copy Image";
+                    }
+                    setTimeout(() => { btn.innerText = "📋 Copy Image"; }, 1800);
+                });
+            } catch (e) {
+                btn.innerText = "📋 Copy Image";
+            }
+        }
+
         function downloadReportCard() {
-            html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#fff" }).then(c => {
+            const saveCanvas = c => {
                 let a = document.createElement('a');
                 a.download = `VLE_Card_${document.getElementById("mc-name").innerText.replace(/\W+/g, '_')}.png`;
                 a.href = c.toDataURL("image/png"); a.click();
-            });
+            };
+            if (latestCardCanvas) saveCanvas(latestCardCanvas);
+            else html2canvas(document.getElementById("reportCardCaptureArea"), { scale: 2, backgroundColor: "#fff" }).then(saveCanvas);
         }
+
         let isDragging = false, sX, sY, iL, iT;
         function dragStart(e) {
             if (e.target.classList.contains('modal-close')) return;
