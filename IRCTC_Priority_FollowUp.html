@@ -294,7 +294,7 @@
         let currentKpiFilter = 'not_reached';
         let latestCardCanvas = null;
 
-        let loggedInDesig = localStorage.getItem("userDesignation") || "State SPOC";
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
         let loggedInUserId = (localStorage.getItem("userId") || "").trim();
         let loggedInUserName = localStorage.getItem("userName") || "Chandra Sekhara Babu";
         let isDM = loggedInDesig.toUpperCase().includes("DISTRICT MANAGER");
@@ -628,16 +628,25 @@
             if (mob.length === 10) mob = "91" + mob;
 
             let periodText = mode === 'ytd' ? `గత ఏడాది ఇదే సమయానికి (${ytdRangeText})` : 'గత ఫైనాన్షియల్ ఇయర్ (FY 25-26) లో';
-            let statusLine = r.currVal === 0
-                ? `🚨 కానీ ఈ సంవత్సరం (FY 26-27) లో మీరు ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.`
-                : `📉 కానీ ఈ సంవత్సరం (FY 26-27) లో ఇప్పటివరకు *${r.currVal}* టికెట్లు మాత్రమే బుక్ చేసారు. మీ గత ఏడాది మార్క్ చేరుకోవడానికి ఇంకా *${r.gap}* టికెట్లు తక్కువగా ఉన్నాయి.`;
+            let statusBlock = r.currVal === 0
+                ? `🔴 *ప్రస్తుత స్థితి:* ఈ సంవత్సరం (FY 26-27) లో ఇంకా ఒక్క టికెట్ కూడా బుక్ చేయలేదు.\n🎯 *టార్గెట్ గ్యాప్:* *${r.gap}* టికెట్లు`
+                : `🟠 *ఈ సంవత్సరం (FY 26-27):* *${r.currVal}* టికెట్లు\n🔴 *ఇంకా కావాల్సినవి (Shortfall):* *${r.gap}* టికెట్లు`;
 
-            let msg = `Dear *${r.vlename}* గారు,\n\n` +
-                      `మీ IRCTC ID: *${r.irctcid}* | జిల్లా: *${r.dist}*\n\n` +
-                      `🌟 ${periodText} మీరు IRCTC ద్వారా *${r.baseVal}* టికెట్లు బుక్ చేసారు.\n` +
-                      `${statusLine}\n\n` +
-                      `⚠️ దయచేసి వెంటనే టికెట్ బుకింగ్స్ పెంచి మీ టార్గెట్ రీచ్ అవ్వగలరు.\n\n` +
-                      `ధన్యవాదాలు,\n*${loggedInUserName}*\n${loggedInDesig}`;
+            let displayDesig = loggedInDesig.toUpperCase().trim() === "SPOC" ? "CSC Travel SPOC" : loggedInDesig;
+
+            let msg = `🚆 *CSC AP – IRCTC PERFORMANCE ALERT* 🚆\n` +
+                      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🙏 నమస్కారం *${r.vlename}* గారు,\n\n` +
+                      `🆔 *IRCTC ID:* ${r.irctcid}\n` +
+                      `📍 *జిల్లా:* ${r.dist}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                      `🟢 *${periodText}:* *${r.baseVal}* టికెట్లు\n` +
+                      `${statusBlock}\n` +
+                      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                      `⚡ దయచేసి వెంటనే టికెట్ బుకింగ్స్ పెంచి మీ గత ఏడాది టార్గెట్ రీచ్ అవ్వగలరు.\n\n` +
+                      `🙏 *ధన్యవాదాలు,*\n` +
+                      `👤 *${loggedInUserName}*\n` +
+                      `🏅 *${displayDesig}*`;
 
             window.open(`whatsapp://send?phone=${mob}&text=${encodeURIComponent(msg)}`, '_blank');
         }
