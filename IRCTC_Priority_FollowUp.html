@@ -140,6 +140,16 @@
 
         #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: var(--forest-dark); color: #f8f5ec; border: 1px solid var(--gold); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 700; z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
+        /* 🌟 Remark Hover Tooltip 🌟 */
+        #rmkTooltip {
+            position: fixed; display: none; z-index: 9999; pointer-events: none;
+            max-width: 360px; background: var(--forest-dark); color: #faf8f2;
+            border: 1.5px solid var(--gold); border-radius: 8px; padding: 10px 14px;
+            font-size: 12.5px; font-weight: 600; line-height: 1.5;
+            white-space: pre-wrap; word-wrap: break-word; text-align: left;
+            box-shadow: 0 10px 25px rgba(18, 45, 34, 0.35);
+        }
+
         /* Royal Report Card Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(18, 45, 34, 0.72); align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: transparent; border-radius: 12px; width: 510px; max-width: 95vw; display: flex; flex-direction: column; position: absolute; box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
@@ -251,7 +261,7 @@
     <div class="modal-overlay" id="momModal">
         <div class="modal-content" id="momModalContent">
             <div class="modal-drag-handle" onmousedown="dragStart(event)">
-                <span>:: DRAG TO MOVE  |  RIGHT-CLICK CARD TO COPY IMAGE</span>
+                <span>:: DRAG TO MOVE  |  RIGHT-CLICK CARD TO COPY IMAGE</span>
                 <button class="modal-close" onclick="closeModalClick()">✖</button>
             </div>
             <div class="card-stage">
@@ -280,6 +290,7 @@
     </div>
 
     <div id="toast"></div>
+    <div id="rmkTooltip"></div>
 
     <script>
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
@@ -397,7 +408,6 @@
             let idxvlemob = hClean.findIndex(h => h.includes('vlemobile'));
             let idxempname = hClean.findIndex(h => h.includes('employeename') || h.includes('empname'));
             let idxstatus = hClean.findIndex(h => h.includes('horemarks'));
-            
 
             const months2627 = ['apr26', 'may26', 'jun26', 'jul26', 'aug26', 'sep26', 'oct26', 'nov26', 'dec26', 'jan27', 'feb27', 'mar27'];
             let idx26Arr = months2627.map(m => hClean.findIndex(h => h === m));
@@ -955,6 +965,48 @@
             const mc = document.getElementById("momModalContent");
             mc.style.left = (iL + e.clientX - sX) + 'px'; mc.style.top = (iT + e.clientY - sY) + 'px';
         }
+
+        // 🌟 Remark Hover Tooltip (Full Message Preview) 🌟
+        const rmkTip = document.getElementById("rmkTooltip");
+        const tblBody = document.getElementById("tableBody");
+
+        function positionRmkTip(e) {
+            const pad = 14;
+            let x = e.clientX - rmkTip.offsetWidth - pad;
+            if (x < 10) x = e.clientX + pad;
+            let y = e.clientY + pad;
+            if (y + rmkTip.offsetHeight > window.innerHeight - 10) {
+                y = e.clientY - rmkTip.offsetHeight - pad;
+            }
+            rmkTip.style.left = x + "px";
+            rmkTip.style.top = y + "px";
+        }
+
+        tblBody.addEventListener("mouseover", function (e) {
+            if (e.target && e.target.classList.contains("rmk-input")) {
+                let txt = (e.target.value || "").trim();
+                if (!txt) return;
+                rmkTip.textContent = txt;
+                rmkTip.style.display = "block";
+                positionRmkTip(e);
+            }
+        });
+
+        tblBody.addEventListener("mousemove", function (e) {
+            if (rmkTip.style.display === "block" && e.target && e.target.classList.contains("rmk-input")) {
+                positionRmkTip(e);
+            }
+        });
+
+        tblBody.addEventListener("mouseout", function (e) {
+            if (e.target && e.target.classList.contains("rmk-input")) {
+                rmkTip.style.display = "none";
+            }
+        });
+
+        document.querySelector(".table-container").addEventListener("scroll", () => {
+            rmkTip.style.display = "none";
+        });
     </script>
 </body>
 </html>
