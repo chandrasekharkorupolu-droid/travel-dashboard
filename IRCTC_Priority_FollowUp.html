@@ -172,6 +172,69 @@
         .modal-footer { background: #ece8dc; padding: 10px; text-align: center; border-radius: 0 0 12px 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; border-top: 1px solid var(--border); }
         .btn-download-card { background: var(--forest); color: #ffffff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
         .btn-copy-card { background: var(--gold); color: var(--charcoal); border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+        /* 📱 MOBILE RESPONSIVE FIX 📱 */
+        @media (max-width: 768px) {
+            body { padding: 8px; gap: 8px; }
+
+            .target-control-panel {
+                position: relative; padding: 10px; gap: 8px; border-radius: 8px;
+            }
+            .page-heading {
+                width: 100%; justify-content: center; font-size: 14.5px; letter-spacing: 0.4px;
+            }
+            .filter-group {
+                display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%;
+            }
+            .filter-group select {
+                width: 100%; font-size: 11.5px; padding: 7px 6px;
+            }
+            .filter-group input {
+                grid-column: span 2; min-width: 0; width: 100%; font-size: 12px; padding: 8px 10px;
+            }
+            .btn-action {
+                width: 100%; justify-content: center; font-size: 11.5px; padding: 7px 6px;
+            }
+            #fullscreenBtn { display: none; }
+
+            #captureArea { padding: 2px 0; }
+            .report-header { margin-bottom: 10px; }
+            .report-header h1 { font-size: 15px; line-height: 1.3; margin-bottom: 3px; }
+            .report-header p { font-size: 10.5px; line-height: 1.35; }
+            #subTitle { font-size: 10.5px !important; }
+
+            /* Compact 2x2 KPI Cards */
+            .kpi-grid {
+                display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;
+            }
+            .kpi-card {
+                min-width: 0; max-width: none; padding: 9px 11px;
+                flex-direction: column; align-items: flex-start; gap: 3px;
+            }
+            .kpi-title { font-size: 9.5px; line-height: 1.2; }
+            .kpi-value { font-size: 19px; }
+
+            /* Smooth Horizontal Swipe Table */
+            .table-container {
+                max-height: 70vh; -webkit-overflow-scrolling: touch; border-radius: 8px;
+            }
+            th { padding: 9px 8px; font-size: 10px; }
+            td { padding: 8px 8px; font-size: 11.5px; }
+            .th-dist, .col-district {
+                position: static !important; min-width: 105px; padding-left: 8px;
+            }
+            .th-rmk { min-width: 215px; }
+            .rmk-input { min-width: 145px; font-size: 11.5px; padding: 5px 7px; }
+            .btn-save-rmk { padding: 5px 8px; font-size: 10.5px; }
+
+            /* Modal adjustments for Mobile */
+            .modal-content { width: 95vw; max-height: 90vh; }
+            .card-stage { max-height: 72vh; overflow-y: auto; }
+            .vle-info-card { padding: 10px 12px; gap: 6px; }
+            .info-item h3 { font-size: 12px; }
+            .modal-table th, .modal-table td { padding: 5px 4px; font-size: 11px; }
+            .modal-drag-handle span { font-size: 9.5px; }
+        }
     </style>
 </head>
 <body>
@@ -769,7 +832,7 @@
 
             let dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
             let div = document.createElement("div");
-            div.style.cssText = "position:fixed; top:0; left:0; width:880px; z-index:-9999; background:#f4f1e6; padding:24px; font-family:'Plus Jakarta Sans', Segoe UI, sans-serif;";
+            div.style.cssText = "position:fixed; top:0; left:-10000px; width:880px; z-index:-9999; background:#f4f1e6; padding:24px; font-family:'Plus Jakarta Sans', Segoe UI, sans-serif;";
             let rowsHtml = Object.keys(stats).sort().map((d, i) => {
                 let s = stats[d];
                 let bg = i % 2 === 0 ? "#faf8f2" : "#f0ece0";
@@ -789,8 +852,8 @@
                 <p style="text-align:center; font-size:12px; color:#525d56; margin-bottom:14px; font-weight:700;">Date: ${dateStr} | CSC AP Travel Team</p>
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead><tr style="background:#1b4332; color:#f8f5ec; border-bottom:2px solid #c5a059;">
-                        <th style="padding:8px; text-align:left; background:#122d22;">DISTRICT</th><th>TARGET</th><th style="background:#15803d;">REACHED</th>
-                        <th style="background:#b45309;">LAGGING</th><th style="background:#991b1b;">ZERO</th><th style="background:#7c4a12;">NOT REACHED</th><th style="background:#122d22;">REMARKS</th>
+                        <th style="padding:8px; text-align:left; background:#122d22; position:static;">DISTRICT</th><th style="position:static;">TARGET</th><th style="background:#15803d; position:static;">REACHED</th>
+                        <th style="background:#b45309; position:static;">LAGGING</th><th style="background:#991b1b; position:static;">ZERO</th><th style="background:#7c4a12; position:static;">NOT REACHED</th><th style="background:#122d22; position:static;">REMARKS</th>
                     </tr></thead>
                     <tbody>${rowsHtml}
                         <tr style="background:#122d22; color:#ffffff; font-weight:900; border-top:2px solid #c5a059;">
@@ -806,11 +869,22 @@
                 </table></div>`;
             document.body.appendChild(div);
 
-            html2canvas(div, { scale: 2, backgroundColor: "#f4f1e6" }).then(canvas => {
+            html2canvas(div, {
+                scale: 2,
+                backgroundColor: "#f4f1e6",
+                width: 880,
+                height: div.scrollHeight,
+                windowWidth: 920,
+                windowHeight: div.scrollHeight + 100,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
                 let a = document.createElement('a');
                 a.download = `IRCTC_Shortfall_Summary_${dateStr}.png`;
                 a.href = canvas.toDataURL("image/png");
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 document.body.removeChild(div);
             });
         }
