@@ -2,118 +2,252 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raise a Ticket & Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-gold: #d69e2e; --hover-gold: #b7791f; --text-dark: #374151; --border-color: #e5e7eb; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; color: var(--text-dark); margin: 0; padding: 20px; overflow-x: hidden;}
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --primary-gold: #c5a059;
+            --hover-gold: #a6823c;
+            --gold-soft: #f7efe0;
+            --text-dark: #141a17;
+            --muted: #525d56;
+            --border-color: #d5cfbe;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--cream-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
         
         .main-wrapper { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
         /* 🌟 Stats Cards Layout 🌟 */
         .stats-container { display: flex; gap: 15px; flex-wrap: wrap; }
-        .stat-card { flex: 1; min-width: 150px; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid; background: white; }
-        .stat-card h3 { margin: 0 0 5px 0; font-size: 14px; color: #64748b; font-weight: 600; }
-        .stat-card h1 { margin: 0; font-size: 26px; font-weight: 800; }
-        .card-total { border-color: #3b82f6; color: #1e3a8a; }
-        .card-pending { border-color: #f59e0b; color: #92400e; }
-        .card-resolved { border-color: #10b981; color: #065f46; }
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(27, 67, 50, 0.06);
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--forest);
+            background: var(--cream-card);
+        }
+        .stat-card h3 { margin: 0 0 6px 0; font-size: 11.5px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card h1 { margin: 0; font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+        .card-total { border-top-color: var(--forest); color: var(--forest); }
+        .card-pending { border-top-color: #b45309; color: #b45309; }
+        .card-resolved { border-top-color: #15803d; color: #15803d; }
 
         /* 🌟 Form & History Layout with Smooth Transition 🌟 */
-        .content-grid { display: grid; grid-template-columns: 1fr; gap: 25px; transition: all 0.4s ease-in-out; }
-        /* ఫామ్ కొంచెం వెడల్పుగా ఉండేలా 450px పెట్టాను */
+        .content-grid { display: grid; grid-template-columns: 1fr; gap: 22px; transition: all 0.4s ease-in-out; }
         @media(min-width: 768px) { .content-grid { grid-template-columns: 480px 1fr; } } 
         
-        .helpdesk-card { background: white; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; height: fit-content; transition: all 0.4s ease; }
+        .helpdesk-card {
+            background: var(--cream-card);
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(27, 67, 50, 0.08);
+            border: 1.5px solid var(--forest);
+            border-top: 5px solid var(--primary-gold);
+            animation: fadeIn 0.3s;
+            height: fit-content;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card-header { padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .card-header h2 { margin: 0; color: var(--text-dark); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .card-body { padding: 25px; }
+        .card-header {
+            padding: 15px 22px;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+            border-bottom: 3px solid var(--primary-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h2 {
+            font-family: 'Cinzel', serif;
+            margin: 0;
+            color: #e6c885;
+            font-size: 16.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-body { padding: 22px; }
         
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: #4b5563; font-size: 14px; }
-        select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; color: var(--text-dark); background-color: #f9fafb; transition: all 0.3s ease; box-sizing: border-box; }
-        select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 3px rgba(214, 158, 46, 0.2); background-color: #ffffff; }
-        input[readonly] { background-color: #e5e7eb; color: #6b7280; cursor: not-allowed; border-color: #d1d5db; }
+        .form-group { margin-bottom: 18px; }
+        label {
+            display: block;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: var(--forest-dark);
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--forest);
+            box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14);
+            background-color: #ffffff;
+        }
+        input[readonly] { background-color: var(--cream-alt); color: var(--muted); cursor: not-allowed; border-color: var(--border-color); }
         
-        .file-hint { display: block; font-size: 12px; color: #ef4444; margin-top: 5px; font-weight: bold; }
-        .submit-btn { width: 100%; padding: 14px; background-color: var(--primary-gold); color: #ffffff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-top: 10px; text-transform: uppercase; }
-        .submit-btn:hover { background-color: var(--hover-gold); }
-        .required-star { color: #ef4444; }
+        .file-hint { display: block; font-size: 11.5px; color: #b91c1c; margin-top: 5px; font-weight: 800; }
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+            color: #f8f5ec;
+            border: 1.5px solid var(--primary-gold);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            margin-top: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 6px 14px rgba(27, 67, 50, 0.22);
+        }
+        .submit-btn:hover { background: var(--primary-gold); color: var(--text-dark); border-color: var(--hover-gold); transform: translateY(-1px); }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .required-star { color: #b91c1c; }
 
         /* 🌟 Toggle Buttons 🌟 */
-        .toggle-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px 12px; cursor: pointer; font-size: 14px; font-weight: bold; color: #334155; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .toggle-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .toggle-btn {
+            background: var(--primary-gold);
+            border: 1.5px solid var(--hover-gold);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .toggle-btn:hover { background: #e6c885; color: var(--forest-dark); }
 
         /* 🌟 History Table Design 🌟 */
-        .history-card { background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); overflow: hidden; display: flex; flex-direction: column; transition: all 0.4s ease; transform-origin: right; }
+        .history-card {
+            background: var(--cream-card);
+            border-radius: 14px;
+            border: 1.5px solid var(--forest);
+            border-top: 5px solid var(--primary-gold);
+            box-shadow: 0 6px 20px rgba(27, 67, 50, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s ease;
+            transform-origin: right;
+        }
         .table-container { overflow-x: auto; width: 100%; max-height: 700px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background-color: #f1f5f9; color: #475569; padding: 12px 15px; font-size: 13px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10;}
-        td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155; }
-        tr:hover { background-color: #f8fafc; }
-        
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
-        .status-pending { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
-        .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        #loadingMsg { text-align: center; padding: 40px; font-size: 14px; color: #64748b; font-weight: bold; }
-
-        /* Modals */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #ffffff; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid var(--primary-gold); }
-        .modal-btn { background-color: var(--primary-gold); color: white; border: none; padding: 10px 30px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-
-
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
-    @media (max-width: 768px) {
-        body { padding: 10px; }
-        .main-wrapper { gap: 15px; }
-        
-        /* 🌟 Stats Cards (మొబైల్ లో ఒక లైన్ కి రెండు కార్డ్స్ సెట్ అయ్యేలా) 🌟 */
-        .stats-container { gap: 10px; }
-        .stat-card { 
-            flex: 1 1 calc(50% - 10px); 
-            min-width: 140px; 
-            padding: 12px; 
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        th {
+            background-color: var(--forest);
+            color: #f8f5ec;
+            padding: 12px 14px;
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 2px solid var(--primary-gold);
+            border-right: 1px solid rgba(255, 255, 255, 0.14);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        .stat-card h1 { font-size: 22px; }
-        
-        /* 🌟 Card Headers & Toggle Button 🌟 */
-        .card-header { 
-            flex-direction: column; 
-            align-items: flex-start; 
-            gap: 12px; 
-            padding: 15px;
-        }
-        .card-header h2 { font-size: 16px; }
-        .toggle-btn { 
-            width: 100%; 
-            justify-content: center; 
-            padding: 10px;
-        }
-        
-        /* 🌟 Form Layout 🌟 */
-        .card-body { padding: 15px; }
-        select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] {
-            padding: 10px;
+        th:last-child { border-right: none; }
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid #e6e1d3;
             font-size: 13px;
+            color: var(--text-dark);
+            background-color: var(--cream-card);
         }
-        .submit-btn { padding: 12px; font-size: 14px; }
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
         
-        /* 🌟 Table Horizontal Scroll 🌟 */
-        .table-container { 
-            -webkit-overflow-scrolling: touch; 
-        }
-        th, td { 
-            white-space: nowrap; /* టెక్స్ట్ విరిగిపోకుండా అడ్డంగా స్క్రోల్ అవుతుంది */
-            padding: 10px; 
-            font-size: 12px; 
-        }
-        
-        /* 🌟 Modals (Popups) 🌟 */
-        .modal-content { padding: 25px 20px; }
-    }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 800; display: inline-block; text-transform: uppercase; }
+        .status-pending { background-color: var(--gold-soft); color: #92400e; border: 1px solid #dfc48e; }
+        .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        #loadingMsg { text-align: center; padding: 40px; font-size: 14px; color: var(--forest); font-weight: 800; }
 
+        /* 🌟 Royal Modals 🌟 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 45, 34, 0.72); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .modal-content {
+            background: var(--cream-card); padding: 30px; border-radius: 16px; text-align: center;
+            max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--forest); border-top: 6px solid var(--primary-gold);
+        }
+        .modal-btn {
+            background-color: var(--forest); color: #f8f5ec; border: 1.5px solid var(--primary-gold);
+            padding: 10px 32px; border-radius: 8px; font-size: 15px; font-weight: 800;
+            cursor: pointer; margin-top: 15px; transition: 0.2s;
+        }
+        .modal-btn:hover { background-color: var(--primary-gold); color: var(--text-dark); }
+
+        /* 📱 MOBILE RESPONSIVE STYLES 📱 */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .main-wrapper { gap: 14px; }
+            
+            .stats-container { gap: 10px; }
+            .stat-card { flex: 1 1 calc(50% - 10px); min-width: 140px; padding: 12px; }
+            .stat-card h1 { font-size: 22px; }
+            
+            .card-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
+            .card-header h2 { font-size: 15px; }
+            .toggle-btn { width: 100%; justify-content: center; padding: 9px; }
+            
+            .card-body { padding: 16px; }
+            select, input[type="text"], input[type="number"], input[type="date"], textarea, input[type="file"] {
+                padding: 10px; font-size: 13px;
+            }
+            .submit-btn { padding: 12px; font-size: 14px; }
+            
+            .table-container { -webkit-overflow-scrolling: touch; }
+            th, td { white-space: nowrap; padding: 10px; font-size: 12px; }
+            .modal-content { padding: 24px 20px; }
+        }
     </style>
 <?!= include('analytics'); ?>
 
@@ -152,7 +286,6 @@
         <div class="helpdesk-card" id="formCard">
             <div class="card-header">
                 <h2>🎧 RAISE NEW TICKET</h2>
-                <!-- ఈ బటన్ కేవలం టేబుల్ హైడ్ అయినప్పుడు మాత్రమే కనిపిస్తుంది -->
                 <button id="showHistoryBtn" class="toggle-btn" style="display:none;" onclick="toggleHistory()">
                     <span>📜 Show History</span>
                 </button>
@@ -185,7 +318,6 @@
         <div class="history-card" id="historyCard">
             <div class="card-header">
                 <h2>📋 MY TICKETS HISTORY</h2>
-                <!-- ఈ బటన్ టేబుల్ ని హైడ్ చేస్తుంది -->
                 <button class="toggle-btn" onclick="toggleHistory()" title="Hide History to expand form">
                     Hide ➡️
                 </button>
@@ -214,20 +346,20 @@
 <!-- SUCCESS MODAL -->
 <div id="successModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
-        <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-        <h3 style="color: #374151; margin-top: 0;">Ticket Raised Successfully!</h3>
-        <p style="color: #4b5563; font-size: 16px; font-weight: bold; margin: 10px 0;">Ticket No: <span style="color: #d69e2e;"></span></p>
+        <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
+        <h3 style="font-family:'Cinzel', serif; color: #122d22; margin-top: 0;">Ticket Raised Successfully!</h3>
+        <p style="color: #525d56; font-size: 15.5px; font-weight: bold; margin: 10px 0;">Ticket No: <span style="color: #7c4a12;"></span></p>
         <button type="button" onclick="closeModal()" class="modal-btn">OK</button>
     </div>
 </div>
 
 <!-- ERROR MODAL -->
 <div id="errorModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content" style="border-top: 6px solid #ef4444;">
-        <div style="font-size: 50px; margin-bottom: 10px;">❌</div>
-        <h3 style="color: #ef4444; margin-top: 0;">Failed!</h3>
-        <p id="errorMsgText" style="color: #4b5563; font-size: 15px; font-weight: bold; margin: 10px 0;"></p>
-        <button type="button" onclick="closeErrorModal()" class="modal-btn" style="background-color: #ef4444;">OK</button>
+    <div class="modal-content" style="border-top: 6px solid #b91c1c;">
+        <div style="font-size: 48px; margin-bottom: 10px;">❌</div>
+        <h3 style="font-family:'Cinzel', serif; color: #b91c1c; margin-top: 0;">Failed!</h3>
+        <p id="errorMsgText" style="color: #525d56; font-size: 14.5px; font-weight: bold; margin: 10px 0;"></p>
+        <button type="button" onclick="closeErrorModal()" class="modal-btn" style="background-color: #b91c1c; border-color: #991b1b;">OK</button>
     </div>
 </div>
 
@@ -249,12 +381,10 @@
         const showBtn = document.getElementById("showHistoryBtn");
 
         if (historyCard.style.display === "none") {
-            // టేబుల్ చూపించు, ఫామ్ సైజ్ నార్మల్ చెయ్
             historyCard.style.display = "flex";
             grid.style.gridTemplateColumns = window.innerWidth >= 768 ? "480px 1fr" : "1fr";
             showBtn.style.display = "none";
         } else {
-            // టేబుల్ దాచిపెట్టు, ఫామ్ ని ఫుల్ స్క్రీన్ చెయ్
             historyCard.style.display = "none";
             grid.style.gridTemplateColumns = "1fr";
             showBtn.style.display = "inline-flex";
@@ -276,7 +406,7 @@
                     if (input && input.value === "") {
                         input.value = result.irctcId;
                         input.setAttribute("readonly", "true");
-                        input.style.backgroundColor = "#e5e7eb";
+                        input.style.backgroundColor = "#f0ece0";
                         input.style.cursor = "not-allowed";
                     }
                 }
@@ -312,25 +442,23 @@
                     document.getElementById("loadingMsg").style.display = "none";
                     result.tickets.forEach(t => {
                         let statusClass = t.status.toUpperCase() === "PENDING" ? "status-pending" : "status-resolved";
-                        let remarksColor = t.status.toUpperCase() === "PENDING" ? "#d97706" : "#15803d";
+                        let remarksColor = t.status.toUpperCase() === "PENDING" ? "#b45309" : "#15803d";
                         let tr = document.createElement("tr");
                         tr.innerHTML = `
-                            <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId}</td>
-                            <td style="font-size:12px; color:#64748b;">${t.date}</td>
-                            <td><span style="color:#ca8a04; font-weight:bold;">${t.service}</span><br><span style="font-size:11px; color:#475569;">${t.issue}</span></td>
+                            <td style="font-weight:800; color:#1b4332;">${t.ticketId}</td>
+                            <td style="font-size:12px; color:#525d56; font-weight:600;">${t.date}</td>
+                            <td><span style="color:#7c4a12; font-weight:800;">${t.service}</span><br><span style="font-size:11px; color:#525d56; font-weight:600;">${t.issue}</span></td>
                             <td><span class="status-badge ${statusClass}">${t.status}</span></td>
-                            <td style="color:${remarksColor}; font-weight:bold; font-size:12px;">${t.remarks}</td>
+                            <td style="color:${remarksColor}; font-weight:700; font-size:12px;">${t.remarks}</td>
                         `;
                         tbody.appendChild(tr);
                     });
                 }
             } else {
-                // ఎర్రర్ వస్తే లోడింగ్ మెసేజ్ మారుతుంది
                 document.getElementById("loadingMsg").innerText = "❌ Failed to fetch data. Server Error.";
             }
         } catch (e) { 
             console.log("Dashboard Error:", e);
-            // ఇక్కడ కూడా ఎర్రర్ హ్యాండ్లింగ్ పెట్టాను
             document.getElementById("loadingMsg").innerText = "❌ Connection Failed. Please deploy Code.gs properly.";
         }
     }
@@ -497,7 +625,7 @@
             if (result.success) {
                 document.querySelector("#successModal p span").innerText = result.ticketId;
                 document.getElementById('successModal').style.display = 'flex';
-                loadVLEDashboard(); // LIVE UPDATE
+                loadVLEDashboard();
             } else {
                 document.getElementById("errorMsgText").innerText = result.message;
                 document.getElementById('errorModal').style.display = 'flex';

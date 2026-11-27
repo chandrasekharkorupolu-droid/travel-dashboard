@@ -2,93 +2,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Ticket Status</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-gold: #d69e2e; --hover-gold: #b7791f; --text-dark: #374151; --border-color: #e5e7eb; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #ffffff; color: var(--text-dark); margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
-        .helpdesk-card { width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--primary-gold); animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); text-align: center; }
-        .card-header h2 { margin: 0; color: var(--text-dark); font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .card-body { padding: 40px 30px; text-align: center; }
-        label { display: block; font-weight: 600; margin-bottom: 15px; color: #4b5563; font-size: 16px; }
-        .track-input { width: 100%; max-width: 400px; padding: 15px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 20px; font-weight: bold; color: var(--text-dark); background-color: #f9fafb; text-align: center; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease; box-sizing: border-box; margin: 0 auto; display: block; }
-        .track-input:focus { outline: none; border-color: var(--primary-gold); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(214, 158, 46, 0.15); }
-        .track-input::placeholder { color: #a1a1aa; font-weight: normal; }
-        .submit-btn { width: 100%; max-width: 400px; padding: 16px; background-color: var(--primary-gold); color: #ffffff; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-top: 25px; text-transform: uppercase; }
-        .submit-btn:hover { background-color: var(--hover-gold); }
-
-        /* 🌟 పాపప్ రిజల్ట్ డిజైన్ 🌟 */
-        .result-box { display: none; margin-top: 30px; padding: 20px; border-radius: 8px; text-align: left; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.3s; }
-        .result-box p { margin: 8px 0; font-size: 15px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
-        .result-box span { font-weight: bold; color: #1e3a8a; float: right; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; }
-        .status-pending { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
-        .status-resolved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .error-msg { color: #ef4444; font-weight: bold; margin-top: 20px; display: none; }
-
-
-/* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR TRACK TICKET REPORT (Added by Chandra) 📱 */
-        /* ========================================================================= */
-        @media (max-width: 768px) {
-            body {
-                padding: 20px 10px; /* మొబైల్ లో ప్యాడింగ్ తగ్గింపు */
-            }
-
-            .helpdesk-card {
-                width: 100%;
-                border-radius: 8px; /* బోర్డర్ రేడియస్ కాస్త తగ్గింపు */
-            }
-
-            .card-header {
-                padding: 15px 20px; /* హెడర్ ప్యాడింగ్ తగ్గింపు */
-            }
-
-            .card-header h2 {
-                font-size: 18px; /* టైటిల్ ఫాంట్ సైజు తగ్గింపు */
-            }
-
-            .card-body {
-                padding: 25px 20px; /* బాడీ ప్యాడింగ్ తగ్గింపు */
-            }
-
-            label {
-                font-size: 14px; /* లేబుల్ ఫాంట్ సైజు తగ్గింపు */
-                margin-bottom: 10px;
-            }
-
-            .track-input {
-                font-size: 16px; /* ఇన్‌పుట్ టెక్స్ట్ సైజు తగ్గింపు */
-                padding: 12px;
-            }
-
-            .submit-btn {
-                font-size: 15px; /* సబ్మిట్ బటన్ టెక్స్ట్ సైజు తగ్గింపు */
-                padding: 12px;
-                margin-top: 15px;
-            }
-
-            .result-box {
-                padding: 15px; /* రిజల్ట్ బాక్స్ ప్యాడింగ్ తగ్గింపు */
-                margin-top: 20px;
-            }
-
-            .result-box p {
-                font-size: 13px; /* రిజల్ట్ టెక్స్ట్ సైజు తగ్గింపు */
-                display: flex;
-                flex-direction: column; /* లేబుల్ మరియు వాల్యూ ఒకదాని కింద ఒకటి వచ్చేలా */
-                align-items: flex-start;
-                gap: 5px;
-            }
-
-            .result-box span {
-                float: none; /* వాల్యూ రైట్ కి కాకుండా లెఫ్ట్ కే వచ్చేలా */
-                width: 100%;
-                word-wrap: break-word; /* పెద్ద పదాలు ఉంటే కట్ అవ్వకుండా */
-            }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --primary-gold: #c5a059;
+            --hover-gold: #a6823c;
+            --gold-soft: #f7efe0;
+            --text-dark: #141a17;
+            --muted: #525d56;
+            --border-color: #d5cfbe;
         }
 
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--cream-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .helpdesk-card {
+            width: 100%;
+            max-width: 600px;
+            background: var(--cream-card);
+            border: 1.5px solid var(--forest);
+            border-top: 6px solid var(--primary-gold);
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(27, 67, 50, 0.12);
+            animation: fadeIn 0.3s ease-out;
+            overflow: hidden;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-header {
+            padding: 20px 28px;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+            border-bottom: 3px solid var(--primary-gold);
+            text-align: center;
+        }
+        .card-header h2 {
+            font-family: 'Cinzel', serif;
+            margin: 0;
+            color: #e6c885;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card-body { padding: 36px 30px; text-align: center; }
+
+        label {
+            display: block;
+            font-weight: 800;
+            margin-bottom: 14px;
+            color: var(--forest-dark);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .track-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--forest-dark);
+            background-color: #ffffff;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+            margin: 0 auto;
+            display: block;
+        }
+        .track-input:focus {
+            outline: none;
+            border-color: var(--forest);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(27, 67, 50, 0.14);
+        }
+        .track-input::placeholder { color: #8f8873; font-weight: 500; }
+
+        .submit-btn {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+            color: #f8f5ec;
+            border: 1.5px solid var(--primary-gold);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            margin-top: 22px;
+            text-transform: uppercase;
+            box-shadow: 0 6px 16px rgba(27, 67, 50, 0.22);
+        }
+        .submit-btn:hover {
+            background: var(--primary-gold);
+            color: var(--text-dark);
+            border-color: var(--hover-gold);
+            transform: translateY(-1px);
+        }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* 🌟 Result Box 🌟 */
+        .result-box {
+            display: none;
+            margin-top: 28px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-left: 5px solid var(--primary-gold);
+            box-shadow: 0 4px 12px rgba(27, 67, 50, 0.06);
+            animation: fadeIn 0.3s;
+        }
+        .result-box p {
+            margin: 8px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--muted);
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+            overflow: hidden;
+        }
+        .result-box span { font-weight: 800; color: var(--forest-dark); float: right; }
+
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
+        .status-pending { background: var(--gold-soft); color: #92400e !important; border: 1px solid #dfc48e; }
+        .status-resolved { background: #dcfce7; color: #15803d !important; border: 1px solid #bbf7d0; }
+
+        .error-msg {
+            color: #b91c1c;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 13.5px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        /* 📱 MOBILE RESPONSIVENESS 📱 */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .helpdesk-card { width: 100%; border-radius: 12px; }
+            .card-header { padding: 16px 18px; }
+            .card-header h2 { font-size: 17px; }
+            .card-body { padding: 24px 18px; }
+            label { font-size: 13px; margin-bottom: 10px; }
+            .track-input { font-size: 16px; padding: 12px; }
+            .submit-btn { font-size: 14.5px; padding: 12px; margin-top: 16px; }
+            .result-box { padding: 15px; margin-top: 20px; }
+            .result-box p {
+                font-size: 13px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .result-box span { float: none; width: 100%; word-wrap: break-word; }
+        }
     </style>
 
 <!-- Google tag (gtag.js) -->
@@ -113,15 +213,14 @@
             
             <button class="submit-btn" id="trackBtn" onclick="trackTicket()">Check Status</button>
 
-            <!-- 🌟 రిజల్ట్ చూపించే బాక్స్ 🌟 -->
             <div id="errorMsg" class="error-msg"></div>
             
             <div id="resultBox" class="result-box">
-                <p>Service: <span id="rService"></span></p>
+                <p>Service: <span id="rService" style="color:#7c4a12;"></span></p>
                 <p>Issue: <span id="rIssue"></span></p>
-                <p>Date & Time: <span id="rDate"></span></p>
+                <p>Date & Time: <span id="rDate" style="color:#525d56;"></span></p>
                 <p>Status: <span id="rStatus"></span></p>
-                <p style="border-bottom:none;">Remarks: <span id="rRemarks" style="color:#ef4444;"></span></p>
+                <p style="border-bottom:none; padding-bottom:0; margin-bottom:0;">Remarks: <span id="rRemarks" style="color:#b91c1c;"></span></p>
             </div>
 
         </div>
@@ -171,10 +270,7 @@
                 if (result.success) {
                     document.getElementById("rService").innerText = result.ticket.service;
                     document.getElementById("rIssue").innerText = result.ticket.issue;
-                    
-                    // 🌟 ఇక్కడ మార్పు చేసాను: డైరెక్ట్ గా డేట్ & టైమ్ మొత్తం వస్తుంది 🌟
                     document.getElementById("rDate").innerText = result.ticket.date;
-                    
                     document.getElementById("rRemarks").innerText = result.ticket.remarks;
                     
                     let sSpan = document.getElementById("rStatus");

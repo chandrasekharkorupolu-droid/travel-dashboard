@@ -2,91 +2,282 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helpdesk Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #334155; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #ca8a04; }
-        .header-container h2 { margin: 0; color: #1e293b; font-size: 22px; display: flex; align-items: center; gap: 10px;}
-        .header-actions { display: flex; gap: 15px; align-items: center; }
+        /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+        :root {
+            --cream-bg: #f4f1e6;
+            --cream-card: #faf8f2;
+            --cream-alt: #f0ece0;
+            --forest: #1b4332;
+            --forest-dark: #122d22;
+            --forest-soft: #e9f2ed;
+            --gold: #c5a059;
+            --gold-soft: #f7efe0;
+            --charcoal: #141a17;
+            --muted: #525d56;
+            --border: #d5cfbe;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--cream-bg);
+            margin: 0;
+            padding: 18px 20px;
+            color: var(--charcoal);
+            min-height: 100vh;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+            padding: 15px 22px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(18, 45, 34, 0.16);
+            border: 1.5px solid var(--forest-dark);
+            border-bottom: 4px solid var(--gold);
+        }
+        .header-container h2 {
+            font-family: 'Cinzel', serif;
+            margin: 0;
+            color: #e6c885;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
         
-        .status-filter-select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155; outline: none; cursor: pointer; background-color: #f8fafc; }
-        .status-filter-select:hover { border-color: #ca8a04; }
+        .status-filter-select {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--gold);
+            font-weight: 800;
+            font-size: 13px;
+            color: var(--forest-dark);
+            outline: none;
+            cursor: pointer;
+            background-color: var(--cream-card);
+        }
+        .status-filter-select:hover { border-color: #e6c885; background-color: var(--gold-soft); }
         
-        .refresh-btn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .refresh-btn:hover { background: #e2e8f0; color: #0f172a; }
-        .services-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-        .service-card { flex: 1; background: #ffffff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 2px solid transparent; cursor: pointer; transition: all 0.3s ease; position: relative; min-width: 150px; }
-        .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .service-card.active { border-color: #ca8a04; background-color: #fefce8; }
-        .service-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0 0 15px 0; text-align: center; }
-        .card-stats { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; }
-        .stat-resolved { color: #15803d; background: #dcfce7; padding: 5px 10px; border-radius: 6px; border: 1px solid #bbf7d0; }
-        .stat-pending { color: #dc2626; background: #fee2e2; padding: 5px 10px; border-radius: 6px; border: 1px solid #fecaca; }
+        .refresh-btn {
+            background: var(--gold);
+            color: var(--charcoal);
+            border: 1.5px solid #a6823c;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 13px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .refresh-btn:hover { background: #b08a42; color: #ffffff; }
+
+        .services-container { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+        .service-card {
+            flex: 1;
+            background: var(--cream-card);
+            border-radius: 10px;
+            padding: 14px 15px;
+            box-shadow: 0 3px 10px rgba(27, 67, 50, 0.06);
+            border: 1.5px solid var(--border);
+            border-top: 4px solid var(--forest);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 150px;
+        }
+        .service-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(27, 67, 50, 0.12); border-color: var(--gold); }
+        .service-card.active {
+            border-color: var(--forest);
+            border-top-color: var(--gold);
+            background-color: var(--gold-soft);
+            box-shadow: 0 0 0 2px rgba(27, 67, 50, 0.18);
+        }
+        .service-title {
+            font-family: 'Cinzel', serif;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--forest-dark);
+            margin: 0 0 12px 0;
+            text-align: center;
+            letter-spacing: 0.4px;
+        }
+        .card-stats { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 800; gap: 6px; }
+        .stat-resolved { color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 6px; border: 1px solid #bbf7d0; }
+        .stat-pending { color: #b91c1c; background: #fee2e2; padding: 4px 10px; border-radius: 6px; border: 1px solid #fecaca; }
         
-        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-y: auto; height: calc(100vh - 290px); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1050px; }
-        th { background-color: #f1f5f9; color: #475569; padding: 15px; font-size: 13px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); white-space: nowrap; text-transform: uppercase;}
-        td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155; white-space: nowrap;}
-        tr:hover { background-color: #f8fafc; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;}
-        .status-pending { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .table-container {
+            background: var(--cream-card);
+            border-radius: 12px;
+            border: 1.5px solid var(--forest);
+            box-shadow: 0 4px 16px rgba(27, 67, 50, 0.08);
+            overflow-y: auto;
+            height: calc(100vh - 280px);
+            overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 1050px; }
+        th {
+            background-color: var(--forest);
+            color: #f8f5ec;
+            padding: 13px 14px;
+            font-size: 11.5px;
+            font-weight: 800;
+            border-bottom: 2px solid var(--gold);
+            border-right: 1px solid rgba(255, 255, 255, 0.14);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        th:last-child { border-right: none; }
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid #e6e1d3;
+            font-size: 13px;
+            color: var(--charcoal);
+            background-color: var(--cream-card);
+            white-space: nowrap;
+        }
+        tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+        tbody tr:hover td { background-color: var(--gold-soft) !important; }
+
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 800; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-pending { background-color: var(--gold-soft); color: #92400e; border: 1px solid #dfc48e; }
         .status-resolved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .action-btn { background-color: #ca8a04; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; white-space: nowrap;}
-        .action-btn:hover { background: #a16207; }
-        #loadingMsg { text-align: center; padding: 50px; font-size: 16px; color: #64748b; font-weight: bold; }
-        
-        .resolve-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
-        .resolve-modal-content { background: #ffffff; width: 90%; max-width: 650px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 6px solid #d69e2e; display: flex; flex-direction: column; max-height: 90vh; animation: popIn 0.3s ease-out; }
-        .resolve-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: 12px 12px 0 0; }
-        .resolve-header h3 { margin: 0; color: #1e293b; font-size: 18px; font-weight: 800; }
-        .close-btn { font-size: 24px; cursor: pointer; color: #64748b; font-weight: bold; line-height: 1; transition: 0.2s; }
-        .close-btn:hover { color: #ef4444; }
-        .resolve-body { padding: 20px; overflow-y: auto; font-size: 13px; color: #334155; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;}
-        .detail-item strong { color: #0f172a; display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
-        .desc-box { background: #fff; padding: 12px; border-radius: 6px; border: 1px dashed #cbd5e1; white-space: pre-wrap; font-family: inherit; font-size: 13px; margin-bottom: 15px; line-height: 1.5; }
-        
-        .image-preview-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
-        .preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 2px solid #e2e8f0; cursor: zoom-in; transition: transform 0.2s; }
-        .preview-img:hover { transform: scale(1.05); border-color: #ca8a04; }
-        .download-link { font-size: 11px; color: #2563eb; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 5px; background: #eff6ff; padding: 3px 8px; border-radius: 4px;}
-        .download-link:hover { background: #dbeafe; }
 
-        .remarks-box { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; }
-        .remarks-box:focus { outline: none; border-color: #ca8a04; box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.2); }
-        .resolve-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; text-align: right; background: #f8fafc; border-radius: 0 0 12px 12px; display: flex; justify-content: space-between; align-items: center; }
+        .action-btn {
+            background-color: var(--forest);
+            color: #f8f5ec;
+            border: 1.5px solid var(--gold);
+            padding: 6px 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 800;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .action-btn:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+        #loadingMsg { text-align: center; padding: 50px; font-size: 15px; color: var(--forest); font-weight: 800; }
         
-        .btn-action-modal { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
-        .btn-mail { background: #3b82f6; color: white; } .btn-mail:hover { background: #2563eb; }
-        .btn-wa { background: #22c55e; color: white; } .btn-wa:hover { background: #16a34a; }
-        .btn-submit { background: #ca8a04; color: white; padding: 8px 20px; font-size: 14px;} .btn-submit:hover { background: #a16207; }
+        /* 🌟 Royal Resolve Modal 🌟 */
+        .resolve-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 45, 34, 0.78); display: none; justify-content: center;
+            align-items: center; z-index: 9999; backdrop-filter: blur(4px);
+        }
+        .resolve-modal-content {
+            background: var(--cream-card); width: 92%; max-width: 660px; border-radius: 14px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+            border: 2px solid var(--forest); border-top: 6px solid var(--gold);
+            display: flex; flex-direction: column; max-height: 90vh; animation: popIn 0.25s ease-out;
+            overflow: hidden;
+        }
+        .resolve-header {
+            padding: 15px 20px; border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+        }
+        .resolve-header h3 { font-family: 'Cinzel', serif; margin: 0; color: #f8f5ec; font-size: 17px; font-weight: 800; }
+        .close-btn { font-size: 24px; cursor: pointer; color: #e6c885; font-weight: bold; line-height: 1; transition: 0.2s; }
+        .close-btn:hover { color: #f87171; }
 
-        .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .custom-alert-box { background: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 350px; width: 90%; animation: popIn 0.3s; border-top: 5px solid #16a34a; }
-        .custom-alert-box h3 { margin: 10px 0 5px 0; color: #15803d; font-size: 18px;}
-        .custom-alert-box p { color: #475569; font-size: 14px; margin-bottom: 20px; }
-        .btn-ok { background: #16a34a; color: white; border: none; padding: 8px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-        .btn-ok:hover { background: #15803d; }
+        .resolve-body { padding: 20px; overflow-y: auto; font-size: 13px; color: var(--charcoal); }
+        .detail-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;
+            background: var(--cream-alt); padding: 14px; border-radius: 10px; border: 1px solid var(--border);
+        }
+        .detail-item strong { color: var(--muted); display: block; font-size: 10.5px; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.4px; }
+        .desc-box {
+            background: #ffffff; padding: 12px; border-radius: 8px; border: 1.5px dashed var(--gold);
+            white-space: pre-wrap; font-family: inherit; font-size: 13px; margin-top: 6px; margin-bottom: 15px; line-height: 1.55;
+        }
+        
+        .image-preview-container { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: zoom-in; transition: transform 0.2s; }
+        .preview-img:hover { transform: scale(1.05); border-color: var(--gold); }
+        .download-link {
+            font-size: 11px; color: var(--forest-dark); text-decoration: none; font-weight: 800;
+            display: inline-block; margin-top: 5px; background: var(--gold-soft);
+            border: 1px solid var(--gold); padding: 3px 8px; border-radius: 4px;
+        }
+        .download-link:hover { background: var(--gold); color: var(--charcoal); }
 
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .remarks-box {
+            width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600; color: var(--charcoal);
+            background: #ffffff; resize: vertical; box-sizing: border-box;
+        }
+        .remarks-box:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14); }
+
+        .resolve-footer {
+            padding: 14px 20px; border-top: 1.5px solid var(--border); text-align: right;
+            background: var(--cream-alt); display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .btn-action-modal {
+            padding: 8px 16px; border: 1.5px solid transparent; border-radius: 8px; font-weight: 800;
+            cursor: pointer; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-mail { background: #164e63; color: #ffffff; border-color: #0e3a4a; }
+        .btn-mail:hover { background: #0e3a4a; }
+        .btn-wa { background: #1b6b3a; color: #ffffff; border-color: #14532d; }
+        .btn-wa:hover { background: #14532d; }
+        .btn-submit { background: var(--forest); color: #f8f5ec; border-color: var(--gold); padding: 9px 22px; font-size: 13.5px; }
+        .btn-submit:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+
+        .custom-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(18, 45, 34, 0.65); display: none; justify-content: center;
+            align-items: center; z-index: 10000; backdrop-filter: blur(3px);
+        }
+        .custom-alert-box {
+            background: var(--cream-card); padding: 26px; border-radius: 14px; text-align: center;
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3); max-width: 350px; width: 90%;
+            animation: popIn 0.25s; border: 2px solid var(--forest); border-top: 5px solid var(--gold);
+        }
+        .custom-alert-box h3 { font-family: 'Cinzel', serif; margin: 8px 0 6px 0; color: var(--forest-dark); font-size: 18px; font-weight: 800; }
+        .custom-alert-box p { color: var(--muted); font-size: 13.5px; font-weight: 600; margin-bottom: 20px; white-space: pre-line; }
+        .btn-ok { background: var(--forest); color: #f8f5ec; border: 1.5px solid var(--gold); padding: 9px 28px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-ok:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+
+        @keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* 📱 MOBILE RESPONSIVE STYLES 📱 */
         @media (max-width: 768px) {
             body { padding: 10px; }
-            .header-container { flex-direction: column; align-items: flex-start; gap: 15px; padding: 15px; }
+            .header-container { flex-direction: column; align-items: flex-start; gap: 14px; padding: 14px; }
+            .header-container h2 { font-size: 17px; }
             .header-actions { flex-direction: column; width: 100%; gap: 10px; align-items: stretch; }
             .status-filter-select, .refresh-btn { width: 100%; justify-content: center; }
             .services-container { gap: 10px; }
-            .service-card { min-width: 100%; flex: 1 1 100%; padding: 12px; }
-            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            th, td { white-space: nowrap; font-size: 13px; padding: 12px 10px; }
-            .resolve-modal-content { width: 95%; max-height: 95vh; margin: 10px; }
-            .resolve-header h3 { font-size: 16px; }
+            .service-card { min-width: calc(50% - 6px); flex: 1 1 calc(50% - 6px); padding: 12px; }
+            .table-container { height: calc(100vh - 340px); min-height: 360px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            th, td { white-space: nowrap; font-size: 12px; padding: 10px 9px; }
+            .resolve-modal-content { width: 95%; max-height: 94vh; margin: 10px; }
+            .resolve-header h3 { font-size: 15px; }
             .detail-grid { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
             .resolve-body > div[style*="display:flex"] { flex-direction: column !important; gap: 10px !important; }
             .btn-mail, .btn-wa { width: 100%; justify-content: center; padding: 10px; }
             .resolve-footer { flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
-            .btn-submit { width: 100%; justify-content: center; padding: 12px; }
+            .btn-submit { width: 100%; justify-content: center; padding: 11px; }
         }
     </style>
 
@@ -139,20 +330,20 @@
     <div id="resolveModal" class="resolve-modal-overlay">
         <div class="resolve-modal-content">
             <div class="resolve-header">
-                <h3>🎫 Ticket Details: <span id="r_ticketId" style="color:#d69e2e;"></span></h3>
-                <span class="close-btn" onclick="closeResolveModal()">&times;</span>
+                <h3>🎫 Ticket Details: <span id="r_ticketId" style="color:#e6c885;"></span></h3>
+                <span class="close-btn" onclick="closeResolveModal()">×</span>
             </div>
             <div class="resolve-body">
                 <div class="detail-grid">
-                    <div class="detail-item"><strong>Service</strong><span id="r_service"></span></div>
-                    <div class="detail-item"><strong>Issue Category</strong><span id="r_issue"></span></div>
-                    <div class="detail-item"><strong>CSC ID</strong><span id="r_cscid" style="font-weight:bold; color:#1e3a8a;"></span></div>
-                    <div class="detail-item"><strong>District</strong><span id="r_district"></span></div>
-                    <div class="detail-item"><strong>VLE Name</strong><span id="r_vlename" style="font-weight:bold; color:#0f172a;"></span></div>
-                    <div class="detail-item"><strong>Mobile No</strong><span id="r_mobile" style="font-weight:bold; color:#059669;"></span></div>
+                    <div class="detail-item"><strong>Service</strong><span id="r_service" style="font-weight:800; color:#7c4a12;"></span></div>
+                    <div class="detail-item"><strong>Issue Category</strong><span id="r_issue" style="font-weight:700;"></span></div>
+                    <div class="detail-item"><strong>CSC ID</strong><span id="r_cscid" style="font-weight:800; color:#1b4332;"></span></div>
+                    <div class="detail-item"><strong>District</strong><span id="r_district" style="font-weight:700;"></span></div>
+                    <div class="detail-item"><strong>VLE Name</strong><span id="r_vlename" style="font-weight:800; color:#122d22;"></span></div>
+                    <div class="detail-item"><strong>Mobile No</strong><span id="r_mobile" style="font-weight:800; color:#15803d;"></span></div>
                 </div>
                 
-                <strong>Description & Proofs:</strong>
+                <strong style="color:var(--forest-dark); font-size:12px; text-transform:uppercase;">Description & Proofs:</strong>
                 <div class="desc-box">
                     <div id="r_desc_text"></div>
                     <div id="r_image_preview" class="image-preview-container"></div>
@@ -163,27 +354,27 @@
                     <button class="btn-action-modal btn-wa" onclick="sendWhatsApp()">💬 WhatsApp HO</button>
                 </div>
 
-                <div id="resolvedDetailsArea" style="display:none; background:#dcfce7; padding:15px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:15px;">
+                <div id="resolvedDetailsArea" style="display:none; background:var(--forest-soft); padding:15px; border-radius:8px; border:1.5px solid #a7ccb8; margin-bottom:15px;">
                     <strong style="color:#15803d; font-size:14px;">✅ This ticket is already processed.</strong>
                     <p style="margin:8px 0 4px 0; font-size:13px;"><b>Status:</b> <span id="r_resolvedStatus"></span></p>
-                    <p style="margin:4px 0; font-size:13px;"><b>Resolved On:</b> <span id="r_resolvedDate" style="color:#0f172a; font-weight:bold;"></span></p>
-                    <p style="margin:0; font-size:13px;"><b>Remarks:</b> <span id="r_resolvedRemarks" style="color:#334155;"></span></p>
+                    <p style="margin:4px 0; font-size:13px;"><b>Resolved On:</b> <span id="r_resolvedDate" style="color:#122d22; font-weight:bold;"></span></p>
+                    <p style="margin:0; font-size:13px;"><b>Remarks:</b> <span id="r_resolvedRemarks" style="color:#141a17;"></span></p>
                 </div>
 
                 <div id="actionFormArea">
-                    <strong style="color:#ef4444; display:block; margin-bottom:5px;">Action (Resolution Type) *</strong>
-                    <select id="r_status" class="remarks-box" style="margin-bottom:10px; background:#fffbea;">
+                    <strong style="color:#b91c1c; display:block; margin-bottom:5px; font-size:12px; text-transform:uppercase;">Action (Resolution Type) *</strong>
+                    <select id="r_status" class="remarks-box" style="margin-bottom:12px; background:var(--gold-soft); border-color:var(--gold);">
                         <option value="Resolved">✅ Solved Locally (Close Ticket)</option>
                         <option value="Forwarded to HO">⏳ Escalated to HO</option>
                     </select>
 
-                    <strong style="color:#ef4444; display:block; margin-bottom:5px;">Resolution Remarks *</strong>
+                    <strong style="color:#b91c1c; display:block; margin-bottom:5px; font-size:12px; text-transform:uppercase;">Resolution Remarks *</strong>
                     <textarea id="r_remarks" class="remarks-box" rows="3" placeholder="Enter remarks (e.g., Mailed to HO / Refund Processed)..." required></textarea>
                 </div>
             </div>
             
             <div class="resolve-footer">
-                <span style="font-size:12px; color:#64748b;">Action by: <b id="r_adminName">SPOC</b></span>
+                <span style="font-size:12px; color:var(--muted); font-weight:600;">Action by: <b id="r_adminName" style="color:var(--forest-dark);">SPOC</b></span>
                 <button class="btn-action-modal btn-submit" id="btnResolveSubmit" onclick="submitResolve()">Submit Resolution</button>
             </div>
         </div>
@@ -214,20 +405,16 @@
             
             await fetchVleMapping();
             
-            // 🌟 SMART LOADING: ముందు లోకల్ డేటాని వెంటనే చూపించేసి, బ్యాక్ గ్రౌండ్ లో సర్వర్ చెక్ చేస్తాం 🌟
             let cachedTickets = localStorage.getItem("helpdeskTicketsData");
             if(cachedTickets) {
                 allTicketsData = JSON.parse(cachedTickets);
                 renderTickets();
-                // బ్యాక్ గ్రౌండ్ లో సైలెంట్ గా కొత్త డేటా ఏమైనా ఉందో చెక్ చేస్తాం (forceRefresh లాగా కాకుండా silent గా)
                 fetchDataFromServerSilent(); 
             } else {
-                // ఫస్ట్ టైమ్ ఓపెన్ చేసినప్పుడు మాత్రమే లోడింగ్ పడుతుంది
                 fetchDataFromServer(true); 
             }
         }
 
-        // 🌟 కొత్తగా యాడ్ చేసిన ఫంక్షన్: సైలెంట్ గా వెనకాల డేటా తెస్తుంది 🌟
         async function fetchDataFromServerSilent() {
             try {
                 let response = await fetch(SCRIPT_URL, {
@@ -238,11 +425,10 @@
                 
                 let res = await response.json(); 
                 if (res.success && res.tickets) {
-                    // పాత డేటాకి కొత్త డేటాకి తేడా ఉంటేనే పేజీ ని అప్డేట్ చేస్తాం (స్మూత్ గా)
                     if(JSON.stringify(allTicketsData) !== JSON.stringify(res.tickets)) {
                         allTicketsData = res.tickets;
                         localStorage.setItem("helpdeskTicketsData", JSON.stringify(allTicketsData));
-                        renderTickets(); // సైలెంట్ గా రిఫ్రెష్
+                        renderTickets();
                     }
                 }
             } catch (error) {
@@ -303,9 +489,9 @@
         function showCustomAlert(title, message, isSuccess = true) {
             document.getElementById("alertTitle").innerText = title;
             document.getElementById("alertMessage").innerText = message;
-            document.getElementById("alertTitle").style.color = isSuccess ? "#15803d" : "#dc2626";
-            document.querySelector(".custom-alert-box").style.borderTopColor = isSuccess ? "#16a34a" : "#dc2626";
-            document.getElementById("alertBtn").style.background = isSuccess ? "#16a34a" : "#dc2626";
+            document.getElementById("alertTitle").style.color = isSuccess ? "#122d22" : "#b91c1c";
+            document.querySelector(".custom-alert-box").style.borderTopColor = isSuccess ? "#c5a059" : "#b91c1c";
+            document.getElementById("alertBtn").style.background = isSuccess ? "#1b4332" : "#b91c1c";
             document.getElementById("customAlert").style.display = "flex";
         }
 
@@ -431,14 +617,14 @@
 
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td style="font-weight:bold; color:#1e3a8a;">${t.ticketId || '-'}</td>
-                    <td style="font-size:12px; color:#64748b;">${t.date ? t.date.split(' ')[0] : '-'}</td>
-                    <td style="font-weight:bold;">${t.cscId || '-'}</td>
-                    <td style="font-weight:bold; color:#0f172a;">${vleNameDisplay}</td>
-                    <td style="font-weight:bold; color:#059669;">${mobileDisplay}</td>
-                    <td>${t.district || '-'}</td>
-                    <td><span style="color:#ca8a04; font-weight:bold;">${t.service || '-'}</span><br><span style="font-size:11px; color:#475569;">${t.category || '-'}</span></td>
-                    <td style="font-weight:bold; color:#ef4444;">${agentId}</td>
+                    <td style="font-weight:800; color:#1b4332;">${t.ticketId || '-'}</td>
+                    <td style="font-size:12px; color:#525d56; font-weight:600;">${t.date ? t.date.split(' ')[0] : '-'}</td>
+                    <td style="font-weight:800; color:#122d22;">${t.cscId || '-'}</td>
+                    <td style="font-weight:700; color:#141a17;">${vleNameDisplay}</td>
+                    <td style="font-weight:800; color:#15803d;">${mobileDisplay}</td>
+                    <td style="font-weight:700; color:#525d56;">${t.district || '-'}</td>
+                    <td><span style="color:#7c4a12; font-weight:800;">${t.service || '-'}</span><br><span style="font-size:11px; color:#525d56; font-weight:600;">${t.category || '-'}</span></td>
+                    <td style="font-weight:800; color:#b91c1c;">${agentId}</td>
                     <td><span class="status-badge ${statusClass}">${t.status || 'PENDING'}</span></td>
                     <td><button class="action-btn" onclick="viewTicket('${t.ticketId}')">View / Resolve</button></td>
                 `;
@@ -492,7 +678,7 @@
                                      </div>`;
             }
             
-            formattedDesc = formattedDesc.replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '<span style="color:#10b981; font-weight:bold;">[Attachment Available Below]</span>');
+            formattedDesc = formattedDesc.replace(/(https:\/\/drive\.google\.com[^\s]+)/g, '<span style="color:#15803d; font-weight:bold;">[Attachment Available Below]</span>');
             document.getElementById('r_desc_text').innerHTML = formattedDesc;
             document.getElementById('r_image_preview').innerHTML = imageGalleryHTML;
             
@@ -632,8 +818,7 @@
             window.open("https://wa.me/?text=" + text, "_blank");
         }
 
-        
-async function submitResolve() {
+        async function submitResolve() {
             let remarks = document.getElementById('r_remarks').value.trim();
             let statusAction = document.getElementById('r_status').value;
             let ticketId = document.getElementById('r_ticketId').innerText;
