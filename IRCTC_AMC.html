@@ -117,17 +117,19 @@
         .report-header p { font-size: 13px; color: var(--muted); font-weight: 700; margin-top: 0; }
 
         .capture-compact {
-            width: max-content !important; min-width: 1100px !important; margin: 0;
-            background-color: var(--cream-bg) !important; padding: 35px !important;
+            width: max-content !important; min-width: 1120px !important; margin: 0 !important;
+            background-color: var(--cream-bg) !important; padding: 30px !important;
             display: inline-block !important; height: auto !important; overflow: visible !important;
         }
-        .capture-compact .report-header { display: block; }
+        .capture-compact .report-header { display: block !important; }
+        .capture-compact .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; margin-bottom: 14px !important; }
+        .capture-compact .kpi-icon { display: flex !important; }
         .capture-compact .table-container {
-            height: auto !important; overflow: visible !important; display: block !important;
+            height: auto !important; max-height: none !important; overflow: visible !important; display: block !important;
             flex: none !important; border: 1.5px solid var(--forest) !important; box-shadow: none !important; border-radius: 8px;
         }
         .capture-compact table { width: 100% !important; }
-        .capture-compact thead, .capture-compact th { position: static !important; }
+        .capture-compact thead, .capture-compact th, .capture-compact td.col-district { position: static !important; }
 
         /* Royal Table Settings */
         .table-container {
@@ -233,31 +235,36 @@
         .btn-save:hover { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
         .btn-save:disabled { background-color: #9ca3af; color: #ffffff; border-color: #9ca3af; cursor: not-allowed; }
 
-        /* 🌟 COLORFUL DM NOTIFY CARD MODAL 🌟 */
+        /* 🌟 COLORFUL DM NOTIFY CARD MODAL (MOBILE + DESKTOP FIXED) 🌟 */
         .notify-modal-content {
             background: var(--cream-card); width: 860px; max-width: 96vw; border-radius: 12px;
             border: 2px solid var(--forest); box-shadow: 0 22px 45px rgba(0,0,0,0.35);
             display: flex; flex-direction: column; overflow: hidden; animation: slideDown 0.25s ease;
-        }
-        #notifyCardCaptureArea table {
-            width: 100% !important; min-width: 0 !important; table-layout: auto;
-        }
-        #notifyCardCaptureArea th, #notifyCardCaptureArea td {
-            padding: 7px 6px !important; font-size: 11.5px !important;
-        }
-        #notifyCardCaptureArea td:nth-child(3) {
-            white-space: normal !important; word-break: break-word; line-height: 1.3;
         }
         .notify-topbar {
             background: var(--forest-dark); padding: 10px 16px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold);
         }
         .notify-topbar span { color: #e6c885; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; }
-        .notify-scroll-wrap { max-height: 74vh; overflow-y: auto; background: var(--cream-bg); padding: 14px; }
-        .notify-card-stage { position: relative; }
+        .notify-scroll-wrap {
+            max-height: 74vh; overflow: auto; -webkit-overflow-scrolling: touch;
+            background: var(--cream-bg); padding: 14px;
+        }
+        .notify-card-stage { position: relative; width: 820px; min-width: 820px; margin: 0 auto; }
         #notifyCardCaptureArea {
+            width: 820px; min-width: 820px;
             background: var(--cream-card); border: 2px solid var(--forest); border-radius: 10px;
-            overflow: visible; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            overflow: hidden; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        }
+        #notifyCardCaptureArea table, .notify-clone-export table {
+            width: 100% !important; min-width: 0 !important; table-layout: auto;
+        }
+        #notifyCardCaptureArea th, #notifyCardCaptureArea td,
+        .notify-clone-export th, .notify-clone-export td {
+            padding: 7px 6px !important; font-size: 11.5px !important; position: static !important;
+        }
+        #notifyCardCaptureArea td:nth-child(3), .notify-clone-export td:nth-child(3) {
+            white-space: normal !important; word-break: break-word; line-height: 1.3;
         }
         #notifyCardImgOverlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -274,7 +281,7 @@
         }
         @media (max-width: 768px) {
             body { padding: 10px; gap: 15px; }
-            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; gap: 12px; }
+            .target-control-panel { flex-direction: column; align-items: stretch; padding: 15px; gap: 12px; position: relative; }
             .page-heading { justify-content: center; font-size: 16px; text-align: center; }
             .filter-group { flex-wrap: wrap; width: 100%; }
             .search-box, .filter-group select { width: 100%; min-width: 100%; padding: 10px 12px; }
@@ -290,6 +297,8 @@
             
             .table-container { max-height: 600px; -webkit-overflow-scrolling: touch; }
             .modal-content { width: 95%; padding: 20px; }
+            .notify-topbar span { font-size: 10px; }
+            .notify-footer .btn-action { flex: 1 1 auto; }
         }
     </style>
 
@@ -457,7 +466,7 @@
     <div class="modal-overlay" id="notifyModal">
         <div class="notify-modal-content">
             <div class="notify-topbar">
-                <span>📢 DM WHATSAPP UPDATE CARD  |  RIGHT-CLICK CARD TO COPY IMAGE</span>
+                <span>📢 DM WHATSAPP UPDATE CARD  |  RIGHT-CLICK OR TAP DOWNLOAD</span>
                 <button class="modal-close" style="position:static; color:#f87171;" onclick="closeNotifyModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="notify-scroll-wrap">
@@ -619,7 +628,6 @@
                 if (mIdx > -1 && !fy25Indices.includes(mIdx)) fy25Indices.push(mIdx);
             });
 
-            // Fallback: sheet lo apr25..mar26 headers lekapothe matrame fy_2025_26 column teesukuntundi
             if (fy25Indices.length === 0) {
                 let idxFy202526 = cleanHeaders.findIndex(h => h === 'fy202526');
                 if (idxFy202526 > -1) fy25Indices.push(idxFy202526);
@@ -1125,6 +1133,39 @@
             return "శుభ సాయంత్రం 🌇";
         }
 
+        // 🌟 Mobile + Desktop Safe Off-Screen HD Capture for Notify Card 🌟
+        async function buildNotifyCardCanvas() {
+            const source = document.getElementById("notifyCardCaptureArea");
+            const wrapper = document.createElement("div");
+            wrapper.className = "notify-clone-export";
+            wrapper.style.cssText = "position:fixed; left:-10000px; top:0; width:820px; background:#faf8f2; z-index:-1; pointer-events:none;";
+
+            const clone = source.cloneNode(true);
+            clone.id = "";
+            clone.style.width = "820px";
+            clone.style.minWidth = "820px";
+            clone.style.margin = "0";
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
+
+            try {
+                const canvas = await html2canvas(clone, {
+                    scale: 2,
+                    backgroundColor: "#faf8f2",
+                    useCORS: true,
+                    width: 820,
+                    height: clone.scrollHeight,
+                    windowWidth: 900,
+                    windowHeight: clone.scrollHeight + 100,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+                return canvas;
+            } finally {
+                document.body.removeChild(wrapper);
+            }
+        }
+
         function notifyDM() {
             let distType = document.getElementById("districtType").value;
             let selectedDist = document.getElementById("districtName").value;
@@ -1228,7 +1269,7 @@
 
                 if (!isActivated) {
                     let mob = row.vlemob !== '-' ? row.vlemob : row.mobile;
-		    let item = {
+                    let item = {
                         cscid: row.cscid,
                         vlename: row.vlename,
                         mob: mob,
@@ -1332,12 +1373,12 @@
             document.getElementById("notifyModal").style.display = "flex";
 
             setTimeout(() => {
-                html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(c => {
+                buildNotifyCardCanvas().then(c => {
                     latestNotifyCanvas = c;
                     imgOverlay.src = c.toDataURL("image/png");
                     imgOverlay.style.display = "block";
-                });
-            }, 150);
+                }).catch(err => console.error("Notify capture error:", err));
+            }, 200);
         }
 
         function closeNotifyModal() { document.getElementById("notifyModal").style.display = "none"; }
@@ -1346,29 +1387,47 @@
             const btn = document.getElementById("copyNotifyBtn");
             btn.innerHTML = "⏳ Copying...";
             try {
-                const canvas = latestNotifyCanvas || await html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" });
+                const canvas = latestNotifyCanvas || await buildNotifyCardCanvas();
+                latestNotifyCanvas = canvas;
                 canvas.toBlob(async blob => {
                     try {
-                        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-                        showToast("✅ Image Copied! WhatsApp lo Ctrl+V paste cheyandi.");
-                        btn.innerHTML = "✅ Copied!";
+                        if (navigator.clipboard && window.ClipboardItem) {
+                            await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                            showToast("✅ Image Copied! WhatsApp lo paste cheyandi.");
+                            btn.innerHTML = "✅ Copied!";
+                        } else {
+                            throw new Error("Clipboard image unsupported");
+                        }
                     } catch (e) {
-                        showToast("ℹ️ Card meeda Right-Click chesi 'Copy image' nokkandi.");
+                        showToast("ℹ️ Mobile browser lo Copy support lekapothe 'Download Image' vaadandi.");
                         btn.innerHTML = "📋 Copy Image";
                     }
-                    setTimeout(() => { btn.innerHTML = "📋 Copy Image"; }, 1800);
-                });
+                    setTimeout(() => { btn.innerHTML = "📋 Copy Image"; }, 2000);
+                }, "image/png");
             } catch (e) { btn.innerHTML = "📋 Copy Image"; }
         }
 
-        function downloadNotifyCard() {
-            const save = c => {
+        async function downloadNotifyCard() {
+            const btn = document.getElementById("dlNotifyBtn");
+            const orig = btn.innerHTML;
+            btn.innerHTML = "⏳ Generating...";
+            btn.disabled = true;
+            try {
+                const c = latestNotifyCanvas || await buildNotifyCardCanvas();
+                latestNotifyCanvas = c;
                 let a = document.createElement('a');
                 a.download = `AMC_DM_Update_${currentNotifyData.selectedDist}_${currentNotifyData.dateStr}.png`;
-                a.href = c.toDataURL("image/png"); a.click();
-            };
-            if (latestNotifyCanvas) save(latestNotifyCanvas);
-            else html2canvas(document.getElementById("notifyCardCaptureArea"), { scale: 2, backgroundColor: "#faf8f2" }).then(save);
+                a.href = c.toDataURL("image/png");
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                btn.innerHTML = "✅ Downloaded";
+            } catch (err) {
+                console.error("Download error:", err);
+                btn.innerHTML = "❌ Failed";
+            } finally {
+                setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1800);
+            }
         }
 
         function openDmWhatsAppChat() {
@@ -1453,32 +1512,53 @@
             const tableWrapper = document.querySelector(".table-container");
             const origAreaOverflow = captureArea.style.overflow;
             const origWrapperOverflow = tableWrapper.style.overflow;
+            const origWrapperMaxHeight = tableWrapper.style.maxHeight;
             
-            captureArea.style.overflow = "visible"; tableWrapper.style.overflow = "visible";
+            captureArea.style.overflow = "visible";
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.style.maxHeight = "none";
             captureArea.classList.add("capture-compact");
             
             const stickyEls = captureArea.querySelectorAll('th, td.col-district');
             stickyEls.forEach(el => { el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position; el.style.position = 'static'; });
             
             setTimeout(() => {
-                html2canvas(captureArea, { scale: 2, backgroundColor: "#f4f1e6", windowWidth: captureArea.scrollWidth + 50 })
+                const capW = Math.max(1150, captureArea.scrollWidth);
+                const capH = captureArea.scrollHeight;
+                const capScale = window.innerWidth <= 768 ? 1.5 : 2;
+
+                html2canvas(captureArea, {
+                    scale: capScale,
+                    backgroundColor: "#f4f1e6",
+                    useCORS: true,
+                    width: capW,
+                    height: capH,
+                    windowWidth: capW + 60,
+                    windowHeight: capH + 100,
+                    scrollX: 0,
+                    scrollY: 0
+                })
                 .then(canvas => {
                     let link = document.createElement('a');
                     let d = new Date();
-                    let typeSelect = document.getElementById("districtType");
                     let fyText = document.getElementById("fyFilter").value;
                     let monthText = document.getElementById("monthFilter").options[document.getElementById("monthFilter").selectedIndex].text;
                     let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
                     link.download = `IRCTC_AMC_Eligible_List_${fyText}_${monthText}_${dateStr}.png`;
-                    link.href = canvas.toDataURL("image/png"); link.click();
-                    restoreStyles(); btn.innerHTML = "Snapshot";
+                    link.href = canvas.toDataURL("image/png");
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    restoreStyles(); btn.innerHTML = "✅ Downloaded";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 }).catch(err => { console.error("Error capturing image:", err); restoreStyles(); btn.innerHTML = "❌ Failed"; setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000); });
-            }, 500);
+            }, 400);
 
             function restoreStyles() {
                 captureArea.classList.remove("capture-compact");
-                captureArea.style.overflow = origAreaOverflow; tableWrapper.style.overflow = origWrapperOverflow;
+                captureArea.style.overflow = origAreaOverflow;
+                tableWrapper.style.overflow = origWrapperOverflow;
+                tableWrapper.style.maxHeight = origWrapperMaxHeight;
                 stickyEls.forEach(el => { el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition; });
             }
         }
