@@ -5,80 +5,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-Stamping Stationary Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <style>
-    /* 🌟 Corporate Clean Background 🌟 */
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
+
     body { 
-        background: #f8f9fa; 
-        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; 
-        padding: 20px; 
-        min-height: 100vh;
-        color: #334155;
+      background: var(--cream-bg); 
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif; 
+      padding: 20px; 
+      min-height: 100vh;
+      color: var(--charcoal);
     }
 
     /* 🌟 Top KPI Stats Cards 🌟 */
     .stats-card { 
-        background: #ffffff; 
-        border-radius: 6px; 
-        padding: 15px; 
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        border-top: 4px solid transparent;
+      background: var(--cream-card); 
+      border-radius: 10px; 
+      padding: 16px 15px; 
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 10px rgba(27, 67, 50, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-top: 4px solid var(--forest);
     }
-    .stats-card.inward { border-top-color: #4f46e5; } 
-    .stats-card.outward { border-top-color: #dc2626; } 
-    .stats-card.balance { border-top-color: #059669; } 
+    .stats-card.inward { border-top-color: var(--forest); } 
+    .stats-card.outward { border-top-color: #b91c1c; } 
+    .stats-card.balance { border-top-color: #15803d; } 
     
     .stats-card h6 { 
-        color: #64748b; 
-        font-size: 11px; 
-        font-weight: 700; 
-        text-transform: uppercase; 
-        letter-spacing: 0.5px; 
-        margin-bottom: 5px; 
+      color: var(--muted); 
+      font-size: 11px; 
+      font-weight: 800; 
+      text-transform: uppercase; 
+      letter-spacing: 0.6px; 
+      margin-bottom: 6px; 
     }
     .stats-card h2 { 
-        font-size: 24px; 
-        font-weight: 800; 
-        margin: 0; 
-        line-height: 1; 
+      font-size: 26px; 
+      font-weight: 900; 
+      margin: 0; 
+      line-height: 1; 
+      font-variant-numeric: tabular-nums;
     }
 
     /* 🌟 Premium Solid Cards 🌟 */
     .premium-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        overflow: hidden;
-        margin-top: 20px;
+      background: var(--cream-card);
+      border: 1.5px solid var(--forest);
+      border-top: 5px solid var(--gold);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(27, 67, 50, 0.08);
+      overflow: hidden;
+      margin-top: 20px;
     }
     
     .card-header-custom {
-        padding: 12px 20px;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #fbfbfc;
+      padding: 13px 20px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--cream-card);
     }
     
     .card-title {
-        color: #1e293b;
-        font-weight: 700;
-        font-size: 15px;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      font-family: 'Cinzel', serif;
+      color: var(--forest-dark);
+      font-weight: 800;
+      font-size: 15.5px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     /* 🌟 COMPACT Table Design 🌟 */
@@ -86,85 +106,95 @@
     .table { margin-bottom: 0; }
     
     .table thead th { 
-        background: #e2e8f0; 
-        color: #1e293b; 
-        font-size: 11px; 
-        font-weight: 800;
-        text-transform: uppercase; 
-        letter-spacing: 0.5px;
-        padding: 10px 15px; /* గ్యాప్ తగ్గించాను */
-        border-bottom: 2px solid #cbd5e1;
-        white-space: nowrap;
+      background: var(--forest) !important; 
+      color: #f8f5ec !important; 
+      font-size: 11px; 
+      font-weight: 800;
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+      padding: 11px 15px;
+      border-bottom: 2px solid var(--gold) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      white-space: nowrap;
     }
+    .table thead th:last-child { border-right: none; }
     
     .table tbody tr td { 
-        padding: 8px 15px; /* రోస్ మధ్య గ్యాప్ బాగా తగ్గించాను */
-        border-bottom: 1px solid #e2e8f0;
-        vertical-align: middle;
-        font-size: 13px; 
-        color: #334155;
-        font-weight: 500;
+      padding: 9px 15px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      vertical-align: middle;
+      font-size: 13px; 
+      color: var(--charcoal);
+      background-color: var(--cream-card);
+      font-weight: 600;
     }
-    .table-hover tbody tr:hover { background-color: #f8fafc; }
+    .table tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+    .table-hover tbody tr:hover td { background-color: var(--gold-soft) !important; }
 
     /* 🌟 Buttons & Badges 🌟 */
     .btn-action { 
-        font-weight: 600; 
-        border: none; 
-        border-radius: 4px; 
-        padding: 6px 14px;
-        font-size: 12px;
-        transition: all 0.2s ease;
+      font-weight: 800; 
+      border-radius: 7px; 
+      padding: 7px 14px;
+      font-size: 12px;
+      transition: all 0.2s ease;
     }
-    .btn-outline-custom { color: #4f46e5; background: #ffffff; border: 1px solid #c7d2fe; }
-    .btn-outline-custom:hover { background: #e0e7ff; }
+    .btn-outline-custom {
+      color: #f8f5ec;
+      background: var(--forest);
+      border: 1.5px solid var(--forest-dark);
+    }
+    .btn-outline-custom:hover { background: var(--forest-dark); color: #ffffff; }
     
-    .btn-outline-dark-custom { color: #475569; background: #ffffff; border: 1px solid #cbd5e1; }
-    .btn-outline-dark-custom:hover { background: #f1f5f9; color: #1e293b; border-color: #94a3b8;}
+    .btn-outline-dark-custom {
+      color: var(--charcoal);
+      background: var(--gold);
+      border: 1.5px solid #a6823c;
+    }
+    .btn-outline-dark-custom:hover { background: #b08a42; color: #ffffff; }
 
     .badge-custom { 
-        background: #f1f5f9; 
-        color: #475569; 
-        font-weight: 700; 
-        padding: 4px 10px; 
-        border-radius: 4px; 
-        font-size: 11px; 
-        text-transform: uppercase; 
-        letter-spacing: 0.5px; 
-        border: 1px solid #cbd5e1;
+      background: var(--forest-dark); 
+      color: #e6c885; 
+      font-weight: 800; 
+      padding: 5px 11px; 
+      border-radius: 6px; 
+      font-size: 10.5px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px; 
+      border: 1px solid var(--gold);
     }
     
-    /* 🌟 Simple Formal Link 🌟 */
+    /* 🌟 Formal District Link 🌟 */
     .district-link {
-        color: #4f46e5;
-        text-decoration: none;
-        cursor: pointer;
-        font-weight: 700;
-        transition: 0.2s;
+      color: var(--forest-dark);
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s;
     }
     .district-link:hover {
-        text-decoration: underline;
-        color: #3730a3;
+      text-decoration: underline;
+      color: #7c4a12;
     }
 
-    .num-val {
-        font-weight: 700;
-    }
+    .num-val { font-weight: 800; font-variant-numeric: tabular-nums; }
 
     /* 📱 MOBILE RESPONSIVENESS */
     @media (max-width: 768px) {
-        body { padding: 15px 10px; }
-        .row.align-items-center { display: flex; flex-direction: column; gap: 15px; text-align: center !important; }
-        .col-md-6.text-center, .col-md-3.text-end { width: 100%; text-align: center !important; }
-        .d-flex.gap-2.justify-content-end { justify-content: center !important; flex-wrap: wrap; }
-        .btn-action { flex: 1 1 45%; font-size: 11px; padding: 8px 10px; }
-        .row.g-3 { display: flex; flex-direction: column; gap: 10px; }
-        .col-md-4 { width: 100%; }
-        .stats-card { padding: 12px; }
-        .premium-card { border-radius: 10px; }
-        .card-header-custom { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
-        .table-responsive { -webkit-overflow-scrolling: touch; overflow-x: auto; }
-        table { min-width: 500px; }
+      body { padding: 14px 10px; }
+      .row.align-items-center { display: flex; flex-direction: column; gap: 12px; text-align: center !important; }
+      .col-md-6.text-center, .col-md-3.text-end { width: 100%; text-align: center !important; }
+      .d-flex.gap-2.justify-content-end { justify-content: center !important; flex-wrap: wrap; }
+      .btn-action { flex: 1 1 45%; font-size: 11.5px; padding: 8px 10px; }
+      .row.g-3 { display: flex; flex-direction: column; gap: 10px; }
+      .col-md-4 { width: 100%; }
+      .stats-card { padding: 12px; }
+      .premium-card { border-radius: 10px; }
+      .card-header-custom { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+      .table-responsive { -webkit-overflow-scrolling: touch; overflow-x: auto; }
+      table { min-width: 500px; }
     }
   </style>
 
@@ -186,8 +216,8 @@
       <div class="col-md-3"></div>
       
       <div class="col-md-6 text-center">
-        <h4 class="fw-bold m-0" style="color: #1e293b;">📦 E-Stamping Stationary Report</h4>
-        <p id="reportDateTime" class="mt-2 mb-0" style="font-size: 12px; color: #64748b; font-weight: 600;"></p>
+        <h4 class="fw-bold m-0" style="font-family:'Cinzel', serif; color: var(--forest-dark); letter-spacing: 0.6px; text-transform: uppercase;">📦 E-Stamping Stationary Report</h4>
+        <p id="reportDateTime" class="mt-2 mb-0" style="font-size: 12px; color: var(--muted); font-weight: 700;"></p>
       </div>
       
       <div class="col-md-3 text-end">
@@ -203,19 +233,19 @@
       <div class="col-md-4">
         <div class="stats-card inward">
             <h6>Total Master Inward</h6>
-            <h2 id="totInward" style="color: #4f46e5;">0</h2>
+            <h2 id="totInward" style="color: #1b4332;">0</h2>
         </div>
       </div>
       <div class="col-md-4">
         <div class="stats-card outward">
             <h6>Total Dispatched to VLEs</h6>
-            <h2 id="totOutward" style="color: #dc2626;">0</h2>
+            <h2 id="totOutward" style="color: #b91c1c;">0</h2>
         </div>
       </div>
       <div class="col-md-4">
         <div class="stats-card balance">
             <h6>Available Stock Balance</h6>
-            <h2 id="totBalance" style="color: #059669;">0</h2>
+            <h2 id="totBalance" style="color: #15803d;">0</h2>
         </div>
       </div>
     </div>
@@ -232,14 +262,14 @@
           <table class="table table-hover align-middle text-center mb-0">
             <thead class="sticky-top">
               <tr>
-                <th class="text-start ps-4">District Name</th>
+                <th class="text-start ps-4" style="background: var(--forest-dark) !important; color: #e6c885 !important;">District Name</th>
                 <th>Inward Master Stock</th>
-                <th>Dispatched Stock (VLEs)</th>
-                <th>Available Balance</th>
+                <th style="background: #991b1b !important;">Dispatched Stock (VLEs)</th>
+                <th style="background: #15803d !important;">Available Balance</th>
               </tr>
             </thead>
             <tbody id="summaryBody">
-              <tr><td colspan="4" class="text-muted py-4 fw-bold">Loading Statement Matrix...</td></tr>
+              <tr><td colspan="4" class="py-4 fw-bold" style="color: var(--muted);">Loading Statement Matrix...</td></tr>
             </tbody>
           </table>
         </div>
@@ -250,15 +280,15 @@
   <!-- 🌟 Inward Details Modal 🌟 -->
   <div class="modal fade" id="inwardDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content premium-card border-0" style="margin-top:0;">
-        <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 12px 20px;">
-          <h5 class="modal-title fw-bold m-0" id="inwardModalTitle" style="font-size: 15px;">📦 District Inward Details</h5>
+      <div class="modal-content premium-card border-0" style="margin-top:0; border: 2px solid var(--forest) !important;">
+        <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--forest), var(--forest-dark)); border-bottom: 3px solid var(--gold); padding: 13px 20px;">
+          <h5 class="modal-title fw-bold m-0" id="inwardModalTitle" style="font-family:'Cinzel', serif; color: #e6c885; font-size: 15px;">📦 District Inward Details</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0">
+        <div class="modal-body p-0" style="background: var(--cream-card);">
           <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table class="table table-hover align-middle text-center mb-0" style="font-size: 13px;">
-              <thead class="table-light sticky-top">
+              <thead class="sticky-top">
                 <tr>
                   <th class="text-start ps-4">Received Date</th>
                   <th>Start Serial</th>
@@ -267,7 +297,6 @@
                 </tr>
               </thead>
               <tbody id="inwardDetailsBody">
-                <!-- Details Will Load Here -->
               </tbody>
             </table>
           </div>
@@ -312,7 +341,7 @@
 
     function refreshLiveReport() { 
        localStorage.removeItem("eStampSummaryCache"); 
-       document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="py-4 fw-bold text-primary">🔄 Refreshing Statement Matrix...</td></tr>`; 
+       document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="py-4 fw-bold" style="color:var(--forest);">🔄 Refreshing Statement Matrix...</td></tr>`; 
        fetchLiveReport(); 
     }
 
@@ -326,7 +355,7 @@
              renderData(res.summary); 
              updateDateTime(); 
           }
-       }).catch(e => { document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="text-danger fw-bold py-4">❌ Network error. Click Refresh Live.</td></tr>`; });
+       }).catch(e => { document.getElementById("summaryBody").innerHTML = `<tr><td colspan="4" class="fw-bold py-4" style="color:#b91c1c;">❌ Network error. Click Refresh Live.</td></tr>`; });
     }
 
     function renderData(summary) {
@@ -357,9 +386,9 @@
                     ${dist}
                 </span>
             </td>
-            <td class="num-val" style="color: #475569;">${fIn}</td>
-            <td class="num-val text-danger">${fOut}</td>
-            <td class="num-val text-success">${fAvail}</td>
+            <td class="num-val" style="color: #1b4332;">${fIn}</td>
+            <td class="num-val" style="color: #b91c1c;">${fOut}</td>
+            <td class="num-val" style="color: #15803d;">${fAvail}</td>
           </tr>`;
        });
        
@@ -367,7 +396,7 @@
        document.getElementById("totOutward").innerText = tOut.toLocaleString('en-IN'); 
        document.getElementById("totBalance").innerText = (tIn - tOut).toLocaleString('en-IN');
        
-       if(sbody.innerHTML === "") { sbody.innerHTML = `<tr><td colspan="4" class="text-danger fw-bold py-4">No data found.</td></tr>`; }
+       if(sbody.innerHTML === "") { sbody.innerHTML = `<tr><td colspan="4" class="fw-bold py-4" style="color:#b91c1c;">No data found.</td></tr>`; }
     }
 
     function showInwardDetails(districtName) {
@@ -380,14 +409,14 @@
             dData.inwardDetails.forEach(item => {
                 let fQty = item.qty.toLocaleString('en-IN');
                 tbody.innerHTML += `<tr>
-                  <td class="text-start ps-4 fw-bold text-secondary">${item.date}</td>
-                  <td class="fw-bold text-primary">${item.start}</td>
-                  <td class="fw-bold text-primary">${item.end}</td>
-                  <td class="fw-bold text-success" style="font-size: 14px;">${fQty}</td>
+                  <td class="text-start ps-4 fw-bold" style="color:#525d56;">${item.date}</td>
+                  <td class="fw-bold" style="color:#1b4332;">${item.start}</td>
+                  <td class="fw-bold" style="color:#7c4a12;">${item.end}</td>
+                  <td class="fw-bold" style="color:#15803d; font-size: 14px;">${fQty}</td>
                 </tr>`;
             });
         } else {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-danger py-4 fw-bold">❌ No inward master stock found for ${districtName}.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="py-4 fw-bold" style="color:#b91c1c;">❌ No inward master stock found for ${districtName}.</td></tr>`;
         }
         
         document.getElementById("inwardModalTitle").innerHTML = `📦 <strong>${districtName}</strong> - Inward Master Stock Series`;
@@ -398,7 +427,7 @@
     function downloadImage() {
        updateDateTime();
        const captureElement = document.getElementById('captureArea');
-       html2canvas(captureElement, { scale: 2, backgroundColor: '#f8f9fa' }).then(canvas => {
+       html2canvas(captureElement, { scale: 2, backgroundColor: '#f4f1e6' }).then(canvas => {
           let link = document.createElement('a');
           link.download = 'E-Stamping_Stock_Summary.png';
           link.href = canvas.toDataURL("image/png");

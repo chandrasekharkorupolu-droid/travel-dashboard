@@ -6,66 +6,215 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detailed VLE Dispatch Tracking Report</title>
   
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    /* 🌟 Master Clean Background 🌟 */
-    body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 20px 15px; min-height: 100vh; color: #334155; }
-    .premium-card { background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); overflow: hidden; border-top: 5px solid #6366f1; }
-    .card-header-custom { background: #ffffff; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .card-title { color: #0f172a; font-weight: 900; font-size: 18px; margin: 0; }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
+
+    body {
+      background: var(--cream-bg);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+      padding: 18px 15px;
+      min-height: 100vh;
+      color: var(--charcoal);
+    }
+
+    .premium-card {
+      background: var(--cream-card);
+      border: 1.5px solid var(--forest);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(27, 67, 50, 0.08);
+      overflow: hidden;
+      border-top: 5px solid var(--gold);
+    }
+
+    .card-header-custom {
+      background: var(--cream-card);
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .card-title {
+      color: var(--forest-dark);
+      font-weight: 800;
+      font-size: 16px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
 
     .table-container { padding: 0; width: 100%; }
     .table { margin-bottom: 0; white-space: nowrap; width: 100%; table-layout: auto; }
-    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 10px; border: none; }
-    .table tbody tr td { padding: 10px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 12.5px; }
+    .table thead th {
+      background: var(--forest) !important;
+      color: #f8f5ec !important;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 10px;
+      border: none;
+      border-bottom: 2px solid var(--gold) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .table thead th:last-child { border-right: none; }
 
-    .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
-    .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
-    .table-hover tbody tr:hover td { background-color: #e0e7ff !important; cursor: pointer; }
+    .table tbody tr td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      vertical-align: middle;
+      font-size: 12.5px;
+      background-color: var(--cream-card);
+      color: var(--charcoal);
+    }
+    .table-striped tbody tr:nth-of-type(odd) td { background-color: var(--cream-card); }
+    .table-striped tbody tr:nth-of-type(even) td { background-color: var(--cream-alt); }
+    .table-hover tbody tr:hover td { background-color: var(--gold-soft) !important; cursor: pointer; }
 
-    .btn-action { font-weight: 800; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-outline-custom { color: #6366f1; background: #eff6ff; border: 1px solid #c7d2fe; }
-    .btn-outline-custom:hover { background: #e0e7ff; color: #4f46e5; }
-    .btn-outline-success-custom { color: #10b981; background: #ecfdf5; border: 1px solid #a7f3d0; }
-    .btn-outline-success-custom:hover { background: #d1fae5; color: #047857; }
+    .btn-action {
+      font-weight: 800;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-outline-custom {
+      color: #f8f5ec;
+      background: var(--forest);
+      border: 1.5px solid var(--forest-dark);
+    }
+    .btn-outline-custom:hover { background: var(--forest-dark); color: #ffffff; }
+
+    .btn-outline-success-custom {
+      color: var(--charcoal);
+      background: var(--gold);
+      border: 1.5px solid #a6823c;
+    }
+    .btn-outline-success-custom:hover { background: #b08a42; color: #ffffff; }
     
-    .btn-outline-danger-custom { color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; }
-    .btn-outline-danger-custom:hover { background: #fee2e2; color: #dc2626; }
+    .btn-outline-danger-custom {
+      color: #b91c1c;
+      background: #fee2e2;
+      border: 1.5px solid #fecaca;
+    }
+    .btn-outline-danger-custom:hover { background: #b91c1c; color: #ffffff; border-color: #b91c1c; }
 
-    /* 🌟 New Full Screen Button Style 🌟 */
-    .btn-outline-dark-custom { color: #475569; background: #f8fafc; border: 1px solid #cbd5e1; }
-    .btn-outline-dark-custom:hover { background: #e2e8f0; color: #0f172a; }
+    .btn-outline-dark-custom {
+      color: var(--forest);
+      background: #ffffff;
+      border: 1.5px solid var(--forest);
+    }
+    .btn-outline-dark-custom:hover { background: var(--forest); color: #ffffff; }
 
-    .search-box { border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; outline: none; font-size: 13px; font-weight: 600; color: #1e293b; background: #f8fafc; transition: 0.3s; }
-    .search-box:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+    .search-box {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 14px;
+      outline: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--charcoal);
+      background: #ffffff;
+      transition: 0.2s;
+    }
+    .search-box:focus {
+      border-color: var(--forest);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14);
+    }
 
-    .badge-custom { background: #f3e8ff; color: #7c3aed; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 10px; text-transform: uppercase; border: 1px solid #d8b4fe; }
-    .badge-qty { background-color: #ecfdf5; color: #047857; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0; }
+    .badge-custom {
+      background: var(--forest-dark);
+      color: #e6c885;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--gold);
+    }
+    .badge-qty {
+      background-color: var(--forest-soft);
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #a7ccb8;
+    }
 
     /* 🌟 Modals (Centered Popup) 🌟 */
-    .modal-content-innovative { border: none; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .modal-content-innovative {
+      background: var(--cream-card);
+      border: 2px solid var(--forest);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(18, 45, 34, 0.3);
+    }
 
-    #copyToast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #22c55e; padding: 10px 20px; border-radius: 50px; font-weight: 800; font-size: 13px; display: none; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; }
+    #copyToast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--forest-dark);
+      color: #e6c885;
+      border: 1.5px solid var(--gold);
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 13px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
     .copyable-text { cursor: pointer; display: inline-block; transition: all 0.2s; padding: 2px 4px; border-radius: 4px; }
-    .copyable-text:hover { background-color: #cbd5e1; color: #0f172a !important; }
+    .copyable-text:hover { background-color: var(--gold-soft); color: var(--forest-dark) !important; }
     
     .table-responsive::-webkit-scrollbar { width: 6px; height: 8px; }
-    .table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
-    .table-responsive::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
-    .table-responsive::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    .table-responsive::-webkit-scrollbar-track { background: var(--cream-bg); }
+    .table-responsive::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
     @media (max-width: 768px) {
-        body { padding: 10px 5px; }
-        .page-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
-        .mobile-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .search-box { width: 100%; }
-        .btn-action-group { display: flex; gap: 10px; width: 100%; flex-wrap: wrap;}
-        .btn-action-group .btn-action { flex: 1; justify-content: center; }
-        .card-header-custom { flex-direction: column; align-items: flex-start; }
-        .table-responsive { max-height: calc(100vh - 220px) !important; }
+      body { padding: 10px 5px; }
+      .page-header { flex-direction: column; align-items: flex-start !important; gap: 12px; }
+      .mobile-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+      .search-box, #dateFilterBtn { width: 100% !important; }
+      .btn-action-group { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+      .btn-action-group .btn-action { flex: 1; justify-content: center; }
+      .card-header-custom { flex-direction: column; align-items: flex-start; }
+      .table-responsive { max-height: calc(100vh - 220px) !important; }
     }
   </style>
 
@@ -82,43 +231,40 @@
 
   <div id="copyToast">✅ Copied to Clipboard!</div>
 
- <div class="container-fluid px-2 px-md-3">
+  <div class="container-fluid px-2 px-md-3">
     
     <div class="d-flex justify-content-between align-items-center mb-3 px-1 page-header">
-      <h5 class="fw-bold m-0" style="color: #0f172a;">🚚 VLE Dispatch Tracking</h5>
+      <h5 class="fw-bold m-0" style="font-family:'Cinzel', serif; color: var(--forest-dark); letter-spacing: 0.5px; text-transform: uppercase;">🚚 VLE Dispatch Tracking</h5>
       
       <div class="mobile-actions d-flex gap-2 align-items-center flex-wrap">
         
         <!-- 🌟 SMART SINGLE BUTTON DROPDOWN CALENDAR 🌟 -->
         <div class="dropdown">
-          <button class="search-box text-start d-flex justify-content-between align-items-center bg-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="dateFilterBtn" style="width: 240px; cursor: pointer; color: #475569;">
+          <button class="search-box text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" id="dateFilterBtn" style="width: 240px; cursor: pointer; background: var(--gold-soft); border-color: var(--gold); color: var(--forest-dark);">
             <span id="filterBtnText" class="fw-bold"><i class="fa-regular fa-calendar-days me-2"></i>Filter Date / Month</span>
-            <i class="fa-solid fa-chevron-down text-muted" style="font-size: 10px;"></i>
+            <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: var(--forest);"></i>
           </button>
           
-          <!-- 🌟 FIX: Added z-index: 9999 to always stay on top 🌟 -->
-          <div class="dropdown-menu p-3 shadow border-0" style="width: 260px; border-radius: 12px; margin-top: 5px; z-index: 9999;">
+          <div class="dropdown-menu p-3 shadow" style="width: 265px; border-radius: 12px; margin-top: 5px; z-index: 9999; background: var(--cream-card); border: 1.5px solid var(--forest);">
             <div class="mb-3">
-                <label class="form-label fw-bold text-primary mb-1" style="font-size: 11px; text-transform: uppercase;">1. Select Whole Month</label>
-                <input type="month" id="monthFilter" class="form-control" style="font-size: 13px; font-weight: bold; border-color: #93c5fd;" onchange="triggerMonthFilter()">
+                <label class="form-label fw-bold mb-1" style="font-size: 11px; text-transform: uppercase; color: var(--forest-dark);">1. Select Whole Month</label>
+                <input type="month" id="monthFilter" class="form-control" style="font-size: 13px; font-weight: bold; border-color: var(--gold);" onchange="triggerMonthFilter()">
             </div>
-            <div class="text-center fw-bold mb-3" style="font-size: 10px; color: #94a3b8;">( OR )</div>
+            <div class="text-center fw-bold mb-3" style="font-size: 10px; color: var(--muted);">( OR )</div>
             <div class="mb-3">
-                <label class="form-label fw-bold text-success mb-1" style="font-size: 11px; text-transform: uppercase;">2. Select Exact Date</label>
-                <input type="date" id="dateFilter" class="form-control" style="font-size: 13px; font-weight: bold; border-color: #86efac;" onchange="triggerDateFilter()">
+                <label class="form-label fw-bold mb-1" style="font-size: 11px; text-transform: uppercase; color: #15803d;">2. Select Exact Date</label>
+                <input type="date" id="dateFilter" class="form-control" style="font-size: 13px; font-weight: bold; border-color: var(--forest);" onchange="triggerDateFilter()">
             </div>
-            <button class="btn btn-light border w-100 fw-bold text-danger" style="font-size: 12px;" onclick="clearDateFilters()"><i class="fa-solid fa-eraser me-1"></i> Clear Calendar</button>
+            <button class="btn w-100 fw-bold" style="font-size: 12px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;" onclick="clearDateFilters()"><i class="fa-solid fa-eraser me-1"></i> Clear Calendar</button>
           </div>
         </div>
         
-        <input type="text" id="searchInput" class="search-box flex-grow-1" style="width: 200px;" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="applyFilters()">
+        <input type="text" id="searchInput" class="search-box flex-grow-1" style="width: 205px;" placeholder="🔍 Search VLE, ID, Req No..." onkeyup="applyFilters()">
         
         <div class="btn-action-group">
             <button class="btn-action btn-outline-danger-custom" onclick="resetAllFilters()" title="Clear all filters">✖ Reset All</button>
             <button class="btn-action btn-outline-success-custom" onclick="exportToExcel()">📥 Excel</button>
             <button class="btn-action btn-outline-custom" onclick="refreshDispatchReport()">🔄 Refresh</button>
-            
-            <!-- 🌟 FULL SCREEN BUTTON ADDED HERE 🌟 -->
             <button class="btn-action btn-outline-dark-custom" id="fsBtn" onclick="toggleFullScreen()"><i class="fa-solid fa-expand"></i> Full Screen</button>
         </div>
       </div>
@@ -127,8 +273,8 @@
     <div class="premium-card">
       <div class="card-header-custom">
         <div class="card-title">
-           <span style="font-size: 16px;">📜 Dispatched Stationary History</span>
-           <span style="font-size: 11px; color: #64748b; font-weight: 600; margin-left: 10px; background: #f1f5f9; padding: 4px 8px; border-radius: 6px;">Double-click text to copy</span>
+           <span style="font-family:'Cinzel', serif; font-size: 15.5px; text-transform: uppercase;">📜 Dispatched Stationary History</span>
+           <span style="font-size: 11px; color: #7c4a12; font-weight: 700; background: var(--gold-soft); border: 1px solid var(--gold); padding: 3px 9px; border-radius: 6px;">Double-click text to copy</span>
         </div>
         <span class="badge-custom" id="lblScope">-</span>
       </div>
@@ -149,7 +295,7 @@
               </tr>
             </thead>
             <tbody id="reportBody">
-              <tr><td colspan="8" class="text-muted py-5 fw-bold" style="color: #6366f1 !important;">Loading dispatch history...</td></tr>
+              <tr><td colspan="8" class="py-5 fw-bold" style="color: var(--forest) !important;">Loading dispatch history...</td></tr>
             </tbody>
           </table>
         </div>
@@ -161,12 +307,12 @@
   <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content modal-content-innovative p-4 text-center">
-        <div style="width: 60px; height: 60px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 30px;">⚠️</div>
-        <h5 class="fw-bold text-dark mb-2 fs-6">Stock Holding Update</h5>
-        <p class="text-secondary mb-4" style="font-size: 13px;">Stock Holding పోర్టల్ లో ఈ సీరియల్ నెంబర్లను అప్‌డేట్ చేశారా?<br><br><b>'Yes'</b> నొక్కితే ఇది పర్మినెంట్ గా 'Updated' కి మారుతుంది.</p>
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--gold-soft); color: #92400e; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px;">⚠️</div>
+        <h5 class="fw-bold mb-2 fs-6" style="font-family:'Cinzel', serif; color: var(--forest-dark);">Stock Holding Update</h5>
+        <p class="mb-4" style="font-size: 13px; color: var(--muted);">Stock Holding పోర్టల్ లో ఈ సీరియల్ నెంబర్లను అప్‌డేట్ చేశారా?<br><br><b>'Yes'</b> నొక్కితే ఇది పర్మినెంట్ గా 'Updated' కి మారుతుంది.</p>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-light w-100 fw-bold" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn w-100 fw-bold" style="background: #f59e0b; color: white;" onclick="proceedUpdate()">Yes, Updated</button>
+            <button type="button" class="btn w-100 fw-bold" style="background: var(--cream-alt); color: var(--charcoal); border: 1px solid var(--border);" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn w-100 fw-bold" style="background: var(--forest); color: #f8f5ec; border: 1px solid var(--gold);" onclick="proceedUpdate()">Yes, Updated</button>
         </div>
       </div>
     </div>
@@ -176,9 +322,9 @@
   <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content modal-content-innovative p-4 text-center">
-        <div id="alertIcon" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 30px;"></div>
-        <h5 id="alertTitle" class="fw-bold text-dark mb-2 fs-6">Title</h5>
-        <p id="alertMessage" class="text-secondary mb-4" style="font-size: 13px;">Message goes here.</p>
+        <div id="alertIcon" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px;"></div>
+        <h5 id="alertTitle" class="fw-bold mb-2 fs-6" style="font-family:'Cinzel', serif; color: var(--forest-dark);">Title</h5>
+        <p id="alertMessage" class="mb-4" style="font-size: 13px; color: var(--muted);">Message goes here.</p>
         <button type="button" id="alertBtn" class="btn w-100 fw-bold" data-bs-dismiss="modal">OK</button>
       </div>
     </div>
@@ -206,13 +352,13 @@
         let btn = document.getElementById("alertBtn");
 
         if (isSuccess) {
-            iconCont.innerHTML = "✅"; iconCont.style.background = "#dcfce7"; iconCont.style.color = "#16a34a";
+            iconCont.innerHTML = "✅"; iconCont.style.background = "#e9f2ed"; iconCont.style.color = "#15803d"; iconCont.style.border = "2px solid #c5a059";
             document.getElementById("alertTitle").innerText = "Success!"; 
-            btn.style.background = "#10b981"; btn.style.color = "white";
+            btn.style.background = "#1b4332"; btn.style.color = "#f8f5ec";
         } else {
-            iconCont.innerHTML = "❌"; iconCont.style.background = "#fee2e2"; iconCont.style.color = "#dc2626";
+            iconCont.innerHTML = "❌"; iconCont.style.background = "#fee2e2"; iconCont.style.color = "#b91c1c"; iconCont.style.border = "2px solid #fca5a5";
             document.getElementById("alertTitle").innerText = "Error"; 
-            btn.style.background = "#ef4444"; btn.style.color = "white";
+            btn.style.background = "#b91c1c"; btn.style.color = "#ffffff";
         }
         document.getElementById("alertMessage").innerHTML = msg;
         var alertModal = new bootstrap.Modal(document.getElementById('customAlertModal'));
@@ -233,7 +379,7 @@
 
     function refreshDispatchReport() {
        localStorage.removeItem("vleDispatchCache");
-       document.getElementById("reportBody").innerHTML = `<tr><td colspan="8" class="py-5 fw-bold" style="color:#6366f1;">🔄 Refreshing live data...</td></tr>`;
+       document.getElementById("reportBody").innerHTML = `<tr><td colspan="8" class="py-5 fw-bold" style="color:var(--forest);">🔄 Refreshing live data...</td></tr>`;
        
        resetAllFilters();
        fetchDispatchReport();
@@ -249,7 +395,7 @@
           } else { 
              renderDispatchTable([]); 
           }
-       }).catch(e => { document.getElementById("reportBody").innerHTML = `<tr><td colspan="8" class="text-danger py-5 fw-bold">❌ Network Error. Please refresh.</td></tr>`; });
+       }).catch(e => { document.getElementById("reportBody").innerHTML = `<tr><td colspan="8" class="py-5 fw-bold" style="color:#b91c1c;">❌ Network Error. Please refresh.</td></tr>`; });
     }
 
     function renderDispatchTable(data) {
@@ -262,43 +408,43 @@
              let statusHtml = "";
              
              if (shcilStatus === "UPDATED" || shcilStatus === "DONE") {
-                 statusHtml = `<span class="badge bg-success" style="font-size:11px; padding:6px 10px;">✅ Updated</span>`;
+                 statusHtml = `<span class="badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size:11px; padding:6px 10px;">✅ Updated</span>`;
              } else {
-                 statusHtml = `<button class="btn btn-sm" style="background-color:#f59e0b; color:white; font-size:11px; font-weight:bold; border-radius:6px;" onclick="triggerUpdatePortalModal('${item.reqNo}', '${item.cscId}', this)">Mark Update</button>`;
+                 statusHtml = `<button class="btn btn-sm" style="background-color:#c5a059; color:#141a17; border:1px solid #a6823c; font-size:11px; font-weight:800; border-radius:6px;" onclick="triggerUpdatePortalModal('${item.reqNo}', '${item.cscId}', this)">Mark Update</button>`;
              }
 
              tbody.innerHTML += `
                <tr class="data-row">
-                 <td class="text-start ps-3" style="color:#64748b; font-weight:600; font-size: 11px;">
+                 <td class="text-start ps-3" style="color:#525d56; font-weight:700; font-size: 11.5px;">
                     <span class="copyable-text date-cell" title="Double-click to copy Date" ondblclick="copyCellText('${item.date}')">${item.date}</span>
                  </td>
                  
                  <td class="search-target" style="max-width: 300px;">
                     <div class="d-flex justify-content-between align-items-center w-100">
-                      <span class="copyable-text fw-bold text-dark text-start text-truncate flex-grow-1" style="min-width: 0;" title="${item.vleName} (Double-click to copy)" ondblclick="copyCellText('${item.vleName}')">${item.vleName}</span>
-                      <span class="copyable-text badge bg-light text-primary border border-primary text-end flex-shrink-0 ms-2" style="font-size:11px;" title="Double-click to copy CSC ID" ondblclick="copyCellText('${item.cscId}')">${item.cscId}</span>
+                      <span class="copyable-text fw-bold text-start text-truncate flex-grow-1" style="min-width: 0; color:#122d22;" title="${item.vleName} (Double-click to copy)" ondblclick="copyCellText('${item.vleName}')">${item.vleName}</span>
+                      <span class="copyable-text badge text-end flex-shrink-0 ms-2" style="background:#e9f2ed; color:#1b4332; border:1px solid #a7ccb8; font-size:11px;" title="Double-click to copy CSC ID" ondblclick="copyCellText('${item.cscId}')">${item.cscId}</span>
                     </div>
                  </td>
                  
                  <td class="search-target">
-                    <span class="copyable-text fw-bold text-secondary" title="Double-click to copy District" ondblclick="copyCellText('${item.district}')">${item.district}</span>
+                    <span class="copyable-text fw-bold" style="color:#525d56;" title="Double-click to copy District" ondblclick="copyCellText('${item.district}')">${item.district}</span>
                  </td>
                  
-                 <td class="search-target fw-bold text-danger">
+                 <td class="search-target fw-bold" style="color:#b91c1c;">
                     <span class="copyable-text" title="Double-click to copy Request No" ondblclick="copyCellText('${item.reqNo}')">${item.reqNo}</span>
                  </td>
                  
                  <td class="search-target">
-                    <span class="copyable-text fw-bold" style="color: #6366f1;" title="Double-click to copy Start Serial" ondblclick="copyCellText('${item.startSerial}')">${item.startSerial}</span> 
-                    <span class="text-muted fw-bold mx-1" style="font-size: 10px;">TO</span> 
-                    <span class="copyable-text fw-bold text-danger" title="Double-click to copy End Serial" ondblclick="copyCellText('${item.endSerial}')">${item.endSerial}</span>
+                    <span class="copyable-text fw-bold" style="color: #1b4332;" title="Double-click to copy Start Serial" ondblclick="copyCellText('${item.startSerial}')">${item.startSerial}</span> 
+                    <span class="fw-bold mx-1" style="font-size: 10px; color:#8f8873;">TO</span> 
+                    <span class="copyable-text fw-bold" style="color: #7c4a12;" title="Double-click to copy End Serial" ondblclick="copyCellText('${item.endSerial}')">${item.endSerial}</span>
                  </td>
                  
                  <td>
                     <span class="badge-qty copyable-text" title="Double-click to copy Quantity" ondblclick="copyCellText('${item.qty}')">${item.qty} Papers</span>
                  </td>
                  
-                 <td class="fw-bold text-secondary search-target">
+                 <td class="fw-bold search-target" style="color:#525d56;">
                     <span class="copyable-text" title="Double-click to copy Dispatched By" ondblclick="copyCellText('${item.assignedBy}')">${item.assignedBy}</span>
                  </td>
 
@@ -308,7 +454,7 @@
                </tr>`;
           });
        } else { 
-          tbody.innerHTML = `<tr><td colspan="8" class="text-success py-5 fw-bold fs-6">🎉 No dispatch records found.</td></tr>`; 
+          tbody.innerHTML = `<tr><td colspan="8" class="py-5 fw-bold fs-6" style="color:#15803d;">🎉 No dispatch records found.</td></tr>`; 
        }
        applyFilters();
     }
@@ -345,7 +491,7 @@
         .then(res => {
             if(res.success) {
                 let parentTd = btnElement.parentElement;
-                parentTd.innerHTML = `<span class="badge bg-success" style="font-size:11px; padding:6px 10px;">✅ Updated</span>`;
+                parentTd.innerHTML = `<span class="badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size:11px; padding:6px 10px;">✅ Updated</span>`;
                 
                 localStorage.removeItem("vleDispatchCache");
             } else {
@@ -371,7 +517,8 @@
             let parts = val.split("-");
             let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             btnText.innerHTML = `<i class="fa-regular fa-calendar-check me-2"></i>${months[parseInt(parts[1])-1]} ${parts[0]}`;
-            btnText.className = "fw-bold text-primary";
+            btnText.className = "fw-bold";
+            btnText.style.color = "#1b4332";
         } else {
             clearDateFilters();
         }
@@ -386,7 +533,8 @@
         if(val) {
             let parts = val.split("-");
             btnText.innerHTML = `<i class="fa-solid fa-calendar-day me-2"></i>${parts[2]}-${parts[1]}-${parts[0]}`;
-            btnText.className = "fw-bold text-success";
+            btnText.className = "fw-bold";
+            btnText.style.color = "#15803d";
         } else {
             clearDateFilters();
         }
@@ -399,6 +547,7 @@
         let btnText = document.getElementById("filterBtnText");
         btnText.innerHTML = `<i class="fa-regular fa-calendar-days me-2"></i>Filter Date / Month`;
         btnText.className = "fw-bold";
+        btnText.style.color = "";
         applyFilters();
     }
 
@@ -492,7 +641,7 @@
        });
     }
 
-    // 🌟 FULL SCREEN LOGIC ADDED HERE 🌟
+    // 🌟 FULL SCREEN LOGIC 🌟
     function toggleFullScreen() {
         let elem = document.documentElement;
         let fsBtn = document.getElementById('fsBtn');
@@ -510,7 +659,6 @@
         }
     }
 
-    // ఫుల్ స్క్రీన్ మోడ్ మ్యాన్యువల్ గా (Escape నొక్కి) ఎగ్జిట్ అయితే బటన్ అప్డేట్ అవ్వడానికి
     document.addEventListener('fullscreenchange', (event) => {
         let fsBtn = document.getElementById('fsBtn');
         if(fsBtn) {

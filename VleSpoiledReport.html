@@ -2,41 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spoiled Stationary Report</title>
   <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;}
-    
-    .controls-bar { background: #0f172a; border-radius: 12px; padding: 15px 25px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-bottom: 4px solid #ef4444;}
-    .title-sec { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; color: #f8fafc; text-transform: uppercase; margin: 0; display:flex; align-items: center; gap: 10px;}
-    .filter-group { display: flex; align-items: center; gap: 15px; }
-    .dist-select { border: 1px solid #334155; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: bold; outline: none; min-width: 180px; background-color: #1e293b; color: #f1f5f9; cursor: pointer;}
-    .btn-custom { font-size: 14px; font-weight: 800; padding: 8px 20px; border-radius: 8px; transition: 0.2s; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px;}
-    .btn-refresh { background: #3b82f6; } .btn-refresh:hover { background: #2563eb; }
-    .btn-export { background: #10b981; } .btn-export:hover { background: #059669; }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
 
-    .table-wrapper { flex: 1; background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; position:relative;}
-    .table-scroll { flex: 1; overflow: auto; }
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--cream-bg);
+      color: var(--charcoal);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+      padding: 16px 20px;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     
-    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; text-align: center;}
-    thead { position: sticky; top: -1px; z-index: 10; }
+    .controls-bar {
+      background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+      border-radius: 12px;
+      padding: 14px 22px;
+      color: #f8f5ec;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(18, 45, 34, 0.18);
+      border: 1.5px solid var(--forest-dark);
+      border-bottom: 4px solid var(--gold);
+    }
+    .title-sec {
+      font-family: 'Cinzel', serif;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: #e6c885;
+      text-transform: uppercase;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #roleBadge {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: rgba(197, 160, 89, 0.22) !important;
+      color: #f8f5ec !important;
+      border: 1px solid var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .dist-select {
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      min-width: 185px;
+      background-color: var(--cream-card);
+      color: var(--forest-dark);
+      cursor: pointer;
+    }
+    .dist-select:disabled { opacity: 0.75; cursor: not-allowed; }
+
+    .btn-custom {
+      font-size: 13px;
+      font-weight: 800;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: 0.2s;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-refresh {
+      background: var(--gold);
+      color: var(--charcoal);
+      border-color: #a6823c;
+    }
+    .btn-refresh:hover { background: #b08a42; color: #ffffff; }
+    .btn-export {
+      background: #1b6b3a;
+      color: #ffffff;
+      border-color: #14532d;
+    }
+    .btn-export:hover { background: #14532d; }
+
+    .table-wrapper {
+      flex: 1;
+      background: var(--cream-card);
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .table-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; }
     
-    th { background: #1e293b; color: white; font-weight: 800; font-size: 12px; padding: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #334155;}
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; white-space: nowrap; text-align: center; }
+    thead { position: sticky; top: 0; z-index: 10; }
     
-    tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.1s; }
-    tbody tr:hover { background-color: #f8fafc !important; }
-    tbody td { font-weight: 700; padding: 12px; color: #334155; border-right: 1px solid #f1f5f9; }
+    th {
+      background: var(--forest);
+      color: #f8f5ec;
+      font-weight: 800;
+      font-size: 11.5px;
+      padding: 12px 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      border-bottom: 2px solid var(--gold);
+    }
+    th:last-child { border-right: none; }
     
-    .badge-reason { background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; max-width: 250px; overflow: hidden; text-overflow: ellipsis;}
+    tbody tr td {
+      font-weight: 700;
+      padding: 11px 12px;
+      color: var(--charcoal);
+      background-color: var(--cream-card);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+    }
+    tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+    tbody tr:hover td { background-color: var(--gold-soft) !important; }
     
-    .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: #ef4444;}
-    .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #ef4444; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    .badge-reason {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      display: inline-block;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .loader-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(250, 248, 242, 0.92); z-index: 100;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-size: 15px; font-weight: 700; color: var(--forest);
+    }
+    .spinner {
+      width: 38px; height: 38px; border: 4px solid var(--border);
+      border-top-color: var(--forest); border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 14px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    .no-data-msg { padding: 40px; text-align: center; color: #94a3b8; font-weight: bold; font-size: 16px; }
+    .no-data-msg { padding: 45px; text-align: center; color: var(--muted); font-weight: 800; font-size: 15px; }
+
+    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
+    @media (max-width: 768px) {
+      body { padding: 10px; height: auto; min-height: 100vh; overflow: auto; }
+      .controls-bar { padding: 14px; flex-direction: column; align-items: stretch; text-align: center; }
+      .title-sec { font-size: 15px; justify-content: center; }
+      .filter-group { width: 100%; justify-content: center; }
+      .dist-select { width: 100%; min-width: 100%; }
+      .btn-custom { flex: 1 1 calc(50% - 6px); justify-content: center; font-size: 12px; padding: 9px 10px; }
+      .table-wrapper { min-height: 450px; }
+    }
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -52,7 +211,7 @@
 
   <div class="controls-bar">
     <div class="title-sec">
-        ⚠️ VLE Spoiled Stationary Report <span id="roleBadge" class="badge bg-danger" style="font-size:11px;">Loading...</span>
+        ⚠️ VLE Spoiled Stationary Report <span id="roleBadge" class="badge">Loading...</span>
     </div>
     <div class="filter-group">
       <select id="districtFilterDropdown" class="dist-select" onchange="filterData()">
@@ -101,7 +260,6 @@
     let allSpoiledRecords = [];
 
     window.onload = function() {
-        // UI Role Setup
         let badge = document.getElementById("roleBadge");
         if(isDM) {
             badge.innerText = `DM - ${loggedInDistrict}`;
@@ -126,13 +284,12 @@
         return distMap[distName.toUpperCase()] || distName.toUpperCase();
     }
 
-async function fetchSpoiledData(force = false) {
+    async function fetchSpoiledData(force = false) {
         document.getElementById("loader").style.display = "flex";
         try {
             let timestamp = new Date().getTime();
             let url = API_URL + "?action=getFastMasterData&t=" + timestamp;
 
-            // సింపుల్ డైరెక్ట్ కనెక్షన్ 
             let response = await fetch(url);
             let payload = await response.json();
 
@@ -179,13 +336,11 @@ async function fetchSpoiledData(force = false) {
             let rowDist = normalizeDistrict(row.district);
             
             if (isDM) {
-                // DM Login filter logic
                 let dmDist = normalizeDistrict(loggedInDistrict);
                 if (rowDist === dmDist) {
                     filtered.push(row);
                 }
             } else {
-                // State Head Filter Dropdown logic
                 if (selectedFilter === "ALL" || rowDist === selectedFilter) {
                     filtered.push(row);
                 }
@@ -213,11 +368,11 @@ async function fetchSpoiledData(force = false) {
             tbody.innerHTML += `
                 <tr>
                     <td>${idx + 1}</td>
-                    <td style="color:#64748b;">${formattedDate}</td>
-                    <td style="color:#0f172a; font-weight:900;">${normalizeDistrict(r.district)}</td>
-                    <td class="text-primary">${r.cscId}</td>
+                    <td style="color:#525d56;">${formattedDate}</td>
+                    <td style="color:#122d22; font-weight:800;">${normalizeDistrict(r.district)}</td>
+                    <td style="color:#1b4332; font-weight:800;">${r.cscId}</td>
                     <td style="text-align:left; padding-left:15px;">${r.vleName}</td>
-                    <td class="text-danger font-monospace fw-bold">${r.serialNo}</td>
+                    <td style="color:#b91c1c;" class="font-monospace fw-bold">${r.serialNo}</td>
                     <td style="text-align:left; padding-left:15px;"><span class="badge-reason" title="${r.reason}">${r.reason}</span></td>
                 </tr>
             `;

@@ -5,48 +5,110 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Centre Inspection Form</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <style>
-      body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; margin: 0; padding: 0; }
-      #webFormUI { padding: 20px 10px; max-width: 900px; margin: 0 auto; background: #f1f5f9; }
+      /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+      :root {
+          --cream-bg: #f4f1e6;
+          --cream-card: #faf8f2;
+          --cream-alt: #f0ece0;
+          --forest: #1b4332;
+          --forest-dark: #122d22;
+          --forest-soft: #e9f2ed;
+          --gold: #c5a059;
+          --gold-soft: #f7efe0;
+          --charcoal: #141a17;
+          --muted: #525d56;
+          --border: #d5cfbe;
+      }
+
+      body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--cream-bg); color: var(--charcoal); margin: 0; padding: 0; }
+      #webFormUI { padding: 20px 12px; max-width: 900px; margin: 0 auto; background: var(--cream-bg); }
       
-      .page-header-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+      .page-header-container {
+          display: flex; justify-content: center; align-items: center; gap: 18px; margin-bottom: 20px;
+          background: var(--cream-card); padding: 16px 20px; border-radius: 14px;
+          box-shadow: 0 6px 18px rgba(27, 67, 50, 0.08); border: 1.5px solid var(--forest);
+          border-top: 5px solid var(--gold);
+      }
       .page-header-container img { height: 55px; width: auto; max-width: 100px; object-fit: contain; }
       .page-header-text { text-align: center; }
       
-      .page-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; color: #1e3a8a; margin: 0 0 5px 0; }
-      .page-subtitle { font-size: 13px; color: #64748b; font-weight: 500; margin: 0; }
-      .form-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-      .card-title { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
-      .card-title i { color: #2563eb; }
-      .form-label { font-size: 12px; font-weight: 800; color: #475569; margin-bottom: 5px; }
-      .form-control, .form-select { background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
-      .form-control[readonly] { background-color: #f1f5f9; color: #64748b; border-style: dashed; }
+      .page-title { font-family: 'Cinzel', 'Outfit', serif; font-size: 22px; font-weight: 800; color: var(--forest-dark); margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.6px; }
+      .page-subtitle { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0; }
+
+      .form-card {
+          background: var(--cream-card); border-radius: 12px; border: 1.5px solid var(--forest);
+          padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(27, 67, 50, 0.06);
+      }
+      .card-title {
+          font-family: 'Cinzel', 'Outfit', serif; font-size: 15px; font-weight: 800; color: var(--forest-dark);
+          margin-bottom: 15px; display: flex; align-items: center; gap: 8px; padding-bottom: 9px;
+          border-bottom: 1.5px dashed var(--gold); text-transform: uppercase; letter-spacing: 0.4px;
+      }
+      .card-title i { color: var(--gold); }
+
+      .form-label { font-size: 12px; font-weight: 800; color: var(--forest-dark); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
+      .form-control, .form-select {
+          background-color: #ffffff; border: 1.5px solid var(--border); border-radius: 8px;
+          padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--charcoal); transition: 0.2s;
+      }
+      .form-control:focus, .form-select:focus {
+          border-color: var(--forest); box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14); background-color: #ffffff;
+      }
+      .form-control[readonly] { background-color: var(--cream-alt); color: var(--muted); border-style: dashed; border-color: var(--border); }
       textarea.form-control { min-height: 60px; }
-      .btn-group .btn { font-weight: 700; font-size: 12px; padding: 6px 10px; }
-      .check-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; }
-      .check-label { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0;}
-      .sno-badge { background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-size: 11px; font-weight: 800; }
-      .btn-fetch { background: #2563eb; color: white; font-weight: 800; font-size: 13px; border-radius: 0 8px 8px 0; border: none; padding: 0 15px; transition: 0.2s; }
-      .btn-fetch:hover { background: #1d4ed8; color: white; }
-      .submit-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; }
-      .submit-btn:hover { background: #059669; color: white; }
+
+      .btn-group .btn { font-weight: 700; font-size: 12px; padding: 6px 12px; }
+      .check-row {
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+          padding: 10px 12px; background: #ffffff; border-radius: 8px; border: 1px solid var(--border);
+      }
+      .check-label { font-size: 13px; font-weight: 700; color: var(--charcoal); margin: 0; }
+      .sno-badge {
+          background: var(--forest); color: #e6c885; padding: 2px 7px; border-radius: 4px;
+          margin-right: 6px; font-size: 11px; font-weight: 800; border: 1px solid var(--gold);
+      }
+
+      .btn-fetch {
+          background: var(--forest); color: #f8f5ec; font-weight: 800; font-size: 13px;
+          border-radius: 0 8px 8px 0; border: 1.5px solid var(--forest-dark); padding: 0 18px; transition: 0.2s;
+      }
+      .btn-fetch:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+
+      .submit-btn {
+          background: linear-gradient(135deg, var(--forest), var(--forest-dark)); color: #f8f5ec;
+          border: 1.5px solid var(--gold); padding: 13px; border-radius: 10px; font-weight: 800;
+          font-size: 15px; width: 100%; cursor: pointer; display: flex; justify-content: center;
+          align-items: center; gap: 8px; margin-top: 16px; letter-spacing: 0.5px; text-transform: uppercase;
+          box-shadow: 0 6px 16px rgba(27, 67, 50, 0.22); transition: 0.25s;
+      }
+      .submit-btn:hover { background: var(--gold); color: var(--charcoal); border-color: #a6823c; transform: translateY(-1px); }
       .spinner-border { display: none; width: 1rem; height: 1rem; border-width: 0.15em; }
 
       /* 🌟 Full Screen Button Style 🌟 */
-      .fs-btn-custom { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 8px; transition: 0.3s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-      .fs-btn-custom:hover { background: #e2e8f0; color: #0f172a; }
+      .fs-btn-custom {
+          background: #ffffff; color: var(--forest); border: 1.5px solid var(--forest);
+          font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 8px;
+          transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+          box-shadow: 0 2px 6px rgba(27, 67, 50, 0.08);
+      }
+      .fs-btn-custom:hover { background: var(--forest); color: #ffffff; }
 
       /* =========================================================
           PREVIEW & OFFICIAL PRINT TEMPLATE STYLES
-          ========================================================= */
-      #previewContainer { display: none; background: #525659; min-height: 100vh; padding-bottom: 40px; }
-      #previewActionBar { display: flex; justify-content: center; gap: 15px; padding: 15px; background: #1e3a8a; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+         ========================================================= */
+      #previewContainer { display: none; background: #2c3531; min-height: 100vh; padding-bottom: 40px; }
+      #previewActionBar {
+          display: flex; justify-content: center; gap: 14px; padding: 14px;
+          background: var(--forest-dark); border-bottom: 3px solid var(--gold);
+          position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      }
       
-      .print-paper-wrapper { background: white; margin: 20px auto; max-width: 780px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+      .print-paper-wrapper { background: white; margin: 20px auto; max-width: 780px; box-shadow: 0 8px 25px rgba(0,0,0,0.35); }
       
       #officialPrintSection { 
           padding: 20px 25px; background: white;
@@ -89,7 +151,6 @@
     <!-- 🌟 WEB FORM 🌟 -->
     <div id="webFormUI">
         
-        <!-- 🌟 FULL SCREEN BUTTON ADDED HERE 🌟 -->
         <div class="d-flex justify-content-end mb-3">
             <button class="fs-btn-custom" id="fsBtn" onclick="toggleFullScreen()">
                 <i class="fa-solid fa-expand"></i> Full Screen
@@ -110,14 +171,14 @@
                 <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> VLE Details</div>
                 <div class="row g-2">
                     <div class="col-md-12 mb-2">
-                        <label class="form-label text-primary">Enter CSC ID to Fetch Data <span class="text-danger">*</span></label>
+                        <label class="form-label" style="color: var(--forest);">Enter CSC ID to Fetch Data <span style="color:#b91c1c;">*</span></label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="cscId" placeholder="12-digit CSC ID" required maxlength="12" style="border-radius: 8px 0 0 8px;">
                             <button class="btn btn-fetch" type="button" onclick="fetchVleData()" id="fetchBtn">
                                 <i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch
                             </button>
                         </div>
-                        <small id="fetchStatus" class="text-success fw-bold mt-1" style="display:none; font-size:12px;"></small>
+                        <small id="fetchStatus" class="fw-bold mt-1" style="display:none; font-size:12px; color:#15803d;"></small>
                     </div>
 
                     <div class="col-md-4"><label class="form-label">e-Stamping ID</label><input type="text" class="form-control" id="eStampId" placeholder="Enter ID" required></div>
@@ -128,23 +189,23 @@
                 </div>
             </div>
 
-            <div class="form-card" style="background: #f8fafc; border-color: #cbd5e1;">
-                <div class="card-title"><i class="fa-solid fa-boxes-stacked text-orange"></i> Stock Details (From Database)</div>
+            <div class="form-card" style="background: var(--gold-soft); border-color: var(--gold);">
+                <div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> Stock Details (From Database)</div>
                 <div class="row g-2">
-                    <div class="col-md-4"><label class="form-label">Total e-Stamping Stock Received</label><input type="number" class="form-control fw-bold text-primary" id="stockReceived" readonly required></div>
-                    <div class="col-md-4"><label class="form-label">Total e-Stamping Papers Sold</label><input type="number" class="form-control fw-bold text-danger" id="stockSold" readonly required></div>
-                    <div class="col-md-4"><label class="form-label">Currently Available e-Stamping Paper Stock</label><input type="number" class="form-control fw-bold text-success" id="stockAvailable" readonly required></div>
+                    <div class="col-md-4"><label class="form-label">Total e-Stamping Stock Received</label><input type="number" class="form-control fw-bold" style="color:#1b4332;" id="stockReceived" readonly required></div>
+                    <div class="col-md-4"><label class="form-label">Total e-Stamping Papers Sold</label><input type="number" class="form-control fw-bold" style="color:#b91c1c;" id="stockSold" readonly required></div>
+                    <div class="col-md-4"><label class="form-label">Currently Available e-Stamping Paper Stock</label><input type="number" class="form-control fw-bold" style="color:#15803d;" id="stockAvailable" readonly required></div>
                 </div>
             </div>
 
             <div class="form-card">
                 <div class="card-title"><i class="fa-solid fa-list-check"></i> Parameters</div>
                 <div class="row g-2">
-                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">1</span> Does the VLE maintaining In-ward Register ? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param1" id="p1_yes" value="Yes" required><label class="btn btn-outline-success" for="p1_yes">Yes</label><input type="radio" class="btn-check" name="param1" id="p1_no" value="No"><label class="btn btn-outline-danger" for="p1_no">No</label></div></div></div>
-                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">2</span> Does the VLE maintaining e-Stamping sale Register ? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param2" id="p2_yes" value="Yes" required><label class="btn btn-outline-success" for="p2_yes">Yes</label><input type="radio" class="btn-check" name="param2" id="p2_no" value="No"><label class="btn btn-outline-danger" for="p2_no">No</label></div></div></div>
-                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">3</span> Does the IEC and banners Displayed? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param3" id="p3_yes" value="Yes" required><label class="btn btn-outline-success" for="p3_yes">Yes</label><input type="radio" class="btn-check" name="param3" id="p3_no" value="No"><label class="btn btn-outline-danger" for="p3_no">No</label></div></div></div>
-                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">4</span> Does the VLE Overcharging from the Customers? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param4" id="p4_yes" value="Yes" required><label class="btn btn-outline-danger" for="p4_yes">Yes</label><input type="radio" class="btn-check" name="param4" id="p4_no" value="No"><label class="btn btn-outline-success" for="p4_no">No</label></div></div></div>
-                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">5</span> Does the VLE involving in any tampering activities? <span class="text-danger">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param5" id="p5_yes" value="Yes" required><label class="btn btn-outline-danger" for="p5_yes">Yes</label><input type="radio" class="btn-check" name="param5" id="p5_no" value="No"><label class="btn btn-outline-success" for="p5_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">1</span> Does the VLE maintaining In-ward Register ? <span style="color:#b91c1c;">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param1" id="p1_yes" value="Yes" required><label class="btn btn-outline-success" for="p1_yes">Yes</label><input type="radio" class="btn-check" name="param1" id="p1_no" value="No"><label class="btn btn-outline-danger" for="p1_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">2</span> Does the VLE maintaining e-Stamping sale Register ? <span style="color:#b91c1c;">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param2" id="p2_yes" value="Yes" required><label class="btn btn-outline-success" for="p2_yes">Yes</label><input type="radio" class="btn-check" name="param2" id="p2_no" value="No"><label class="btn btn-outline-danger" for="p2_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">3</span> Does the IEC and banners Displayed? <span style="color:#b91c1c;">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param3" id="p3_yes" value="Yes" required><label class="btn btn-outline-success" for="p3_yes">Yes</label><input type="radio" class="btn-check" name="param3" id="p3_no" value="No"><label class="btn btn-outline-danger" for="p3_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">4</span> Does the VLE Overcharging from the Customers? <span style="color:#b91c1c;">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param4" id="p4_yes" value="Yes" required><label class="btn btn-outline-danger" for="p4_yes">Yes</label><input type="radio" class="btn-check" name="param4" id="p4_no" value="No"><label class="btn btn-outline-success" for="p4_no">No</label></div></div></div>
+                    <div class="col-md-12"><div class="check-row"><div class="check-label"><span class="sno-badge">5</span> Does the VLE involving in any tampering activities? <span style="color:#b91c1c;">*</span></div><div class="btn-group" role="group"><input type="radio" class="btn-check" name="param5" id="p5_yes" value="Yes" required><label class="btn btn-outline-danger" for="p5_yes">Yes</label><input type="radio" class="btn-check" name="param5" id="p5_no" value="No"><label class="btn btn-outline-success" for="p5_no">No</label></div></div></div>
                 </div>
             </div>
 
@@ -167,12 +228,11 @@
 
     <!-- 🌟 PREVIEW CONTAINER 🌟 -->
     <div id="previewContainer">
-        <!-- 🌟 DOWNLOAD ACTION BAR 🌟 -->
         <div id="previewActionBar">
-            <button onclick="downloadPDFNow()" class="btn btn-success fw-bold px-4" id="actualDownloadBtn">
+            <button onclick="downloadPDFNow()" class="btn fw-bold px-4" id="actualDownloadBtn" style="background: var(--gold); color: var(--charcoal); border: 1.5px solid #a6823c;">
                 <i class="fa-solid fa-download me-2"></i> Download PDF
             </button>
-            <button onclick="closePreview()" class="btn btn-danger fw-bold px-4">
+            <button onclick="closePreview()" class="btn fw-bold px-4" style="background: #b91c1c; color: #ffffff; border: 1.5px solid #991b1b;">
                 <i class="fa-solid fa-xmark me-2"></i> Close
             </button>
         </div>
@@ -230,12 +290,12 @@
     <!-- Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content" style="border-radius: 16px; text-align: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--cream-card); border: 2px solid var(--forest); border-radius: 16px; text-align: center; padding: 20px;">
           <div class="modal-body">
-            <i class="fa-solid fa-file-pdf text-success" style="font-size: 50px; margin-bottom: 15px;"></i>
-            <h5 style="font-weight: 800;">Downloaded Successfully!</h5>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">మీ ఫైల్ పక్కాగా CSC ID తోనే సేవ్ అయ్యింది!</p>
-            <button type="button" class="btn btn-success w-100 fw-bold" data-bs-dismiss="modal" onclick="resetForm()">Start New Form</button>
+            <i class="fa-solid fa-file-pdf" style="color: var(--forest); font-size: 50px; margin-bottom: 15px;"></i>
+            <h5 style="font-family:'Cinzel', serif; color: var(--forest-dark); font-weight: 800;">Downloaded Successfully!</h5>
+            <p style="font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 20px;">మీ ఫైల్ పక్కాగా CSC ID తోనే సేవ్ అయ్యింది!</p>
+            <button type="button" class="btn w-100 fw-bold" style="background: var(--forest); color: #f8f5ec; border: 1.5px solid var(--gold);" data-bs-dismiss="modal" onclick="resetForm()">Start New Form</button>
           </div>
         </div>
       </div>
@@ -286,7 +346,7 @@
             const timeoutTimer = setTimeout(() => {
                 isTimeout = true;
                 statusText.innerText = "❌ Network Error: లింక్ పనిచేయట్లేదు.";
-                statusText.className = "text-danger fw-bold mt-1";
+                statusText.style.color = "#b91c1c";
                 statusText.style.display = "block";
                 fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
                 fetchBtn.disabled = false;
@@ -309,14 +369,14 @@
                     document.getElementById("stockAvailable").value = data.avail;
                     
                     statusText.innerText = "✅ Data Fetched Successfully!";
-                    statusText.className = "text-success fw-bold mt-1";
+                    statusText.style.color = "#15803d";
                 } else {
                     ["eStampId", "vleName", "district", "mandal", "address", "stockReceived", "stockSold", "stockAvailable"].forEach(id => {
                         if(id !== "stockReceived" && id !== "stockSold" && id !== "stockAvailable") document.getElementById(id).value = "";
                         else document.getElementById(id).value = "0";
                     });
                     statusText.innerText = "⚠️ " + (response.message || "CSC ID Not Found in Database!");
-                    statusText.className = "text-danger fw-bold mt-1";
+                    statusText.style.color = "#b91c1c";
                 }
                 statusText.style.display = "block";
                 fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
@@ -330,7 +390,7 @@
                 if(isTimeout) return;
                 clearTimeout(timeoutTimer);
                 statusText.innerText = "❌ Script Error: Web App లింక్ తప్పుగా ఉంది.";
-                statusText.className = "text-danger fw-bold mt-1";
+                statusText.style.color = "#b91c1c";
                 statusText.style.display = "block";
                 fetchBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down me-1"></i> Fetch';
                 fetchBtn.disabled = false;
@@ -509,7 +569,7 @@
             window.scrollTo(0, 0); 
         }
 
-        // 🌟 FULL SCREEN LOGIC ADDED HERE 🌟
+        // 🌟 FULL SCREEN LOGIC 🌟
         function toggleFullScreen() {
             let elem = document.documentElement;
             let fsBtn = document.getElementById('fsBtn');
@@ -527,7 +587,6 @@
             }
         }
 
-        // ఫుల్ స్క్రీన్ మోడ్ మ్యాన్యువల్ గా (Escape నొక్కి) ఎగ్జిట్ అయితే బటన్ అప్డేట్ అవ్వడానికి
         document.addEventListener('fullscreenchange', (event) => {
             let fsBtn = document.getElementById('fsBtn');
             if(fsBtn) {

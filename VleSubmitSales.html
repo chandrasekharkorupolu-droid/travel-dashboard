@@ -5,56 +5,205 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit Daily Sales</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <style>
-    /* 🌟 Master Clean Background 🌟 */
-    body { background: #f1f5f9; font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif; padding: 25px 20px; min-height: 100vh; color: #334155; }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
+
+    body {
+      background: var(--cream-bg);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+      padding: 20px 18px;
+      min-height: 100vh;
+      color: var(--charcoal);
+    }
 
     /* 🌟 Premium Solid Card 🌟 */
-    .premium-card { background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); overflow: hidden; border-top: 5px solid #6d28d9; margin-bottom: 25px; }
-    .card-header-custom { background: #ffffff; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .card-title { color: #6d28d9; font-weight: 900; font-size: 16px; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .premium-card {
+      background: var(--cream-card);
+      border: 1.5px solid var(--forest);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(27, 67, 50, 0.08);
+      overflow: hidden;
+      border-top: 5px solid var(--gold);
+      margin-bottom: 22px;
+    }
+    .card-header-custom {
+      background: var(--cream-card);
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card-title {
+      font-family: 'Cinzel', serif;
+      color: var(--forest-dark);
+      font-weight: 800;
+      font-size: 16px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
 
     /* 🌟 Table Design 🌟 */
     .table-container { padding: 0; }
     .table { margin-bottom: 0; white-space: nowrap; }
-    .table thead th { background: #1e293b !important; color: #ffffff !important; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 8px; border: none; text-align: center; }
-    /* 🌟 Padding కుదించబడింది ఇక్కడే 🌟 */
-    .table tbody tr td { padding: 8px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; font-size: 13px; text-align: center; }
-    .table-striped tbody tr:nth-of-type(odd) { background-color: #ffffff; }
-    .table-striped tbody tr:nth-of-type(even) { background-color: #f8fafc; }
-    .table-hover tbody tr:hover td { background-color: #f5f3ff !important; }
+    .table thead th {
+      background: var(--forest) !important;
+      color: #f8f5ec !important;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 11px 8px;
+      border: none;
+      border-bottom: 2px solid var(--gold) !important;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      text-align: center;
+    }
+    .table tbody tr td {
+      padding: 8px 8px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      vertical-align: middle;
+      font-size: 13px;
+      text-align: center;
+      background-color: var(--cream-card);
+      color: var(--charcoal);
+    }
+    .table tbody tr:nth-of-type(even) td { background-color: var(--cream-alt); }
+    .table-hover tbody tr:hover td { background-color: var(--gold-soft) !important; }
 
     /* 🌟 Buttons 🌟 */
-    .btn-violet { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; font-weight: 800; border: none; border-radius: 10px; padding: 10px 20px; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(109, 40, 217, 0.2); }
-    .btn-violet:hover { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(109, 40, 217, 0.3); }
-    .btn-outline-violet { color: #6d28d9; background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 8px; font-weight: 800; font-size: 13px; padding: 8px 16px; transition: 0.3s; }
-    .btn-outline-violet:hover { background: #6d28d9; color: white; }
+    .btn-violet {
+      background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+      color: #f8f5ec;
+      font-weight: 800;
+      border: 1.5px solid var(--gold);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(27, 67, 50, 0.22);
+    }
+    .btn-violet:hover {
+      background: var(--gold);
+      color: var(--charcoal);
+      border-color: #a6823c;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(197, 160, 89, 0.35);
+    }
+    .btn-outline-violet {
+      color: var(--charcoal);
+      background: var(--gold);
+      border: 1.5px solid #a6823c;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 12.5px;
+      padding: 7px 15px;
+      transition: 0.25s;
+    }
+    .btn-outline-violet:hover {
+      background: var(--forest);
+      color: #f8f5ec;
+      border-color: var(--forest-dark);
+    }
 
     /* 🌟 Form Inputs 🌟 */
-    .form-label-custom { display: block; font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px; }
-    .form-control-custom, .form-select-custom { width: 100%; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 15px; font-weight: 700; color: #1e293b; padding: 12px 16px; transition: all 0.3s ease; outline: none; }
-    .form-control-custom:focus, .form-select-custom:focus { background: #ffffff; border-color: #8b5cf6; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); }
-    .input-box-wrapper { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .form-label-custom {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--forest-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 7px;
+    }
+    .form-control-custom, .form-select-custom {
+      width: 100%;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--charcoal);
+      padding: 11px 14px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .form-control-custom:focus, .form-select-custom:focus {
+      background: #ffffff;
+      border-color: var(--forest);
+      box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14);
+    }
+    .input-box-wrapper {
+      background: var(--cream-alt);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
 
     /* 🌟 Modals 🌟 */
-    .modal-content-innovative { background: #ffffff; border: none; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); text-align: center; padding: 30px; }
-    .icon-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 35px; }
-    .icon-circle.success { background-color: #f5f3ff; color: #6d28d9; } 
-    .icon-circle.error { background-color: #fef2f2; color: #ef4444; }
-    .btn-modal { border-radius: 10px; padding: 12px 30px; font-weight: 800; font-size: 15px; transition: all 0.3s ease; border: none; width: 100%; }
-    .btn-modal.success { background: #6d28d9; color: white; }
-    .btn-modal.error { background: #ef4444; color: white; }
+    .modal-content-innovative {
+      background: var(--cream-card);
+      border: 2px solid var(--forest);
+      border-radius: 18px;
+      box-shadow: 0 25px 50px -12px rgba(18, 45, 34, 0.35);
+      text-align: center;
+      padding: 28px;
+    }
+    .icon-circle {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 32px;
+    }
+    .icon-circle.success { background-color: var(--forest-soft); color: var(--forest); border: 2px solid var(--gold); } 
+    .icon-circle.error { background-color: #fee2e2; color: #b91c1c; border: 2px solid #fca5a5; }
+    .btn-modal {
+      border-radius: 10px;
+      padding: 11px 28px;
+      font-weight: 800;
+      font-size: 14.5px;
+      transition: all 0.25s ease;
+      border: none;
+      width: 100%;
+    }
+    .btn-modal.success { background: var(--forest); color: #f8f5ec; border: 1px solid var(--gold); }
+    .btn-modal.error { background: #b91c1c; color: #ffffff; }
 
     /* 🌟 Scrollbars 🌟 */
     .history-scroll { max-height: 250px; overflow-y: auto; }
-    .summary-scroll { max-height: 280px; overflow-y: auto; } /* Dashboard table height పెంచాను */
+    .summary-scroll { max-height: 280px; overflow-y: auto; }
     
-    .history-scroll::-webkit-scrollbar, .summary-scroll::-webkit-scrollbar { width: 6px; }
-    .history-scroll::-webkit-scrollbar-track, .summary-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-    .history-scroll::-webkit-scrollbar-thumb, .summary-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .history-scroll::-webkit-scrollbar, .summary-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .history-scroll::-webkit-scrollbar-track, .summary-scroll::-webkit-scrollbar-track { background: var(--cream-bg); border-radius: 10px; }
+    .history-scroll::-webkit-scrollbar-thumb, .summary-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
     /* 🌟 10 Items Per Row Grid 🌟 */
     .serial-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; width: 100%; }
@@ -63,12 +212,12 @@
     /* 📱 MOBILE RESPONSIVE 📱 */
     @media (max-width: 1200px) { .serial-grid { grid-template-columns: repeat(8, 1fr); } }
     @media (max-width: 992px) {
-        body { padding: 15px 10px; }
-        .premium-card { border-radius: 16px; margin-bottom: 20px; }
-        .card-header-custom { flex-direction: column; align-items: flex-start; gap: 10px; }
-        .input-box-wrapper .row { flex-direction: column; gap: 15px; }
-        .input-box-wrapper .col-md-5, .input-box-wrapper .col-md-2 { width: 100%; }
-        .serial-grid { grid-template-columns: repeat(5, 1fr); }
+      body { padding: 14px 10px; }
+      .premium-card { border-radius: 14px; margin-bottom: 18px; }
+      .card-header-custom { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .input-box-wrapper .row { flex-direction: column; gap: 14px; }
+      .input-box-wrapper .col-md-5, .input-box-wrapper .col-md-2 { width: 100%; }
+      .serial-grid { grid-template-columns: repeat(5, 1fr); }
     }
     @media (max-width: 576px) { .serial-grid { grid-template-columns: repeat(3, 1fr); } }
   </style>
@@ -90,8 +239,8 @@
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content modal-content-innovative">
         <div id="alertIconContainer" class="icon-circle success">✅</div>
-        <h4 id="alertTitle" class="fw-bold text-dark mb-2" style="font-size: 22px;">Success!</h4>
-        <p id="alertMessage" class="text-secondary mb-4" style="font-size: 14px; font-weight: 600;">Message goes here.</p>
+        <h4 id="alertTitle" class="fw-bold mb-2" style="font-family:'Cinzel',serif; color:#122d22; font-size: 20px;">Success!</h4>
+        <p id="alertMessage" class="mb-4" style="color:#525d56; font-size: 14px; font-weight: 600;">Message goes here.</p>
         <button type="button" id="alertBtn" class="btn-modal success" data-bs-dismiss="modal">OK, Got it!</button>
       </div>
     </div>
@@ -100,27 +249,26 @@
   <!-- 🌟 ALLOTTED VS ENTERED GRID MODAL (Draggable Smooth Fix) 🌟 -->
   <div class="modal fade" id="enteredSerialsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-      <div class="modal-content premium-card border-0" style="margin-bottom:0; position: relative;">
-        <!-- Modal Header కి 'move' కర్సర్ ఇచ్చాము -->
-        <div class="modal-header text-white" id="modalDraggableHeader" style="background: linear-gradient(135deg, #6d28d9, #8b5cf6); padding: 15px 20px; cursor: move;">
-          <h6 class="modal-title fw-bold m-0">🔍 Serials Tracker (Enabled vs Disabled)</h6>
+      <div class="modal-content premium-card border-0" style="margin-bottom:0; position: relative; border: 2px solid #1b4332 !important;">
+        <div class="modal-header text-white" id="modalDraggableHeader" style="background: linear-gradient(135deg, #1b4332, #122d22); border-bottom: 3px solid #c5a059; padding: 14px 20px; cursor: move;">
+          <h6 class="modal-title fw-bold m-0" style="font-family:'Cinzel',serif; color:#e6c885; letter-spacing:0.5px;">🔍 Serials Tracker (Enabled vs Disabled)</h6>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         
-        <div class="modal-body p-0 bg-light">
+        <div class="modal-body p-0" style="background: var(--cream-bg);">
           <!-- Top Info & Search Panel -->
-          <div class="p-3 bg-white border-bottom shadow-sm sticky-top">
+          <div class="p-3 border-bottom shadow-sm sticky-top" style="background: var(--cream-card); border-color: var(--border) !important;">
               <input type="text" id="searchEntered" class="form-control-custom mb-3" placeholder="🔍 Search Specific Serial Number..." onkeyup="searchEnteredSerials()" style="padding: 10px; font-size: 14px;">
               
               <div class="d-flex justify-content-around flex-wrap gap-2 text-center" style="font-size: 13px;">
-                  <div class="fw-bold text-secondary px-3 py-1 rounded" style="background:#f1f5f9; border:1px solid #cbd5e1;">📦 Total Allotted: <span id="modalTotalCount" class="fs-6 text-dark ms-1">0</span></div>
-                  <div class="fw-bold text-success px-3 py-1 rounded shadow-sm" style="background:#ecfdf5; border:1px solid #6ee7b7;">⭐ Pending (Available): <span id="modalPendingCount" class="fs-6 ms-1">0</span></div>
-                  <div class="fw-bold text-muted px-3 py-1 rounded" style="background:#f8fafc; border:1px dashed #94a3b8;">✅ Entered (Used): <span id="modalEnteredCount" class="fs-6 ms-1">0</span></div>
+                  <div class="fw-bold px-3 py-1 rounded" style="background:var(--cream-alt); color:var(--forest-dark); border:1px solid var(--border);">📦 Total Allotted: <span id="modalTotalCount" class="fs-6 ms-1">0</span></div>
+                  <div class="fw-bold px-3 py-1 rounded shadow-sm" style="background:var(--forest-soft); color:#15803d; border:1px solid #a7ccb8;">⭐ Pending (Available): <span id="modalPendingCount" class="fs-6 ms-1">0</span></div>
+                  <div class="fw-bold px-3 py-1 rounded" style="background:var(--gold-soft); color:#7c4a12; border:1px dashed var(--gold);">✅ Entered (Used): <span id="modalEnteredCount" class="fs-6 ms-1">0</span></div>
               </div>
           </div>
           
           <div id="serialGridContainer" class="p-3" style="min-height: 200px;">
-              <div class="text-center w-100 py-5 text-primary fw-bold" style="font-size:16px;">⏳ Fetching serial records... Please wait!</div>
+              <div class="text-center w-100 py-5 fw-bold" style="color:var(--forest); font-size:16px;">⏳ Fetching serial records... Please wait!</div>
           </div>
         </div>
       </div>
@@ -136,18 +284,18 @@
           <div class="card-header-custom border-bottom-0 pb-2">
             <h5 class="card-title">📦 Stock Received</h5>
           </div>
-          <div class="table-container pt-0">
-            <div class="table-responsive history-scroll" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+          <div class="table-container pt-0 px-2 pb-2">
+            <div class="table-responsive history-scroll" style="border-radius: 10px; border: 1.5px solid var(--forest);">
               <table class="table table-hover align-middle text-center mb-0">
                 <thead style="position: sticky; top: 0; z-index: 5;">
                   <tr>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important; padding:10px; border-bottom: none;">Date</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important; padding:10px; border-bottom: none;">Serials Assigned</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important; padding:10px; border-bottom: none;">Qty</th>
+                    <th style="padding:10px;">Date</th>
+                    <th style="padding:10px;">Serials Assigned</th>
+                    <th style="padding:10px;">Qty</th>
                   </tr>
                 </thead>
                 <tbody id="stockHistoryRow">
-                  <tr><td colspan="3" class="text-muted fw-bold py-4">లోడ్ అవుతోంది...</td></tr>
+                  <tr><td colspan="3" class="fw-bold py-4" style="color:var(--muted);">లోడ్ అవుతోంది...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -162,28 +310,28 @@
             <h5 class="card-title">📊 Month-wise Performance Summary</h5>
             <button class="btn btn-outline-violet fw-bold shadow-sm" onclick="openEnteredSerialsModal()">🔍 View All Serials Status</button>
           </div>
-          <div class="table-container pt-0">
-            <div class="table-responsive summary-scroll" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+          <div class="table-container pt-0 px-2 pb-2">
+            <div class="table-responsive summary-scroll" style="border-radius: 10px; border: 1.5px solid var(--forest);">
               <table class="table table-hover align-middle text-center mb-0">
                 <thead class="sticky-top" style="z-index: 6;">
                   <tr>
-                    <th style="background: #e2e8f0 !important; color:#6d28d9 !important; font-size:12px;">Month</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important;">Issued</th>
-                    <th style="background: #e2e8f0 !important; color:#16a34a !important;">₹ 10</th>
-                    <th style="background: #e2e8f0 !important; color:#0284c7 !important;">₹ 20</th>
-                    <th style="background: #e2e8f0 !important; color:#ca8a04 !important;">₹ 50</th>
-                    <th style="background: #e2e8f0 !important; color:#9333ea !important;">₹ 100</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important;">Oth</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important;">DSD</th>
-                    <th style="background: #e2e8f0 !important; color:#0284c7 !important;">Used</th>
-                    <th style="background: #e2e8f0 !important; color:#2563eb !important;">Avail</th>
-                    <th style="background: #e2e8f0 !important; color:#1e293b !important;">Target</th>
-                    <th style="background: #e2e8f0 !important; color:#16a34a !important;">Sales</th>
-                    <th style="background: #e2e8f0 !important; color:#dc2626 !important;">Pending</th>
+                    <th style="background: var(--forest-dark) !important; color:#e6c885 !important; font-size:11.5px;">Month</th>
+                    <th>Issued</th>
+                    <th>₹ 10</th>
+                    <th>₹ 20</th>
+                    <th>₹ 50</th>
+                    <th>₹ 100</th>
+                    <th>Oth</th>
+                    <th>DSD</th>
+                    <th style="background:#164e63 !important;">Used</th>
+                    <th style="background:#15803d !important;">Avail</th>
+                    <th>Target</th>
+                    <th style="background:#7c4a12 !important;">Sales</th>
+                    <th style="background:#991b1b !important;">Pending</th>
                   </tr>
                 </thead>
                 <tbody id="performanceTableBody">
-                  <tr><td colspan="13" class="text-muted fw-bold py-4">లోడ్ అవుతోంది...</td></tr>
+                  <tr><td colspan="13" class="fw-bold py-4" style="color:var(--muted);">లోడ్ అవుతోంది...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -223,29 +371,29 @@
             </div>
         </div>
 
-        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 20px;">
+        <div style="background: var(--cream-alt); border: 1.5px dashed var(--gold); border-radius: 14px; padding: 20px;">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold m-0" style="color: #475569; font-size: 14px;">🛒 Items Added for Submission</h6>
-                <span class="badge bg-white text-primary border border-primary px-3 py-1" style="border-radius: 20px; font-size: 12px;" id="cartCountBadge">0 Items</span>
+                <h6 class="fw-bold m-0" style="color: var(--forest-dark); font-size: 14px;">🛒 Items Added for Submission</h6>
+                <span class="badge px-3 py-1" style="background: var(--forest); color: #e6c885; border: 1px solid var(--gold); border-radius: 20px; font-size: 12px;" id="cartCountBadge">0 Items</span>
             </div>
 
-            <div class="table-responsive mb-4 history-scroll" style="border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff; overflow: hidden;">
+            <div class="table-responsive mb-4 history-scroll" style="border-radius: 10px; border: 1.5px solid var(--forest); background: var(--cream-card); overflow: hidden;">
               <table class="table text-center align-middle mb-0">
                 <thead style="position: sticky; top: 0; z-index: 5;">
                     <tr>
-                        <th style="font-size: 12px; color:#1e293b !important; background: #e2e8f0 !important; padding:12px; border-bottom: none;">Serial No</th>
-                        <th style="font-size: 12px; color:#1e293b !important; background: #e2e8f0 !important; padding:12px; border-bottom: none;">Amount</th>
-                        <th style="font-size: 12px; color:#1e293b !important; background: #e2e8f0 !important; padding:12px; border-bottom: none;">Action</th>
+                        <th style="font-size: 12px; padding:11px;">Serial No</th>
+                        <th style="font-size: 12px; padding:11px;">Amount</th>
+                        <th style="font-size: 12px; padding:11px;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="salesBody">
-                    <tr><td colspan="3" class="text-muted py-4" style="border-bottom:none;"><div style="font-size: 28px; margin-bottom: 5px;">📭</div><div style="font-size: 13px; font-weight: 600; color: #94a3b8;">No items added yet.</div></td></tr>
+                    <tr><td colspan="3" class="py-4" style="border-bottom:none;"><div style="font-size: 28px; margin-bottom: 5px;">📭</div><div style="font-size: 13px; font-weight: 600; color: var(--muted);">No items added yet.</div></td></tr>
                 </tbody>
               </table>
             </div>
 
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <span class="text-muted" style="font-size: 12px; font-weight: 600;">* Verify serial numbers before submitting.</span>
+                <span style="color: var(--muted); font-size: 12px; font-weight: 600;">* Verify serial numbers before submitting.</span>
                 <button id="btnSubmitSales" class="btn-violet py-2 px-4 fs-6" style="border-radius: 10px; width: auto;" onclick="submitSales()">🚀 Submit Sales Report</button>
             </div>
         </div>
@@ -338,51 +486,51 @@
 
         if(monthlyData.length > 0) {
             monthlyData.forEach(m => {
-                let otherHtml = m.other > 0 ? `<span class="text-secondary">${m.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${m.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
-                let dsdHtml = m.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${m.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
-                let pendingHtml = m.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${m.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+                let otherHtml = m.other > 0 ? `<span style="color:#525d56;">${m.other}</span> <br><span style="font-size:10px; color:#1b4332;">(₹${m.otherAmt.toLocaleString('en-IN')})</span>` : `<span style="color:#8f8873;">0</span>`;
+                let dsdHtml = m.dsd > 0 ? `<span style="color:#141a17; font-weight:800;">₹ ${m.dsd.toLocaleString('en-IN')}</span>` : `<span style="color:#8f8873;">0</span>`;
+                let pendingHtml = m.pending > 0 ? `<span style="color:#b91c1c; font-weight:800;" class="text-nowrap">₹ ${m.pending.toLocaleString('en-IN')}</span>` : `<span style="color:#15803d; font-weight:800;">Achieved 🎉</span>`;
                 
                 tbodyHtml += `
-                <tr style="background-color: #ffffff;">
-                    <td class="fw-bold" style="color:#0f172a; background:#f8fafc;">${m.monthLabel}</td>
-                    <td class="fw-bold text-secondary text-nowrap">${m.issued}</td>
-                    <td class="fw-bold text-success">${m.d10}</td>
-                    <td class="fw-bold text-info">${m.d20}</td>
-                    <td class="fw-bold text-warning">${m.d50}</td>
-                    <td class="fw-bold" style="color:#6d28d9;">${m.d100}</td>
+                <tr>
+                    <td class="fw-bold" style="color:#122d22; background:#f0ece0;">${m.monthLabel}</td>
+                    <td class="fw-bold text-nowrap" style="color:#525d56;">${m.issued}</td>
+                    <td class="fw-bold" style="color:#15803d;">${m.d10}</td>
+                    <td class="fw-bold" style="color:#164e63;">${m.d20}</td>
+                    <td class="fw-bold" style="color:#b45309;">${m.d50}</td>
+                    <td class="fw-bold" style="color:#7c4a12;">${m.d100}</td>
                     <td class="fw-bold">${otherHtml}</td>
                     <td class="fw-bold">${dsdHtml}</td>
-                    <td class="fw-bold text-primary text-nowrap">${m.used}</td>
-                    <td class="fw-bold text-primary text-nowrap" style="font-size:14px; background:#f0f9ff;">${m.avail}</td>
-                    <td class="fw-bold text-secondary text-nowrap">₹ ${m.target.toLocaleString('en-IN')}</td>
-                    <td class="fw-bold text-success text-nowrap" style="font-size:14px; background:#f0fdf4;">₹ ${m.totalSales.toLocaleString('en-IN')}</td>
+                    <td class="fw-bold text-nowrap" style="color:#164e63;">${m.used}</td>
+                    <td class="fw-bold text-nowrap" style="font-size:14px; color:#1b4332; background:#e9f2ed;">${m.avail}</td>
+                    <td class="fw-bold text-nowrap" style="color:#525d56;">₹ ${m.target.toLocaleString('en-IN')}</td>
+                    <td class="fw-bold text-nowrap" style="font-size:14px; color:#15803d; background:#e6f4ea;">₹ ${m.totalSales.toLocaleString('en-IN')}</td>
                     <td>${pendingHtml}</td>
                 </tr>`;
             });
 
-            // 🌟 సూపర్ ఫీచర్: కింద అతుక్కుని ఉండే "Grand Total" రో 🌟
-            let gtOther = grand.other > 0 ? `<span class="text-secondary">${grand.other}</span> <br><span style="font-size:10px;" class="text-primary">(₹${grand.otherAmt.toLocaleString('en-IN')})</span>` : `<span class="text-muted">0</span>`;
-            let gtDsd = grand.dsd > 0 ? `<span class="text-dark fw-bold">₹ ${grand.dsd.toLocaleString('en-IN')}</span>` : `<span class="text-muted">0</span>`;
-            let gtPending = grand.pending > 0 ? `<span class="text-danger fw-bold text-nowrap">₹ ${grand.pending.toLocaleString('en-IN')}</span>` : `<span class="text-success fw-bold">Achieved 🎉</span>`;
+            // 🌟 Royal Dark Forest Sticky Grand Total Row 🌟
+            let gtOther = grand.other > 0 ? `<span style="color:#ffffff;">${grand.other}</span> <br><span style="font-size:10px; color:#e6c885;">(₹${grand.otherAmt.toLocaleString('en-IN')})</span>` : `<span style="color:#d5cfbe;">0</span>`;
+            let gtDsd = grand.dsd > 0 ? `<span style="color:#ffffff; font-weight:800;">₹ ${grand.dsd.toLocaleString('en-IN')}</span>` : `<span style="color:#d5cfbe;">0</span>`;
+            let gtPending = grand.pending > 0 ? `<span style="color:#f87171; font-weight:900;" class="text-nowrap">₹ ${grand.pending.toLocaleString('en-IN')}</span>` : `<span style="color:#4ade80; font-weight:900;">Achieved 🎉</span>`;
             
             tbodyHtml += `
-            <tr style="position: sticky; bottom: -1px; border-top: 3px solid #cbd5e1; background-color: #e2e8f0; z-index: 4; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05);">
-                <td class="fw-bold text-uppercase" style="color:#6d28d9; letter-spacing:0.5px;">Grand Total</td>
-                <td class="fw-bold text-dark text-nowrap fs-6">${grand.issued}</td>
-                <td class="fw-bold text-success fs-6">${grand.d10}</td>
-                <td class="fw-bold text-info fs-6">${grand.d20}</td>
-                <td class="fw-bold text-warning fs-6">${grand.d50}</td>
-                <td class="fw-bold fs-6" style="color:#6d28d9;">${grand.d100}</td>
-                <td class="fw-bold">${gtOther}</td>
-                <td class="fw-bold">${gtDsd}</td>
-                <td class="fw-bold text-primary text-nowrap fs-6">${grand.used}</td>
-                <td class="fw-bold text-primary text-nowrap fs-6">${grand.avail}</td>
-                <td class="fw-bold text-secondary text-nowrap fs-6">₹ ${grand.target.toLocaleString('en-IN')}</td>
-                <td class="fw-bold text-success text-nowrap fs-6">₹ ${grand.totalSales.toLocaleString('en-IN')}</td>
-                <td class="fs-6">${gtPending}</td>
+            <tr style="position: sticky; bottom: -1px; border-top: 2px solid #c5a059; z-index: 4; box-shadow: 0 -4px 8px rgba(18,45,34,0.18);">
+                <td class="fw-bold text-uppercase" style="background:#122d22 !important; color:#e6c885 !important; letter-spacing:0.5px;">Grand Total</td>
+                <td class="fw-bold text-nowrap fs-6" style="background:#122d22 !important; color:#ffffff !important;">${grand.issued}</td>
+                <td class="fw-bold fs-6" style="background:#122d22 !important; color:#4ade80 !important;">${grand.d10}</td>
+                <td class="fw-bold fs-6" style="background:#122d22 !important; color:#7dd3fc !important;">${grand.d20}</td>
+                <td class="fw-bold fs-6" style="background:#122d22 !important; color:#fbbf24 !important;">${grand.d50}</td>
+                <td class="fw-bold fs-6" style="background:#122d22 !important; color:#e6c885 !important;">${grand.d100}</td>
+                <td class="fw-bold" style="background:#122d22 !important;">${gtOther}</td>
+                <td class="fw-bold" style="background:#122d22 !important;">${gtDsd}</td>
+                <td class="fw-bold text-nowrap fs-6" style="background:#122d22 !important; color:#7dd3fc !important;">${grand.used}</td>
+                <td class="fw-bold text-nowrap fs-6" style="background:#122d22 !important; color:#4ade80 !important;">${grand.avail}</td>
+                <td class="fw-bold text-nowrap fs-6" style="background:#122d22 !important; color:#d5cfbe !important;">₹ ${grand.target.toLocaleString('en-IN')}</td>
+                <td class="fw-bold text-nowrap fs-6" style="background:#122d22 !important; color:#4ade80 !important;">₹ ${grand.totalSales.toLocaleString('en-IN')}</td>
+                <td class="fs-6" style="background:#122d22 !important;">${gtPending}</td>
             </tr>`;
         } else {
-            tbodyHtml = `<tr><td colspan="13" class="text-muted fw-bold py-4">No data found.</td></tr>`;
+            tbodyHtml = `<tr><td colspan="13" class="fw-bold py-4" style="color:var(--muted);">No data found.</td></tr>`;
         }
 
         document.getElementById("performanceTableBody").innerHTML = tbodyHtml;
@@ -395,13 +543,13 @@
                 let dateOnly = item.date.split(" ")[0]; 
                 historyTbody.innerHTML += `
                 <tr>
-                    <td style="font-size:11px; font-weight:700; color:#64748b;">${dateOnly}</td>
-                    <td style="font-size:11px; font-weight:800; color:#0f172a;">${item.start} to ${item.end}</td>
-                    <td style="font-size:13px; font-weight:900; color:#10b981;">+${item.qty}</td>
+                    <td style="font-size:11px; font-weight:700; color:#525d56;">${dateOnly}</td>
+                    <td style="font-size:11px; font-weight:800; color:#122d22;">${item.start} to ${item.end}</td>
+                    <td style="font-size:13px; font-weight:900; color:#15803d;">+${item.qty}</td>
                 </tr>`;
             });
         } else {
-            historyTbody.innerHTML = `<tr><td colspan="3" class="text-muted py-3" style="font-size:13px;">No stock history found.</td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="3" class="py-3" style="color:var(--muted); font-size:13px;">No stock history found.</td></tr>`;
         }
     }
 
@@ -411,8 +559,8 @@
         if (cachedData) {
             updateDashboard(JSON.parse(cachedData));
         } else {
-            document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-muted fw-bold py-4">⏳ డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td></tr>`;
-            document.getElementById("stockHistoryRow").innerHTML = `<tr><td colspan="3" class="text-muted py-3 fw-bold">⏳ లోడ్ అవుతోంది...</td></tr>`;
+            document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="fw-bold py-4" style="color:var(--muted);">⏳ డేటా లోడ్ అవుతోంది... దయచేసి వేచి ఉండండి.</td></tr>`;
+            document.getElementById("stockHistoryRow").innerHTML = `<tr><td colspan="3" class="py-3 fw-bold" style="color:var(--muted);">⏳ లోడ్ అవుతోంది...</td></tr>`;
         }
 
         fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVleMySalesSummary", userId: loggedInId }) })
@@ -421,10 +569,10 @@
                 sessionStorage.setItem("vlePerfCache_" + loggedInId, JSON.stringify(res.data));
                 updateDashboard(res.data);
             } else {
-                if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-danger fw-bold py-4">Error: ${res.message}</td></tr>`;
+                if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="fw-bold py-4" style="color:#b91c1c;">Error: ${res.message}</td></tr>`;
             }
         }).catch(err => { 
-            if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="text-danger fw-bold py-4">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td></tr>`; 
+            if(!cachedData) document.getElementById("performanceTableBody").innerHTML = `<tr><td colspan="13" class="fw-bold py-4" style="color:#b91c1c;">డేటా లోడ్ అవ్వలేదు. ఇంటర్నెట్ చెక్ చేయండి.</td></tr>`; 
         });
     }
 
@@ -466,7 +614,7 @@
             return;
         }
 
-        document.getElementById("serialGridContainer").innerHTML = `<div class="text-center w-100 py-5 text-primary fw-bold fs-5">⏳ Fetching status...</div>`;
+        document.getElementById("serialGridContainer").innerHTML = `<div class="text-center w-100 py-5 fw-bold fs-5" style="color:var(--forest);">⏳ Fetching status...</div>`;
         
         fetch(SCRIPT_URL, {
             method: "POST",
@@ -480,10 +628,10 @@
                 sessionStorage.setItem("vleEnteredSerialsCache_" + loggedInId, JSON.stringify(cachedEnteredSerials));
                 renderSerialGrid(cachedEnteredSerials);
             } else {
-                document.getElementById("serialGridContainer").innerHTML = `<div class="text-danger text-center w-100 py-5 fw-bold">Failed to load data.</div>`;
+                document.getElementById("serialGridContainer").innerHTML = `<div class="text-center w-100 py-5 fw-bold" style="color:#b91c1c;">Failed to load data.</div>`;
             }
         }).catch(e => {
-            document.getElementById("serialGridContainer").innerHTML = `<div class="text-danger text-center w-100 py-5 fw-bold">Network Error!</div>`;
+            document.getElementById("serialGridContainer").innerHTML = `<div class="text-center w-100 py-5 fw-bold" style="color:#b91c1c;">Network Error!</div>`;
         });
     }
 
@@ -508,7 +656,7 @@
                 gridHtml += `<div class="badge bg-secondary border serial-chip" style="opacity: 0.5; cursor: not-allowed;">${s}</div>`;
             } else {
                 pendingCount++;
-                gridHtml += `<div class="badge bg-success serial-chip shadow-sm" style="cursor: pointer; transition: 0.2s;" onclick="fillSerialFromGrid('${s}')" onmouseover="this.className='badge bg-primary serial-chip shadow'" onmouseout="this.className='badge bg-success serial-chip shadow-sm'">${s}</div>`;
+                gridHtml += `<div class="badge serial-chip shadow-sm" style="background-color:#1b4332; color:#f8f5ec; cursor: pointer; transition: 0.2s;" onclick="fillSerialFromGrid('${s}')" onmouseover="this.style.backgroundColor='#c5a059'; this.style.color='#141a17';" onmouseout="this.style.backgroundColor='#1b4332'; this.style.color='#f8f5ec';">${s}</div>`;
             }
         });
         gridHtml += `</div>`;
@@ -525,8 +673,8 @@
         let finalHtml = gridHtml;
 
         if(invalidCount > 0) {
-            finalHtml += `<div class="w-100 mt-4 mb-2" style="border-top: 2px dashed #ef4444;"></div>`;
-            finalHtml += `<div class="w-100 text-danger fw-bold mb-3 text-start px-2" style="font-size: 13.5px;">🚨 Attention: Found ${invalidCount} Invalid/Typo Entries (These serials were not officially assigned to you):</div>`;
+            finalHtml += `<div class="w-100 mt-4 mb-2" style="border-top: 2px dashed #b91c1c;"></div>`;
+            finalHtml += `<div class="w-100 fw-bold mb-3 text-start px-2" style="color:#b91c1c; font-size: 13.5px;">🚨 Attention: Found ${invalidCount} Invalid/Typo Entries (These serials were not officially assigned to you):</div>`;
             finalHtml += `<div class="serial-grid">${invalidHtml}</div>`;
         }
 
@@ -604,13 +752,13 @@
         document.getElementById('cartCountBadge').innerText = cartCount + (cartCount === 1 ? " Item" : " Items");
 
         if (cartCount === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="text-muted py-4" style="border-bottom:none;"><div style="font-size: 28px; margin-bottom: 5px;">📭</div><div style="font-size: 13px; font-weight: 600; color: #94a3b8;">No items added yet.</div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" class="py-4" style="border-bottom:none;"><div style="font-size: 28px; margin-bottom: 5px;">📭</div><div style="font-size: 13px; font-weight: 600; color: var(--muted);">No items added yet.</div></td></tr>`;
             return;
         }
 
         vleSalesCart.forEach((item, index) => { 
             let showAmt = item.displayAmt ? item.displayAmt : "₹ " + item.amount;
-            tbody.innerHTML += `<tr><td class="fw-bold" style="color:#0f172a;">${item.serial}</td><td class="fw-bold" style="color:#6d28d9;">${showAmt}</td><td><button class="btn btn-sm btn-outline-danger fw-bold" onclick="removeRow(${index})" style="font-size:11px;">✖ Remove</button></td></tr>`; 
+            tbody.innerHTML += `<tr><td class="fw-bold" style="color:#122d22;">${item.serial}</td><td class="fw-bold" style="color:#7c4a12;">${showAmt}</td><td><button class="btn btn-sm btn-outline-danger fw-bold" onclick="removeRow(${index})" style="font-size:11px;">✖ Remove</button></td></tr>`; 
         }); 
     }
 
