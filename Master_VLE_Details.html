@@ -5,105 +5,352 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VLE Details - AP Tour & Travels</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
   <style>
-    body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; color: #1e293b; padding: 15px; margin: 0; }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-light: #e6c885;
+      --gold-hover: #a6823c;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--cream-bg);
+      color: var(--charcoal);
+      padding: 16px;
+      margin: 0;
+      min-height: 100vh;
+    }
     
-    .header-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; }
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--gold-light);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+      padding: 13px 20px;
+      border-radius: 12px;
+      border: 1.5px solid var(--forest-dark);
+      border-bottom: 4px solid var(--gold);
+      box-shadow: 0 4px 14px rgba(18, 45, 34, 0.16);
+    }
+
+    .sync-btn-top {
+      margin-left: auto;
+      background: var(--gold);
+      color: var(--charcoal);
+      border: 1.5px solid var(--gold-hover);
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .sync-btn-top:hover { background: var(--gold-light); color: var(--forest-dark); transform: translateY(-1px); }
     
-    .search-card { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; margin-bottom: 12px; }
+    .search-card {
+      background: var(--cream-card);
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(27, 67, 50, 0.06);
+      border: 1.5px solid var(--forest);
+      border-top: 4px solid var(--gold);
+      margin-bottom: 14px;
+    }
     
     .search-row { display: flex; flex-wrap: nowrap; gap: 12px; align-items: flex-end; width: 100%; }
     
-    .input-col { flex: 1.5; display: flex; flex-direction: column; gap: 4px; }
-    .input-col label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-col { flex: 1.5; display: flex; flex-direction: column; gap: 5px; }
+    .input-col label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--forest-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
     
-    .custom-input { height: 38px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 500; outline: none; transition: 0.2s; width: 100%; box-sizing: border-box; color: #0f172a; }
-    .custom-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+    .custom-input {
+      height: 40px;
+      padding: 0 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      outline: none;
+      transition: 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+      color: var(--charcoal);
+      background: #ffffff;
+    }
+    .custom-input:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.14);
+    }
     
-    .or-divider { font-weight: 800; color: #94a3b8; padding-bottom: 10px; font-size: 12px; flex: 0; white-space: nowrap; }
+    .or-divider { font-weight: 800; color: #7c4a12; padding-bottom: 11px; font-size: 12px; flex: 0; white-space: nowrap; }
 
     .action-buttons { display: flex; gap: 8px; flex: 1; }
-    .search-btn { background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; height: 38px; flex: 2; display: flex; align-items: center; justify-content: center; }
-    .search-btn:hover { background: #1d4ed8; }
+    .search-btn {
+      background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+      color: #f8f5ec;
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+      height: 40px;
+      flex: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-btn:hover { background: var(--gold); color: var(--charcoal); border-color: var(--gold-hover); }
     
-    .reset-btn { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; height: 38px; flex: 1; display: flex; align-items: center; justify-content: center; }
-    .reset-btn:hover { background: #e2e8f0; color: #1e293b; }
+    .reset-btn {
+      background: #ffffff;
+      color: var(--forest);
+      border: 1.5px solid var(--forest);
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+      height: 40px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .reset-btn:hover { background: var(--forest); color: #ffffff; }
 
-    .action-toolbar { display: none; justify-content: space-between; align-items: center; background: white; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; margin-bottom: 15px; gap: 15px; animation: fadeIn 0.3s ease-out; }
+    .action-toolbar {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--cream-card);
+      padding: 10px 16px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(27, 67, 50, 0.06);
+      border: 1.5px solid var(--forest);
+      margin-bottom: 14px;
+      gap: 14px;
+      animation: fadeIn 0.3s ease-out;
+    }
     
-    .live-search-wrapper { display: flex; align-items: center; gap: 8px; flex: 1; border: 1px solid #cbd5e1; padding: 0 12px; border-radius: 6px; height: 34px; background: #f8fafc; transition: 0.2s; }
-    .live-search-wrapper:focus-within { border-color: #10b981; background: white; }
-    .live-search-input { border: none; outline: none; font-size: 13px; font-weight: 500; color: #0f172a; background: transparent; width: 100%; }
+    .live-search-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      border: 1.5px solid var(--border);
+      padding: 0 12px;
+      border-radius: 8px;
+      height: 36px;
+      background: #ffffff;
+      transition: 0.2s;
+    }
+    .live-search-wrapper:focus-within { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.12); }
+    .live-search-input { border: none; outline: none; font-size: 13px; font-weight: 600; color: var(--charcoal); background: transparent; width: 100%; }
     
-    .result-stats { font-weight: 700; color: #0284c7; font-size: 13px; white-space: nowrap; background: #f0f9ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; }
+    .result-stats {
+      font-weight: 800;
+      color: var(--forest-dark);
+      font-size: 12.5px;
+      white-space: nowrap;
+      background: var(--gold-soft);
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--gold);
+    }
     
-    .download-btn { background: #16a34a; color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; height: 34px; display: flex; align-items: center; white-space: nowrap; }
-    .download-btn:hover { background: #15803d; }
+    .download-btn {
+      background: var(--gold);
+      color: var(--charcoal);
+      border: 1.5px solid var(--gold-hover);
+      padding: 0 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: 0.2s;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .download-btn:hover { background: var(--forest); color: #f8f5ec; border-color: var(--forest-dark); }
 
-    .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; overflow: hidden; display: none; animation: fadeIn 0.3s ease-out; }
-    .table-wrapper { overflow-x: auto; max-height: calc(100vh - 210px); } 
+    .table-container {
+      background: var(--cream-card);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      overflow: hidden;
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .table-wrapper { overflow-x: auto; max-height: calc(100vh - 230px); } 
     
-    .custom-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; font-size: 12.5px; }
-    .custom-table thead { position: sticky; top: 0; background: #0f172a; z-index: 10; }
-    .custom-table th { padding: 12px; color: #f8fafc; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-right: 1px solid rgba(255,255,255,0.05); }
-    .custom-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500; color: #334155; vertical-align: middle; }
+    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 900px; font-size: 12.5px; }
+    .custom-table thead { position: sticky; top: 0; background: var(--forest); z-index: 10; }
+    .custom-table th {
+      padding: 12px;
+      color: #f8f5ec;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--gold);
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .custom-table th:last-child { border-right: none; }
+    .custom-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      font-weight: 600;
+      color: var(--charcoal);
+      background-color: var(--cream-card);
+      vertical-align: middle;
+    }
     
-    .custom-table tbody tr:hover { background-color: #f8fafc; }
-    .custom-table tbody tr:nth-child(even) { background-color: #fafbfc; }
+    .custom-table tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+    .custom-table tbody tr:hover td { background-color: var(--gold-soft) !important; }
 
-    .badge-csc { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 700; border: 1px solid #cbd5e1; color: #0f172a; display: inline-block; font-size: 11.5px;}
-    .text-vle { color: #2563eb; font-weight: 700; font-size: 13px; }
-    .text-dm { color: #059669; font-weight: 600; }
+    .badge-csc {
+      background: var(--forest-soft);
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-weight: 800;
+      border: 1px solid #a7ccb8;
+      color: var(--forest-dark);
+      display: inline-block;
+      font-size: 11.5px;
+    }
+    .text-vle { color: var(--forest-dark); font-weight: 800; font-size: 13px; }
+    .text-dm { color: #7c4a12; font-weight: 800; }
 
     .copyable { cursor: pointer; transition: background-color 0.2s ease; }
-    .copyable:hover { background-color: #e0f2fe !important; }
+    .copyable:hover { background-color: var(--gold-soft) !important; }
 
-    #vleSearchLoader { display: none; text-align: center; padding: 30px; color: #64748b; }
-    .loader-text { font-size: 13px; font-weight: 600; margin-top: 10px; }
+    #vleSearchLoader { display: none; text-align: center; padding: 34px; color: var(--forest); }
+    .loader-text { font-size: 13.5px; font-weight: 700; margin-top: 10px; color: var(--forest-dark); }
     
-    .copy-toast { visibility: hidden; min-width: 250px; background-color: #10b981; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+    .copy-toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: var(--forest-dark);
+      color: var(--gold-light);
+      border: 1.5px solid var(--gold);
+      text-align: center;
+      border-radius: 50px;
+      padding: 11px 20px;
+      position: fixed;
+      z-index: 9999;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.3s, bottom 0.3s;
+    }
     .copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (max-width: 992px) {
-        .search-row { flex-direction: column; align-items: stretch; gap: 12px; }
-        .or-divider { text-align: center; padding-bottom: 0; }
-        .action-buttons { flex-direction: row; }
-        .action-toolbar { flex-direction: column; align-items: stretch; }
-        
-        .table-wrapper { max-height: none; overflow-x: hidden; }
-        .custom-table, .custom-table tbody { display: block; width: 100%; min-width: auto; }
-        .custom-table thead { display: none; }
-        
-        .custom-table tr { display: block; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 12px; background: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .custom-table td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding: 10px 0; text-align: right; }
-        .custom-table td:last-child { border-bottom: none; }
-        .custom-table td::before { content: attr(data-label); font-weight: 700; color: #64748b; text-transform: uppercase; font-size: 11px; text-align: left; margin-right: 15px; }
-        .custom-table td[data-label="S.No"] { justify-content: center; background: #f8fafc; border-radius: 6px 6px 0 0; margin: -5px -12px 0 -12px; padding: 8px; color: #1e293b; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; }
-        .custom-table td[data-label="S.No"]::before { display: none; }
+      .header-title { font-size: 16px; padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+      .search-row { flex-direction: column; align-items: stretch; gap: 12px; }
+      .or-divider { text-align: center; padding-bottom: 0; }
+      .action-buttons { flex-direction: row; }
+      .action-toolbar { flex-direction: column; align-items: stretch; }
+      
+      .table-container { background: transparent; border: none; box-shadow: none; }
+      .table-wrapper { max-height: none; overflow-x: hidden; }
+      .custom-table, .custom-table tbody { display: block; width: 100%; min-width: auto; }
+      .custom-table thead { display: none; }
+      
+      .custom-table tr {
+        display: block;
+        margin-bottom: 14px;
+        border: 1.5px solid var(--forest);
+        border-top: 4px solid var(--gold);
+        border-radius: 10px;
+        padding: 5px 14px;
+        background: var(--cream-card);
+        box-shadow: 0 4px 10px rgba(27, 67, 50, 0.08);
+      }
+      .custom-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-right: none;
+        border-bottom: 1px dashed var(--border);
+        padding: 10px 0;
+        text-align: right;
+        background: transparent !important;
+      }
+      .custom-table td:last-child { border-bottom: none; }
+      .custom-table td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-size: 10.5px;
+        text-align: left;
+        margin-right: 15px;
+      }
+      .custom-table td[data-label="S.No"] {
+        justify-content: center;
+        background: var(--forest) !important;
+        border-radius: 6px 6px 0 0;
+        margin: -5px -14px 4px -14px;
+        padding: 8px;
+        color: var(--gold-light) !important;
+        border-bottom: 2px solid var(--gold);
+        font-size: 13.5px;
+        font-weight: 800;
+      }
+      .custom-table td[data-label="S.No"]::before { display: none; }
     }
   </style>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GF2VXY76KN"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GF2VXY76KN');
-</script>
 </head>
 <body>
 
     <div class="header-title">
-        <i class="fa-solid fa-users-viewfinder text-primary me-2"></i> VLE Master List
-        <button onclick="forceRefreshData()" style="margin-left:auto; background:#e0f2fe; color:#0284c7; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition:0.2s; display:flex; align-items:center;" onmouseover="this.style.background='#bae6fd';" onmouseout="this.style.background='#e0f2fe';" title="Fetch fresh data from server">
+        <span><i class="fa-solid fa-users-viewfinder me-2" style="color: var(--gold);"></i> VLE Master List</span>
+        <button class="sync-btn-top" onclick="forceRefreshData()" title="Fetch fresh data from server">
             <i class="fa-solid fa-rotate me-1"></i> Sync Latest Data
         </button>
     </div>
@@ -145,13 +392,13 @@
     </div>
 
     <div id="vleSearchLoader">
-        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: #2563eb;"></i>
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--forest);"></i>
         <div class="loader-text">Loading data... Please wait (One-time fetch)</div>
     </div>
 
     <div id="actionToolbar" class="action-toolbar">
         <div class="live-search-wrapper">
-            <i class="fa-solid fa-filter" style="color: #10b981; font-size: 14px;"></i>
+            <i class="fa-solid fa-filter" style="color: var(--forest); font-size: 14px;"></i>
             <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Search by Name, CSC ID, or District in this list..." onkeyup="applyLiveSearch()">
         </div>
         
@@ -165,7 +412,7 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th style="width: 50px; text-align: center;">S.No</th>
+                        <th style="width: 55px; text-align: center;">S.No</th>
                         <th>CSC ID</th>
                         <th>VLE Name</th>
                         <th>Mobile No</th>
@@ -175,7 +422,6 @@
                     </tr>
                 </thead>
                 <tbody id="vleTableBody">
-                    <!-- JS will inject rows here -->
                 </tbody>
             </table>
         </div>
@@ -212,7 +458,6 @@
                 let store = tx.objectStore("masterStore");
                 store.put({ id: "vleData", value: data, timestamp: Date.now() });
                 
-                // Save Last Search State
                 let csc = document.getElementById("searchCscId").value.trim();
                 let dist = document.getElementById("searchDistrict").value;
                 store.put({ id: "lastSearch", csc: csc, dist: dist });
@@ -229,7 +474,7 @@
                 let searchReq = store.get("lastSearch");
 
                 dataReq.onsuccess = function() {
-                    if(dataReq.result && (Date.now() - dataReq.result.timestamp < 86400000)) { // 24 Hours validity
+                    if(dataReq.result && (Date.now() - dataReq.result.timestamp < 86400000)) {
                         globalMasterData = dataReq.result.value;
                         
                         searchReq.onsuccess = function() {
@@ -247,7 +492,6 @@
             } catch(e) { console.error("DB Load Error:", e); }
         }
 
-        // Run DB Load when page opens
         document.addEventListener("DOMContentLoaded", loadFromDB);
 
         function clearDistrict() { document.getElementById("searchDistrict").value = ""; }
@@ -263,7 +507,6 @@
             currentFilteredData = [];
             dataToExport = [];
             
-            // Clear last search from DB
             initDB().then(db => {
                 let tx = db.transaction("masterStore", "readwrite");
                 tx.objectStore("masterStore").put({ id: "lastSearch", csc: "", dist: "" });
@@ -321,7 +564,7 @@
 
                 if(response && response.success) {
                     globalMasterData = response.data; 
-                    saveToDB(globalMasterData); // Save to DB
+                    saveToDB(globalMasterData);
                     processLocalData(cscId, district); 
                 } else {
                     let errMsg = (response && response.message) ? response.message : "Failed to load data.";
@@ -341,7 +584,6 @@
                 return;
             }
 
-            // Save search action state
             initDB().then(db => {
                 let tx = db.transaction("masterStore", "readwrite");
                 tx.objectStore("masterStore").put({ id: "lastSearch", csc: cscId, dist: district });
@@ -387,7 +629,7 @@
 
         function renderTable(dataArray) {
             dataToExport = dataArray; 
-            document.getElementById("resultStats").innerHTML = `<i class="fa-solid fa-circle-check me-2"></i> <strong>${dataArray.length}</strong> record(s) found.`;
+            document.getElementById("resultStats").innerHTML = `<i class="fa-solid fa-circle-check me-2" style="color:#15803d;"></i> <strong>${dataArray.length}</strong> record(s) found.`;
 
             var tbody = document.getElementById("vleTableBody");
             var rowsHtml = "";
@@ -395,7 +637,7 @@
             dataArray.forEach((v, index) => {
                 rowsHtml += `
                 <tr>
-                    <td data-label="S.No" style="text-align: center; color: #64748b; font-weight: 700;">#${index + 1}</td>
+                    <td data-label="S.No" style="text-align: center; color: #525d56; font-weight: 800;">#${index + 1}</td>
                     
                     <td data-label="CSC ID" class="copyable" ondblclick="copyText('${v.cscId}')" title="Double click to copy">
                         <span class="badge-csc">${v.cscId}</span>
@@ -404,9 +646,9 @@
                     <td data-label="VLE Name" class="text-vle copyable" ondblclick="copyText('${v.vleName}')" title="Double click to copy">${v.vleName}</td>
                     
                     <td data-label="Mobile No" class="copyable" ondblclick="copyText('${v.mobile}')" title="Double click to copy">
-                        <div style="display: inline-flex; align-items: center; background: #f8fafc; padding: 3px 4px 3px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                            <span style="font-weight: 700; color: #0f172a; margin-right: 10px;">${v.mobile}</span>
-                            <a href="tel:${v.mobile}" onclick="event.stopPropagation();" title="Click to Call" style="background: #dbeafe; color: #2563eb; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none; transition: 0.2s;" onmouseover="this.style.background='#bfdbfe';" onmouseout="this.style.background='#dbeafe';">
+                        <div style="display: inline-flex; align-items: center; background: #ffffff; padding: 3px 4px 3px 10px; border-radius: 6px; border: 1px solid #d5cfbe;">
+                            <span style="font-weight: 800; color: #122d22; margin-right: 10px;">${v.mobile}</span>
+                            <a href="tel:${v.mobile}" onclick="event.stopPropagation();" title="Click to Call" style="background: #1b4332; color: #e6c885; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 5px; text-decoration: none; transition: 0.2s;" onmouseover="this.style.background='#c5a059'; this.style.color='#141a17';" onmouseout="this.style.background='#1b4332'; this.style.color='#e6c885';">
                                 <i class="fa-solid fa-phone" style="font-size: 11px;"></i>
                             </a>
                         </div>
@@ -453,8 +695,8 @@
 
             const titleRow = worksheet.addRow([reportTitle]);
             worksheet.mergeCells('A1:G1');
-            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; 
-            titleRow.getCell(1).font = { color: { argb: 'FFFFFFFF' }, size: 14, bold: true };
+            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1B4332' } }; 
+            titleRow.getCell(1).font = { color: { argb: 'FFE6C885' }, size: 14, bold: true };
             titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' }; 
             titleRow.height = 28;
 
@@ -463,8 +705,8 @@
             const headers = ["S.No", "CSC ID", "VLE Name", "Mobile No", "Old District", "New District", "District Manager"];
             const headerRow = worksheet.addRow(headers);
             headerRow.eachCell((cell) => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }; 
-                cell.font = { color: { argb: 'FF0F172A' }, bold: true, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF7EFE0' } }; 
+                cell.font = { color: { argb: 'FF122D22' }, bold: true, size: 11 };
                 cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             });
