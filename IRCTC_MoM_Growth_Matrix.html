@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoM Growth Matrix - CSC TravelCloud</title>
+    <title>MoM & YoY Growth Matrix - CSC TravelCloud</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -22,7 +22,6 @@
             --border: #d5cfbe;
         }
 
-        /* 🌟 Iframe Friendly Basic Settings 🌟 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--cream-bg); color: var(--charcoal); display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 12px; }
 
@@ -33,27 +32,28 @@
             display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;
         }
         
-        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
         .page-heading {
             font-family: 'Cinzel', serif; font-size: 19px; color: var(--forest); font-weight: 800;
             display: flex; align-items: center; gap: 8px; letter-spacing: 0.6px; text-transform: uppercase;
         }
         
         .top-controls-filters {
-            display: flex; gap: 18px; align-items: center; background-color: var(--cream-alt);
-            padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap;
+            display: flex; gap: 14px; align-items: center; background-color: var(--cream-alt);
+            padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap;
         }
         
-        .filter-group-custom { display: flex; gap: 9px; align-items: center; }
+        .filter-group-custom { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
         .filter-group-custom select {
-            padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+            padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px;
             outline: none; background-color: #ffffff; font-weight: 700; cursor: pointer; color: var(--charcoal); transition: 0.2s;
         }
         .filter-group-custom select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27,67,50,0.15); }
         .period-select { background-color: var(--gold-soft) !important; border-color: var(--gold) !important; color: var(--forest-dark) !important; font-weight: 800 !important; }
+        .vs-pill { background: var(--forest); color: #e6c885; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px; }
 
         .btn-action {
-            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 7px 15px;
+            background-color: #ffffff; color: var(--forest); border: 1.5px solid var(--forest); padding: 7px 14px;
             border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: 0.2s;
             display: inline-flex; align-items: center; gap: 6px;
         }
@@ -61,34 +61,43 @@
         #downloadBtn { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
         #downloadBtn:hover { background-color: #b08a42; color: #ffffff; }
 
-        /* 🌟 Image Export Panels 🌟 */
-        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: hidden; background-color: var(--cream-bg); padding: 12px 8px; border-radius: 8px; }
+        .info-banner {
+            display: none; background: var(--gold-soft); border: 1px solid var(--gold); color: #7c4a12;
+            padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center;
+        }
+
+        /* 🌟 Image Export Compact Mode 🌟 */
+        #captureArea { display: flex; flex-direction: column; flex: 1; overflow: visible; background-color: var(--cream-bg); padding: 12px 8px; border-radius: 8px; }
         
         .capture-compact { 
-            width: max-content !important; min-width: 1000px !important; margin: 0; 
-            background-color: var(--cream-bg) !important; padding: 30px !important; 
-            display: inline-block !important; height: auto !important; overflow: visible !important; 
+            width: 1080px !important; max-width: 1080px !important; margin: 0 !important; 
+            background-color: var(--cream-bg) !important; padding: 20px 24px !important; 
+            display: block !important; height: auto !important; overflow: visible !important; flex: none !important;
         }
+        .capture-compact .kpi-display-row { gap: 10px !important; margin-bottom: 14px !important; flex-wrap: nowrap !important; }
+        .capture-compact .kpi-box-clean { min-width: 0 !important; flex: 1 !important; padding: 10px 12px !important; }
+        .capture-compact .kpi-box-clean .val { font-size: 19px !important; }
         .capture-compact .table-container { 
             height: auto !important; overflow: visible !important; display: block !important; 
-            flex: none !important; border: 1.5px solid var(--forest) !important; box-shadow: none !important; 
+            flex: none !important; width: 100% !important; border: 1.5px solid var(--forest) !important; box-shadow: none !important; 
         }
-        .capture-compact table { width: 100% !important; min-width: unset !important; }
-        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th { position: static !important; }
-        .capture-compact .td-district { position: static !important; }
+        .capture-compact table { width: 100% !important; min-width: 100% !important; }
+        .capture-compact th { padding: 10px 7px !important; font-size: 10.5px !important; }
+        .capture-compact td { padding: 8px 7px !important; font-size: 12.5px !important; }
+        .capture-compact tfoot tr.total-row td, .capture-compact thead, .capture-compact th, .capture-compact .td-district { position: static !important; }
 
         /* Report Header */
         .report-header { text-align: center; padding: 0 0 15px 0; flex-shrink: 0; }
-        .report-header h1 { font-family: 'Cinzel', serif; font-size: 22px; color: var(--forest-dark); font-weight: 800; letter-spacing: 0.8px; margin-bottom: 5px; text-transform: uppercase; }
+        .report-header h1 { font-family: 'Cinzel', serif; font-size: 21px; color: var(--forest-dark); font-weight: 800; letter-spacing: 0.8px; margin-bottom: 5px; text-transform: uppercase; }
         .report-header p { font-size: 12.5px; color: #7c4a12; font-weight: 700; margin-top: 0; }
 
         /* Flat Clean KPI Badges */
-        .kpi-display-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 18px; flex-shrink: 0; flex-wrap: nowrap; }
+        .kpi-display-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 18px; flex-shrink: 0; flex-wrap: wrap; }
         .kpi-box-clean { 
-            background-color: var(--cream-card); border-radius: 8px; padding: 14px 20px; border: 1px solid var(--border); 
+            background-color: var(--cream-card); border-radius: 8px; padding: 13px 18px; border: 1px solid var(--border); 
             box-shadow: 0 3px 8px rgba(27,67,50,0.06); 
-            display: flex; flex-direction: row; align-items: center; gap: 15px; 
-            min-width: max-content; 
+            display: flex; flex-direction: row; align-items: center; gap: 14px; 
+            min-width: 215px; 
         }
         .kpi-box-clean.p-color { border-left: 5px solid var(--muted); }
         .kpi-box-clean.c-color { border-left: 5px solid #164e63; }
@@ -98,9 +107,9 @@
         
         .kpi-box-clean .kpi-info { display: flex; flex-direction: column; }
         .kpi-box-clean .lbl { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; white-space: nowrap; }
-        .kpi-box-clean .val { font-size: 24px; font-weight: 900; color: var(--forest-dark); margin: 0; line-height: 1; white-space: nowrap; display: flex; align-items: baseline; gap: 5px; font-variant-numeric: tabular-nums; }
+        .kpi-box-clean .val { font-size: 23px; font-weight: 900; color: var(--forest-dark); margin: 0; line-height: 1; white-space: nowrap; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
         .kpi-box-clean.c-color .val { color: #164e63; }
-        .kpi-box-clean .sub-val { font-size: 14px; font-weight: 800; padding-left: 5px; }
+        .kpi-box-clean .sub-val { font-size: 12.5px; font-weight: 800; color: var(--muted); }
 
         /* Data table container */
         .table-container {
@@ -113,19 +122,22 @@
         th, td { white-space: nowrap; }
 
         th {
-            font-size: 11px; text-transform: uppercase; padding: 14px 12px; font-weight: 800; color: #f8f5ec;
+            font-size: 11px; text-transform: uppercase; padding: 13px 10px; font-weight: 800; color: #f8f5ec;
             border-right: 1px solid rgba(255,255,255,0.14); border-bottom: 2px solid var(--gold);
-            letter-spacing: 0.5px; position: sticky; top: 0; z-index: 90;
+            letter-spacing: 0.4px; position: sticky; top: 0; z-index: 90;
         }
         td {
-            padding: 11px 10px; font-size: 13px; color: var(--charcoal); background-color: var(--cream-card);
+            padding: 10px 9px; font-size: 13px; color: var(--charcoal); background-color: var(--cream-card);
             border-bottom: 1px solid var(--border); border-right: 1px solid #e6e1d3; font-weight: 600;
+            font-variant-numeric: tabular-nums;
         }
         
         /* Royal Style Header Colors */
         .th-dist { background-color: var(--forest-dark); min-width: 165px; position: sticky; left: 0; z-index: 95; border-right: 2px solid var(--gold) !important; }
         .th-ids { background-color: #344e41; }
+        .th-prev-act { background-color: #525d56; }
         .th-prev { background-color: #4b5d54; }
+        .th-curr-act { background-color: #0e3a4a; }
         .th-curr { background-color: #164e63; }
         .th-diff { background-color: #7c4a12; }
         .th-gro { background-color: var(--forest); }
@@ -134,7 +146,7 @@
         tbody tr:hover td { background-color: var(--gold-soft) !important; }
         
         .td-district { 
-            font-weight: 800; text-align: left; padding-left: 20px; color: var(--forest-dark); background-color: var(--cream-card); 
+            font-weight: 800; text-align: left; padding-left: 18px; color: var(--forest-dark); background-color: var(--cream-card); 
             position: sticky; left: 0; z-index: 5; border-right: 2px solid var(--border) !important; 
             cursor: pointer; transition: 0.2s; user-select: none;
         }
@@ -142,8 +154,10 @@
         .td-district:hover { color: #7c4a12; }
 
         .td-ids { color: var(--charcoal); font-weight: 700; }
+        .td-prev-act { color: #525d56; font-weight: 800; }
         .td-prev { color: var(--muted); font-weight: 800; }
-        .td-curr { color: #164e63; font-weight: 800; background-color: #eef5f7 !important; font-size: 14px; }
+        .td-curr-act { color: #1b4332; font-weight: 800; background-color: var(--forest-soft) !important; }
+        .td-curr { color: #164e63; font-weight: 800; background-color: #eef5f7 !important; font-size: 13.5px; }
         
         /* Growth Indicators */
         .growth-up { color: #15803d; font-weight: 900; background-color: #e6f4ea !important; }
@@ -157,11 +171,13 @@
             border-right: 1px solid rgba(255,255,255,0.12);
         }
         tfoot tr.total-row td:first-child {
-            text-align: left; padding-left: 20px; color: #e6c885 !important;
+            text-align: left; padding-left: 18px; color: #e6c885 !important;
             position: sticky; left: 0; border-right: 2px solid var(--gold) !important; z-index: 25;
         }
         tfoot tr.total-row td.td-ids { color: #ffffff !important; }
+        tfoot tr.total-row td.td-prev-act { color: #e6c885 !important; }
         tfoot tr.total-row td.td-prev { color: #d5cfbe !important; }
+        tfoot tr.total-row td.td-curr-act { color: #86efac !important; background-color: var(--forest-dark) !important; }
         tfoot tr.total-row td.td-curr { color: #7dd3fc !important; background-color: var(--forest-dark) !important; }
         tfoot tr.total-row td.growth-up { color: #4ade80 !important; background-color: var(--forest-dark) !important; }
         tfoot tr.total-row td.growth-down { color: #f87171 !important; background-color: var(--forest-dark) !important; }
@@ -171,13 +187,10 @@
         .spinner { width: 32px; height: 32px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Full Screen Modifiers */
         body.fullscreen-mode { padding: 0; gap: 0; }
         body.fullscreen-mode .top-controls-wrapper { border-radius: 0; }
 
-        /* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR MOM GROWTH MATRIX (Added by Chandra) 📱 */
-        /* ========================================================================= */
+        /* 📱 MOBILE RESPONSIVENESS 📱 */
         @media (max-width: 768px) {
             html, body { height: auto; overflow: auto !important; }
             body { padding: 10px; gap: 15px; }
@@ -187,23 +200,24 @@
             .page-heading { font-size: 16px; text-align: center; }
 
             .top-controls-filters { flex-direction: column; align-items: stretch; padding: 10px; gap: 10px; }
-            .filter-group-custom { flex-direction: column; width: 100%; align-items: stretch; gap: 5px; }
+            .filter-group-custom { flex-direction: column; width: 100%; align-items: stretch; gap: 6px; }
             .filter-group-custom select { width: 100%; }
+            .vs-pill { align-self: center; }
 
             .report-header { padding-bottom: 5px; }
-            .report-header h1 { font-size: 16px; margin-bottom: 5px; line-height: 1.4; }
+            .report-header h1 { font-size: 15.5px; margin-bottom: 5px; line-height: 1.4; }
             .report-header p { font-size: 11px; }
 
             .kpi-display-row { flex-wrap: wrap; gap: 10px !important; margin-bottom: 15px !important; }
             .kpi-box-clean { flex: 1 1 calc(50% - 10px); min-width: 130px; flex-direction: column; text-align: center; padding: 10px; gap: 5px; }
             .kpi-box-clean .lbl { font-size: 9px; white-space: normal; }
-            .kpi-box-clean .val { font-size: 18px; justify-content: center; }
-            .kpi-box-clean .sub-val { font-size: 12px; }
+            .kpi-box-clean .val { font-size: 18px; justify-content: center; flex-wrap: wrap; }
+            .kpi-box-clean .sub-val { font-size: 11px; }
 
             #captureArea { overflow: visible; padding: 10px 5px; }
             .table-container { max-height: 450px; -webkit-overflow-scrolling: touch; }
-            table { min-width: 800px; }
-            th, td { font-size: 10px !important; padding: 8px 5px !important; }
+            table { min-width: 900px; }
+            th, td { font-size: 10.5px !important; padding: 8px 5px !important; }
 
             .td-district, .th-dist, tfoot tr.total-row td:first-child {
                 position: static !important;
@@ -227,8 +241,9 @@
 
     <div class="top-controls-wrapper">
         <div class="top-controls-header">
-            <div class="page-heading">📊 MoM Growth Matrix</div>
-            <div style="display: flex; gap: 10px;">
+            <div class="page-heading">📊 MoM / YoY Growth Matrix</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-action" onclick="fetchData(true)">🔄 Refresh</button>
                 <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
                 <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download</button>
                 <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -237,7 +252,7 @@
 
         <div class="top-controls-filters">
             <div class="filter-group-custom">
-                <span style="font-size: 13px; font-weight: 700; color: var(--muted);">District:</span>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--muted);">District:</span>
                 <select id="districtType" onchange="updateDistrictsDropdown()">
                     <option value="old" selected>Old Districts</option>
                     <option value="new">New Districts</option>
@@ -248,55 +263,109 @@
             </div>
 
             <div class="filter-group-custom">
-                <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Report Type:</span>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--muted);">Report:</span>
                 <select id="reportType" onchange="calculateMoMData()" style="border-color: var(--forest); color: var(--forest-dark); font-weight: 800; background-color: #ffffff;">
-                    <option value="txns" selected>🎫 Transactions Growth</option>
-                    <option value="regs">📋 Registrations Growth</option>
+                    <option value="txns" selected>🎫 Transactions</option>
+                    <option value="regs">📋 Registrations</option>
                 </select>
             </div>
 
             <div class="filter-group-custom">
-                <span style="font-size: 13px; font-weight: 700; color: var(--muted);">Compare Month:</span>
-                <select id="dataMonth" class="period-select" onchange="calculateMoMData()">
-                    <option value="0">April 2026 (vs FY26 Avg)</option>
-                    <option value="1">May 2026 (vs April)</option>
-                    <option value="2">June 2026 (vs May)</option>
-                    <option value="3">July 2026 (vs June)</option>
-                    <option value="4">August 2026 (vs July)</option>
-                    <option value="5">September 2026 (vs Aug)</option>
-                    <option value="6">October 2026 (vs Sep)</option>
-                    <option value="7">November 2026 (vs Oct)</option>
-                    <option value="8">December 2026 (vs Nov)</option>
-                    <option value="9">January 2027 (vs Dec)</option>
-                    <option value="10">February 2027 (vs Jan)</option>
-                    <option value="11">March 2027 (vs Feb)</option>
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--muted);">Base (From):</span>
+                <select id="baseMonth" class="period-select" onchange="calculateMoMData()">
+                    <optgroup label="FY 2025-26">
+                        <option value="25_0">Apr 2025 (FY 25-26)</option>
+                        <option value="25_1">May 2025 (FY 25-26)</option>
+                        <option value="25_2">Jun 2025 (FY 25-26)</option>
+                        <option value="25_3">Jul 2025 (FY 25-26)</option>
+                        <option value="25_4">Aug 2025 (FY 25-26)</option>
+                        <option value="25_5">Sep 2025 (FY 25-26)</option>
+                        <option value="25_6">Oct 2025 (FY 25-26)</option>
+                        <option value="25_7">Nov 2025 (FY 25-26)</option>
+                        <option value="25_8">Dec 2025 (FY 25-26)</option>
+                        <option value="25_9">Jan 2026 (FY 25-26)</option>
+                        <option value="25_10">Feb 2026 (FY 25-26)</option>
+                        <option value="25_11">Mar 2026 (FY 25-26)</option>
+                    </optgroup>
+                    <optgroup label="FY 2026-27">
+                        <option value="26_0">Apr 2026 (FY 26-27)</option>
+                        <option value="26_1">May 2026 (FY 26-27)</option>
+                        <option value="26_2">Jun 2026 (FY 26-27)</option>
+                        <option value="26_3">Jul 2026 (FY 26-27)</option>
+                        <option value="26_4">Aug 2026 (FY 26-27)</option>
+                        <option value="26_5">Sep 2026 (FY 26-27)</option>
+                        <option value="26_6">Oct 2026 (FY 26-27)</option>
+                        <option value="26_7">Nov 2026 (FY 26-27)</option>
+                        <option value="26_8">Dec 2026 (FY 26-27)</option>
+                        <option value="26_9">Jan 2027 (FY 26-27)</option>
+                        <option value="26_10">Feb 2027 (FY 26-27)</option>
+                        <option value="26_11">Mar 2027 (FY 26-27)</option>
+                    </optgroup>
+                    <optgroup label="Averages">
+                        <option value="25_AVG">FY 25-26 Monthly Avg</option>
+                    </optgroup>
+                </select>
+
+                <span class="vs-pill">VS</span>
+
+                <span style="font-size: 12.5px; font-weight: 800; color: var(--muted);">Compare (To):</span>
+                <select id="compareMonth" class="period-select" onchange="calculateMoMData()">
+                    <optgroup label="FY 2026-27">
+                        <option value="26_0">Apr 2026 (FY 26-27)</option>
+                        <option value="26_1">May 2026 (FY 26-27)</option>
+                        <option value="26_2">Jun 2026 (FY 26-27)</option>
+                        <option value="26_3">Jul 2026 (FY 26-27)</option>
+                        <option value="26_4">Aug 2026 (FY 26-27)</option>
+                        <option value="26_5">Sep 2026 (FY 26-27)</option>
+                        <option value="26_6">Oct 2026 (FY 26-27)</option>
+                        <option value="26_7">Nov 2026 (FY 26-27)</option>
+                        <option value="26_8">Dec 2026 (FY 26-27)</option>
+                        <option value="26_9">Jan 2027 (FY 26-27)</option>
+                        <option value="26_10">Feb 2027 (FY 26-27)</option>
+                        <option value="26_11">Mar 2027 (FY 26-27)</option>
+                    </optgroup>
+                    <optgroup label="FY 2025-26">
+                        <option value="25_0">Apr 2025 (FY 25-26)</option>
+                        <option value="25_1">May 2025 (FY 25-26)</option>
+                        <option value="25_2">Jun 2025 (FY 25-26)</option>
+                        <option value="25_3">Jul 2025 (FY 25-26)</option>
+                        <option value="25_4">Aug 2025 (FY 25-26)</option>
+                        <option value="25_5">Sep 2025 (FY 25-26)</option>
+                        <option value="25_6">Oct 2025 (FY 25-26)</option>
+                        <option value="25_7">Nov 2025 (FY 25-26)</option>
+                        <option value="25_8">Dec 2025 (FY 25-26)</option>
+                        <option value="25_9">Jan 2026 (FY 25-26)</option>
+                        <option value="25_10">Feb 2026 (FY 25-26)</option>
+                        <option value="25_11">Mar 2026 (FY 25-26)</option>
+                    </optgroup>
                 </select>
             </div>
         </div>
+        <div id="infoBanner" class="info-banner"></div>
     </div>
 
     <div id="captureArea">
         <div class="report-header">
-            <h1 id="dynamicTitle">IRCTC MONTH-OVER-MONTH (MOM) GROWTH MATRIX</h1>
+            <h1 id="dynamicTitle">IRCTC GROWTH COMPARISON MATRIX</h1>
             <p id="reportDate">Report Generated on: </p>
         </div>
 
         <div class="kpi-display-row">
             <div class="kpi-box-clean p-color">
                 <div class="kpi-info">
-                    <span class="lbl" id="kpi-lbl-prev">PREVIOUS MONTH</span>
+                    <span class="lbl" id="kpi-lbl-prev">BASE MONTH</span>
                     <span class="val" id="dispTotalPrev">0</span>
                 </div>
             </div>
             <div class="kpi-box-clean c-color">
                 <div class="kpi-info">
-                    <span class="lbl" id="kpi-lbl-curr">CURRENT MONTH</span>
+                    <span class="lbl" id="kpi-lbl-curr">COMPARE MONTH</span>
                     <span class="val" id="dispTotalCurr">0</span>
                 </div>
             </div>
             <div class="kpi-box-clean g-color" id="kpi-box-growth">
                 <div class="kpi-info">
-                    <span class="lbl">NET GROWTH / DECLINE</span>
+                    <span class="lbl">NET GROWTH / DEGROWTH</span>
                     <span class="val" id="dispTotalGrowth">0 <span class="sub-val" id="dispTotalPct">0%</span></span>
                 </div>
             </div>
@@ -314,14 +383,16 @@
                     <tr>
                         <th class="th-dist">DISTRICT ⇅</th>
                         <th class="th-ids">TOTAL IRCTC IDs</th>
-                        <th class="th-prev" id="th-prev">PREVIOUS MONTH</th>
-                        <th class="th-curr" id="th-curr">CURRENT MONTH</th>
+                        <th class="th-prev-act" id="th-prev-act">BASE ACTIVE VLEs</th>
+                        <th class="th-prev" id="th-prev">BASE MONTH</th>
+                        <th class="th-curr-act" id="th-curr-act">COMP ACTIVE VLEs</th>
+                        <th class="th-curr" id="th-curr">COMPARE MONTH</th>
                         <th class="th-diff">VARIANCE (+/-)</th>
                         <th class="th-gro">GROWTH %</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="6"><div class="loader"><div class="spinner"></div> Fetching MoM Growth Data... Please wait.</div></td></tr>
+                    <tr><td colspan="8"><div class="loader"><div class="spinner"></div> Fetching Growth Matrix Data... Please wait.</div></td></tr>
                 </tbody>
                 <tfoot>
                     <tr class="total-row" id="tableFooter">
@@ -332,24 +403,57 @@
     </div>
 
     <script>
-        let globalData = {}; 
+        let globalData = { old: {}, new: {} };
         let oldDistrictsList = [];
         let newDistrictsList = [];
-        
-        // 🌟 మీ ఒరిజినల్ కోడ్ లో ఉన్న గ్లోబల్ వేరియబుల్స్ 🌟
-        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
-        let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
-        let loggedInUserName = localStorage.getItem("userName") || ""; 
-        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+        let hasFy25MonthlyTxns = false;
+
+        let loggedInDesig = localStorage.getItem("userDesignation") || "State Head";
+        let loggedInUserId = (localStorage.getItem("userId") || "").trim();
+        let loggedInUserName = localStorage.getItem("userName") || "";
+        let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
         let dmAssignedOldDistrict = "";
 
         let dmMappedOldDistricts = new Set();
         let dmMappedNewDistricts = new Set();
 
-        const monthNames = ["APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"];
+        const fy25MonthsMeta = [
+            { short: 'apr', full: 'april', yr2: '25', yr4: '2025', label: 'APR 2025' },
+            { short: 'may', full: 'may', yr2: '25', yr4: '2025', label: 'MAY 2025' },
+            { short: 'jun', full: 'june', yr2: '25', yr4: '2025', label: 'JUN 2025' },
+            { short: 'jul', full: 'july', yr2: '25', yr4: '2025', label: 'JUL 2025' },
+            { short: 'aug', full: 'august', yr2: '25', yr4: '2025', label: 'AUG 2025' },
+            { short: 'sep', full: 'september', yr2: '25', yr4: '2025', label: 'SEP 2025' },
+            { short: 'oct', full: 'october', yr2: '25', yr4: '2025', label: 'OCT 2025' },
+            { short: 'nov', full: 'november', yr2: '25', yr4: '2025', label: 'NOV 2025' },
+            { short: 'dec', full: 'december', yr2: '25', yr4: '2025', label: 'DEC 2025' },
+            { short: 'jan', full: 'january', yr2: '26', yr4: '2026', label: 'JAN 2026' },
+            { short: 'feb', full: 'february', yr2: '26', yr4: '2026', label: 'FEB 2026' },
+            { short: 'mar', full: 'march', yr2: '26', yr4: '2026', label: 'MAR 2026' }
+        ];
+
+        const fy26MonthsMeta = [
+            { short: 'apr', full: 'april', yr2: '26', yr4: '2026', label: 'APR 2026' },
+            { short: 'may', full: 'may', yr2: '26', yr4: '2026', label: 'MAY 2026' },
+            { short: 'jun', full: 'june', yr2: '26', yr4: '2026', label: 'JUN 2026' },
+            { short: 'jul', full: 'july', yr2: '26', yr4: '2026', label: 'JUL 2026' },
+            { short: 'aug', full: 'august', yr2: '26', yr4: '2026', label: 'AUG 2026' },
+            { short: 'sep', full: 'september', yr2: '26', yr4: '2026', label: 'SEP 2026' },
+            { short: 'oct', full: 'october', yr2: '26', yr4: '2026', label: 'OCT 2026' },
+            { short: 'nov', full: 'november', yr2: '26', yr4: '2026', label: 'NOV 2026' },
+            { short: 'dec', full: 'december', yr2: '26', yr4: '2026', label: 'DEC 2026' },
+            { short: 'jan', full: 'january', yr2: '27', yr4: '2027', label: 'JAN 2027' },
+            { short: 'feb', full: 'february', yr2: '27', yr4: '2027', label: 'FEB 2027' },
+            { short: 'mar', full: 'march', yr2: '27', yr4: '2027', label: 'MAR 2027' }
+        ];
+
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 బ్రహ్మాస్త్రం: పేరు మ్యాచింగ్ లాజిక్ 🌟
+        function parseNum(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            return parseInt(String(val).replace(/[^0-9-]/g, ''), 10) || 0;
+        }
+
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
             let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -360,285 +464,328 @@
             return false;
         }
 
+        function setDefaultMonths() {
+            let d = new Date();
+            let currMonth = d.getMonth();
+            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
+            document.getElementById("compareMonth").value = "26_" + fyMonthIndex;
+            document.getElementById("baseMonth").value = fyMonthIndex > 0 ? ("26_" + (fyMonthIndex - 1)) : "25_11";
+        }
+
         window.onload = function() {
             let d = new Date();
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('reportDate').innerText = `Report Generated on: ${d.toLocaleDateString('en-US', dateOptions)}`;
-            
-            let currMonth = d.getMonth(); 
-            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
-            document.getElementById("dataMonth").value = fyMonthIndex.toString();
-
-            fetchData();
+            setDefaultMonths();
+            fetchData(false);
         };
 
-        async function fetchData() {
+        async function fetchData(forceRefresh = false) {
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="8"><div class="loader"><div class="spinner"></div> Fetching Growth Matrix Data... Please wait.</div></td></tr>`;
             try {
-                let cachedData = sessionStorage.getItem("cscTravelData_IRCTC");
-                let cachedUsers = sessionStorage.getItem("cscUsersData");
+                if (forceRefresh) {
+                    try { sessionStorage.removeItem("cscTravelData_IRCTC"); } catch(e) {}
+                }
+
+                let cachedData = null, cachedUsers = null;
+                try { cachedData = sessionStorage.getItem("cscTravelData_IRCTC"); } catch(e) {}
+                try { cachedUsers = sessionStorage.getItem("cscUsersData"); } catch(e) {}
                 
-                let rawData = cachedData ? JSON.parse(cachedData) : null;
-                let usersData = cachedUsers ? JSON.parse(cachedUsers) : null;
+                let rawData = null;
+                if (cachedData) {
+                    try {
+                        let p = JSON.parse(cachedData);
+                        rawData = p && p.data ? p.data : p;
+                    } catch(e) { rawData = null; }
+                }
+                let usersData = null;
+                if (cachedUsers) {
+                    try { usersData = JSON.parse(cachedUsers); } catch(e) { usersData = null; }
+                }
 
                 let promises = [];
-                if (!rawData) {
-                    promises.push(fetch(apiURL).then(r => r.json()).then(d => {
-                        rawData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData_IRCTC", JSON.stringify(d));
+                if (!Array.isArray(rawData) || rawData.length === 0) {
+                    promises.push(fetch(apiURL, { redirect: "follow" }).then(r => r.json()).then(d => {
+                        rawData = d && d.data ? d.data : d;
+                        if (Array.isArray(rawData) && rawData.length > 0) {
+                            try { sessionStorage.setItem("cscTravelData_IRCTC", JSON.stringify(rawData)); } catch(e) {}
+                        }
                     }).catch(() => null));
                 }
                 
-                // 🌟 ఇక్కడ Users షీట్ ని లోడ్ చేసి, DM జిల్లాని ఫైండ్ అవుట్ చేస్తున్నాం 🌟
-                if (!usersData) {
-                    promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
-                        usersData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData", JSON.stringify(d));
+                if (!Array.isArray(usersData) || usersData.length === 0) {
+                    promises.push(fetch(apiURL + "?sheet=Users", { redirect: "follow" }).then(r => r.json()).then(d => {
+                        usersData = d && d.data ? d.data : d;
+                        if (Array.isArray(usersData) && usersData.length > 0) {
+                            try { sessionStorage.setItem("cscUsersData", JSON.stringify(usersData)); } catch(e) {}
+                        }
                     }).catch(() => null));
                 }
 
                 if (promises.length > 0) await Promise.all(promises);
 
                 try {
-                    if(usersData && usersData.length > 0) {
-                        let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        
+                    if (Array.isArray(usersData) && usersData.length > 0) {
+                        let uHeaders = usersData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
-                        let idxDist = uHeaders.findIndex(h => h === 'district'); 
+                        let idxDist = uHeaders.findIndex(h => h === 'district');
 
                         if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
-                            for(let i=1; i<usersData.length; i++) {
+                            for (let i = 1; i < usersData.length; i++) {
                                 let sheetUid = (usersData[i][idxUid] || '').toString().trim();
                                 if (sheetUid === loggedInUserId) {
                                     dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
-                                    break; 
+                                    break;
                                 }
                             }
                         }
                     }
-                } catch(e) {
-                    console.warn("Could not parse Users sheet", e);
-                }
+                } catch(e) {}
 
-                if (rawData) {
+                if (Array.isArray(rawData) && rawData.length > 0) {
                     processData(rawData);
                 } else {
                     throw new Error("No data found");
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById("tableBody").innerHTML = "<tr><td colspan='6' style='color:#b91c1c; text-align:center; padding: 20px;'>❌ Error connecting to Google Sheet.</td></tr>";
+                document.getElementById("tableBody").innerHTML = "<tr><td colspan='8' style='color:#b91c1c; text-align:center; padding: 20px; font-weight:700;'>❌ Error connecting to Google Sheet.</td></tr>";
             }
         }
 
+        function findMonthCol(cleanHeaders, meta) {
+            return cleanHeaders.findIndex(h => {
+                if (!h || h.includes('pending') || h.includes('target') || h.includes('dsp') || h.includes('redbus') || h.includes('rev')) return false;
+                return (
+                    h === (meta.short + meta.yr2) ||
+                    h === (meta.short + meta.yr4) ||
+                    h === (meta.full + meta.yr2) ||
+                    h === (meta.full + meta.yr4) ||
+                    (h.includes(meta.short) && h.includes(meta.yr2) && !h.includes('20' + (meta.yr2 === '25' ? '26' : (meta.yr2 === '26' ? '27' : '25'))))
+                );
+            });
+        }
+
         function processData(rawData) {
-            if (rawData && rawData.length > 0) {
-                let cleanHeaders = rawData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
-                let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
-                let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
-                let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
-                let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid'));
-                let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
-                let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+            let cleanHeaders = rawData[0].map(h => (h || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+            let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
+            let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+            let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
+            let idxirctc = cleanHeaders.findIndex(h => h.includes('irctcid') || h.includes('agentid'));
+            let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('dmname'));
+            let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
+            
+            let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus'));
+            let idx25 = cleanHeaders.findIndex(h => (h.includes('202425') || h.includes('2425') || h.includes('txns24')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus'));
+
+            let m25Indices = fy25MonthsMeta.map((meta, idx) => {
+                let c = findMonthCol(cleanHeaders, meta);
+                if (c === -1 && idx25 > -1 && idx26 > -1 && (idx26 - idx25 >= 13)) {
+                    c = idx25 + 1 + idx;
+                }
+                return c;
+            });
+            hasFy25MonthlyTxns = m25Indices.some(c => c > -1);
+
+            let m26Indices = fy26MonthsMeta.map((meta, idx) => {
+                let c = findMonthCol(cleanHeaders, meta);
+                if (c === -1 && idx26 > -1 && (idx26 + 1 + idx < rawData[0].length)) {
+                    c = idx26 + 1 + idx;
+                }
+                return c;
+            });
+
+            globalData = { old: {}, new: {} };
+            oldDistrictsList = [];
+            newDistrictsList = [];
+            dmMappedOldDistricts.clear();
+            dmMappedNewDistricts.clear();
+
+            for (let i = 1; i < rawData.length; i++) {
+                let row = rawData[i];
+                if (!row) continue;
+
+                let cscId = idxcscid > -1 ? (row[idxcscid] || '').toString().trim() : '';
+                let irctcId = idxirctc > -1 ? (row[idxirctc] || '').toString().trim() : '';
+                if (!cscId || cscId === '-') continue;
+
+                let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '';
+                let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '';
+                let dmNameStr = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
                 
-                // 🌟 STRICT COLUMN FILTER: Pending, DSP, Target లాంటివి రాకుండా పక్కాగా 25-26, 26-27 ని తీసుకుంటుంది 🌟
-                let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
-                
-                let mIndices = [];
-                let idx27 = -1;
-                
-                if (idx26 > -1) {
-                    for (let k = 1; k <= 12; k++) {
-                        if (idx26 + k < rawData[0].length) mIndices.push(idx26 + k);
-                    }
-                    if (idx26 + 13 < rawData[0].length) idx27 = idx26 + 13;
+                let oldKey = oldD.toLowerCase();
+                let newKey = newD.toLowerCase();
+
+                let allowedForOld = true;
+                let allowedForNew = true;
+                if (isDM) {
+                    allowedForOld = (dmAssignedOldDistrict && oldKey === dmAssignedOldDistrict.toLowerCase());
+                    allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
+                    if (allowedForOld && oldD !== 'Unknown' && oldD !== '-') dmMappedOldDistricts.add(oldD);
+                    if (allowedForNew && newD !== 'Unknown' && newD !== '-') dmMappedNewDistricts.add(newD);
                 }
 
-                globalData = { old: {}, new: {} };
-                oldDistrictsList = [];
-                newDistrictsList = [];
-                dmMappedOldDistricts.clear();
-                dmMappedNewDistricts.clear();
+                let hasIrctc = (irctcId && irctcId !== '-') ? 1 : 0;
+                let fy26Txns = idx26 > -1 ? parseNum(row[idx26]) : 0;
+                let fy26Regs = 0;
 
-                for(let i=1; i<rawData.length; i++) {
-                    let row = rawData[i];
-                    let cscId = idxcscid > -1 ? row[idxcscid] : '';
-                    let irctcId = idxirctc > -1 ? row[idxirctc] : '';
-                    if(!cscId || cscId === '-') continue;
+                let dateStr = idxDate > -1 ? row[idxDate] : '';
+                let reg25Idx = -1;
+                let reg26Idx = -1;
 
-                    let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '';
-                    let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '';
-                    let dmNameStr = idxempname > -1 ? (row[idxempname] || '').toString().trim() : '';
-                    
-                    let oldKey = oldD.toLowerCase();
-                    let newKey = newD.toLowerCase();
+                if (dateStr && dateStr !== '-') {
+                    let rowDate = new Date(dateStr);
+                    if (!isNaN(rowDate.getTime())) {
+                        let y = rowDate.getFullYear();
+                        let m = rowDate.getMonth() + 1;
+                        let fyStartYear = m >= 4 ? y : y - 1;
+                        let fyIdx = m >= 4 ? m - 4 : m + 8;
 
-                    // 🌟 100% పక్కా DM ఫిల్టరింగ్ లాజిక్ 🌟
-                    let allowedForOld = true;
-                    let allowedForNew = true;
-                    
-                    if (isDM) {
-                        allowedForOld = (dmAssignedOldDistrict && oldKey === dmAssignedOldDistrict.toLowerCase());
-                        allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
-                    }
-
-                    if (isDM) {
-                        if(allowedForOld && oldD !== 'Unknown' && oldD !== '-') dmMappedOldDistricts.add(oldD);
-                        if(allowedForNew && newD !== 'Unknown' && newD !== '-') dmMappedNewDistricts.add(newD);
-                    }
-
-                    let hasIrctc = (irctcId && irctcId !== '-') ? 1 : 0;
-                    let fy26Txns = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0; 
-                    let fy26Regs = 0; 
-
-                    let dateStr = idxDate > -1 ? row[idxDate] : '';
-                    let regMonthIdx = -1;
-
-                    if (dateStr && dateStr !== '-') {
-                        let rowDate = new Date(dateStr);
-                        if (!isNaN(rowDate.getTime())) {
-                            let y = rowDate.getFullYear();
-                            let m = rowDate.getMonth() + 1; 
-                            let fyStartYear = m >= 4 ? y : y - 1;
-                            
-                            if(fyStartYear === 2025) fy26Regs = 1; 
-                            
-                            if (fyStartYear === 2026) {
-                                regMonthIdx = m >= 4 ? m - 4 : m + 8;
-                            }
-                        }
-                    }
-
-                    let mTxnsArr = [];
-                    for(let m=0; m<12; m++) {
-                        let colIdx = mIndices[m];
-                        mTxnsArr.push((colIdx !== undefined && colIdx > -1) ? (parseInt(row[colIdx]) || 0) : 0);
-                    }
-
-                    if(allowedForOld && oldD && oldD !== '-' && oldKey !== 'unknown') {
-                        if(!globalData.old[oldKey]) {
-                            globalData.old[oldKey] = { 
-                                name: oldD, ids: 0, 
-                                fy26Txns: 0, fy26Regs: 0,
-                                monthsTxn: Array(12).fill(0), monthsReg: Array(12).fill(0) 
-                            };
-                            if (!oldDistrictsList.includes(oldD)) oldDistrictsList.push(oldD);
-                        }
-                        globalData.old[oldKey].ids += hasIrctc;
-                        globalData.old[oldKey].fy26Txns += fy26Txns;
-                        globalData.old[oldKey].fy26Regs += fy26Regs;
-                        
-                        for(let m=0; m<12; m++) globalData.old[oldKey].monthsTxn[m] += mTxnsArr[m];
-                        if(regMonthIdx > -1) globalData.old[oldKey].monthsReg[regMonthIdx]++;
-                    }
-
-                    if(allowedForNew && newD && newD !== '-' && newKey !== 'unknown') {
-                        if(!globalData.new[newKey]) {
-                            globalData.new[newKey] = { 
-                                name: newD, ids: 0, 
-                                fy26Txns: 0, fy26Regs: 0,
-                                monthsTxn: Array(12).fill(0), monthsReg: Array(12).fill(0) 
-                            };
-                            if (!newDistrictsList.includes(newD)) newDistrictsList.push(newD);
-                        }
-                        globalData.new[newKey].ids += hasIrctc;
-                        globalData.new[newKey].fy26Txns += fy26Txns;
-                        globalData.new[newKey].fy26Regs += fy26Regs;
-                        
-                        for(let m=0; m<12; m++) globalData.new[newKey].monthsTxn[m] += mTxnsArr[m];
-                        if(regMonthIdx > -1) globalData.new[newKey].monthsReg[regMonthIdx]++;
+                        if (fyStartYear === 2025) { fy26Regs = 1; reg25Idx = fyIdx; }
+                        if (fyStartYear === 2026) { reg26Idx = fyIdx; }
                     }
                 }
 
-                oldDistrictsList.sort();
-                newDistrictsList.sort();
+                let m25Txns = m25Indices.map(c => (c > -1 && c < row.length) ? parseNum(row[c]) : 0);
+                let m26Txns = m26Indices.map(c => (c > -1 && c < row.length) ? parseNum(row[c]) : 0);
+
+                function addToBucket(bucket, list, distKey, distLabel) {
+                    if (!bucket[distKey]) {
+                        bucket[distKey] = {
+                            name: distLabel, ids: 0, fy26Txns: 0, fy26ActVles: 0, fy26Regs: 0,
+                            m25Txn: Array(12).fill(0), m25Act: Array(12).fill(0),
+                            m26Txn: Array(12).fill(0), m26Act: Array(12).fill(0),
+                            m25Reg: Array(12).fill(0), m26Reg: Array(12).fill(0)
+                        };
+                        if (!list.includes(distLabel)) list.push(distLabel);
+                    }
+                    bucket[distKey].ids += hasIrctc;
+                    bucket[distKey].fy26Txns += fy26Txns;
+                    if (fy26Txns > 0) bucket[distKey].fy26ActVles++;
+                    bucket[distKey].fy26Regs += fy26Regs;
+                    for (let m = 0; m < 12; m++) {
+                        bucket[distKey].m25Txn[m] += m25Txns[m];
+                        if (m25Txns[m] > 0) bucket[distKey].m25Act[m]++;
+                        bucket[distKey].m26Txn[m] += m26Txns[m];
+                        if (m26Txns[m] > 0) bucket[distKey].m26Act[m]++;
+                    }
+                    if (reg25Idx > -1) bucket[distKey].m25Reg[reg25Idx]++;
+                    if (reg26Idx > -1) bucket[distKey].m26Reg[reg26Idx]++;
+                }
+
+                if (allowedForOld && oldD && oldD !== '-' && oldKey !== 'unknown') {
+                    addToBucket(globalData.old, oldDistrictsList, oldKey, oldD);
+                }
+                if (allowedForNew && newD && newD !== '-' && newKey !== 'unknown') {
+                    addToBucket(globalData.new, newDistrictsList, newKey, newD);
+                }
             }
+
+            oldDistrictsList.sort();
+            newDistrictsList.sort();
             updateDistrictsDropdown();
         }
 
         function updateDistrictsDropdown() {
             const type = document.getElementById("districtType").value;
             const dropdown = document.getElementById("districtName");
-            
             dropdown.innerHTML = '<option value="All">All Districts</option>';
             
             let fullList = type === 'old' ? oldDistrictsList : newDistrictsList;
-            let arr = [];
-            
-            if (isDM) {
-                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                 arr = fullList.filter(dist => mappedSet.has(dist));
-            } else {
-                 arr = fullList;
-            }
+            let arr = isDM ? fullList.filter(d => (type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts).has(d)) : fullList;
 
-            arr.forEach(dist => {
-                dropdown.innerHTML += `<option value="${dist}">${dist}</option>`;
-            });
+            arr.forEach(dist => { dropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
             calculateMoMData();
+        }
+
+        function getPeriodMetrics(data, periodCode, isTxns) {
+            if (periodCode === "25_AVG") {
+                return {
+                    val: Math.round((isTxns ? data.fy26Txns : data.fy26Regs) / 12),
+                    act: isTxns ? data.fy26ActVles : data.fy26Regs
+                };
+            }
+            let parts = periodCode.split('_');
+            let fy = parts[0];
+            let idx = parseInt(parts[1], 10);
+            if (fy === '25') {
+                return {
+                    val: isTxns ? data.m25Txn[idx] : data.m25Reg[idx],
+                    act: isTxns ? data.m25Act[idx] : data.m25Reg[idx]
+                };
+            }
+            return {
+                val: isTxns ? data.m26Txn[idx] : data.m26Reg[idx],
+                act: isTxns ? data.m26Act[idx] : data.m26Reg[idx]
+            };
+        }
+
+        function getPeriodLabel(periodCode) {
+            if (periodCode === "25_AVG") return "FY 25-26 AVG/M";
+            let parts = periodCode.split('_');
+            let idx = parseInt(parts[1], 10);
+            return parts[0] === '25' ? fy25MonthsMeta[idx].label : fy26MonthsMeta[idx].label;
         }
 
         function calculateMoMData() {
             const reportType = document.getElementById("reportType").value;
             const type = document.getElementById("districtType").value;
             const selectedDist = document.getElementById("districtName").value;
-            const mIdx = parseInt(document.getElementById("dataMonth").value);
+            const baseCode = document.getElementById("baseMonth").value;
+            const compCode = document.getElementById("compareMonth").value;
             
             const isTxns = reportType === 'txns';
             let typeName = isTxns ? 'TRANSACTIONS' : 'REGISTRATIONS';
 
-            let selMonthName = monthNames[mIdx];
-            let prevMonthName = mIdx > 0 ? monthNames[mIdx - 1] : "FY26 MONTHLY AVG";
+            let baseLabel = getPeriodLabel(baseCode);
+            let compLabel = getPeriodLabel(compCode);
 
-            document.getElementById("dynamicTitle").innerText = `IRCTC MONTH-OVER-MONTH GROWTH MATRIX (${typeName})`;
+            let banner = document.getElementById("infoBanner");
+            let usesFy25Month = (baseCode.startsWith("25_") && baseCode !== "25_AVG") || (compCode.startsWith("25_") && compCode !== "25_AVG");
+            if (isTxns && usesFy25Month && !hasFy25MonthlyTxns) {
+                banner.style.display = "block";
+                banner.innerText = "ℹ️ Note: Google Sheet lo FY 25-26 month-wise TXN columns (Apr-25 to Mar-26) levu. FY 25-26 columns add cheste automatic ga pick avuthayi (Registrations ki exact date-wise data ippude vastundi).";
+            } else {
+                banner.style.display = "none";
+            }
 
-            document.getElementById("th-curr").innerText = `${selMonthName} ${isTxns ? 'TXNS' : 'REGS'}`;
-            document.getElementById("th-prev").innerText = mIdx > 0 ? `${prevMonthName} ${isTxns ? 'TXNS' : 'REGS'}` : `FY 25-26 (AVG/M)`;
-            
-            document.getElementById("kpi-lbl-curr").innerText = `${selMonthName} TOTAL`;
-            document.getElementById("kpi-lbl-prev").innerText = mIdx > 0 ? `${prevMonthName} TOTAL` : `FY26 MONTHLY AVG`;
+            document.getElementById("dynamicTitle").innerText = `IRCTC ${baseLabel} VS ${compLabel} GROWTH MATRIX (${typeName})`;
+            document.getElementById("th-prev-act").innerText = `${baseLabel} ACTIVE`;
+            document.getElementById("th-prev").innerText = `${baseLabel} ${isTxns ? 'TXNS' : 'REGS'}`;
+            document.getElementById("th-curr-act").innerText = `${compLabel} ACTIVE`;
+            document.getElementById("th-curr").innerText = `${compLabel} ${isTxns ? 'TXNS' : 'REGS'}`;
+            document.getElementById("kpi-lbl-prev").innerText = `${baseLabel} TOTAL`;
+            document.getElementById("kpi-lbl-curr").innerText = `${compLabel} TOTAL`;
 
             let distDataset = type === 'old' ? globalData.old : globalData.new;
             let distList = type === 'old' ? oldDistrictsList : newDistrictsList;
             
             let bodyHtml = "";
-            let gt = { ids: 0, prev: 0, curr: 0, diff: 0 };
+            let gt = { ids: 0, prevAct: 0, prev: 0, currAct: 0, curr: 0, diff: 0 };
             let starDist = { name: "-", pct: -Infinity, diff: 0 };
 
             distList.forEach((distName) => {
                 if (isDM) {
                     let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                    if (!mappedSet.has(distName)) return; 
+                    if (!mappedSet.has(distName)) return;
                 }
-
-                let key = distName.toLowerCase();
-                let data = distDataset[key];
-                if(!data) return;
-
+                let data = distDataset[distName.toLowerCase()];
+                if (!data) return;
                 if (selectedDist !== "All" && distName !== selectedDist) return;
 
-                let currVal = isTxns ? data.monthsTxn[mIdx] : data.monthsReg[mIdx];
-                let prevVal = 0;
-                
-                if (mIdx > 0) {
-                    prevVal = isTxns ? data.monthsTxn[mIdx - 1] : data.monthsReg[mIdx - 1];
-                } else {
-                    let fy26Tot = isTxns ? data.fy26Txns : data.fy26Regs;
-                    prevVal = Math.round(fy26Tot / 12); 
-                }
+                let baseM = getPeriodMetrics(data, baseCode, isTxns);
+                let compM = getPeriodMetrics(data, compCode, isTxns);
+                let prevVal = baseM.val;
+                let currVal = compM.val;
 
                 let diff = currVal - prevVal;
                 let pct = 0;
-                
-                if (prevVal > 0) {
-                    pct = ((diff / prevVal) * 100);
-                } else if (prevVal === 0 && currVal > 0) {
-                    pct = 100; 
-                }
+                if (prevVal > 0) pct = ((diff / prevVal) * 100);
+                else if (prevVal === 0 && currVal > 0) pct = 100;
                 
                 let pctFormatted = pct.toFixed(1);
-                
                 let growthClass = "growth-neutral";
-                let diffIndicator = "";
+                let diffIndicator = "➖ ";
                 
                 if (diff > 0) {
                     growthClass = "growth-up";
@@ -648,66 +795,60 @@
                     }
                 } else if (diff < 0) {
                     growthClass = "growth-down";
-                    diffIndicator = "📉 "; 
-                } else {
-                    diffIndicator = "➖ ";
+                    diffIndicator = "📉 -";
                 }
 
                 gt.ids += data.ids;
+                gt.prevAct += baseM.act;
                 gt.prev += prevVal;
+                gt.currAct += compM.act;
                 gt.curr += currVal;
                 gt.diff += diff;
-                
-                let diffStr = diff > 0 ? `+${diff.toLocaleString('en-IN')}` : diff.toLocaleString('en-IN');
 
                 bodyHtml += `<tr>
-                    <td class="td-district" onclick="filterByDistrict('${distName}')" title="Click to filter">${distName}</td>
+                    <td class="td-district" onclick="filterByDistrict('${distName.replace(/'/g, "\\'")}')" title="Click to filter">${distName}</td>
                     <td class="td-ids">${data.ids.toLocaleString('en-IN')}</td>
+                    <td class="td-prev-act">${baseM.act.toLocaleString('en-IN')}</td>
                     <td class="td-prev">${prevVal.toLocaleString('en-IN')}</td>
+                    <td class="td-curr-act">${compM.act.toLocaleString('en-IN')}</td>
                     <td class="td-curr">${currVal.toLocaleString('en-IN')}</td>
-                    <td class="${growthClass}">${diffIndicator}${diffStr.replace('-','')}</td>
+                    <td class="${growthClass}">${diffIndicator}${Math.abs(diff).toLocaleString('en-IN')}</td>
                     <td class="${growthClass}">${diff > 0 ? '+' : ''}${pctFormatted}%</td>
                 </tr>`;
             });
 
             if (bodyHtml === "") {
-                bodyHtml = `<tr><td colspan="6" style="padding: 30px; color: #b91c1c; font-weight: bold;">No data found for this filter!</td></tr>`;
+                bodyHtml = `<tr><td colspan="8" style="padding: 30px; color: #b91c1c; font-weight: bold;">No data found for this filter!</td></tr>`;
             }
 
             document.getElementById("tableBody").innerHTML = bodyHtml;
 
-            // Grand Total Calculation
             let gtPct = 0;
-            if (gt.prev > 0) {
-                gtPct = ((gt.diff / gt.prev) * 100);
-            } else if (gt.prev === 0 && gt.curr > 0) {
-                gtPct = 100;
-            }
+            if (gt.prev > 0) gtPct = ((gt.diff / gt.prev) * 100);
+            else if (gt.prev === 0 && gt.curr > 0) gtPct = 100;
             let gtPctFormatted = gtPct.toFixed(1);
             
             let gtGrowthClass = "growth-neutral";
-            let gtIndicator = "";
-            let gtDiffStr = gt.diff > 0 ? `+${gt.diff.toLocaleString('en-IN')}` : gt.diff.toLocaleString('en-IN');
-            
+            let gtIndicator = "➖ ";
             if (gt.diff > 0) { gtGrowthClass = "growth-up"; gtIndicator = "📈 +"; }
-            else if (gt.diff < 0) { gtGrowthClass = "growth-down"; gtIndicator = "📉 "; }
-            else { gtIndicator = "➖ "; }
+            else if (gt.diff < 0) { gtGrowthClass = "growth-down"; gtIndicator = "📉 -"; }
 
             document.getElementById("tableFooter").innerHTML = `
                 <td>GRAND TOTAL</td>
                 <td class="td-ids">${gt.ids.toLocaleString('en-IN')}</td>
+                <td class="td-prev-act">${gt.prevAct.toLocaleString('en-IN')}</td>
                 <td class="td-prev">${gt.prev.toLocaleString('en-IN')}</td>
+                <td class="td-curr-act">${gt.currAct.toLocaleString('en-IN')}</td>
                 <td class="td-curr">${gt.curr.toLocaleString('en-IN')}</td>
-                <td class="${gtGrowthClass}">${gtIndicator}${gtDiffStr.replace('-','')}</td>
+                <td class="${gtGrowthClass}">${gtIndicator}${Math.abs(gt.diff).toLocaleString('en-IN')}</td>
                 <td class="${gtGrowthClass}">${gt.diff > 0 ? '+' : ''}${gtPctFormatted}%</td>
             `;
 
-            // Update Top KPIs
-            document.getElementById("dispTotalPrev").innerText = gt.prev.toLocaleString('en-IN');
-            document.getElementById("dispTotalCurr").innerText = gt.curr.toLocaleString('en-IN');
+            document.getElementById("dispTotalPrev").innerHTML = `${gt.prev.toLocaleString('en-IN')} <span class="sub-val">(${gt.prevAct.toLocaleString('en-IN')} VLEs)</span>`;
+            document.getElementById("dispTotalCurr").innerHTML = `${gt.curr.toLocaleString('en-IN')} <span class="sub-val">(${gt.currAct.toLocaleString('en-IN')} VLEs)</span>`;
             
             let boxGrowth = document.getElementById("kpi-box-growth");
-            document.getElementById("dispTotalGrowth").innerHTML = `${gtIndicator}${gtDiffStr.replace('-','')} <span class="sub-val" id="dispTotalPct">${gt.diff > 0 ? '+' : ''}${gtPctFormatted}%</span>`;
+            document.getElementById("dispTotalGrowth").innerHTML = `${gtIndicator}${Math.abs(gt.diff).toLocaleString('en-IN')} <span class="sub-val" id="dispTotalPct">(${gt.diff > 0 ? '+' : ''}${gtPctFormatted}%)</span>`;
             
             if (gt.diff > 0) {
                 boxGrowth.className = "kpi-box-clean g-color";
@@ -729,24 +870,17 @@
 
         function filterByDistrict(distName) {
             let distDropdown = document.getElementById("districtName");
-            if (distDropdown.value === distName) { distDropdown.value = "All"; } 
-            else { distDropdown.value = distName; }
+            distDropdown.value = (distDropdown.value === distName) ? "All" : distName;
             calculateMoMData();
         }
 
         function resetFilters() {
             document.getElementById("reportType").value = "txns";
             document.getElementById("districtType").value = "old";
-            
-            const d = new Date();
-            let currMonth = d.getMonth(); 
-            let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
-            document.getElementById("dataMonth").value = fyMonthIndex.toString();
-            
+            setDefaultMonths();
             updateDistrictsDropdown();
         }
 
-        /* 🌟 Full Screen Real API Fix 🌟 */
         function toggleFullScreen() {
             let btn = document.getElementById("fullscreenBtn");
             try {
@@ -757,10 +891,10 @@
                 } else {
                     if (document.exitFullscreen) document.exitFullscreen();
                 }
-            } catch (e) { console.log("Fullscreen not supported"); }
+            } catch (e) {}
         }
 
-        document.addEventListener('fullscreenchange', (event) => {
+        document.addEventListener('fullscreenchange', () => {
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
@@ -768,7 +902,6 @@
             }
         });
 
-        /* 🌟 Image Download Fix 🌟 */
         function downloadImage() {
             const btn = document.getElementById("downloadBtn");
             let originalText = btn.innerHTML;
@@ -776,65 +909,39 @@
             btn.disabled = true;
 
             const captureArea = document.getElementById("captureArea");
-            const tableWrapper = document.querySelector(".table-container");
-            
-            // Backup styles
-            const origAreaOverflow = captureArea.style.overflow;
-            const origWrapperOverflow = tableWrapper.style.overflow;
-            const origWrapperHeight = tableWrapper.style.height;
-
-            // Prepare for capture
-            captureArea.style.overflow = "visible";
-            tableWrapper.style.overflow = "visible";
-            tableWrapper.style.height = "auto";
-            
-            // Remove Sticky elements temporarily
-            const stickyEls = captureArea.querySelectorAll('th, td.td-district, tfoot td');
-            stickyEls.forEach(el => {
-                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
-                el.style.position = 'static';
-            });
+            captureArea.classList.add("capture-compact");
             
             setTimeout(() => {
                 html2canvas(captureArea, { 
                     scale: 2, 
                     backgroundColor: "#f4f1e6",
                     useCORS: true,
-                    windowWidth: captureArea.scrollWidth + 50
+                    width: captureArea.offsetWidth,
+                    height: captureArea.offsetHeight,
+                    windowWidth: captureArea.offsetWidth
                 }).then(canvas => {
                     let link = document.createElement('a');
                     let d = new Date();
                     let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
                     
-                    let typeSelect = document.getElementById("districtType");
-                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
-                    let periodText = document.getElementById("dataMonth").options[document.getElementById("dataMonth").selectedIndex].text.split(" ")[0];
-                    let reportType = document.getElementById("reportType").value;
-                    let reportTypeName = reportType === 'regs' ? 'New_Registrations' : 'Transactions';
+                    let baseLbl = getPeriodLabel(document.getElementById("baseMonth").value).replace(/\s+/g, "_");
+                    let compLbl = getPeriodLabel(document.getElementById("compareMonth").value).replace(/\s+/g, "_");
+                    let reportTypeName = document.getElementById("reportType").value === 'regs' ? 'Registrations' : 'Transactions';
                     
-                    link.download = `IRCTC_MoM_Growth_${reportTypeName}_${periodText}_${typeText}_${dateStr}.png`;
+                    link.download = `IRCTC_Growth_${reportTypeName}_${baseLbl}_vs_${compLbl}_${dateStr}.png`;
                     link.href = canvas.toDataURL("image/png");
                     link.click();
 
-                    restoreStyles();
+                    captureArea.classList.remove("capture-compact");
                     btn.innerHTML = "✅ Downloaded";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 }).catch(err => {
                     console.error("Error capturing image:", err);
-                    restoreStyles();
+                    captureArea.classList.remove("capture-compact");
                     btn.innerHTML = "❌ Failed";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 });
-            }, 500); 
-
-            function restoreStyles() {
-                captureArea.style.overflow = origAreaOverflow;
-                tableWrapper.style.overflow = origWrapperOverflow;
-                tableWrapper.style.height = origWrapperHeight;
-                stickyEls.forEach(el => {
-                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
-                });
-            }
+            }, 300);
         }
     </script>
 </body>
