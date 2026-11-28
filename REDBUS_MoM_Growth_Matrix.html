@@ -2,229 +2,348 @@
 <html>
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedBus MoM Growth Matrix - CSC TravelCloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    
-    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px; flex-shrink: 0; }
-    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
-    
-    .filter-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;}
-    .filter-label { font-size: 13px; font-weight: 800; color: #475569; }
-    
-    .dist-select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 13px; font-weight: bold; outline: none; min-width: 140px; color: #1e293b; background-color: white; cursor: pointer; }
-    .month-select { border: 2px solid #8b5cf6; color: #5b21b6; background-color: #f5f3ff; height: 33px;}
-    
-    .search-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; width: 160px; transition: 0.2s; height: 33px;}
-    .search-box:focus, .dist-select:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
-    
-    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; cursor: pointer; height: 33px;}
-    .btn-reset { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-reset:hover { background: #e2e8f0; }
-    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
-    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
-    .btn-full { background: #f8fafc; color: #0f172a; border-color: #94a3b8; } .btn-full:hover { background: #e2e8f0; }
-    .btn-exit-full { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; } .btn-exit-full:hover { background: #fecaca !important; }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
+    }
 
-    .content-wrapper { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px 15px 0 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; overflow: hidden; }
+    body {
+      background-color: var(--cream-bg);
+      color: var(--charcoal);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+      padding: 14px 15px;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     
-    .report-main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
-    .report-main-title { color: #0f172a; font-weight: 900; margin: 0; font-size: 20px; letter-spacing: 0.5px; text-transform: uppercase;}
-    .report-date-text { color: #64748b; font-weight: 700; margin: 5px 0 0 0; font-size: 13px; }
+    /* Top Controls Bar */
+    .controls-bar {
+      background-color: var(--cream-card);
+      border-radius: 10px;
+      padding: 11px 16px;
+      box-shadow: 0 3px 10px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    .title-sec {
+      font-family: 'Cinzel', serif;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--forest);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    
+    .filter-group { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .filter-label { font-size: 12.5px; font-weight: 800; color: var(--muted); }
+    
+    .dist-select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      outline: none;
+      min-width: 135px;
+      color: var(--charcoal);
+      background-color: #ffffff;
+      cursor: pointer;
+      height: 34px;
+      transition: 0.2s;
+    }
+    .month-select {
+      border: 1.5px solid var(--gold);
+      color: #7c4a12;
+      background-color: var(--gold-soft);
+      height: 34px;
+      font-weight: 800;
+    }
+    .search-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      outline: none;
+      width: 160px;
+      transition: 0.2s;
+      height: 34px;
+      background-color: #ffffff;
+      color: var(--charcoal);
+    }
+    .search-box:focus, .dist-select:focus { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(27, 67, 50, 0.15); }
+    
+    /* Royal Action Buttons */
+    .btn-custom {
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid var(--forest);
+      white-space: nowrap;
+      cursor: pointer;
+      height: 34px;
+    }
+    .btn-reset { background-color: #ffffff; color: var(--forest); }
+    .btn-reset:hover { background-color: var(--forest); color: #ffffff; }
 
-    .kpi-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
-    .kpi-card { background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 10px; min-width: 200px; justify-content: center;}
-    .kpi-card span { font-size: 12px; font-weight: 900; color: #64748b; text-transform: uppercase; }
-    .kpi-card strong { font-size: 20px; font-weight: 900; color: #0f172a; }
-    
-    .kpi-prev { border-left: 5px solid #64748b; } 
-    .kpi-curr { border-left: 5px solid #3b82f6; } 
-    .kpi-var { border-left: 5px solid #8b5cf6; }  
-    .kpi-grw { border-left: 5px solid #10b981; } 
+    .btn-export { background-color: var(--forest-soft); color: var(--forest-dark); border-color: #8ebaa3; }
+    .btn-export:hover { background-color: var(--forest); color: #ffffff; }
 
-    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; padding-bottom: 20px; scroll-behavior: smooth;}
-    
-    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
-    
-    thead { position: sticky; top: -1px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    th, td { border-left: none !important; border-right: none !important; }
-    thead th { vertical-align: middle; text-align: center; font-weight: 900; padding: 10px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid rgba(255,255,255,0.2) !important;}
-    
-    .th-dist { background-color: #0f172a !important; color: #ffffff !important; }
-    .th-csc { background-color: #334155 !important; color: #ffffff !important; }
-    .th-prev { background-color: #475569 !important; color: #ffffff !important; }
-    .th-curr { background-color: #2563eb !important; color: #ffffff !important; }
-    .th-var { background-color: #6d28d9 !important; color: #ffffff !important; }
-    .th-perc { background-color: #0f766e !important; color: #ffffff !important; }
-    .th-stat { background-color: #1e293b !important; color: #ffffff !important; }
-    
-    /* 🌟 కొత్త సబ్-హెడ్డింగ్స్ కోసం (Part & Txns) 🌟 */
-    .sub-th { background-color: #f1f5f9 !important; color: #1e293b !important; font-size: 10px; border-bottom: 1px solid #cbd5e1 !important; padding: 6px !important;}
-    
-    tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease-in-out;}
-    tbody tr:hover { background-color: #fef08a !important; outline: 2px solid #ea580c; outline-offset: -2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.002); z-index: 1; position: relative; cursor: crosshair;}
-    tbody td { text-align: center; vertical-align: middle; font-weight: 800; padding: 8px; color: #334155;}
-    
-    .clickable-dist { text-align: left !important; padding-left: 15px !important; font-weight: 900 !important; color: #2563eb !important; cursor: pointer; user-select: none; }
-    .clickable-dist:hover { color: #1d4ed8 !important; text-decoration: none !important; }
-    
-    .text-pos { color: #16a34a !important; font-weight: 900;}
-    .text-neg { color: #dc2626 !important; font-weight: 900;}
-    .text-neu { color: #64748b !important; font-weight: 900;}
-    
-    .badge-pos { background: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
-    .badge-neg { background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
-    .badge-neu { background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 4px; font-size: 11px;}
+    .btn-img { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+    .btn-img:hover { background-color: #b08a42; color: #ffffff; }
 
-    .t-row-total { background-color: #e2e8f0 !important; border-top: 3px solid #cbd5e1 !important; }
-    .t-row-total td { color: #0f172a !important; font-size: 12px !important; font-weight: 900 !important; text-align: center; padding: 12px;}
-    .t-row-total:hover { outline: none !important; transform: none !important; cursor: default;}
+    .btn-full { background-color: #ffffff; color: var(--forest); }
+    .btn-full:hover { background-color: var(--forest); color: #ffffff; }
 
-    .charts-container { display: flex; gap: 15px; height: 320px; margin-top: 20px; position: sticky; left: 0; width: calc(100vw - 60px); background: white; padding-bottom: 10px; }
-    .chart-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; padding: 15px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-    .chart-title { font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin-bottom: 10px; width: 100%; text-align: left; border-bottom: 2px solid #fee2e2; padding-bottom: 5px;}
+    .btn-exit-full { background-color: #991b1b !important; color: #ffffff !important; border-color: #991b1b !important; }
 
-    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; }
-    html.exporting .content-wrapper, html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+    /* Main Content Wrapper */
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--cream-card);
+      padding: 15px 18px 0 18px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      overflow: hidden;
+    }
+    
+    .report-main-header { text-align: center; margin-bottom: 14px; flex-shrink: 0; border-bottom: 2px dashed var(--gold); padding-bottom: 10px; }
+    .report-main-title { font-family: 'Cinzel', serif; color: var(--forest-dark); font-weight: 800; margin: 0; font-size: 20px; letter-spacing: 0.7px; text-transform: uppercase; }
+    .report-date-text { color: #7c4a12; font-weight: 700; margin: 4px 0 0 0; font-size: 13px; }
+
+    /* KPI Cards */
+    .kpi-container { display: flex; justify-content: center; gap: 14px; margin-bottom: 14px; flex-shrink: 0; flex-wrap: wrap; }
+    .kpi-card {
+      background-color: #ffffff;
+      padding: 11px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 8px rgba(27, 67, 50, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 210px;
+      justify-content: center;
+      flex: 1;
+    }
+    .kpi-card span { font-size: 11.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .kpi-card strong { font-size: 21px; font-weight: 900; color: var(--forest-dark); font-variant-numeric: tabular-nums; }
+    
+    .kpi-prev { border-left: 5px solid var(--muted); } .kpi-prev strong { color: var(--charcoal); }
+    .kpi-curr { border-left: 5px solid #164e63; } .kpi-curr strong { color: #164e63; }
+    .kpi-var { border-left: 5px solid var(--gold); }
+    .kpi-grw { border-left: 5px solid #15803d; background: linear-gradient(to right, var(--forest-soft), #ffffff); }
+
+    /* Scrollable Area */
+    .scrollable-area { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 4px; padding-bottom: 20px; scroll-behavior: smooth; }
+    
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; white-space: nowrap; border: 1.5px solid var(--forest); border-radius: 8px; overflow: hidden; }
+    
+    thead { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(27, 67, 50, 0.1); }
+    thead th {
+      vertical-align: middle;
+      text-align: center;
+      font-weight: 800;
+      padding: 10px 8px;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #f8f5ec !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Royal Header Colors */
+    .th-dist { background-color: var(--forest-dark) !important; border-right: 2px solid var(--gold) !important; border-bottom: 2px solid var(--gold) !important; }
+    .th-csc { background-color: #344e41 !important; border-bottom: 2px solid var(--gold) !important; }
+    .th-prev { background-color: #4b5d54 !important; }
+    .th-curr { background-color: #164e63 !important; }
+    .th-var { background-color: #7c4a12 !important; border-bottom: 2px solid var(--gold) !important; }
+    .th-perc { background-color: var(--forest) !important; border-bottom: 2px solid var(--gold) !important; }
+    .th-stat { background-color: var(--forest-dark) !important; border-bottom: 2px solid var(--gold) !important; }
+    
+    .sub-th {
+      background-color: #e6ebe8 !important;
+      color: var(--forest-dark) !important;
+      font-size: 10px !important;
+      border-right: 1px solid #c5d1ca !important;
+      border-bottom: 2px solid var(--gold) !important;
+      padding: 7px 6px !important;
+    }
+    .sub-th-curr {
+      background-color: #e3f0f3 !important;
+      color: #164e63 !important;
+      border-right: 1px solid #b8d4dc !important;
+    }
+    
+    tbody tr td {
+      text-align: center;
+      vertical-align: middle;
+      font-weight: 700;
+      padding: 9px 8px;
+      color: var(--charcoal);
+      background-color: var(--cream-card);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      font-variant-numeric: tabular-nums;
+    }
+    tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+    tbody tr:hover td { background-color: var(--gold-soft) !important; }
+    
+    .clickable-dist {
+      text-align: left !important;
+      padding-left: 15px !important;
+      font-weight: 800 !important;
+      font-size: 13px !important;
+      color: var(--forest-dark) !important;
+      cursor: pointer;
+      user-select: none;
+      border-right: 2px solid var(--border) !important;
+    }
+    .clickable-dist:hover { color: #7c4a12 !important; }
+    
+    .text-pos { color: #15803d !important; font-weight: 900; }
+    .text-neg { color: #b91c1c !important; font-weight: 900; }
+    .text-neu { color: var(--muted) !important; font-weight: 800; }
+    
+    .badge-pos { background-color: #e6f4ea; color: #15803d; border: 1px solid #b7dfbe; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; }
+    .badge-neg { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; }
+    .badge-neu { background-color: var(--cream-alt); color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; }
+
+    /* Royal Grand Total Row */
+    .t-row-total td {
+      background-color: var(--forest-dark) !important;
+      color: #ffffff !important;
+      border-top: 2px solid var(--gold) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+      font-size: 13.5px !important;
+      font-weight: 900 !important;
+      text-align: center;
+      padding: 11px 8px;
+    }
+    .t-row-total td:first-child {
+      color: #e6c885 !important;
+      border-right: 2px solid var(--gold) !important;
+    }
+    .t-row-total td.t-pos { color: #4ade80 !important; }
+    .t-row-total td.t-neg { color: #f87171 !important; }
+    .t-row-total td.t-neu { color: #d5cfbe !important; }
+
+    /* Charts Section */
+    .charts-container { display: flex; gap: 18px; height: 330px; margin-top: 22px; width: 100%; background: transparent; padding-bottom: 10px; }
+    .chart-box {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(27, 67, 50, 0.06);
+      border: 1.5px solid var(--border);
+      border-top: 4px solid var(--forest);
+      padding: 14px 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .chart-title {
+      font-family: 'Cinzel', serif;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--forest-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 10px;
+      width: 100%;
+      text-align: left;
+      border-bottom: 1.5px dashed var(--gold);
+      padding-bottom: 6px;
+    }
+
+    /* 🌟 Compact WhatsApp Image Export Mode 🌟 */
+    html.exporting, html.exporting body { height: auto !important; overflow: visible !important; background-color: var(--cream-bg) !important; }
+    html.exporting .content-wrapper {
+      width: 1060px !important; max-width: 1060px !important; height: auto !important;
+      overflow: visible !important; display: block !important; padding: 20px 24px !important;
+      box-shadow: none !important;
+    }
+    html.exporting .scrollable-area { height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; padding: 0 !important; }
+    html.exporting .kpi-container { flex-wrap: nowrap !important; gap: 10px !important; }
+    html.exporting .kpi-card { min-width: 0 !important; padding: 10px 12px !important; }
+    html.exporting .kpi-card strong { font-size: 18px !important; }
     html.exporting thead { position: static !important; transform: none !important; }
-    html.exporting .charts-container { position: static !important; width: 100% !important; margin-bottom: 20px !important; height: 350px !important; }
+    html.exporting th { padding: 9px 6px !important; font-size: 10px !important; }
+    html.exporting td { padding: 8px 6px !important; font-size: 12px !important; }
 
+    /* 📱 MOBILE RESPONSIVENESS 📱 */
+    @media (max-width: 768px) {
+      html, body { height: auto !important; overflow: auto !important; }
+      body { padding: 10px; display: block; }
+      .controls-bar { flex-direction: column; align-items: stretch; padding: 14px; height: auto; gap: 12px; }
+      .title-sec { justify-content: center; font-size: 15.5px; white-space: normal; text-align: center; line-height: 1.4; margin-right: 0 !important; }
+      .filter-group { flex-direction: column; width: 100%; align-items: stretch; gap: 9px; }
+      .search-box, .dist-select, .month-select, .btn-custom { width: 100%; min-width: 100%; height: 40px !important; justify-content: center; }
+      .filter-label { margin-bottom: 2px; margin-left: 0 !important; }
+      #fsBtn { display: none !important; }
 
-/* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR REDBUS MOM MATRIX (Added by Chandra) 📱 */
-        /* ========================================================================= */
-        @media (max-width: 768px) {
-            
-            /* 1. పేజీ స్క్రోల్ లాక్ తీసేయడం */
-            html, body {
-                height: auto !important;
-                overflow: auto !important; /* మొబైల్ లో ఫ్రీగా స్క్రోల్ అవ్వడానికి */
-            }
-            
-            body { 
-                padding: 10px; 
-                display: block; 
-            }
+      .content-wrapper { padding: 14px 10px; height: auto; overflow: visible; display: block; }
+      .report-main-title { font-size: 15px; line-height: 1.4; margin-bottom: 4px; text-align: center; }
+      .report-date-text { font-size: 11px; margin-top: 4px; }
 
-            /* 2. టాప్ కంట్రోల్స్ & ఫిల్టర్స్ */
-            .controls-bar {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 15px;
-                height: auto;
-                gap: 15px;
-            }
+      .kpi-container { flex-wrap: wrap; gap: 10px; }
+      .kpi-card { flex: 1 1 calc(50% - 10px); min-width: 130px; flex-direction: column; text-align: center; padding: 10px; gap: 4px; }
+      .kpi-card span { font-size: 9.5px; white-space: normal; }
+      .kpi-card strong { font-size: 18px; }
 
-            .title-sec {
-                justify-content: center;
-                font-size: 16px;
-                white-space: normal;
-                text-align: center;
-                line-height: 1.4;
-                margin-right: 0 !important;
-            }
+      .scrollable-area { overflow-y: visible; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-right: 0; margin-bottom: 18px; }
+      table { min-width: 800px; }
+      th, td { font-size: 10.5px !important; padding: 8px 5px !important; }
+      .sub-th { font-size: 8.5px !important; padding: 5px !important; }
+      .clickable-dist, .th-dist, .t-row-total td:first-child { position: static !important; text-align: center !important; padding-left: 5px !important; }
 
-            .filter-group {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .radio-group { justify-content: center; margin: 0; padding: 5px 0;}
-            .search-box, .dist-select, .month-select { width: 100%; min-width: 100%; }
-            .filter-label { margin-bottom: 2px; }
-
-            .d-flex.gap-2 {
-                flex-wrap: wrap;
-                width: 100%;
-            }
-
-            .d-flex.gap-2 > * {
-                flex: 1 1 calc(50% - 10px); /* బటన్స్ పక్కపక్కన రెండు వచ్చేలా */
-                text-align: center;
-                justify-content: center;
-            }
-
-            /* 3. రిపోర్ట్ హెడర్ & KPI కార్డ్స్ సెట్టింగ్స్ */
-            .content-wrapper {
-                padding: 15px 10px;
-                height: auto;
-                overflow: visible;
-                display: block;
-            }
-
-            .report-main-title { font-size: 15px; line-height: 1.4; margin-bottom: 5px; }
-            .report-date-text { font-size: 11px; margin-top: 5px; }
-
-            .kpi-container {
-                flex-wrap: wrap; /* పక్కపక్కన సరిపోకపోతే కిందకి వస్తాయి */
-                gap: 10px;
-            }
-
-            .kpi-card {
-                flex: 1 1 calc(50% - 10px); /* మొబైల్ లో 2x2 గ్రిడ్ లాగా వస్తాయి */
-                min-width: 130px;
-                flex-direction: column; /* లేబుల్ పైన, వాల్యూ కింద */
-                text-align: center;
-                padding: 10px;
-                gap: 5px;
-            }
-
-            .kpi-card span { font-size: 9px; white-space: normal;}
-            .kpi-card strong { font-size: 18px; }
-
-            /* 4. టేబుల్ అడ్జస్ట్‌మెంట్స్ (స్క్రోలింగ్ ఈజీగా ఉండటానికి) */
-            .scrollable-area {
-                overflow-y: visible;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch; /* ఐఫోన్స్ లో స్మూత్ స్క్రోలింగ్ */
-                padding-right: 0;
-                margin-bottom: 20px;
-            }
-
-            table {
-                min-width: 800px; /* మొబైల్ లో కాలమ్స్ కట్ అవ్వకుండా సెట్ చేయడం */
-            }
-
-            th, td {
-                font-size: 10px !important;
-                padding: 8px 5px !important;
-            }
-
-            /* మొబైల్ లో స్క్రోలింగ్ ఇబ్బంది లేకుండా స్టికీ ఎఫెక్ట్ తీసేసాను */
-            .clickable-dist, .th-dist, .t-row-total td:first-child {
-                position: static !important;
-                border-right: 1px solid #cbd5e1 !important;
-                text-align: center !important;
-                padding-left: 5px !important;
-            }
-
-            /* 5. చార్ట్స్ సెట్టింగ్స్ */
-            .charts-container {
-                position: static !important;
-                flex-direction: column; /* గ్రాఫ్స్ ఒకదాని కింద ఒకటి వస్తాయి */
-                width: 100% !important;
-                height: auto !important;
-                margin-top: 10px;
-                padding: 0;
-                gap: 15px;
-            }
-
-            .chart-box {
-                min-width: 100%; /* ఫుల్ విడ్త్ */
-                height: 250px; /* ఎత్తు తగ్గింపు */
-                padding: 10px;
-            }
-            
-            .chart-title {
-                font-size: 13px;
-            }
-        }
-
+      .charts-container { position: static !important; flex-direction: column; width: 100% !important; height: auto !important; margin-top: 10px; padding: 0; gap: 15px; }
+      .chart-box { min-width: 100%; height: 270px; padding: 12px; }
+      .chart-title { font-size: 12.5px; }
+    }
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -241,7 +360,7 @@
   <div class="controls-bar" data-html2canvas-ignore="true">
     
     <div class="filter-group">
-      <div class="title-sec me-3">🚌 REDBUS: MoM MATRIX</div>
+      <div class="title-sec me-2">🚌 REDBUS: MoM MATRIX</div>
       
       <select id="distTypeDropdown" class="dist-select" onchange="processData()">
           <option value="OLD">Old Districts</option>
@@ -256,10 +375,10 @@
     </div>
 
     <div class="filter-group">
-      <span class="filter-label ms-2">Compare:</span>
+      <span class="filter-label ms-1">Compare:</span>
       <select id="monthDropdown" class="dist-select month-select" onchange="processData()">
           <option value="1">MAY-26 vs APR-26</option>
-          <option value="2" selected>JUN-26 vs MAY-26</option>
+          <option value="2">JUN-26 vs MAY-26</option>
           <option value="3">JUL-26 vs JUN-26</option>
           <option value="4">AUG-26 vs JUL-26</option>
           <option value="5">SEP-26 vs AUG-26</option>
@@ -271,7 +390,7 @@
           <option value="11">MAR-27 vs FEB-27</option>
       </select>
 
-      <button class="btn-custom btn-reset ms-2" onclick="resetFilters()">🔄 Reset</button>
+      <button class="btn-custom btn-reset" onclick="resetFilters()">↺ Reset</button>
       <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
       <button class="btn-custom btn-img" onclick="downloadImage()">📸 Image</button>
       <button id="fsBtn" class="btn-custom btn-full" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -282,11 +401,11 @@
   <div class="content-wrapper" id="captureArea">
     
     <div class="report-main-header">
-        <h2 class="report-main-title">CSC AP - REDBUS MONTH ON MONTH (MoM) GROWTH MATRIX</h2>
+        <h2 class="report-main-title">CSC AP – REDBUS MONTH ON MONTH (MoM) GROWTH MATRIX</h2>
         <p class="report-date-text" id="reportDateTxt"></p>
     </div>
 
-    <!-- 🌟 KPI Cards Section 🌟 -->
+    <!-- KPI Cards Section -->
     <div class="kpi-container" id="kpiCards">
         <div class="kpi-card kpi-prev"><span id="lblPrevMnt">PREV MONTH TXNS:</span> <strong id="kpiPrev">0</strong></div>
         <div class="kpi-card kpi-curr"><span id="lblCurrMnt">CURR MONTH TXNS:</span> <strong id="kpiCurr">0</strong></div>
@@ -297,23 +416,26 @@
     <div class="scrollable-area" id="scrollableArea">
       <table id="reportTable">
         <thead id="dynamicHead">
-          <!-- జావాస్క్రిప్ట్ ద్వారా హెడ్డింగ్స్ వస్తాయి -->
         </thead>
         <tbody id="reportBody">
-          <tr><td colspan="9" class="text-danger py-4 text-center fw-bold">Loading Data...</td></tr>
+          <tr><td colspan="9" style="color: var(--forest); padding: 35px; text-align: center; font-weight: 800;">Loading Data...</td></tr>
         </tbody>
         <tfoot id="reportFoot"></tfoot>
       </table>
 
-      <!-- చార్ట్స్ సెక్షన్ -->
+      <!-- Charts Section -->
       <div class="charts-container" id="chartsContainer" data-html2canvas-ignore="true">
         <div class="chart-box" style="flex: 2;">
           <div class="chart-title">📈 District-Wise Variance (Current vs Previous)</div>
-          <canvas id="barChart"></canvas>
+          <div style="position:relative; width:100%; height:245px;">
+            <canvas id="barChart"></canvas>
+          </div>
         </div>
         <div class="chart-box" style="flex: 1;">
           <div class="chart-title">🍩 Districts Performance Status</div>
-          <canvas id="pieChart"></canvas>
+          <div style="position:relative; width:100%; height:245px;">
+            <canvas id="pieChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -324,11 +446,14 @@
     
     let loggedInDesig = localStorage.getItem("userDesignation") || "DM"; 
     let loggedInUserId = localStorage.getItem("userId") || ""; 
+    let loggedInUser = localStorage.getItem("userName") || "";
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     
-    const CACHE_KEY = "TRAVEL_CACHE_V6_REDBUS_" + loggedInUserId;
+    const CACHE_KEY = "TRAVEL_CACHE_V7_REDBUS_MOM_FIX_" + loggedInUserId;
 
     let rawData = [];
+    let dmAssignedOldDistrict = ""; 
+    let dmNewDistrictsSet = new Set();
     let districtAggregatedData = [];
     let selectedDistFilter = ""; 
 
@@ -337,20 +462,114 @@
 
     const mNames = ['APR-26', 'MAY-26', 'JUN-26', 'JUL-26', 'AUG-26', 'SEP-26', 'OCT-26', 'NOV-26', 'DEC-26', 'JAN-27', 'FEB-27', 'MAR-27'];
 
+    function getDefaultMonthVal() {
+        let m = new Date().getMonth();
+        let fyIdx = m >= 3 ? m - 3 : m + 9;
+        return fyIdx >= 1 ? fyIdx.toString() : "1";
+    }
+
+    // IndexedDB Caching Mechanism
+    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
+    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
+    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
+    async function saveToCache(key, dataObj) { try { let db = await openDB(); let tx = db.transaction(STORE_NAME, "readwrite"); tx.objectStore(STORE_NAME).put({ data: dataObj, timestamp: Date.now() }, key); } catch(e) { console.error(e); } }
+
     window.onload = async function() {
         const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
         document.getElementById('reportDateTxt').innerText = "Report Generated on: " + new Date().toLocaleDateString('en-US', dateOptions);
+        document.getElementById("monthDropdown").value = getDefaultMonthVal();
 
         let cachedObj = await getCachedData(CACHE_KEY);
-        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000)) {
-            rawData = cachedObj.data;
+        if(cachedObj && (Date.now() - cachedObj.timestamp < 3600000) && cachedObj.data && cachedObj.data.rawData) {
+            rawData = cachedObj.data.rawData;
+            dmNewDistrictsSet = new Set(cachedObj.data.dmNewDistrictsArray || []);
+            dmAssignedOldDistrict = cachedObj.data.dmAssignedOldDistrict || "";
             processData();
         } else {
             fetchDataFromServer();
         }
     };
 
-    // 🌟 2-Level హెడ్డింగ్ (Part & Txns) 🌟
+    function isNameMatch(sheetName, loginName) {
+        if (!sheetName || !loginName) return false;
+        let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
+        let lClean = loginName.toLowerCase().replace(/\s+/g, ' ').trim();
+        if (sClean === lClean) return true;
+        if (lClean.length > 5 && sClean.includes(lClean)) return true;
+        if (sClean.length > 5 && lClean.includes(sClean)) return true;
+        return false;
+    }
+
+    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
+
+    async function fetchDataFromServer() {
+        document.getElementById("reportBody").innerHTML = "<tr><td colspan='9' style='color: var(--forest); padding: 35px; text-align: center; font-weight: 800;'>⚡ Fetching Live Transactions Data... Please wait</td></tr>";
+
+        try {
+            let timestamp = new Date().getTime();
+            let [usersData, vlesData] = await Promise.all([
+                fetch(SCRIPT_URL + "?sheet=Users&t=" + timestamp).then(r => r.json()).catch(() => null),
+                fetch(SCRIPT_URL + "?sheet=REDBUS&t=" + timestamp).then(r => r.json()).catch(() => null)
+            ]);
+
+            if (isDM && loggedInUserId !== "" && usersData && usersData.length > 0) {
+                let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
+                let idxDist = uHeaders.findIndex(h => h === 'district');
+                if (idxUid > -1 && idxDist > -1) {
+                    for(let i=1; i<usersData.length; i++) {
+                        if ((usersData[i][idxUid] || '').toString().trim() === loggedInUserId) {
+                            dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if(vlesData && vlesData.length > 1) {
+                rawData = [];
+                dmNewDistrictsSet.clear();
+
+                for(let i=1; i<vlesData.length; i++) {
+                    let row = vlesData[i];
+                    let oldD = (row[3] || '').toString().trim();
+                    let newD = (row[4] || '').toString().trim();
+                    let empName = (row[7] || '').toString().trim();
+
+                    if(oldD === '-' || oldD === '' || oldD.toUpperCase() === 'UNKNOWN') continue;
+
+                    if (isDM && loggedInUser && isNameMatch(empName, loggedInUser)) {
+                        dmNewDistrictsSet.add(toProperCase(newD));
+                    }
+
+                    rawData.push({
+                        oldDist: oldD,
+                        newDist: newD,
+                        apr: parseFloat(row[12]) || 0,
+                        may: parseFloat(row[13]) || 0,
+                        jun: parseFloat(row[14]) || 0,
+                        jul: parseFloat(row[15]) || 0,
+                        aug: parseFloat(row[16]) || 0,
+                        sep: parseFloat(row[17]) || 0,
+                        oct: parseFloat(row[18]) || 0,
+                        nov: parseFloat(row[19]) || 0,
+                        dec: parseFloat(row[20]) || 0,
+                        jan: parseFloat(row[21]) || 0,
+                        feb: parseFloat(row[22]) || 0,
+                        mar: parseFloat(row[23]) || 0
+                    });
+                }
+
+                saveToCache(CACHE_KEY, { rawData: rawData, dmNewDistrictsArray: Array.from(dmNewDistrictsSet), dmAssignedOldDistrict: dmAssignedOldDistrict });
+                processData();
+            } else {
+                throw new Error("No Data");
+            }
+        } catch (error) {
+            document.getElementById("reportBody").innerHTML = "<tr><td colspan='9' style='color:#b91c1c; text-align:center; font-weight:800; padding:30px;'>❌ Error loading Data. Please Refresh.</td></tr>";
+        }
+    }
+
     function buildTableHeaders(prevMnt, currMnt) {
         let thead = document.getElementById("dynamicHead");
         thead.innerHTML = `
@@ -364,24 +583,13 @@
             <th rowspan="2" class="th-stat">STATUS</th>
           </tr>
           <tr>
-            <th class="sub-th" style="color:#64748b !important;">PARTICIPANTS</th><th class="sub-th" style="color:#0f172a !important;">TXNS</th>
-            <th class="sub-th" style="color:#3b82f6 !important;">PARTICIPANTS</th><th class="sub-th" style="color:#1d4ed8 !important;">TXNS</th>
+            <th class="sub-th">PARTICIPANTS</th><th class="sub-th">TXNS</th>
+            <th class="sub-th sub-th-curr">PARTICIPANTS</th><th class="sub-th sub-th-curr">TXNS</th>
           </tr>
         `;
         document.getElementById("lblPrevMnt").innerText = `${prevMnt} TXNS:`;
         document.getElementById("lblCurrMnt").innerText = `${currMnt} TXNS:`;
     }
-
-    const DB_NAME = "CscTravelDB"; const STORE_NAME = "ReportsData";
-    function openDB() { return new Promise((res, rej) => { let req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = (e) => { let db = e.target.result; if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME); }; req.onsuccess = (e) => res(e.target.result); req.onerror = (e) => rej(e.target.error); }); }
-    async function getCachedData(key) { try { let db = await openDB(); return new Promise((res) => { let tx = db.transaction(STORE_NAME, "readonly"); let req = tx.objectStore(STORE_NAME).get(key); req.onsuccess = () => res(req.result); req.onerror = () => res(null); }); } catch(e) { return null; } }
-    
-    function fetchDataFromServer() {
-        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getTravelVlePerformance", service: "REDBUS", role: loggedInDesig, userId: loggedInUserId }) })
-        .then(res => res.json()).then(res => { if(res.success && res.data) { rawData = res.data; processData(); } }).catch(e => { alert("Network Error"); });
-    }
-    
-    function toProperCase(str) { if (!str || str.trim() === "") return "Unknown"; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
 
     function processData() {
         let isNew = document.getElementById("distTypeDropdown").value === "NEW";
@@ -399,9 +607,13 @@
         let distMap = {};
 
         rawData.forEach(r => {
-            if (isNew && isDM && !r.isMyNewDist) return; 
             let distName = toProperCase((isNew ? r.newDist : r.oldDist).trim());
             if(distName === "Unknown") return;
+
+            if (isDM) {
+                if (isNew && !dmNewDistrictsSet.has(distName)) return;
+                if (!isNew && dmAssignedOldDistrict && distName.toLowerCase() !== dmAssignedOldDistrict.toLowerCase()) return;
+            }
 
             if(!distMap[distName]) {
                 distMap[distName] = { name: distName, totCsc: 0, prevPart: 0, prevTxns: 0, currPart: 0, currTxns: 0 };
@@ -410,15 +622,18 @@
             let d = distMap[distName];
             d.totCsc++;
             
-            // 🌟 అసలైన మ్యాజిక్: ట్రాన్సాక్షన్స్ ఉంటే పార్టిసిపెంట్స్ కౌంట్ పెంచుతున్నాం 🌟
-            let pVal = parseFloat(r[prevKey]) || 0;
-            let cVal = parseFloat(r[currKey]) || 0;
+            let pVal = 0, cVal = 0;
+            for (let key in r) {
+                let cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cleanKey === prevKey || cleanKey === prevKey + '26' || cleanKey === prevKey + '27') pVal = parseFloat(r[key]) || 0;
+                if (cleanKey === currKey || cleanKey === currKey + '26' || cleanKey === currKey + '27') cVal = parseFloat(r[key]) || 0;
+            }
 
             d.prevTxns += pVal;
-            if(pVal > 0) d.prevPart++; // పోయిన నెల బుకింగ్ చేసిన VLE
+            if(pVal > 0) d.prevPart++;
 
             d.currTxns += cVal;
-            if(cVal > 0) d.currPart++; // ఈ నెల బుకింగ్ చేసిన VLE
+            if(cVal > 0) d.currPart++;
         });
 
         districtAggregatedData = Object.values(distMap).map(d => {
@@ -446,9 +661,11 @@
         document.getElementById("distDropdown").value = "";
         document.getElementById("distTypeDropdown").value = "OLD";
         document.getElementById("searchInput").value = "";
-        document.getElementById("monthDropdown").value = "2"; 
+        document.getElementById("monthDropdown").value = getDefaultMonthVal(); 
         selectedDistFilter = "";
-        processData();
+        
+        localStorage.removeItem(CACHE_KEY);
+        fetchDataFromServer();
     };
 
     window.toggleFullScreen = function() {
@@ -457,8 +674,8 @@
     };
     document.addEventListener('fullscreenchange', () => {
         let fsBtn = document.getElementById("fsBtn");
-        if (document.fullscreenElement) { fsBtn.innerHTML = "⛶ Exit Fullscreen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
-        else { fsBtn.innerHTML = "⛶ Fullscreen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
+        if (document.fullscreenElement) { fsBtn.innerHTML = "✖ Exit Full Screen"; fsBtn.classList.replace("btn-full", "btn-exit-full"); } 
+        else { fsBtn.innerHTML = "⛶ Full Screen"; fsBtn.classList.replace("btn-exit-full", "btn-full"); }
     });
 
     window.toggleDistFilter = function(distName) {
@@ -481,14 +698,13 @@
         renderCharts(filteredData);
     }
 
-    // 🌟 కొత్త కాలమ్స్ తో టేబుల్ రెండరింగ్ 🌟
     function renderTableAndKPIs(dataArray) {
         let tbody = document.getElementById("reportBody");
         let tfoot = document.getElementById("reportFoot");
         tbody.innerHTML = ""; tfoot.innerHTML = "";
 
         if(dataArray.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-4 text-center fw-bold">No District Found</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="color:#b91c1c; padding:30px; text-align:center; font-weight:800;">No District Found</td></tr>`;
             document.getElementById("kpiPrev").innerText = "0";
             document.getElementById("kpiCurr").innerText = "0";
             document.getElementById("kpiVar").innerText = "0";
@@ -511,12 +727,12 @@
 
             tbody.innerHTML += `
             <tr>
-                <td class="clickable-dist text-primary fw-bold text-start ps-3" ondblclick="toggleDistFilter('${d.name}')">${d.name}</td>
+                <td class="clickable-dist" ondblclick="toggleDistFilter('${d.name.replace(/'/g, "\\'")}')">${d.name}</td>
                 <td class="fw-bold">${d.totCsc}</td>
-                <td style="color:#64748b;">${d.prevPart}</td>
-                <td style="color:#0f172a; font-weight:900;">${d.prevTxns}</td>
-                <td style="color:#3b82f6;">${d.currPart}</td>
-                <td style="color:#1d4ed8; font-weight:900;">${d.currTxns}</td>
+                <td style="color:#525d56;">${d.prevPart}</td>
+                <td style="color:#141a17; font-weight:900;">${d.prevTxns}</td>
+                <td style="color:#164e63; font-weight:800;">${d.currPart}</td>
+                <td style="color:#1b4332; font-weight:900; background-color:var(--forest-soft);">${d.currTxns}</td>
                 <td class="${varClass}">${varSign}${d.variance}</td>
                 <td class="${varClass}">${varSign}${d.growthPerc}%</td>
                 <td><span class="${badgeClass}">${badgeIcon}</span></td>
@@ -525,9 +741,10 @@
 
         let tGrw = tPrevTxn > 0 ? ((tVar / tPrevTxn) * 100).toFixed(1) : 0;
         
-        let tVarClass = "text-neu"; let tVarSign = ""; let tBorderClass = "kpi-var";
-        if(tVar > 0) { tVarClass = "text-pos"; tVarSign = "+"; tBorderClass = "kpi-grw"; }
-        else if(tVar < 0) { tVarClass = "text-neg"; tBorderClass = "kpi-prev"; document.getElementById("kpiVar").parentNode.style.borderLeftColor = "#dc2626"; }
+        let tVarClass = "text-neu"; let tFootClass = "t-neu"; let tVarSign = "";
+        if(tVar > 0) { tVarClass = "text-pos"; tFootClass = "t-pos"; tVarSign = "+"; document.getElementById("kpiVar").parentNode.style.borderLeftColor = "#15803d"; }
+        else if(tVar < 0) { tVarClass = "text-neg"; tFootClass = "t-neg"; document.getElementById("kpiVar").parentNode.style.borderLeftColor = "#b91c1c"; }
+        else { document.getElementById("kpiVar").parentNode.style.borderLeftColor = "#c5a059"; }
 
         document.getElementById("kpiPrev").innerText = tPrevTxn;
         document.getElementById("kpiCurr").innerText = tCurrTxn;
@@ -542,15 +759,15 @@
 
         tfoot.innerHTML = `
         <tr class="t-row-total">
-            <td class="text-start ps-3 text-danger">GRAND TOTAL</td>
-            <td>${tCsc}</td>
-            <td style="color:#64748b;">${tPrevPart}</td>
-            <td style="color:#0f172a;">${tPrevTxn}</td>
-            <td style="color:#3b82f6;">${tCurrPart}</td>
-            <td style="color:#1d4ed8;">${tCurrTxn}</td>
-            <td class="${tVarClass}">${tVarSign}${tVar}</td>
-            <td class="${tVarClass}">${tVarSign}${tGrw}%</td>
-            <td>--</td>
+            <td class="text-start ps-3">GRAND TOTAL</td>
+            <td style="color:#ffffff !important;">${tCsc}</td>
+            <td style="color:#d5cfbe !important;">${tPrevPart}</td>
+            <td style="color:#ffffff !important;">${tPrevTxn}</td>
+            <td style="color:#7dd3fc !important;">${tCurrPart}</td>
+            <td style="color:#e6c885 !important;">${tCurrTxn}</td>
+            <td class="${tFootClass}">${tVarSign}${tVar}</td>
+            <td class="${tFootClass}">${tVarSign}${tGrw}%</td>
+            <td style="color:#d5cfbe !important;">--</td>
         </tr>`;
     }
 
@@ -558,18 +775,17 @@
         if(dataArray.length === 0) return;
 
         let labels = [], varData = [];
-        let growCount = 0, declineCount = 0, neuCount = 0;
+        let growCount = 0, declineCount = 0;
 
         dataArray.forEach(d => {
-            labels.push(d.name.substring(0,8) + ".."); 
+            labels.push(d.name.length > 9 ? d.name.substring(0, 9) + ".." : d.name); 
             varData.push(d.variance);
             
             if(d.status === "GROWTH") growCount++;
             else if(d.status === "DECLINE") declineCount++;
-            else neuCount++;
         });
 
-        let bgColors = varData.map(v => v >= 0 ? '#10b981' : '#ef4444');
+        let bgColors = varData.map(v => v >= 0 ? '#1b4332' : '#991b1b');
 
         if(barChartInstance) barChartInstance.destroy();
         let ctxBar = document.getElementById('barChart').getContext('2d');
@@ -588,9 +804,9 @@
             type: 'doughnut',
             data: {
                 labels: ['Growing 📈', 'Declining 📉'],
-                datasets: [{ data: [growCount, declineCount], backgroundColor: ['#10b981', '#ef4444'], hoverOffset: 4 }]
+                datasets: [{ data: [growCount, declineCount], backgroundColor: ['#1b4332', '#991b1b'], borderColor: '#faf8f2', borderWidth: 3, hoverOffset: 4 }]
             },
-            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#141a17', font: { family: 'Plus Jakarta Sans', weight: 'bold' } } } } }
         });
     }
 
@@ -607,13 +823,25 @@
        let captureArea = document.getElementById('captureArea');
        
        setTimeout(() => {
-           html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: -window.scrollY, windowWidth: captureArea.scrollWidth, windowHeight: captureArea.scrollHeight + 50 })
-           .then(canvas => {
+           html2canvas(captureArea, {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#faf8f2",
+              width: captureArea.offsetWidth,
+              height: captureArea.offsetHeight,
+              windowWidth: captureArea.offsetWidth
+           }).then(canvas => {
               document.documentElement.classList.remove("exporting");
               let link = document.createElement('a');
-              link.download = `REDBUS_MoM_Growth.png`; link.href = canvas.toDataURL("image/png"); link.click();
+              let dStr = ("0" + new Date().getDate()).slice(-2) + "-" + ("0" + (new Date().getMonth() + 1)).slice(-2) + "-" + new Date().getFullYear();
+              link.download = `REDBUS_MoM_Growth_${dStr}.png`;
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+           }).catch(err => {
+              console.error("Image capture failed:", err);
+              document.documentElement.classList.remove("exporting");
            });
-       }, 500); 
+       }, 350); 
     }
   </script>
 </body>
