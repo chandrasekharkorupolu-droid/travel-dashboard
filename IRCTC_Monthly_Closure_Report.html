@@ -25,14 +25,14 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--cream-bg); color: var(--charcoal); display: flex; flex-direction: column; min-height: 100vh; padding: 12px 15px; gap: 14px; }
 
-        /* టాప్ కంట్రోల్స్ (Two-Row Layout) */
+        /* Top Controls */
         .top-controls-wrapper {
             background-color: var(--cream-card); padding: 14px 20px; border-radius: 10px;
             box-shadow: 0 3px 10px rgba(27,67,50,0.08); border: 1.5px solid var(--forest);
             display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;
         }
         
-        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .top-controls-header { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
         .page-heading {
             font-family: 'Cinzel', serif; font-size: 19px; color: var(--forest); font-weight: 800;
             display: flex; align-items: center; gap: 8px; letter-spacing: 0.6px; text-transform: uppercase;
@@ -69,7 +69,7 @@
             border: 2px solid var(--forest); border-top: 6px solid var(--gold);
         }
 
-        .capture-compact { margin: 0 auto !important; border-radius: 0 !important; box-shadow: none !important; }
+        .capture-compact { width: 900px !important; max-width: 900px !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
 
         /* Header Style */
         .report-header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px dashed var(--gold); }
@@ -168,14 +168,11 @@
         .spinner { width: 32px; height: 32px; border: 4px solid var(--border); border-top-color: var(--forest); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Full Screen Modifiers */
         body.fullscreen-mode { padding: 0; gap: 0; }
         body.fullscreen-mode .top-controls-wrapper { border-radius: 0; }
         body.fullscreen-mode #captureArea { border-radius: 0; box-shadow: none; height: 100vh; overflow-y: auto; }
 
-        /* ========================================================================= */
-        /* 📱 MOBILE RESPONSIVENESS FOR CLOSURE REPORT CARD (Added by Chandra) 📱 */
-        /* ========================================================================= */
+        /* 📱 MOBILE RESPONSIVENESS 📱 */
         @media (max-width: 768px) {
             html, body { height: auto; overflow: auto !important; }
             body { padding: 10px; gap: 15px; }
@@ -222,7 +219,8 @@
     <div class="top-controls-wrapper">
         <div class="top-controls-header">
             <div class="page-heading">🎓 Closure Report Card</div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-action" onclick="fetchData(true)">🔄 Refresh</button>
                 <button class="btn-action" onclick="resetFilters()">↺ Reset</button>
                 <button class="btn-action" id="downloadBtn" onclick="downloadImage()">📸 Download Poster</button>
                 <button class="btn-action" id="fullscreenBtn" onclick="toggleFullScreen()">⛶ Full Screen</button>
@@ -277,7 +275,7 @@
     <div id="captureArea" style="display:none;">
         <div class="report-header">
             <h1 id="dynamicTitle">ANANTAPUR</h1>
-            <h3 id="sd-month">CLOSURE REPORT : APRIL 2026</h3>
+            <h3 id="sd-month">CLOSURE REPORT : NOVEMBER 2026</h3>
             <div class="team-badge" id="sd-team">👥 Team: District Team</div>
         </div>
 
@@ -313,7 +311,7 @@
 
         <div class="middle-cards-row">
             <div class="mid-box mid-box-grey">
-                <div class="mid-lbl">TOTAL VLES</div>
+                <div class="mid-lbl">LIVE VLES</div>
                 <div class="mid-val" id="m-tot-vles">0</div>
             </div>
             <div class="mid-box mid-box-blue">
@@ -362,20 +360,60 @@
         let oldDistrictsList = [];
         let newDistrictsList = [];
 
-        // 🌟 మీ ఒరిజినల్ కోడ్ లో ఉన్న గ్లోబల్ వేరియబుల్స్ 🌟
         let loggedInDesig = localStorage.getItem("userDesignation") || "State Head"; 
         let loggedInUserId = (localStorage.getItem("userId") || "").trim(); 
         let loggedInUserName = localStorage.getItem("userName") || ""; 
-        let isDM = loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
+        let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
         let dmAssignedOldDistrict = "";
 
         let dmMappedOldDistricts = new Set();
         let dmMappedNewDistricts = new Set();
 
         const monthNames = ["APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER", "JANUARY", "FEBRUARY", "MARCH"];
+        const fy26MonthsMeta = [
+            { short: 'apr', full: 'april', yr2: '26', yr4: '2026' },
+            { short: 'may', full: 'may', yr2: '26', yr4: '2026' },
+            { short: 'jun', full: 'june', yr2: '26', yr4: '2026' },
+            { short: 'jul', full: 'july', yr2: '26', yr4: '2026' },
+            { short: 'aug', full: 'august', yr2: '26', yr4: '2026' },
+            { short: 'sep', full: 'september', yr2: '26', yr4: '2026' },
+            { short: 'oct', full: 'october', yr2: '26', yr4: '2026' },
+            { short: 'nov', full: 'november', yr2: '26', yr4: '2026' },
+            { short: 'dec', full: 'december', yr2: '26', yr4: '2026' },
+            { short: 'jan', full: 'january', yr2: '27', yr4: '2027' },
+            { short: 'feb', full: 'february', yr2: '27', yr4: '2027' },
+            { short: 'mar', full: 'march', yr2: '27', yr4: '2027' }
+        ];
+
         const apiURL = "https://script.google.com/macros/s/AKfycby4S9U-tUh14QeZDI17UsOIOoEi5DMgORTWYllh1knGoeZQS_IJoavZWZ6RDWsD5uls/exec";
 
-        // 🌟 బ్రహ్మాస్త్రం: పేరు మ్యాచింగ్ లాజిక్ 🌟
+        function parseNum(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            return parseInt(String(val).replace(/[^0-9-]/g, ''), 10) || 0;
+        }
+
+        function parseCustomDate(dateVal) {
+            if (!dateVal || dateVal === '-' || String(dateVal).trim() === '') return new Date(NaN);
+            if (dateVal instanceof Date) return dateVal;
+            let str = String(dateVal).trim();
+            if (str.includes('T')) {
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) return d;
+            }
+            const monthMap = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+            let parts = str.split(/[-/\s.]+/);
+            if (parts.length >= 3) {
+                let p1 = parseInt(parts[0], 10);
+                let p2Str = parts[1].toLowerCase().slice(0, 3);
+                let p3 = parseInt(parts[2], 10);
+                if (!isNaN(p1) && monthMap[p2Str] !== undefined && !isNaN(p3) && p3 > 1000) return new Date(p3, monthMap[p2Str], p1);
+                let p2 = parseInt(parts[1], 10);
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p3 > 1000) return new Date(p3, p2 - 1, p1);
+                if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3) && p1 > 1000) return new Date(p1, p2 - 1, p3);
+            }
+            return new Date(str.replace(/-/g, ' '));
+        }
+
         function isNameMatch(sheetName, loginName) {
             if (!sheetName || !loginName) return false;
             let sClean = sheetName.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -386,68 +424,108 @@
             return false;
         }
 
+        function findMonthCol(cleanHeaders, meta) {
+            return cleanHeaders.findIndex(h => {
+                if (!h || h.includes('pending') || h.includes('target') || h.includes('dsp') || h.includes('redbus') || h.includes('rev')) return false;
+                return (
+                    h === (meta.short + meta.yr2) ||
+                    h === (meta.short + meta.yr4) ||
+                    h === (meta.full + meta.yr2) ||
+                    h === (meta.full + meta.yr4) ||
+                    (h.includes(meta.short) && h.includes(meta.yr2) && !h.includes('20' + (meta.yr2 === '26' ? '27' : '26')))
+                );
+            });
+        }
+
+        function readCachedArray(storage, key) {
+            try {
+                let raw = storage.getItem(key);
+                if (!raw) return null;
+                let parsed = JSON.parse(raw);
+                let arr = parsed && parsed.data ? parsed.data : parsed;
+                return (Array.isArray(arr) && arr.length > 1) ? arr : null;
+            } catch (e) { return null; }
+        }
+
         window.onload = function() {
             let d = new Date();
             let currMonth = d.getMonth(); 
             let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
             document.getElementById("dataMonth").value = fyMonthIndex.toString();
-
-            document.getElementById("loaderArea").style.display = "block";
-            fetchData();
+            fetchData(false);
         };
 
-        async function fetchData() {
-            try {
-                let cachedConfig = sessionStorage.getItem("cscTargetConfig");
-                let cachedVles = sessionStorage.getItem("cscTravelData");
-                let cachedUsers = sessionStorage.getItem("cscUsersData");
+        async function fetchData(forceRefresh = false) {
+            document.getElementById("loaderArea").style.display = "block";
+            document.getElementById("captureArea").style.display = "none";
 
-                let confData = cachedConfig ? JSON.parse(cachedConfig) : null;
-                let vlesData = cachedVles ? JSON.parse(cachedVles) : null;
-                let usersData = cachedUsers ? JSON.parse(cachedUsers) : null;
+            try {
+                if (forceRefresh) {
+    try { sessionStorage.removeItem("cscTargetConfig"); } catch(e) {}
+    try { sessionStorage.removeItem("cscTravelData"); } catch(e) {}
+    try { sessionStorage.removeItem("cscTravelData_IRCTC"); } catch(e) {}
+    try { sessionStorage.removeItem("cscUsersData"); } catch(e) {}
+    try { localStorage.removeItem("cscGlobalData"); } catch(e) {}
+}
+
+
+                let confData = readCachedArray(sessionStorage, "cscTargetConfig");
+                let vlesData = readCachedArray(sessionStorage, "cscTravelData") ||
+                               readCachedArray(sessionStorage, "cscTravelData_IRCTC") ||
+                               readCachedArray(localStorage, "cscGlobalData");
+                let usersData = readCachedArray(sessionStorage, "cscUsersData") ||
+                                readCachedArray(localStorage, "cscUsersData");
 
                 let promises = [];
-                let timestamp = new Date().getTime();
 
                 if (!confData) {
-                    promises.push(fetch(apiURL + "?sheet=Targets_Config&t=" + timestamp).then(r => r.json()).then(d => {
-                        confData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTargetConfig", JSON.stringify(d));
+                    promises.push(fetch(apiURL + "?sheet=Targets_Config", { redirect: "follow" }).then(r => r.json()).then(d => {
+                        let arr = d && d.data ? d.data : d;
+                        if (Array.isArray(arr) && arr.length > 0) {
+                            confData = arr;
+                            try { sessionStorage.setItem("cscTargetConfig", JSON.stringify(arr)); } catch(e) {}
+                        }
                     }).catch(() => null));
                 }
                 
                 if (!vlesData) {
-                    promises.push(fetch(apiURL + "?t=" + timestamp).then(r => r.json()).then(d => {
-                        vlesData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscTravelData", JSON.stringify(d));
+                    promises.push(fetch(apiURL, { redirect: "follow" }).then(r => r.json()).then(d => {
+                        let arr = d && d.data ? d.data : d;
+                        if (Array.isArray(arr) && arr.length > 1) {
+                            vlesData = arr;
+                            try { sessionStorage.setItem("cscTravelData", JSON.stringify(arr)); } catch(e) {}
+                        }
                     }).catch(() => null));
                 }
 
-                // 🌟 ఇక్కడ Users షీట్ ని లోడ్ చేసి, DM జిల్లాని ఫైండ్ అవుట్ చేస్తున్నాం 🌟
                 if (!usersData) {
-                    promises.push(fetch(apiURL + "?sheet=Users").then(r => r.json()).then(d => {
-                        usersData = d;
-                        if(d && d.length > 0) sessionStorage.setItem("cscUsersData", JSON.stringify(d));
+                    promises.push(fetch(apiURL + "?sheet=Users", { redirect: "follow" }).then(r => r.json()).then(d => {
+                        let arr = d && d.data ? d.data : d;
+                        if (Array.isArray(arr) && arr.length > 0) {
+                            usersData = arr;
+                            try { sessionStorage.setItem("cscUsersData", JSON.stringify(arr)); } catch(e) {}
+                        }
                     }).catch(() => null));
                 }
 
                 if (promises.length > 0) await Promise.all(promises);
                 
-                if (confData && confData.length > 0) {
-                    for(let i=1; i<confData.length; i++) {
-                        if(confData[i][0] === "IRCTC_BOOKING") targetTxnsAnnual = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 181654;
-                        if(confData[i][0] === "IRCTC_REG") targetRegsAnnual = parseInt(confData[i][4]) || parseInt(confData[i][2]) || 809;
+                if (Array.isArray(confData) && confData.length > 0) {
+                    for (let i = 1; i < confData.length; i++) {
+                        if (!confData[i]) continue;
+                        if (confData[i][0] === "IRCTC_BOOKING") targetTxnsAnnual = parseNum(confData[i][4]) || parseNum(confData[i][2]) || 181654;
+                        if (confData[i][0] === "IRCTC_REG") targetRegsAnnual = parseNum(confData[i][4]) || parseNum(confData[i][2]) || 809;
                     }
                 }
 
                 try {
-                    if(usersData && usersData.length > 0) {
-                        let uHeaders = usersData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    if (Array.isArray(usersData) && usersData.length > 0) {
+                        let uHeaders = usersData[0].map(h => (h === null || h === undefined) ? '' : h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                         let idxUid = uHeaders.findIndex(h => h === 'userid' || h === 'user');
                         let idxDist = uHeaders.findIndex(h => h === 'district'); 
 
                         if (isDM && loggedInUserId !== "" && idxUid > -1 && idxDist > -1) {
-                            for(let i=1; i<usersData.length; i++) {
+                            for (let i = 1; i < usersData.length; i++) {
                                 let sheetUid = (usersData[i][idxUid] || '').toString().trim();
                                 if (sheetUid === loggedInUserId) {
                                     dmAssignedOldDistrict = (usersData[i][idxDist] || '').toString().trim();
@@ -458,24 +536,28 @@
                     }
                 } catch(e) { console.warn("Could not parse Users sheet", e); }
 
-                if (vlesData && vlesData.length > 0) {
-                    let cleanHeaders = vlesData[0].map(h => h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
+                if (Array.isArray(vlesData) && vlesData.length > 1) {
+                    let cleanHeaders = vlesData[0].map(h => (h === null || h === undefined) ? '' : h.toString().toLowerCase().replace(/[^a-z0-9]/g, ''));
                     let idxcscid = cleanHeaders.findIndex(h => h.includes('cscid'));
-                    let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict'));
+                    let idxolddist = cleanHeaders.findIndex(h => h.includes('olddistrict') || h === 'district');
                     let idxnewdist = cleanHeaders.findIndex(h => h.includes('newdistrict'));
-                    let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname'));
+                    let idxempname = cleanHeaders.findIndex(h => h.includes('employeename') || h.includes('empname') || h.includes('dmname'));
                     let idxDate = cleanHeaders.findIndex(h => h.includes('dateofcreation') || h.includes('creationdate'));
                     let idxAmcStatus = cleanHeaders.findIndex(h => h.includes('amcstatus'));
+                    let idxAmcStart = cleanHeaders.findIndex(h => h.includes('amcstartdate') || h.includes('amcstart'));
+                    let idxAmcEnd = cleanHeaders.findIndex(h => h.includes('amcenddate') || h.includes('amcend'));
+                    let idxHoRemarks = cleanHeaders.findIndex(h => h.includes('horemarks'));
+                    if (idxHoRemarks === -1 && vlesData[0].length > 36) idxHoRemarks = 36;
                     
-                    // 🌟 STRICT COLUMN FILTER: Pending, DSP, Target లాంటివి రాకుండా పక్కాగా 25-26 ని తీసుకుంటుంది 🌟
                     let idx26 = cleanHeaders.findIndex(h => (h.includes('202526') || h.includes('2526') || h.includes('txns25')) && !h.includes('pending') && !h.includes('target') && !h.includes('dsp') && !h.includes('redbus')); 
                     
-                    let mIndices = [];
-                    if (idx26 > -1) {
-                        for (let k = 1; k <= 12; k++) {
-                            if (idx26 + k < vlesData[0].length) mIndices.push(idx26 + k);
+                    let mIndices = fy26MonthsMeta.map((meta, idx) => {
+                        let c = findMonthCol(cleanHeaders, meta);
+                        if (c === -1 && idx26 > -1 && (idx26 + 1 + idx < vlesData[0].length)) {
+                            c = idx26 + 1 + idx;
                         }
-                    }
+                        return c;
+                    });
 
                     globalVles = [];
                     let oldSet = new Set();
@@ -483,10 +565,14 @@
                     dmMappedOldDistricts.clear();
                     dmMappedNewDistricts.clear();
 
-                    for(let i=1; i<vlesData.length; i++) {
+                    let currentDate = new Date();
+
+                    for (let i = 1; i < vlesData.length; i++) {
                         let row = vlesData[i];
-                        let cscId = idxcscid > -1 ? row[idxcscid] : '';
-                        if(!cscId || cscId === '-') continue;
+                        if (!row) continue;
+
+                        let cscId = idxcscid > -1 ? (row[idxcscid] || '').toString().trim() : '';
+                        if (!cscId || cscId === '-') continue;
 
                         let oldD = idxolddist > -1 ? (row[idxolddist] || '').toString().trim() : '';
                         let newD = idxnewdist > -1 ? (row[idxnewdist] || '').toString().trim() : '';
@@ -495,30 +581,32 @@
                         let oldKey = oldD.toLowerCase();
                         let newKey = newD.toLowerCase();
 
-                        // 🌟 100% పక్కా DM ఫిల్టరింగ్ లాజిక్ 🌟
                         let allowedForOld = true;
                         let allowedForNew = true;
-                        
                         if (isDM) {
                             allowedForOld = (dmAssignedOldDistrict && oldKey === dmAssignedOldDistrict.toLowerCase());
                             allowedForNew = isNameMatch(dmNameStr, loggedInUserName);
                         }
 
-                        if(oldD && oldD !== '-' && oldKey !== 'unknown') oldSet.add(oldD);
-                        if(newD && newD !== '-' && newKey !== 'unknown') newSet.add(newD);
+                        if (oldD && oldD !== '-' && oldKey !== 'unknown') oldSet.add(oldD);
+                        if (newD && newD !== '-' && newKey !== 'unknown') newSet.add(newD);
 
                         if (isDM) {
-                            if(allowedForOld && oldD !== 'Unknown' && oldD !== '-') dmMappedOldDistricts.add(oldD);
-                            if(allowedForNew && newD !== 'Unknown' && newD !== '-') dmMappedNewDistricts.add(newD);
+                            if (allowedForOld && oldD !== 'Unknown' && oldD !== '-') dmMappedOldDistricts.add(oldD);
+                            if (allowedForNew && newD !== 'Unknown' && newD !== '-') dmMappedNewDistricts.add(newD);
                         }
 
-                        let fy26 = idx26 > -1 ? (parseInt(row[idx26]) || 0) : 0; 
+                        let hoRemark = (idxHoRemarks > -1 && idxHoRemarks < row.length) ? (row[idxHoRemarks] || '').toString().trim().toLowerCase() : '';
+                        let isClosed = hoRemark.includes('delete') || hoRemark.includes('suspend') || hoRemark.includes('blacklist') || hoRemark.includes('block');
+                        let isAmcBlocked = hoRemark.includes('suspend') || hoRemark.includes('blacklist') || hoRemark.includes('block');
+
+                        let fy26 = idx26 > -1 ? parseNum(row[idx26]) : 0; 
                         let isAct25 = fy26 > 0;
 
                         let dateStr = idxDate > -1 ? row[idxDate] : '';
                         let regMonthIdx = -1;
                         if (dateStr && dateStr !== '-') {
-                            let rowDate = new Date(dateStr);
+                            let rowDate = parseCustomDate(dateStr);
                             if (!isNaN(rowDate.getTime())) {
                                 let y = rowDate.getFullYear();
                                 let m = rowDate.getMonth() + 1; 
@@ -529,25 +617,47 @@
                             }
                         }
 
-                        let mTxnsArr = [];
-                        for(let m=0; m<12; m++) {
-                            let colIdx = mIndices[m];
-                            mTxnsArr.push((colIdx !== undefined && colIdx > -1) ? (parseInt(row[colIdx]) || 0) : 0);
-                        }
+                        let mTxnsArr = mIndices.map(colIdx => (colIdx > -1 && colIdx < row.length) ? parseNum(row[colIdx]) : 0);
                         
+                        // 🌟 EXACT AMC SUMMARY REPORT LOGIC (FY 26-27 Active MaxGain Only) 🌟
                         let amcStatus = idxAmcStatus > -1 ? (row[idxAmcStatus] || '').toString().toLowerCase() : '';
-                        let hasAmcPaid = amcStatus.includes('paid');
+                        let amcStartStr = idxAmcStart > -1 ? (row[idxAmcStart] || '').toString().trim() : '';
+                        let amcEndStr = idxAmcEnd > -1 ? (row[idxAmcEnd] || '').toString().trim() : '';
+
+                        let isPaid = amcStatus.includes('paid');
+                        let hasAmcHistory = isPaid || amcStatus.includes('expire') || (amcEndStr !== '' && amcEndStr !== '-');
+
+                        let endDate = parseCustomDate(amcEndStr);
+                        let hasValidEndDate = !isNaN(endDate.getTime());
+                        let isAmcActivated = false;
+                        if (isPaid || hasValidEndDate) {
+                            if (hasValidEndDate && endDate >= currentDate) isAmcActivated = true;
+                            else if (!hasValidEndDate && isPaid) isAmcActivated = true;
+                        }
+
+                        let amcFy = '';
+                        let startDate = parseCustomDate(amcStartStr);
+                        if (!isNaN(startDate.getTime())) {
+                            let fyStartYear = (startDate.getMonth() + 1 >= 4) ? startDate.getFullYear() : startDate.getFullYear() - 1;
+                            if (fyStartYear === 2025) amcFy = '25-26';
+                            else if (fyStartYear === 2026) amcFy = '26-27';
+                        }
+
+                        let isAmcFy2627Achieved = isAmcActivated && (amcFy === '26-27') && (amcStatus.includes('max gain') || amcStatus.includes('maxgain'));
 
                         globalVles.push({
                             cscid: cscId,
                             olddist: oldD,
                             newdist: newD,
                             dmname: dmNameStr,
+                            isClosed: isClosed,
+                            isAmcBlocked: isAmcBlocked,
                             isAct25: isAct25,
                             fy26_txns: fy26,
                             monthsTxn: mTxnsArr,
                             regMonthIdx: regMonthIdx,
-                            hasAmcPaid: hasAmcPaid,
+                            hasAmcHistory: hasAmcHistory,
+                            isAmcFy2627Achieved: isAmcFy2627Achieved,
                             allowedForOld: allowedForOld,
                             allowedForNew: allowedForNew
                         });
@@ -555,7 +665,7 @@
                     oldDistrictsList = Array.from(oldSet).sort();
                     newDistrictsList = Array.from(newSet).sort();
                 }
-            } catch(e) { console.warn("Error processing data", e); }
+            } catch(e) { console.error("Error processing data:", e); }
             
             document.getElementById("loaderArea").style.display = "none";
             document.getElementById("captureArea").style.display = "block";
@@ -569,17 +679,16 @@
             distDropdown.innerHTML = '<option value="All">ANDHRA PRADESH (ALL)</option>';
             
             let list = type === "old" ? oldDistrictsList : newDistrictsList;
-            
             if (isDM) {
-                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                 list = list.filter(dist => mappedSet.has(dist));
+                let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                list = list.filter(dist => mappedSet.has(dist));
             }
 
             list.forEach(dist => { distDropdown.innerHTML += `<option value="${dist}">${dist}</option>`; });
             
             if (!isDM) {
                 let anantapurExists = Array.from(distDropdown.options).find(opt => opt.value.toLowerCase().includes('anantapur'));
-                if(anantapurExists) distDropdown.value = anantapurExists.value;
+                if (anantapurExists) distDropdown.value = anantapurExists.value;
                 else if (distDropdown.options.length > 1) distDropdown.value = distDropdown.options[1].value;
             } else {
                 if (distDropdown.options.length > 1) distDropdown.value = distDropdown.options[1].value;
@@ -589,14 +698,13 @@
         }
 
         function getPercentage(achieved, target) {
-            if(target <= 0) return achieved > 0 ? 100 : 0;
+            if (target <= 0) return achieved > 0 ? 100 : 0;
             let pct = (achieved / target) * 100;
             return pct > 100 ? 100 : Math.round(pct); 
         }
 
         function getPeriodInfo(period) {
             let info = { title: "", months: [], isMonth: false, isYearly: false };
-            
             if (!isNaN(period)) {
                 let m = parseInt(period);
                 info.title = monthNames[m];
@@ -608,7 +716,6 @@
             else if (period === 'q2') { info.title = "Q2"; info.months = [3,4,5]; }
             else if (period === 'q3') { info.title = "Q3"; info.months = [6,7,8]; }
             else if (period === 'q4') { info.title = "Q4"; info.months = [9,10,11]; }
-            
             return info;
         }
 
@@ -659,31 +766,29 @@
             let stateTotalAct25 = 0;
             let validDistricts = type === 'old' ? oldDistrictsList : newDistrictsList;
             if (isDM) {
-                 let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
-                 validDistricts = validDistricts.filter(dist => mappedSet.has(dist));
+                let mappedSet = type === 'old' ? dmMappedOldDistricts : dmMappedNewDistricts;
+                validDistricts = validDistricts.filter(dist => mappedSet.has(dist));
             }
-            let distCount = validDistricts.length;
-            if(distCount === 0) distCount = 1;
+            let distCount = validDistricts.length || 1;
 
             globalVles.forEach(v => {
-                // 🌟 DM అయితే ఆయనకు సంబంధం లేని రోస్ ని స్టేట్ కౌంట్ లోకి తీసుకోదు 🌟
                 if (isDM && type === 'old' && !v.allowedForOld) return;
                 if (isDM && type === 'new' && !v.allowedForNew) return;
-
-                if(v[distKey] && v[distKey] !== '-' && v[distKey].toLowerCase() !== 'unknown') {
-                    if(v.isAct25) stateTotalAct25++;
+                if (v[distKey] && v[distKey] !== '-' && v[distKey].toLowerCase() !== 'unknown') {
+                    if (v.isAct25) stateTotalAct25++;
                 }
             });
-            if(stateTotalAct25 === 0) stateTotalAct25 = 1;
+            if (stateTotalAct25 === 0) stateTotalAct25 = 1;
 
             let act25 = 0;
-            let totalVles = 0;
+            let liveVles = 0;
             let txnAchieved = 0;
             let regAchieved = 0;
             let cumulativeOldActive = 0;
             let cumulativeNewActive = 0;
             let amcEligible = 0;
             let amcAchieved = 0;
+            let yetToAct = 0;
 
             globalVles.forEach(v => {
                 if (isDM && type === 'old' && !v.allowedForOld) return;
@@ -692,8 +797,8 @@
                 let dName = v[distKey];
                 if (selectedDist !== "All" && dName !== selectedDist) return;
                 
-                totalVles++;
-                if(v.isAct25) act25++;
+                if (!v.isClosed) liveVles++;
+                if (v.isAct25) act25++;
 
                 periodInfo.months.forEach(m => {
                     txnAchieved += v.monthsTxn[m];
@@ -701,20 +806,21 @@
                 });
 
                 let hasTransactedTillMonth = false;
-                let cumulativeTxns = 0;
-                for(let i=0; i<=maxMonthIdx; i++) {
+                for (let i = 0; i <= maxMonthIdx; i++) {
                     if (v.monthsTxn[i] > 0) hasTransactedTillMonth = true;
-                    cumulativeTxns += v.monthsTxn[i];
                 }
 
                 if (hasTransactedTillMonth) {
                     if (v.isAct25) cumulativeOldActive++;
                     else cumulativeNewActive++;
+                } else if (v.isAct25 && !v.isClosed) {
+                    yetToAct++;
                 }
 
-                if (v.fy26_txns >= 100 || cumulativeTxns >= 100 || v.hasAmcPaid) {
+                let fullFy27Txns = v.monthsTxn.reduce((a, b) => a + b, 0);
+                if (!v.isAmcBlocked && (v.fy26_txns >= 100 || fullFy27Txns >= 100 || v.hasAmcHistory)) {
                     amcEligible++;
-                    if (v.hasAmcPaid) amcAchieved++;
+                    if (v.isAmcFy2627Achieved) amcAchieved++;
                 }
             });
 
@@ -723,7 +829,6 @@
 
             if (selectedDist === "All") {
                 if (isDM) {
-                    let vRatio = act25 / stateTotalAct25; 
                     txnTargetAnnualDist = Math.round(targetTxnsAnnual * (act25 / 4514)); 
                     regTargetAnnualDist = Math.floor(targetRegsAnnual * (distCount / 26)); 
                 } else {
@@ -731,9 +836,7 @@
                     regTargetAnnualDist = targetRegsAnnual;
                 }
             } else {
-                let stateWideDenominator = isDM ? stateTotalAct25 : 4514; 
-                if (!isDM) stateWideDenominator = stateTotalAct25; 
-
+                let stateWideDenominator = isDM ? 4514 : stateTotalAct25;
                 let vRatio = act25 / stateWideDenominator;
                 txnTargetAnnualDist = Math.round(targetTxnsAnnual * vRatio);
                 
@@ -752,9 +855,7 @@
             let aPct = getPercentage(amcAchieved, amcEligible);
 
             let totalTransacting = cumulativeOldActive + cumulativeNewActive;
-            let totalInactive = totalVles - totalTransacting;
-            let yetToAct = act25 - cumulativeOldActive;
-            if(yetToAct < 0) yetToAct = 0;
+            let totalInactive = Math.max(0, liveVles - totalTransacting);
 
             document.getElementById("t-txn-target").innerText = txnTarget.toLocaleString('en-IN');
             document.getElementById("t-txn-achieved").innerText = txnAchieved.toLocaleString('en-IN');
@@ -772,7 +873,7 @@
             document.getElementById("t-reg-pct").style.color = rPct >= 100 ? '#15803d' : (rPct >= 50 ? '#b45309' : '#b91c1c');
             document.getElementById("t-amc-pct").style.color = aPct >= 100 ? '#15803d' : (aPct >= 50 ? '#b45309' : '#b91c1c');
 
-            document.getElementById("m-tot-vles").innerText = totalVles.toLocaleString('en-IN');
+            document.getElementById("m-tot-vles").innerText = liveVles.toLocaleString('en-IN');
             document.getElementById("m-act-25").innerText = act25.toLocaleString('en-IN');
             document.getElementById("m-tot-inact").innerText = totalInactive.toLocaleString('en-IN');
 
@@ -783,7 +884,6 @@
             document.getElementById("b-yet-to-act").innerText = yetToAct.toLocaleString('en-IN');
 
             let insightsHtml = "";
-
             if (txnAchieved < txnTarget) {
                 insightsHtml += `<li>Target missed on bookings. Focus immediately on the <span class="hl-red">${yetToAct}</span> pending VLEs who worked last year but haven't started this year.</li>`;
             } else {
@@ -797,7 +897,7 @@
                 insightsHtml += `<li>Registration target hit! Keep up the excellent momentum.</li>`;
             }
 
-            let amcPending = amcEligible - amcAchieved;
+            let amcPending = Math.max(0, amcEligible - amcAchieved);
             if (amcPending > 0) {
                 insightsHtml += `<li><span class="alert-badge">ALERT</span> There are <span class="hl-red">${amcPending}</span> eligible VLEs who haven't taken AMC. Activating them will bring massive extra profit to VLEs!</li>`;
             } else if (amcEligible > 0) {
@@ -811,12 +911,10 @@
 
         function resetFilters() {
             document.getElementById("districtType").value = "old";
-            
             const d = new Date();
             let currMonth = d.getMonth(); 
             let fyMonthIndex = currMonth >= 3 ? currMonth - 3 : currMonth + 9;
             document.getElementById("dataMonth").value = fyMonthIndex.toString();
-
             updateDistrictsDropdown();
         }
 
@@ -833,7 +931,7 @@
             } catch (e) { console.log("Fullscreen not supported"); }
         }
 
-        document.addEventListener('fullscreenchange', (event) => {
+        document.addEventListener('fullscreenchange', () => {
             let btn = document.getElementById("fullscreenBtn");
             if (!document.fullscreenElement) {
                 btn.innerHTML = "⛶ Full Screen";
@@ -854,11 +952,13 @@
                 html2canvas(captureArea, { 
                     scale: 2, 
                     backgroundColor: "#faf8f2",
-                    useCORS: true
+                    useCORS: true,
+                    width: captureArea.offsetWidth,
+                    height: captureArea.offsetHeight,
+                    windowWidth: captureArea.offsetWidth
                 }).then(canvas => {
                     let link = document.createElement('a');
                     let dist = document.getElementById("districtName").value.replace(/ /g, '_');
-                    
                     let periodText = document.getElementById("dataMonth").options[document.getElementById("dataMonth").selectedIndex].text.split(" ")[0];
                     let safePeriodText = periodText.replace(/[^a-zA-Z0-9]/g, '_');
 
@@ -875,7 +975,7 @@
                     btn.innerHTML = "❌ Failed";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 });
-            }, 500); 
+            }, 350); 
         }
     </script>
 </body>
