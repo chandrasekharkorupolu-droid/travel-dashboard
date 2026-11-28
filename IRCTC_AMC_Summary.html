@@ -59,6 +59,32 @@
             background-color: var(--cream-bg); padding: 16px 12px 12px 12px; border-radius: 12px;
             border: 1.5px solid var(--border);
         }
+
+        /* 🌟 Compact WhatsApp Image Export Mode 🌟 */
+        .capture-compact {
+            width: 960px !important; max-width: 960px !important; margin: 0 !important;
+            background-color: var(--cream-bg) !important; padding: 20px 24px !important;
+            display: block !important; height: auto !important; overflow: visible !important; flex: none !important;
+            border: none !important; border-radius: 0 !important;
+        }
+        .capture-compact .report-header { margin-bottom: 14px !important; }
+        .capture-compact .kpi-grid { gap: 10px !important; margin-bottom: 14px !important; flex-wrap: nowrap !important; }
+        .capture-compact .kpi-card {
+            min-width: 0 !important; flex: 1 !important; padding: 10px 8px !important;
+            flex-direction: column !important; align-items: center !important; justify-content: center !important;
+            text-align: center !important; gap: 4px !important;
+        }
+        .capture-compact .kpi-title { font-size: 10px !important; }
+        .capture-compact .kpi-value { font-size: 19px !important; }
+        .capture-compact .table-container {
+            height: auto !important; overflow: visible !important; display: block !important;
+            flex: none !important; width: 100% !important; border: 1.5px solid var(--forest) !important; box-shadow: none !important;
+        }
+        .capture-compact table { width: 100% !important; min-width: 100% !important; }
+        .capture-compact th { padding: 10px 8px !important; font-size: 10.5px !important; }
+        .capture-compact td { padding: 8px 8px !important; font-size: 12.5px !important; }
+        .capture-compact .th-dist, .capture-compact .col-district { min-width: 165px !important; padding-left: 14px !important; }
+        .capture-compact thead, .capture-compact th, .capture-compact .col-district, .capture-compact tfoot tr.total-row td { position: static !important; }
         
         .report-header { text-align: center; margin-bottom: 18px; flex-shrink: 0; }
         .report-header h1 { font-family: 'Cinzel', serif; font-size: 22px; color: var(--forest-dark); font-weight: 800; letter-spacing: 0.8px; margin-bottom: 5px; text-transform: uppercase; }
@@ -668,58 +694,39 @@
             btn.disabled = true;
 
             const captureArea = document.getElementById("captureArea");
-            const tableWrapper = document.querySelector(".table-container");
-            
-            const origAreaOverflow = captureArea.style.overflow;
-            const origWrapperOverflow = tableWrapper.style.overflow;
-            
-            captureArea.style.overflow = "visible";
-            tableWrapper.style.overflow = "visible";
-            tableWrapper.style.height = "auto";
-            
-            const stickyEls = captureArea.querySelectorAll('th, td.col-district, tfoot td');
-            stickyEls.forEach(el => {
-                el.dataset.origPosition = el.style.position || window.getComputedStyle(el).position;
-                el.style.position = 'static';
-            });
+            captureArea.classList.add("capture-compact");
             
             setTimeout(() => {
                 html2canvas(captureArea, { 
                     scale: 2, 
                     backgroundColor: "#f4f1e6",
                     useCORS: true,
-                    windowWidth: captureArea.scrollWidth + 50
+                    width: captureArea.offsetWidth,
+                    height: captureArea.offsetHeight,
+                    windowWidth: captureArea.offsetWidth
                 }).then(canvas => {
                     let link = document.createElement('a');
                     let d = new Date();
                     let dateStr = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
                     
                     let typeSelect = document.getElementById("districtType");
-                    let typeText = typeSelect.options[typeSelect.selectedIndex].text; 
+                    let typeText = typeSelect.options[typeSelect.selectedIndex].text.replace(/\s+/g, "_"); 
                     let fyText = document.getElementById("fyFilter").value;
                     
                     link.download = `IRCTC_AMC_Summary_${fyText}_${typeText}_${dateStr}.png`;
                     link.href = canvas.toDataURL("image/png");
                     link.click();
 
-                    restoreStyles();
+                    captureArea.classList.remove("capture-compact");
                     btn.innerHTML = "✅ Downloaded";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 }).catch(err => {
                     console.error("Error capturing image:", err);
-                    restoreStyles();
+                    captureArea.classList.remove("capture-compact");
                     btn.innerHTML = "❌ Failed";
                     setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
                 });
-            }, 500);
-
-            function restoreStyles() {
-                captureArea.style.overflow = origAreaOverflow;
-                tableWrapper.style.overflow = origWrapperOverflow;
-                stickyEls.forEach(el => {
-                    el.style.position = el.dataset.origPosition === 'static' ? '' : el.dataset.origPosition;
-                });
-            }
+            }, 300);
         }
     </script>
 </body>
