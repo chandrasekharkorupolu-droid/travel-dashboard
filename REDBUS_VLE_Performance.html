@@ -2,159 +2,298 @@
 <html>
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedBus Performance - CSC TravelCloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
-    body { background-color: #fcf8f8; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; margin: 0; }
-    
-    .controls-bar { background: white; border-radius: 10px; padding: 12px 15px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.05); border: 1px solid #fca5a5; display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-shrink: 0; }
-    
-    .title-sec { font-size: 16px; font-weight: 900; color: #dc2626; display: flex; align-items: center; gap: 8px; text-transform: uppercase; white-space: nowrap; }
-    .filter-group { display: flex; align-items: center; gap: 15px; flex: 1; justify-content: center; }
-    .radio-group { display: flex; gap: 10px; font-weight: 700; color: #475569; font-size: 13px;}
-    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
-    
-    .form-select, .search-box { border: 1px solid #ef4444; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; outline: none; }
-    .search-box { width: 200px; }
-    
-    .btn-custom { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap;}
-    .btn-reset { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; } .btn-reset:hover { background: #fca5a5; color: white; }
-    .btn-export { background: #dcfce7; color: #16a34a; border-color: #86efac; } .btn-export:hover { background: #86efac; color: #064e3b; }
-    .btn-img { background: #e0e7ff; color: #0284c7; border-color: #7dd3fc; } .btn-img:hover { background: #7dd3fc; color: #0c4a6e; }
-    .btn-full { background: #f1f5f9; color: #475569; border-color: #cbd5e1; } .btn-full:hover { background: #cbd5e1; }
-
-    .kpi-container { display: flex; gap: 10px; margin-bottom: 15px; flex-shrink: 0; }
-    .kpi-card { flex: 1; min-width: 130px; background: white; padding: 12px 5px; border-radius: 10px; border-top: 4px solid #ccc; text-align: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: 0.2s; display: flex; flex-direction: column; justify-content: center; }
-    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 5px 12px rgba(0,0,0,0.08); }
-    .kpi-card.active { background: #fff1f2; border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239,68,68,0.3); }
-    .kpi-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; line-height: 1.2;}
-    .kpi-val { font-size: 18px; font-weight: 900; margin: 0; }
-    
-    .k-tot { border-color: #3b82f6; } .k-tot .kpi-val { color: #2563eb; }
-    .k-d25 { border-color: #f59e0b; } .k-d25 .kpi-val { color: #d97706; }
-    .k-r25 { border-color: #ef4444; } .k-r25 .kpi-val { color: #dc2626; }
-    .k-d26 { border-color: #10b981; } .k-d26 .kpi-val { color: #059669; }
-    .k-r26 { border-color: #14b8a6; } .k-r26 .kpi-val { color: #0d9488; }
-    .k-pd25 { border-color: #8b5cf6; } .k-pd25 .kpi-val { color: #7c3aed; }
-    .k-pr25 { border-color: #ec4899; } .k-pr25 .kpi-val { color: #db2777; }
-
-    .sub-stats { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 2px; }
-
-    .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.05); border: 1px solid #fca5a5; display: flex; flex-direction: column; flex: 1; min-height: 0; }
-    .table-responsive { flex: 1; overflow-y: auto; }
-    
-    #redbusTable thead th { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; border-bottom: none; font-size: 13px; font-weight: bold; padding: 12px 10px; white-space: nowrap; }
-    
-    .status-badge { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 900; min-width: 40px; display: inline-block;}
-    .s-act { background-color: #dcfce7; color: #16a34a; }
-    .s-inact { background-color: #fee2e2; color: #dc2626; }
-    
-    .btn-wa { background-color: #25D366; color: white; border: none; font-weight: bold; font-size: 11px; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; margin: auto; transition: 0.2s;}
-    .btn-wa:hover { background-color: #1ea952; transform: scale(1.05); }
-
-    .clickable-dist { cursor: pointer; color: #0284c7; font-weight: 800; text-decoration: none; padding: 2px 5px; border-radius: 4px; transition: 0.2s; }
-    .clickable-dist:hover { color: #0369a1; background-color: #f0f9ff; }
-    
-    .pagination-bar { padding: 10px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-
-/* 📱 MOBILE RESPONSIVE STYLES (మొబైల్ కోసం ప్రత్యేకమైన సెట్టింగ్స్) 📱 */
-    @media (max-width: 768px) {
-        body { 
-            height: auto; 
-            overflow-y: auto; 
-            padding: 10px; 
-        }
-
-        /* 🌟 Top Controls (హెడర్ & ఫిల్టర్స్) 🌟 */
-        .controls-bar {
-            flex-direction: column;
-            gap: 12px;
-            padding: 15px;
-            align-items: stretch;
-            height: auto;
-        }
-        .title-sec {
-            justify-content: center;
-            white-space: normal;
-            text-align: center;
-            font-size: 15px;
-            margin-right: 0 !important;
-        }
-        .filter-group { 
-            width: 100%; 
-            flex-direction: column; 
-            gap: 10px;
-            align-items: stretch;
-        }
-        .radio-group {
-            justify-content: center;
-            margin-bottom: 5px;
-        }
-        
-        .dist-select, .search-box, .controls-bar .btn-custom {
-            width: 100% !important;
-            height: 42px !important; 
-            font-size: 13px;
-            justify-content: center;
-        }
-
-        /* యాక్షన్ బటన్స్ మొబైల్ లో 2x2 గ్రిడ్ లాగా */
-        .controls-bar > .d-flex.gap-2 {
-            flex-wrap: wrap;
-            width: 100%;
-            justify-content: center;
-        }
-        .controls-bar > .d-flex.gap-2 > button {
-            flex: 1 1 calc(50% - 10px);
-        }
-        #btnFullScreen { display: none !important; } /* మొబైల్ కి ఫుల్ స్క్రీన్ అవసరం లేదు */
-
-        /* 🌟 7 KPI Boxes (మొబైల్ లో 2x2 గ్రిడ్ లాగా) 🌟 */
-        .kpi-container {
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .kpi-card {
-            flex: 1 1 calc(50% - 10px); /* ఒక లైన్ కి రెండు బాక్సులు */
-            min-width: 130px;
-            padding: 10px 5px;
-        }
-        .kpi-title { font-size: 9px; }
-        .kpi-val { font-size: 18px; }
-
-        /* 🌟 Table Horizontal Scroll 🌟 */
-        .table-container { 
-            height: auto; 
-            min-height: 400px;
-        }
-        .table-responsive { 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch; 
-        }
-        th, td { 
-            padding: 10px 8px !important; 
-            font-size: 11px !important; 
-            white-space: nowrap; 
-        }
-        
-        /* వాట్సాప్ బటన్ మొబైల్ సైజ్ */
-        .btn-wa {
-            width: 100%;
-            justify-content: center;
-            padding: 8px;
-        }
-
-        /* 🌟 Pagination Bar (మొబైల్ లో కిందకి సెట్ చేసాం) 🌟 */
-        .pagination-bar {
-            flex-direction: column;
-            gap: 12px;
-            text-align: center;
-        }
+    /* 🌟 Royal Cream, Forest Green & Antique Gold Theme 🌟 */
+    :root {
+      --cream-bg: #f4f1e6;
+      --cream-card: #faf8f2;
+      --cream-alt: #f0ece0;
+      --forest: #1b4332;
+      --forest-dark: #122d22;
+      --forest-soft: #e9f2ed;
+      --gold: #c5a059;
+      --gold-soft: #f7efe0;
+      --charcoal: #141a17;
+      --muted: #525d56;
+      --border: #d5cfbe;
     }
 
+    body {
+      background-color: var(--cream-bg);
+      color: var(--charcoal);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, sans-serif;
+      padding: 14px 15px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 0;
+    }
+    
+    /* Top Controls Bar */
+    .controls-bar {
+      background-color: var(--cream-card);
+      border-radius: 10px;
+      padding: 11px 16px;
+      box-shadow: 0 3px 10px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    
+    .title-sec {
+      font-family: 'Cinzel', serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--forest);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
 
+    .filter-group { display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center; }
+    .radio-group { display: flex; gap: 10px; font-weight: 800; color: var(--forest-dark); font-size: 12.5px; white-space: nowrap; }
+    .radio-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0; }
+    .radio-group input[type="radio"] { accent-color: var(--forest); cursor: pointer; }
+    
+    .form-select, .search-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      outline: none;
+      background-color: #ffffff;
+      color: var(--charcoal);
+      transition: 0.2s;
+    }
+    .form-select:focus, .search-box:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 2px rgba(27, 67, 50, 0.15);
+    }
+    .search-box { width: 195px; }
+    
+    /* Royal Action Buttons */
+    .btn-custom {
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid var(--forest);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn-push { background-color: var(--forest); color: #f8f5ec; border-color: var(--forest-dark); }
+    .btn-push:hover { background-color: var(--forest-dark); color: #e6c885; }
+
+    .btn-reset { background-color: #ffffff; color: var(--forest); border-color: var(--forest); }
+    .btn-reset:hover { background-color: var(--forest); color: #ffffff; }
+
+    .btn-export { background-color: var(--forest-soft); color: var(--forest-dark); border-color: #8ebaa3; }
+    .btn-export:hover { background-color: var(--forest); color: #ffffff; }
+
+    .btn-img { background-color: var(--gold); color: var(--charcoal); border-color: #a6823c; }
+    .btn-img:hover { background-color: #b08a42; color: #ffffff; }
+
+    .btn-full { background-color: #ffffff; color: var(--forest); border-color: var(--forest); }
+    .btn-full:hover { background-color: var(--forest); color: #ffffff; }
+
+    .btn-exit-full { background-color: #991b1b !important; color: #ffffff !important; border-color: #991b1b !important; }
+
+    /* KPI Cards */
+    .kpi-container { display: flex; gap: 10px; margin-bottom: 12px; flex-shrink: 0; }
+    .kpi-card {
+      flex: 1;
+      min-width: 125px;
+      background-color: var(--cream-card);
+      padding: 11px 6px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--forest);
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(27, 67, 50, 0.06);
+      transition: 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(27, 67, 50, 0.12); }
+    .kpi-card.active {
+      background-color: var(--gold-soft);
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.35);
+    }
+    .kpi-title { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; line-height: 1.2; letter-spacing: 0.3px; }
+    .kpi-val { font-size: 20px; font-weight: 900; margin: 0; font-variant-numeric: tabular-nums; }
+    
+    .k-tot { border-top-color: var(--forest-dark); } .k-tot .kpi-val { color: var(--forest-dark); }
+    .k-d25 { border-top-color: #7c4a12; } .k-d25 .kpi-val { color: #7c4a12; }
+    .k-r25 { border-top-color: #991b1b; } .k-r25 .kpi-val { color: #991b1b; }
+    .k-d26 { border-top-color: #15803d; } .k-d26 .kpi-val { color: #15803d; }
+    .k-r26 { border-top-color: #164e63; } .k-r26 .kpi-val { color: #164e63; }
+    .k-pd25 { border-top-color: var(--gold); } .k-pd25 .kpi-val { color: #92400e; }
+    .k-pr25 { border-top-color: #b91c1c; } .k-pr25 .kpi-val { color: #b91c1c; }
+
+    .sub-stats { font-size: 10px; font-weight: 700; color: var(--muted); margin-top: 2px; }
+
+    /* Table Container */
+    .table-container {
+      background-color: var(--cream-card);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(27, 67, 50, 0.08);
+      border: 1.5px solid var(--forest);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .table-responsive { flex: 1; overflow-y: auto; }
+    
+    #redbusTable { border-collapse: separate; border-spacing: 0; }
+    #redbusTable thead th {
+      background-color: var(--forest-dark);
+      color: #f8f5ec;
+      border-bottom: 2px solid var(--gold);
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 800;
+      padding: 12px 10px;
+      white-space: nowrap;
+    }
+    #redbusTable thead th:nth-child(5),
+    #redbusTable thead th:nth-child(6) { background-color: #4b5d54; }
+    #redbusTable thead th:nth-child(7) { background-color: var(--forest); }
+    #redbusTable thead th:nth-child(8) { background-color: #164e63; }
+    #redbusTable thead th:nth-child(9) { background-color: #7c4a12; }
+
+    #redbusTable tbody td {
+      background-color: var(--cream-card);
+      color: var(--charcoal);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid #e6e1d3;
+      padding: 9px 10px;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    #redbusTable tbody tr:nth-child(even) td { background-color: var(--cream-alt); }
+    #redbusTable tbody tr:hover td { background-color: var(--gold-soft) !important; }
+    
+    .status-badge { padding: 4px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 900; min-width: 42px; display: inline-block; }
+    .s-act { background-color: #e6f4ea; color: #15803d; border: 1px solid #b7dfbe; }
+    .s-inact { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    
+    .btn-wa {
+      background-color: #15803d;
+      color: #ffffff;
+      border: 1px solid #166534;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: auto;
+      transition: 0.2s;
+    }
+    .btn-wa:hover { background-color: #166534; transform: scale(1.04); }
+
+    .clickable-dist {
+      cursor: pointer;
+      color: var(--forest-dark);
+      font-weight: 800;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+    .clickable-dist:hover { color: #7c4a12; }
+
+    .td-cscid { color: #164e63; font-weight: 800; }
+    .td-vle { color: var(--charcoal); font-weight: 700; }
+    .td-mob { color: var(--muted); font-weight: 700; }
+    
+    /* Pagination Bar */
+    .pagination-bar {
+      padding: 9px 18px;
+      background-color: var(--cream-alt);
+      border-top: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .status-pill {
+      background-color: var(--gold-soft);
+      color: #7c4a12;
+      border: 1px solid var(--gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .btn-page {
+      background-color: #ffffff;
+      color: var(--forest);
+      border: 1.5px solid var(--forest);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+    .btn-page:hover:not(:disabled) { background-color: var(--forest); color: #ffffff; }
+    .btn-page:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* 📱 MOBILE RESPONSIVE STYLES 📱 */
+    @media (max-width: 768px) {
+      body { height: auto; overflow-y: auto; padding: 10px; }
+
+      .controls-bar { flex-direction: column; gap: 12px; padding: 14px; align-items: stretch; height: auto; }
+      .title-sec { justify-content: center; white-space: normal; text-align: center; font-size: 15px; margin-right: 0 !important; }
+      .filter-group { width: 100%; flex-direction: column; gap: 10px; align-items: stretch; }
+      .radio-group { justify-content: center; margin-bottom: 4px; }
+      
+      #distSelect, .search-box, .controls-bar .btn-custom { width: 100% !important; height: 40px !important; font-size: 13px; justify-content: center; }
+
+      .controls-bar > .d-flex.gap-2 { flex-wrap: wrap; width: 100%; justify-content: center; }
+      .controls-bar > .d-flex.gap-2 > button { flex: 1 1 calc(50% - 10px); }
+      #btnFullScreen { display: none !important; }
+
+      .kpi-container { flex-wrap: wrap; gap: 10px; }
+      .kpi-card { flex: 1 1 calc(50% - 10px); min-width: 130px; padding: 10px 5px; }
+      .kpi-title { font-size: 9px; }
+      .kpi-val { font-size: 18px; }
+
+      .table-container { height: auto; min-height: 400px; }
+      .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      th, td { padding: 9px 7px !important; font-size: 11px !important; white-space: nowrap; }
+      
+      .btn-wa { width: 100%; justify-content: center; padding: 7px; }
+      .pagination-bar { flex-direction: column; gap: 10px; text-align: center; }
+    }
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -183,7 +322,7 @@
     </div>
     
     <div class="d-flex gap-2">
-      <button class="btn-action" id="pushAppBtn" onclick="pushToMobileApp()" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:13px;">📱 Push to App</button>
+      <button class="btn-custom btn-push" id="pushAppBtn" onclick="pushToMobileApp()">📱 Push to App</button>
       <button class="btn-custom btn-reset" onclick="resetFilters()">🔄 Reset</button>
       <button class="btn-custom btn-export" onclick="exportToExcel()">📥 Excel</button>
       <button class="btn-custom btn-img" onclick="downloadImage()">📸 Download Image</button>
@@ -213,7 +352,7 @@
 
   <div class="table-container">
     <div class="table-responsive">
-      <table class="table table-hover align-middle text-center mb-0" id="redbusTable" style="font-size:12px;">
+      <table class="table align-middle text-center mb-0" id="redbusTable">
         <thead class="sticky-top" style="z-index: 2;">
           <tr>
             <th class="text-start ps-3" id="thDist">Old District</th>
@@ -228,17 +367,17 @@
           </tr>
         </thead>
         <tbody id="reportBody">
-          <tr><td colspan="9" class="text-muted py-4">Waiting for data...</td></tr>
+          <tr><td colspan="9" style="color: var(--muted); padding: 30px; font-weight: 700;">Waiting for data...</td></tr>
         </tbody>
       </table>
     </div>
     <div class="pagination-bar" data-html2canvas-ignore="true">
-      <span class="fw-bold text-muted" style="font-size:13px;" id="pageInfo">Showing 0 to 0 of 0</span>
+      <span class="fw-bold" style="font-size:12.5px; color: var(--forest-dark);" id="pageInfo">Showing 0 to 0 of 0</span>
       <div class="d-flex align-items-center gap-3">
-        <span class="badge bg-light text-danger border" id="lblStatus">Initializing...</span>
+        <span class="status-pill" id="lblStatus">Initializing...</span>
         <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="changePage(-1)" id="btnPrev">Prev</button>
-            <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="changePage(1)" id="btnNext">Next</button>
+            <button class="btn-page" onclick="changePage(-1)" id="btnPrev">Prev</button>
+            <button class="btn-page" onclick="changePage(1)" id="btnNext">Next</button>
         </div>
       </div>
     </div>
@@ -252,7 +391,6 @@
     let loggedInUserId = localStorage.getItem("userId") || ""; 
     let isDM = loggedInDesig.toUpperCase() === "DM" || loggedInDesig.toUpperCase().indexOf("DISTRICT MANAGER") !== -1;
     
-    // పాత క్యాచ్ ఇబ్బంది పెట్టకుండా V12 కి మార్చాను
     const CACHE_KEY = "TRAVEL_CACHE_V12_" + SERVICE_NAME + "_" + loggedInUserId;
 
     let rawData = [];
@@ -318,9 +456,8 @@
 
     function fetchDataFromServer() {
         let tbody = document.getElementById("reportBody");
-        if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-primary py-5 text-center fw-bold" style="font-size:16px;">⏳ Fetching live data from server... Please wait...</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="9" style="color: var(--forest); padding: 40px; font-weight: 800; font-size: 15px;">⏳ Fetching live data from server... Please wait...</td></tr>`;
 
-        // 🌟 మీ AIRWAYS లో వాడిన పక్కా బ్యాకెండ్ కాల్ లాజిక్ ఇదే 🌟
         fetch(SCRIPT_URL, { 
             method: "POST", 
             body: JSON.stringify({ action: "getTravelVlePerformance", service: SERVICE_NAME, role: loggedInDesig, userId: loggedInUserId }) 
@@ -333,12 +470,12 @@
                 processData(); 
             } else {
                 let errMsg = res.message ? "Backend Error: " + res.message : "No data found for this District.";
-                if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold" style="font-size:16px;">⚠️ ${errMsg}</td></tr>`;
+                if(tbody) tbody.innerHTML = `<tr><td colspan="9" style="color: #b91c1c; padding: 40px; font-weight: 800; font-size: 15px;">⚠️ ${errMsg}</td></tr>`;
             }
         })
         .catch(e => { 
             console.error("Fetch Error:", e);
-            if(tbody) tbody.innerHTML = `<tr><td colspan="10" class="text-danger py-5 text-center fw-bold">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
+            if(tbody) tbody.innerHTML = `<tr><td colspan="9" style="color: #b91c1c; padding: 40px; font-weight: 800;">📶 Network Error! Retrying in 3 seconds...</td></tr>`;
             setTimeout(fetchDataFromServer, 3000); 
         });
     }
@@ -375,7 +512,7 @@
         let distSet = new Set();
         
         rawData.forEach(r => {
-            if (isNew && isDM && !r.isMyNewDist) return; // 🌟 మీ బ్యాకెండ్ పంపిన 'isMyNewDist' తో ఫిల్టర్ 🌟
+            if (isNew && isDM && !r.isMyNewDist) return;
             let d = isNew ? r.newDist : r.oldDist;
             if (d && d !== "UNKNOWN") distSet.add(toProperCase(d.trim()));
         });
@@ -400,12 +537,11 @@
         applyFilters();
     };
 
-function applyFilters() {
+    function applyFilters() {
         let isNew = document.querySelector('input[name="distType"][value="NEW"]').checked;
         let selDist = document.getElementById("distSelect").value;
         let searchTxt = document.getElementById("searchInput").value.toUpperCase();
 
-        // 🌟 1. ముందుగా డిస్ట్రిక్ట్ & సెర్చ్ ప్రకారం డేటా ఫిల్టర్ చేయాలి 🌟
         let baseData = rawData.filter(r => {
             let matchDist = true;
             if (isNew) {
@@ -421,10 +557,8 @@ function applyFilters() {
             return matchDist && matchSearch;
         });
 
-        // 🌟 2. KPI నంబర్స్ జీరో అవ్వకుండా ఈ బేస్ డేటాతోనే కౌంట్స్ అప్డేట్ చేయాలి 🌟
         updateKPIs(baseData);
 
-        // 🌟 3. ఇప్పుడు KPI ఏది క్లిక్ చేస్తే ఆ డేటా మాత్రమే టేబుల్ కి వెళ్ళాలి 🌟
         processedData = baseData.filter(r => {
             if (currentKpiFilter === "ALL") return true;
             if (currentKpiFilter === "DSP25") return r.dsp2526 > 0;
@@ -439,7 +573,8 @@ function applyFilters() {
         currentPage = 1;
         renderTablePage();
     }
-function updateKPIs(data) {
+
+    function updateKPIs(data) {
         let tTot = data.length, tD25 = 0, tR25 = 0, tD26 = 0, tR26 = 0, tPD25 = 0, tPR25 = 0;
         let tD26_Old = 0, tD26_New = 0, tR26_Old = 0, tR26_New = 0;
 
@@ -483,7 +618,7 @@ function updateKPIs(data) {
         
         let total = processedData.length;
         if(total === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-danger py-4 fw-bold">No records matched your filters.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="color: #b91c1c; padding: 30px; font-weight: 800;">No records matched your filters.</td></tr>`;
             document.getElementById("pageInfo").innerText = "Showing 0 to 0 of 0";
             return;
         }
@@ -502,11 +637,11 @@ function updateKPIs(data) {
             tbody.innerHTML += `
             <tr>
                 <td class="text-start ps-3 clickable-dist" title="Double click to filter" ondblclick="filterByDistDblClick('${item.oldDist}', '${item.newDist}')">${rowDist}</td>
-                <td class="fw-bold text-primary">${item.cscId}</td>
-                <td class="text-start fw-bold text-dark">${toProperCase(item.vleName)}</td>
-                <td class="fw-bold text-muted">${item.mobile}</td>
-                <td class="fw-bold text-dark">${item.dsp2526}</td>
-                <td class="fw-bold text-dark">${item.srv2526}</td>
+                <td class="td-cscid">${item.cscId}</td>
+                <td class="text-start td-vle">${toProperCase(item.vleName)}</td>
+                <td class="td-mob">${item.mobile}</td>
+                <td class="fw-bold">${item.dsp2526}</td>
+                <td class="fw-bold">${item.srv2526}</td>
                 <td><span class="status-badge ${dspClass}">${item.dsp2627}</span></td>
                 <td><span class="status-badge ${srvClass}">${item.srv2627}</span></td>
                 <td>
@@ -555,7 +690,7 @@ function updateKPIs(data) {
     }
 
     function downloadImage() {
-       html2canvas(document.getElementById('captureArea'), { scale: 2 }).then(canvas => {
+       html2canvas(document.getElementById('captureArea'), { scale: 2, backgroundColor: "#f4f1e6", useCORS: true }).then(canvas => {
           let link = document.createElement('a');
           link.download = `${SERVICE_NAME}_Report.png`; 
           link.href = canvas.toDataURL("image/png"); 
@@ -567,9 +702,8 @@ function updateKPIs(data) {
        let btn = document.getElementById("btnFullScreen");
        if (!document.fullscreenElement) { 
            document.documentElement.requestFullscreen(); 
-           btn.innerHTML = "❌ Exit Full Screen";
-           btn.classList.add("text-danger");
-           btn.classList.replace("btn-full", "btn-reset");
+           btn.innerHTML = "✖ Exit Full Screen";
+           btn.classList.add("btn-exit-full");
        } else { 
            if (document.exitFullscreen) { document.exitFullscreen(); } 
        }
@@ -579,8 +713,7 @@ function updateKPIs(data) {
        let btn = document.getElementById("btnFullScreen");
        if (!document.fullscreenElement) {
            btn.innerHTML = "⛶ Fullscreen";
-           btn.classList.remove("text-danger");
-           btn.classList.replace("btn-reset", "btn-full");
+           btn.classList.remove("btn-exit-full");
        }
     });
 
